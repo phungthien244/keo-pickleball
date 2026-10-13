@@ -75,6 +75,8 @@ section{display:flex;flex-direction:column;gap:16px;padding-top:18px}
 .pill.keo{background:var(--warn-bg);color:var(--warn)}
 .pill.win{background:var(--win-bg);color:var(--win)}
 .pill.lose{background:var(--lose-bg);color:var(--lose)}
+.pill.gF{background:var(--lose-bg);color:var(--lose)}
+.pill.gM{background:var(--sunk);color:var(--court)}
 .pill.cap{background:var(--ball);color:var(--on-ball)}
 .err{color:var(--lose);font-size:13px;margin:0}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -194,6 +196,8 @@ function validScore(a,b,t){
   return w===l+2?null:`Từ ${t-1}–${t-1} phải thắng cách 2 (ví dụ ${l+2}–${l}).`;
 }
 const expect=(ra,rb)=>1/(1+Math.exp(-(ra-rb)*SPREAD));
+const expShare=pA=>0.5+(pA-0.5)*0.5;
+const expScore=(eS,t)=>eS>=0.5?`${t}–${Math.round(t*(1-eS)/eS)}`:`${Math.round(t*eS/(1-eS))}–${t}`;
 function feeFor(pLoser,c){
   if(c.keo){if(pLoser>=c.thr)return c.hi; if(pLoser<=1-c.thr)return c.lo;}
   return c.fee;
@@ -216,11 +220,11 @@ function derive(){
   for(const m of done){
     const ra=avg(m.a),rb=avg(m.b),pA=expect(ra,rb);
     const aWin=m.sa>m.sb, share=m.sa/(m.sa+m.sb);
-    const dA=K*(0.5*(aWin?1:0)+0.5*share-pA);
+    const eS=expShare(pA), dA=K*(share-eS);
     const loserP=aWin?1-pA:pA, fee=feeFor(loserP,c);
     for(const id of m.a){const s=st.get(id);if(!s)continue;s.g++;s.pf+=m.sa;s.pa+=m.sb;s.last=Math.max(s.last,m.seq);if(aWin)s.w++;else{s.l++;s.fee+=fee;s.losses++}rating.set(id,Math.min(8,Math.max(1,rating.get(id)+dA)))}
     for(const id of m.b){const s=st.get(id);if(!s)continue;s.g++;s.pf+=m.sb;s.pa+=m.sa;s.last=Math.max(s.last,m.seq);if(!aWin)s.w++;else{s.l++;s.fee+=fee;s.losses++}rating.set(id,Math.min(8,Math.max(1,rating.get(id)-dA)))}
-    info.set(m.id,{pA,dA,fee,aWin});
+    info.set(m.id,{pA,dA,fee,aWin,eS});
   }
   for(const m of SM.filter(m=>m.status!=="done")){
     for(const id of [...m.a,...m.b]){const s=st.get(id);if(s)s.last=Math.max(s.last,m.seq)}
@@ -258,17 +262,23 @@ function vSan(D){
   </div>`;
   if(errs.gen)h+=`<p class="err">${esc(errs.gen)}</p>`;
   if(!D.players.length)return h+`<div class="empty"><strong>Chưa có người chơi</strong>Vào tab Người chơi, thêm thành viên hoặc chọn người có mặt hôm nay, rồi quay lại đây bấm Xếp trận.</div>`;
-  if(!D.playing.length)h+=`<div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước, tránh lặp đồng đội, cân trình hai bên.</div>`;
+  if(!D.playing.length)h+=`<div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; ưu tiên đôi nam nữ, sau đó đôi nam/đôi nữ; khi lẻ chỉ cho đôi nam hoặc đôi nữ gặp đôi nam nữ, không bao giờ đôi nam gặp đôi nữ.</div>`;
   else h+=`<div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;
-  h+=`<div><p class="lbl" style="margin:0 0 8px">Đang chờ (${waiting.length})</p>${waiting.length?`<div class="chips">${waiting.map(p=>{const s=D.st.get(p.id);return `<span class="chip">${esc(p.name)}<b class="num">${s.g} trận</b></span>`}).join("")}</div>`:`<p class="rule">Không ai phải chờ.</p>`}</div>`;
+  h+=`<div><p class="lbl" style="margin:0 0 8px">Đang chờ (${waiting.length})</p>${waiting.length?`<div class="chips">${waiting.map(p=>{const s=D.st.get(p.id);return `<span class="chip">${esc(p.name)}${p.gender==="F"?" (nữ)":""}<b class="num">${s.g} trận</b></span>`}).join("")}</div>`:`<p class="rule">Không ai phải chờ.</p>`}</div>`;
   const hist=[...D.done].reverse();
   h+=`<div class="panel"><div class="bar" style="margin-bottom:6px"><h2 class="grow">Trận đã xong</h2><span class="meta num">${hist.length} trận</span></div>`;
   h+=hist.length?`<div class="hist">${hist.map(m=>histRow(D,m)).join("")}</div>`:`<p class="rule">Kết quả sẽ hiện ở đây sau khi lưu tỉ số.</p>`;
   return h+`</div>`;
 }
+const gOf=(D,id)=>D.pmap.get(id)?.gender==="F"?"F":"M";
+const tType=(D,ids)=>ids.map(id=>gOf(D,id)).sort().join("");
+const T_LABEL={FM:"Đôi nam nữ",MM:"Đôi nam",FF:"Đôi nữ"};
+const KIND={mixed:"Đôi nam nữ",gender:"Cùng giới",hybrid:"Trận lai"};
+const kindOf=(D,m)=>m.kind||(()=>{const a=tType(D,m.a),b=tType(D,m.b);return a==="FM"&&b==="FM"?"mixed":a===b?"gender":"hybrid"})();
+const gPill=g=>`<span class="pill g${g}">${g==="F"?"Nữ":"Nam"}</span>`;
 function teamLine(D,ids){
   const st=ids.map(id=>D.st.get(id)?.rating??3), a=(st[0]+st[1])/2;
-  return `${ids.map(id=>nm(D,id)).join(" &amp; ")}<small class="num">Rating TB ${r2(a)}</small>`;
+  return `${ids.map(id=>nm(D,id)).join(" &amp; ")}<small class="num">${T_LABEL[tType(D,ids)]} · Rating TB ${r2(a)}</small>`;
 }
 function keoPill(c,pA){
   const fav=Math.max(pA,1-pA);
@@ -278,7 +288,7 @@ function keoPill(c,pA){
 function courtCard(D,m){
   const c=D.c,i=D.info.get(m.id),pA=i.pA, ka=`sa-${m.id}`,kb=`sb-${m.id}`;
   return `<article class="court">
-    <div class="court-h"><h3>Sân ${m.court}</h3><span class="num">Trận #${m.seq}</span></div>
+    <div class="court-h"><h3>Sân ${m.court}</h3><span class="num">${KIND[kindOf(D,m)]} · Trận #${m.seq}</span></div>
     <div class="team"><div class="names">${teamLine(D,m.a)}</div><input class="score num" id="${ka}" data-draft="${ka}" type="number" inputmode="numeric" min="0" max="99" aria-label="Điểm đội 1" value="${esc(val(ka,""))}" ${canWrite?"":"disabled"}></div>
     <div class="prob" title="Xác suất thắng dự kiến"><i style="width:${Math.round(pA*100)}%"></i></div>
     <div class="bar" style="justify-content:space-between;padding:4px 14px 0"><span class="meta num">${Math.round(pA*100)}% thắng</span><span class="meta num">${Math.round((1-pA)*100)}%</span></div>
@@ -297,7 +307,7 @@ function histRow(D,m){
   const A=m.a.map(id=>nm(D,id)).join(" &amp; "),B=m.b.map(id=>nm(D,id)).join(" &amp; ");
   return `<div class="hrow"><span class="meta num">S${m.court}<br>#${m.seq}</span>
     <div class="who">${i.aWin?`<b>${A}</b>`:`<span class="l">${A}</span>`} <span class="l">vs</span> ${!i.aWin?`<b>${B}</b>`:`<span class="l">${B}</span>`}
-      <div class="bar" style="margin-top:4px;gap:6px"><span class="pill lose">Thua góp ${i.fee}k/người</span><span class="pill num">Δ rating ${sgn(Math.abs(i.dA))}</span></div></div>
+      <div class="bar" style="margin-top:4px;gap:6px"><span class="pill lose">Thua góp ${i.fee}k/người</span><span class="pill">${KIND[kindOf(D,m)]}</span><span class="pill num" title="Rating thay đổi theo điểm thực tế so với dự kiến, giống DUPR">Dự kiến ${expScore(i.eS,D.c.target)} · đội thắng ${sgn(i.aWin?i.dA:-i.dA)}</span></div></div>
     <div style="text-align:right"><div class="sc num">${m.sa}–${m.sb}</div>${canWrite?`<button class="ghost" data-act="edit" data-id="${m.id}">Sửa</button>`:""}</div></div>`;
 }
 
@@ -312,7 +322,7 @@ function standings(D){
 function vBxh(D){
   const rows=standings(D);
   if(!rows.length)return `<div class="empty"><strong>Bảng xếp hạng trống</strong>Thêm người có mặt hôm nay và lưu vài trận, bảng sẽ tự cập nhật.</div>`;
-  return `<p class="rule">Buổi #${D.sid}. Xếp theo % thắng → hiệu số điểm → rating. Rating tính kiểu DUPR: thắng sát đội mạnh hơn được cộng nhiều, thắng dễ đội yếu hơn được ít.</p>
+  return `<p class="rule">Buổi #${D.sid}. Xếp theo % thắng → hiệu số điểm → rating. Rating tính như DUPR (từ 7/2025): chỉ so điểm thực tế với điểm dự kiến. Đánh tốt hơn dự kiến thì tăng, kể cả khi thua; kém hơn dự kiến thì giảm, kể cả khi thắng.</p>
   <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>% thắng</th><th>HS</th><th>Rating</th><th>Δ</th><th>Góp quỹ</th></tr></thead><tbody>
   ${rows.map((r,i)=>{const s=r.s,diff=s.pf-s.pa;return `<tr class="${i===0&&s.g?"top1":""}"><td class="rank">${s.g?i+1:"–"}</td><td><b>${esc(r.p.name)}</b>${r.p.active===false?` <span class="meta">(đã nghỉ)</span>`:""}</td>
   <td>${s.w}–${s.l}</td><td>${s.g?Math.round(s.w/s.g*100)+"%":"–"}</td><td class="${diff>0?"up":diff<0?"down":""}">${diff>0?"+":""}${diff}</td><td>${r2(s.rating)}</td><td class="${s.d>0.004?"up":s.d<-0.004?"down":""}">${sgn(s.d)}</td><td>${fmtK(s.charged)}${s.capped?` <span class="pill cap">trần</span>`:""}</td></tr>`}).join("")}
@@ -323,6 +333,7 @@ function memberEdit(p){
   return `<div class="form" style="margin-top:8px">
     <label><span class="lbl">Tên</span><input id="nm-${p.id}" data-draft="nm-${p.id}" value="${esc(val("nm-"+p.id,p.name))}"></label>
     <label><span class="lbl">DUPR ID</span><input id="du-${p.id}" data-draft="du-${p.id}" value="${esc(val("du-"+p.id,p.duprId||""))}" placeholder="Không bắt buộc"></label>
+    <label><span class="lbl">Giới tính</span><select id="gd-${p.id}" data-draft="gd-${p.id}"><option value="M" ${val("gd-"+p.id,p.gender||"M")==="M"?"selected":""}>Nam</option><option value="F" ${val("gd-"+p.id,p.gender||"M")==="F"?"selected":""}>Nữ</option></select></label>
     <label><span class="lbl">Trình hiện tại</span><select id="rt-${p.id}" data-draft="rt-${p.id}">${LV.concat(LV.includes(Number(p.rating0))?[]:[Number(p.rating0)||3]).sort((a,b)=>a-b).map(x=>`<option value="${x}" ${Number(val("rt-"+p.id,p.rating0??3))===x?"selected":""}>${x.toFixed(2)}</option>`).join("")}</select></label>
   </div>${errs["p-"+p.id]?`<p class="err">${esc(errs["p-"+p.id])}</p>`:""}
   <div class="bar" style="margin-top:8px"><span class="grow"></span><button class="ghost" data-act="pedit-x" data-id="${p.id}">Thôi</button><button class="primary" data-act="pedit-save" data-id="${p.id}">Lưu</button></div>`;
@@ -339,7 +350,7 @@ function memberRow(D,p,here,busy){
       if(!A.g)btn+=delArm===p.id&&Date.now()<resetArm?`<button class="danger" data-act="pdel" data-id="${p.id}">Xác nhận xóa</button>`:`<button class="ghost danger" data-act="pdel" data-id="${p.id}" aria-label="Xóa hẳn ${esc(p.name)}">Xóa hẳn</button>`}
   }
   return `<div class="mrow"><div class="mhead"><span class="code num" title="Rating">${r2(here?s.rating:Number(p.rating0)||3)}</span>
-    <div class="mname"><b>${esc(p.name)}</b>${p.duprId?` <span class="meta">DUPR ${esc(p.duprId)}</span>`:""}<div class="meta num">${stat}</div></div>
+    <div class="mname"><b>${esc(p.name)}</b> ${gPill(p.gender==="F"?"F":"M")}${p.duprId?` <span class="meta">DUPR ${esc(p.duprId)}</span>`:""}<div class="meta num">${stat}</div></div>
     <div class="bar" style="gap:6px;justify-content:flex-end">${btn}</div></div>${ed?memberEdit(p):""}</div>`;
 }
 let pickOpen=false;const pickSel=new Set();
@@ -348,7 +359,7 @@ function pickPanel(D,away){
   if(!away.length)return `<p class="rule" style="margin-top:10px">Tất cả thành viên đều đang có mặt hôm nay.</p>`;
   const list=[...away].sort((a,b)=>a.name.localeCompare(b.name,"vi"));
   for(const id of [...pickSel])if(!away.some(p=>p.id===id))pickSel.delete(id);
-  return `<div class="pick"><div class="bar" style="padding:6px 4px"><span class="lbl grow">Thành viên các buổi trước (${list.length})</span><button class="ghost" data-act="pickall">${pickSel.size===list.length?"Bỏ chọn hết":"Chọn hết"}</button></div>${list.map(p=>{const A=D.all.get(p.id);return `<label class="pickrow"><input type="checkbox" data-pick="${p.id}" ${pickSel.has(p.id)?"checked":""}><span class="code num">${r2(Number(p.rating0)||3)}</span><span class="mname"><b>${esc(p.name)}</b><span class="meta num" style="display:block">${A.g} trận · ${A.ses.size} buổi</span></span></label>`}).join("")}</div>
+  return `<div class="pick"><div class="bar" style="padding:6px 4px"><span class="lbl grow">Thành viên các buổi trước (${list.length})</span><button class="ghost" data-act="pickall">${pickSel.size===list.length?"Bỏ chọn hết":"Chọn hết"}</button></div>${list.map(p=>{const A=D.all.get(p.id);return `<label class="pickrow"><input type="checkbox" data-pick="${p.id}" ${pickSel.has(p.id)?"checked":""}><span class="code num">${r2(Number(p.rating0)||3)}</span><span class="mname"><b>${esc(p.name)}</b> ${gPill(p.gender==="F"?"F":"M")}<span class="meta num" style="display:block">${A.g} trận · ${A.ses.size} buổi</span></span></label>`}).join("")}</div>
   <div class="bar" style="margin-top:10px"><span class="grow"></span><button class="primary" data-act="pickadd">Thêm ${pickSel.size} người vào buổi</button></div>`;
 }
 function vNguoi(D){
@@ -357,9 +368,10 @@ function vNguoi(D){
   const here=D.players.filter(p=>p.active!==false), away=D.players.filter(p=>p.active===false);
   if(canWrite)h+=`<div class="panel"><h2 style="margin-bottom:4px">Thêm thành viên mới</h2>
     <p class="rule" style="margin-bottom:10px">Mỗi dòng một người. Có DUPR ID thì ghi sau dấu |, ví dụ “Tuấn | 7KQ2LM”. Mỗi người được cấp mã cố định PB-xxx để lưu lịch sử về sau.</p>
-    <textarea id="bulk" data-draft="bulk" rows="4" placeholder="Tuấn&#10;Hà | 7KQ2LM&#10;Minh">${esc(val("bulk",""))}</textarea>
+    <textarea id="bulk" data-draft="bulk" rows="4" placeholder="Tuấn&#10;Hà | nữ&#10;Minh | 7KQ2LM">${esc(val("bulk",""))}</textarea>
     <div class="bar" style="margin-top:10px"><label class="bar"><span class="lbl">Trình ban đầu</span>
-      <select id="lvl" data-draft="lvl">${LV.map(x=>`<option value="${x}" ${String(val("lvl","3"))===String(x)?"selected":""}>${x.toFixed(2)}</option>`).join("")}</select></label>
+      <select id="lvl" data-draft="lvl">${LV.map(x=>`<option value="${x}" ${String(val("lvl","2.5"))===String(x)?"selected":""}>${x.toFixed(2)}</option>`).join("")}</select></label>
+      <label class="bar"><span class="lbl">Giới tính</span><select id="gnd" data-draft="gnd"><option value="M" ${val("gnd","M")==="M"?"selected":""}>Nam</option><option value="F" ${val("gnd","M")==="F"?"selected":""}>Nữ</option></select></label>
       <button data-act="picktoggle">${pickOpen?"Đóng danh sách":"Chọn từ danh sách"}</button><span class="grow"></span><button class="primary" data-act="add">Thêm và vào buổi luôn</button></div>${pickPanel(D,away)}</div>`;
   if(!D.players.length)return h+`<div class="empty"><strong>Chưa có thành viên</strong>Nhập tên ở khung trên, mỗi dòng một người.</div>`;
   if(canWrite&&D.players.some(p=>!p.code))h+=`<div class="ro bar"><span class="grow">${D.players.filter(p=>!p.code).length} người chưa có mã thành viên.</span><button data-act="codes">Cấp mã</button></div>`;
@@ -452,13 +464,21 @@ async function generate(){
   const rnd=new Map(avail.map(id=>[id,Math.random()]));
   avail.sort((x,y)=>{const a=D.st.get(x),b=D.st.get(y);return a.g-b.g||b.sits-a.sits||a.last-b.last||rnd.get(x)-rnd.get(y)});
   const chosen=avail.slice(0,n*4),sitting=avail.slice(n*4);
+  const tier=id=>{const s=D.st.get(id);return s.g+"|"+s.sits};
+  const mCount=()=>chosen.filter(id=>gOf(D,id)==="M").length;
+  if(sitting.length&&mCount()%2===1){const bt=tier(chosen[chosen.length-1]);
+    outer:for(let i=chosen.length-1;i>=0;i--){if(tier(chosen[i])!==bt)continue;
+      for(let j=0;j<sitting.length;j++){if(tier(sitting[j])!==bt)break;
+        if(gOf(D,sitting[j])!==gOf(D,chosen[i])){const t=chosen[i];chosen[i]=sitting[j];sitting[j]=t;break outer}}}}
   const pc=new Map(),oc=new Map(),inc=(m,k)=>m.set(k,(m.get(k)||0)+1);
   for(const m of D.SM){inc(pc,key(m.a[0],m.a[1]));inc(pc,key(m.b[0],m.b[1]));for(const x of m.a)for(const y of m.b)inc(oc,key(x,y))}
   const R=id=>D.st.get(id).rating;
-  const cost=(A,B)=>{const p1=pc.get(key(A[0],A[1]))||0,p2=pc.get(key(B[0],B[1]))||0;let o=0;for(const x of A)for(const y of B)o+=oc.get(key(x,y))||0;
-    return 10*(p1*p1+p2*p2)+3*o+12*Math.abs((R(A[0])+R(A[1]))/2-(R(B[0])+R(B[1]))/2)};
+  const GP={"FM|FM":0,"FF|FF":60,"MM|MM":60,"FM|MM":150,"FM|FF":150};
+  const genderCost=(A,B)=>{const k=[tType(D,A),tType(D,B)].sort().join("|");return k in GP?GP[k]:Infinity};
+  const cost=(A,B)=>{const g=genderCost(A,B);if(g===Infinity)return Infinity;const p1=pc.get(key(A[0],A[1]))||0,p2=pc.get(key(B[0],B[1]))||0;let o=0;for(const x of A)for(const y of B)o+=oc.get(key(x,y))||0;
+    return g+10*(p1*p1+p2*p2)+3*o+12*Math.abs((R(A[0])+R(A[1]))/2-(R(B[0])+R(B[1]))/2)};
   let best=null,bc=Infinity;
-  for(let it=0;it<1500;it++){
+  for(let it=0;it<3000;it++){
     const p=shuffle(chosen.slice());let tot=0;const ms=[];
     for(let i=0;i<n;i++){const q=p.slice(i*4,i*4+4);
       const opts=[[[q[0],q[1]],[q[2],q[3]]],[[q[0],q[2]],[q[1],q[3]]],[[q[0],q[3]],[q[1],q[2]]]];
@@ -469,7 +489,7 @@ async function generate(){
   let seq=D.SM.reduce((m,x)=>Math.max(m,x.seq||0),0);
   const batch=D.SB.reduce((m,x)=>Math.max(m,x.n||0),0)+1, now=Date.now(), session=D.sid;
   await write(async()=>{
-    for(let i=0;i<best.length;i++){seq++;await db.collection("matches").doc().set({session,seq,batch,court:freeCourts[i],a:best[i][0],b:best[i][1],sa:null,sb:null,status:"playing",createdAt:now})}
+    for(let i=0;i<best.length;i++){seq++;await db.collection("matches").doc().set({session,seq,batch,court:freeCourts[i],a:best[i][0],b:best[i][1],kind:kindOf(D,{a:best[i][0],b:best[i][1]}),sa:null,sb:null,status:"playing",createdAt:now})}
     await db.collection("batches").doc("s"+session+"b"+batch).set({session,n:batch,sitting,createdAt:now});
     S.everWrote=true;
   },`Đã xếp ${best.length} trận`);
@@ -526,14 +546,14 @@ document.addEventListener("click",async e=>{
     if(!lines.length){toast("Nhập ít nhất một tên.");return}
     const lock=await db.doc("app/lock").acquire({holder,ttlMs:8000});
     if(!lock.acquired){toast("Có người khác đang cập nhật, thử lại sau vài giây.");return}
-    const have=new Map(S.players.map(p=>[p.name.toLowerCase(),p]));const lvl=Number(drafts.lvl||3);let t=Date.now(),added=0,back=0;
+    const have=new Map(S.players.map(p=>[p.name.toLowerCase(),p]));const lvl=Number(drafts.lvl||2.5);let t=Date.now(),added=0,back=0;
     let n=nextCode();
     await write(async()=>{
       await assignCodes();n=nextCode();
-      for(const line of lines){const [nmRaw,duRaw]=line.split("|");const nmv=(nmRaw||"").trim(),du=(duRaw||"").trim();if(!nmv)continue;
+      for(const line of lines){const parts=line.split("|").map(x=>x.trim());const nmv=parts[0];if(!nmv)continue;let du="",gd=drafts.gnd||"M";for(const x of parts.slice(1)){const l=x.toLowerCase();if(["nữ","nu","f","female"].includes(l))gd="F";else if(["nam","m","male"].includes(l))gd="M";else if(x)du=x}
         const ex=have.get(nmv.toLowerCase());
         if(ex){if(ex.active===false){await db.collection("players").doc(ex.id).update({active:true});back++}continue}
-        const doc={name:nmv,rating0:lvl,active:true,createdAt:t++,code:"PB-"+String(n++).padStart(3,"0")};if(du)doc.duprId=du;
+        const doc={name:nmv,rating0:lvl,gender:gd,active:true,createdAt:t++,code:"PB-"+String(n++).padStart(3,"0")};if(du)doc.duprId=du;
         await db.collection("players").doc().set(doc);have.set(nmv.toLowerCase(),doc);added++}
       S.everWrote=true;delete drafts.bulk},null);
     toast(added||back?`Đã thêm ${added} người mới${back?`, ${back} người cũ vào buổi`:""}`:"Các tên này đã có mặt.")}
@@ -547,11 +567,11 @@ document.addEventListener("click",async e=>{
   else if(act==="pedit"){editing.add("p-"+id);render()}
   else if(act==="pedit-x"){editing.delete("p-"+id);delete errs["p-"+id];["nm-","du-","rt-"].forEach(k=>delete drafts[k+id]);render()}
   else if(act==="pedit-save"){const p=S.players.find(x=>x.id===id);
-    const nmv=String(val("nm-"+id,p.name)).trim(),du=String(val("du-"+id,p.duprId||"")).trim(),rt=Number(val("rt-"+id,p.rating0??3));
+    const nmv=String(val("nm-"+id,p.name)).trim(),du=String(val("du-"+id,p.duprId||"")).trim(),rt=Number(val("rt-"+id,p.rating0??3)),gd=val("gd-"+id,p.gender||"M");
     if(!nmv){errs["p-"+id]="Tên không được để trống.";render();return}
     if(S.players.some(x=>x.id!==id&&x.name.toLowerCase()===nmv.toLowerCase())){errs["p-"+id]="Đã có người trùng tên, thêm họ hoặc biệt danh để phân biệt.";render();return}
     delete errs["p-"+id];
-    await write(()=>db.collection("players").doc(id).update({name:nmv,duprId:du,rating0:rt}).then(()=>{S.everWrote=true;editing.delete("p-"+id);["nm-","du-","rt-"].forEach(k=>delete drafts[k+id])}),"Đã lưu")}
+    await write(()=>db.collection("players").doc(id).update({name:nmv,duprId:du,rating0:rt,gender:gd}).then(()=>{S.everWrote=true;editing.delete("p-"+id);["nm-","du-","rt-","gd-"].forEach(k=>delete drafts[k+id])}),"Đã lưu")}
   else if(act==="pdel"){if(delArm!==id||Date.now()>resetArm){delArm=id;resetArm=Date.now()+4000;render();setTimeout(render,4100);return}
     delArm=null;resetArm=0;write(()=>db.collection("players").doc(id).delete(),"Đã xóa thành viên")}
   else if(act==="copyroster"){const D=derive();const rows=[["Ma","Ten","DUPR ID","Rating","So tran","So buoi"]].concat(D.players.map(p=>[p.code||"",p.name,p.duprId||"",r2(Number(p.rating0)||3),D.all.get(p.id).g,D.all.get(p.id).ses.size]));
