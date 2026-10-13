@@ -75,6 +75,11 @@ section{display:flex;flex-direction:column;gap:16px;padding-top:18px}
 .pill.keo{background:var(--warn-bg);color:var(--warn)}
 .pill.win{background:var(--win-bg);color:var(--win)}
 .pill.lose{background:var(--lose-bg);color:var(--lose)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:none;border-radius:0;padding:6px 10px;font-size:13px;background:none;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--court);color:var(--court-ink)}
+.seg button:disabled{cursor:default}
 .sessh{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;border:none;background:none;padding:0;font-weight:400}
 .subh{font-size:16px;text-transform:uppercase;margin:16px 0 8px}
 .pill.gF{background:var(--lose-bg);color:var(--lose)}
@@ -177,7 +182,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const fs = getFirestore(app), auth = getAuth(app);
 window.FB = { fs, auth, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, signInAnonymously, signOut, onAuthStateChanged };
-const DEF={title:"Round Robin DUPR",courts:2,target:11,fee:10,keo:true,hi:15,lo:5,thr:0.7,cap:100,costs:{court:0,water:0,other:0}};
+const DEF={title:"Round Robin DUPR",courts:2,target:11,fee:10,keo:true,hi:15,lo:5,thr:0.7,cap:100,gmode:"mix",costs:{court:0,water:0,other:0}};
 const K=0.3, SPREAD=2.5;
 const S={cfg:null,players:[],matches:[],batches:[],hist:[],live:false,offline:false,ready:false};
 const drafts={}; const editing=new Set(); const errs={};
@@ -260,12 +265,13 @@ function vSan(D){
   let h=`<div class="bar">
     <span class="lbl">Số sân</span>
     <span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân" ${canWrite?"":"disabled"}>−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân" ${canWrite?"":"disabled"}>+</button></span>
+    <span class="seg" role="group" aria-label="Ưu tiên ghép theo giới"><button data-act="gmode" data-v="mix" aria-pressed="${c.gmode!=="same"}" ${canWrite?"":"disabled"}>Ưu tiên khác giới</button><button data-act="gmode" data-v="same" aria-pressed="${c.gmode==="same"}" ${canWrite?"":"disabled"}>Ưu tiên cùng giới</button></span>
     <span class="grow"></span>
     ${canWrite?`<button class="ball" data-act="gen">Xếp trận cho ${can||""} sân trống</button>`:""}
   </div>`;
   if(errs.gen)h+=`<p class="err">${esc(errs.gen)}</p>`;
   if(!D.players.length)return h+`<div class="empty"><strong>Chưa có người chơi</strong>Vào tab Người chơi, thêm thành viên hoặc chọn người có mặt hôm nay, rồi quay lại đây bấm Xếp trận.</div>`;
-  if(!D.playing.length)h+=`<div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; ưu tiên đôi nam nữ, sau đó đôi nam/đôi nữ; khi lẻ chỉ cho đôi nam hoặc đôi nữ gặp đôi nam nữ, không bao giờ đôi nam gặp đôi nữ.</div>`;
+  if(!D.playing.length)h+=`<div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; theo chế độ đang chọn ưu tiên đôi nam nữ hoặc ưu tiên cùng giới; khi lẻ chỉ cho đôi nam hoặc đôi nữ gặp đôi nam nữ, không bao giờ đôi nam gặp đôi nữ.</div>`;
   else h+=`<div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;
   h+=`<div><p class="lbl" style="margin:0 0 8px">Đang chờ (${waiting.length})</p>${waiting.length?`<div class="chips">${waiting.map(p=>{const s=D.st.get(p.id);return `<span class="chip">${esc(p.name)}${p.gender==="F"?" (nữ)":""}<b class="num">${s.g} trận</b></span>`}).join("")}</div>`:`<p class="rule">Không ai phải chờ.</p>`}</div>`;
   const hist=[...D.done].reverse();
@@ -506,7 +512,7 @@ async function generate(){
   const pc=new Map(),oc=new Map(),inc=(m,k)=>m.set(k,(m.get(k)||0)+1);
   for(const m of D.SM){inc(pc,key(m.a[0],m.a[1]));inc(pc,key(m.b[0],m.b[1]));for(const x of m.a)for(const y of m.b)inc(oc,key(x,y))}
   const R=id=>D.st.get(id).rating;
-  const GP={"FM|FM":0,"FF|FF":60,"MM|MM":60,"FM|MM":150,"FM|FF":150};
+  const GP=c.gmode==="same"?{"FM|FM":60,"FF|FF":0,"MM|MM":0,"FM|MM":150,"FM|FF":150}:{"FM|FM":0,"FF|FF":60,"MM|MM":60,"FM|MM":150,"FM|FF":150};
   const genderCost=(A,B)=>{const k=[tType(D,A),tType(D,B)].sort().join("|");return k in GP?GP[k]:Infinity};
   const cost=(A,B)=>{const g=genderCost(A,B);if(g===Infinity)return Infinity;const p1=pc.get(key(A[0],A[1]))||0,p2=pc.get(key(B[0],B[1]))||0;let o=0;for(const x of A)for(const y of B)o+=oc.get(key(x,y))||0;
     return g+10*(p1*p1+p2*p2)+3*o+12*Math.abs((R(A[0])+R(A[1]))/2-(R(B[0])+R(B[1]))/2)};
@@ -574,6 +580,7 @@ document.addEventListener("click",async e=>{
     L.push("","BẢNG XẾP HẠNG");x.rows.forEach((r,i)=>L.push(`${i+1}. ${r.name} — ${r.w}T-${r.l}B, HS ${r.pf-r.pa>0?"+":""}${r.pf-r.pa}${x.snap?`, phải đóng ${fmtK(r.pay)}`:""}`));
     const txt=L.join("\n");try{await navigator.clipboard.writeText(txt);toast("Đã copy tổng kết buổi.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
   if(!canWrite)return;
+  if(act==="gmode"){const v=b.dataset.v==="same"?"same":"mix";if(cfg().gmode!==v)write(()=>saveCfg({gmode:v}),v==="same"?"Đã chuyển sang ưu tiên cùng giới":"Đã chuyển sang ưu tiên khác giới");return}
   if(act==="picktoggle"){pickOpen=!pickOpen;render();return}
   if(act==="pickall"){const away=S.players.filter(p=>p.active===false);if(pickSel.size===away.length)pickSel.clear();else away.forEach(p=>pickSel.add(p.id));render();return}
   if(act==="pickadd"){const ids=[...pickSel];if(!ids.length){toast("Chọn ít nhất một người.");return}
