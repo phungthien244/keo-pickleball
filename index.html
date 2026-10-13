@@ -103,14 +103,10 @@ tr.top1 td.rank{color:var(--on-ball);background:var(--ball)}
 @media (max-width:520px){.mhead{grid-template-columns:auto minmax(0,1fr)}.mhead > .bar{grid-column:1 / -1}}
 .mname{min-width:0;overflow-wrap:anywhere}
 .code{font-family:var(--display);font-weight:700;font-size:15px;background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--court);white-space:nowrap}
-.pick{display:flex;flex-direction:column;margin-top:8px;max-height:360px;overflow-y:auto}
-.pickrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:none;border-bottom:1px solid var(--line);border-radius:0;background:none;padding:10px 4px;font-weight:400}
+.pick{display:flex;flex-direction:column;margin-top:10px;max-height:380px;overflow-y:auto;border:1px solid var(--line);border-radius:8px}
+.pickrow{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:10px;align-items:center;padding:8px 10px;border-top:1px solid var(--line);cursor:pointer}
 .pickrow:hover{background:var(--sunk)}
-.phist{margin-top:10px;padding:8px 12px;background:var(--sunk);border-radius:8px}
-.phrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
-.phrow:last-child{border-bottom:none}
-.phrow .who{min-width:0;overflow-wrap:anywhere}
-.phrow .sc{font-family:var(--display);font-size:18px;font-weight:700}
+.pickrow input{width:18px;height:18px;margin:0}
 .prow{display:grid;grid-template-columns:minmax(0,1fr) 84px auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .prow:last-child{border-bottom:none}
 .prow input{width:100%}
@@ -154,7 +150,7 @@ tr.top1 td.rank{color:var(--on-ball);background:var(--ball)}
   </header>
   <main id="view">
     <section>
-      <div class="empty"><strong>Chưa có người chơi</strong>Vào tab Người chơi để chọn người có mặt hôm nay, rồi bấm Xếp trận ở tab Sân.</div>
+      <div class="empty"><strong>Chưa có người chơi</strong>Vào tab Người chơi, nhập tên cả nhóm (mỗi dòng một người) rồi bấm Xếp trận ở tab Sân.</div>
     </section>
   </main>
 </div>
@@ -184,7 +180,6 @@ let db=null, canWrite=false, authUser=null, tab="san", resetArm=0, delArm=null, 
 try{tab=localStorage.getItem("pb-tab")||"san"}catch(e){}
 
 const $=s=>document.querySelector(s);
-const fold=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").toLowerCase().trim();
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtK=n=>(Math.round(n*10)/10).toLocaleString("vi-VN")+"k";
 const r2=n=>(Math.round(n*100)/100).toFixed(2);
@@ -211,10 +206,10 @@ function derive(){
   const rating=new Map(players.map(p=>[p.id,Number(p.rating0)||3]));
   const st=new Map(players.map(p=>[p.id,{w:0,l:0,pf:0,pa:0,g:0,fee:0,losses:0,last:-1,sits:0,d:0}]));
   const sid=c.session||1, SM=S.matches.filter(m=>(m.session||1)===sid), SB=S.batches.filter(b=>(b.session||1)===sid);
-  const all=new Map(players.map(p=>[p.id,{g:0,w:0,ses:new Set(),lastAt:0}]));
+  const all=new Map(players.map(p=>[p.id,{g:0,w:0,ses:new Set()}]));
   for(const m of S.matches)if(m.status==="done"){const aWin=m.sa>m.sb;
-    for(const id of m.a){const x=all.get(id);if(x){x.g++;if(aWin)x.w++;x.ses.add(m.session||1);x.lastAt=Math.max(x.lastAt,m.doneAt||m.createdAt||0)}}
-    for(const id of m.b){const x=all.get(id);if(x){x.g++;if(!aWin)x.w++;x.ses.add(m.session||1);x.lastAt=Math.max(x.lastAt,m.doneAt||m.createdAt||0)}}}
+    for(const id of m.a){const x=all.get(id);if(x){x.g++;if(aWin)x.w++;x.ses.add(m.session||1)}}
+    for(const id of m.b){const x=all.get(id);if(x){x.g++;if(!aWin)x.w++;x.ses.add(m.session||1)}}}
   const done=SM.filter(m=>m.status==="done").sort((a,b)=>(a.doneAt||0)-(b.doneAt||0)||(a.seq-b.seq));
   const info=new Map();
   const avg=ids=>ids.reduce((s,id)=>s+(rating.get(id)??3),0)/ids.length;
@@ -336,60 +331,45 @@ function memberRow(D,p,here,busy){
   const s=D.st.get(p.id),A=D.all.get(p.id),ed=editing.has("p-"+p.id);
   const stat=here?`Hôm nay ${s.g} trận · ${s.w}T-${s.l}B · chờ ${s.sits} lượt${busy?" · đang đánh":""}`
                  :`${A.g} trận · ${A.ses.size} buổi · thắng ${A.g?Math.round(A.w/A.g*100):0}% · rating ${r2(Number(p.rating0)||3)}`;
-  const hOpen=editing.has("h-"+p.id);
-  let btn=`<button class="ghost" data-act="phist" data-id="${p.id}">${hOpen?"Ẩn lịch sử":"Lịch sử"}</button>`;
+  let btn="";
   if(canWrite){
-    btn+=`<button class="ghost" data-act="pedit" data-id="${p.id}">Sửa</button>`;
+    btn=`<button class="ghost" data-act="pedit" data-id="${p.id}">Sửa</button>`;
     if(here)btn+=busy?`<span class="pill">Đang trên sân</span>`:`<button data-act="checkout" data-id="${p.id}">Cho nghỉ</button>`;
     else{btn+=`<button class="primary" data-act="checkin" data-id="${p.id}">Thêm vào buổi</button>`;
       if(!A.g)btn+=delArm===p.id&&Date.now()<resetArm?`<button class="danger" data-act="pdel" data-id="${p.id}">Xác nhận xóa</button>`:`<button class="ghost danger" data-act="pdel" data-id="${p.id}" aria-label="Xóa hẳn ${esc(p.name)}">Xóa hẳn</button>`}
   }
   return `<div class="mrow"><div class="mhead"><span class="code num" title="Rating">${r2(here?s.rating:Number(p.rating0)||3)}</span>
     <div class="mname"><b>${esc(p.name)}</b>${p.duprId?` <span class="meta">DUPR ${esc(p.duprId)}</span>`:""}<div class="meta num">${stat}</div></div>
-    <div class="bar" style="gap:6px;justify-content:flex-end">${btn}</div></div>${ed?memberEdit(p):""}${hOpen?personHistory(D,p):""}</div>`;
+    <div class="bar" style="gap:6px;justify-content:flex-end">${btn}</div></div>${ed?memberEdit(p):""}</div>`;
 }
-function lastCrew(D){
-  let sid=0;for(const m of S.matches)if(m.status==="done"&&(m.session||1)<D.sid)sid=Math.max(sid,m.session||1);
-  if(!sid)return [];
-  const ids=new Set();for(const m of S.matches)if(m.status==="done"&&(m.session||1)===sid)[...m.a,...m.b].forEach(i=>ids.add(i));
-  const r=D.players.filter(p=>ids.has(p.id)&&p.active===false);r.sid=sid;return r;
-}
-function personHistory(D,p){
-  const ms=S.matches.filter(m=>m.status==="done"&&(m.a.includes(p.id)||m.b.includes(p.id))).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
-  if(!ms.length)return `<p class="rule" style="margin-top:8px">Chưa có trận nào được lưu.</p>`;
-  const A=D.all.get(p.id);
-  return `<div class="phist"><p class="meta" style="margin:0 0 4px">Tổng ${A.g} trận · ${A.w}T-${A.g-A.w}B · ${A.ses.size} buổi${ms.length>30?" · hiện 30 trận gần nhất":""}</p>${ms.slice(0,30).map(m=>{
-    const inA=m.a.includes(p.id),mine=inA?m.a:m.b,opp=inA?m.b:m.a,sf=inA?m.sa:m.sb,so=inA?m.sb:m.sa,win=sf>so,partner=mine.find(x=>x!==p.id),d=new Date(m.doneAt||m.createdAt||0);
-    return `<div class="phrow"><span class="pill ${win?"win":"lose"}">${win?"Thắng":"Thua"}</span><span class="who">Cặp <b>${nm(D,partner)}</b> gặp ${opp.map(id=>nm(D,id)).join(" &amp; ")}<span class="meta num"> · Buổi #${m.session||1}, ${d.getDate()}/${d.getMonth()+1}</span></span><span class="sc num">${sf}–${so}</span></div>`}).join("")}</div>`;
+let pickOpen=false;const pickSel=new Set();
+function pickPanel(D,away){
+  if(!pickOpen)return "";
+  if(!away.length)return `<p class="rule" style="margin-top:10px">Tất cả thành viên đều đang có mặt hôm nay.</p>`;
+  const list=[...away].sort((a,b)=>a.name.localeCompare(b.name,"vi"));
+  for(const id of [...pickSel])if(!away.some(p=>p.id===id))pickSel.delete(id);
+  return `<div class="pick"><div class="bar" style="padding:6px 4px"><span class="lbl grow">Thành viên các buổi trước (${list.length})</span><button class="ghost" data-act="pickall">${pickSel.size===list.length?"Bỏ chọn hết":"Chọn hết"}</button></div>${list.map(p=>{const A=D.all.get(p.id);return `<label class="pickrow"><input type="checkbox" data-pick="${p.id}" ${pickSel.has(p.id)?"checked":""}><span class="code num">${r2(Number(p.rating0)||3)}</span><span class="mname"><b>${esc(p.name)}</b><span class="meta num" style="display:block">${A.g} trận · ${A.ses.size} buổi</span></span></label>`}).join("")}</div>
+  <div class="bar" style="margin-top:10px"><span class="grow"></span><button class="primary" data-act="pickadd">Thêm ${pickSel.size} người vào buổi</button></div>`;
 }
 function vNguoi(D){
   let h="";
   const busyS=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const here=D.players.filter(p=>p.active!==false), away=D.players.filter(p=>p.active===false);
-  if(canWrite){
-    const q=String(val("add","")),qf=fold(q);
-    const cands=away.filter(p=>!qf||fold(p.name).includes(qf)||fold(p.duprId).includes(qf)).sort((x,y)=>D.all.get(y.id).lastAt-D.all.get(x.id).lastAt).slice(0,qf?20:12);
-    const exact=D.players.find(p=>fold(p.name)===qf);
-    const prev=lastCrew(D);
-    h+=`<div class="panel"><h2 style="margin-bottom:4px">Thêm người vào buổi</h2>
-    <p class="rule" style="margin-bottom:10px">Gõ tên để tìm người đã chơi ở các buổi trước. Chọn người cũ để giữ nguyên rating và lịch sử thi đấu. Chỉ tạo mới khi thật sự là người mới.</p>
-    <input id="add" data-draft="add" type="search" autocomplete="off" placeholder="Gõ tên, không cần dấu" value="${esc(q)}" style="width:100%">
-    ${!qf&&prev.length?`<div class="bar" style="margin-top:10px"><span class="rule grow">${prev.length} người của buổi #${prev.sid} chưa vào buổi này.</span><button data-act="lastcrew">Gọi lại cả nhóm buổi trước</button></div>`:""}
-    <div class="pick">${cands.map(p=>{const A=D.all.get(p.id),d=A.lastAt?new Date(A.lastAt):null;return `<button class="pickrow" data-act="checkin" data-id="${p.id}"><span class="code num">${r2(Number(p.rating0)||3)}</span><span class="mname"><b>${esc(p.name)}</b><span class="meta num" style="display:block">${A.g} trận · ${A.ses.size} buổi${d?` · lần cuối ${d.getDate()}/${d.getMonth()+1}`:""}</span></span><span class="pill win">+ Thêm</span></button>`}).join("")}</div>
-    ${qf&&!cands.length&&!exact?`<p class="rule" style="margin-top:8px">Không tìm thấy “${esc(q.trim())}” trong danh sách.</p>`:""}
-    ${exact&&exact.active!==false?`<p class="rule" style="margin-top:8px">${esc(exact.name)} đã có mặt hôm nay.</p>`:""}
-    ${qf&&!exact?`<div class="bar" style="margin-top:10px"><label class="bar"><span class="lbl">Trình</span><select id="lvl" data-draft="lvl">${LV.map(x=>`<option value="${x}" ${String(val("lvl","3"))===String(x)?"selected":""}>${x.toFixed(2)}</option>`).join("")}</select></label><span class="grow"></span><button class="primary" data-act="addnew">Tạo người mới “${esc(q.trim())}”</button></div>`:""}
-    </div>`;
-  }
-  if(!D.players.length)return h+`<div class="empty"><strong>Chưa có thành viên</strong>Gõ tên ở khung trên rồi bấm Tạo người mới.</div>`;
+  if(canWrite)h+=`<div class="panel"><h2 style="margin-bottom:4px">Thêm thành viên mới</h2>
+    <p class="rule" style="margin-bottom:10px">Mỗi dòng một người. Có DUPR ID thì ghi sau dấu |, ví dụ “Tuấn | 7KQ2LM”. Mỗi người được cấp mã cố định PB-xxx để lưu lịch sử về sau.</p>
+    <textarea id="bulk" data-draft="bulk" rows="4" placeholder="Tuấn&#10;Hà | 7KQ2LM&#10;Minh">${esc(val("bulk",""))}</textarea>
+    <div class="bar" style="margin-top:10px"><label class="bar"><span class="lbl">Trình ban đầu</span>
+      <select id="lvl" data-draft="lvl">${LV.map(x=>`<option value="${x}" ${String(val("lvl","3"))===String(x)?"selected":""}>${x.toFixed(2)}</option>`).join("")}</select></label>
+      <button data-act="picktoggle">${pickOpen?"Đóng danh sách":"Chọn từ danh sách"}</button><span class="grow"></span><button class="primary" data-act="add">Thêm và vào buổi luôn</button></div>${pickPanel(D,away)}</div>`;
+  if(!D.players.length)return h+`<div class="empty"><strong>Chưa có thành viên</strong>Nhập tên ở khung trên, mỗi dòng một người.</div>`;
   if(canWrite&&D.players.some(p=>!p.code))h+=`<div class="ro bar"><span class="grow">${D.players.filter(p=>!p.code).length} người chưa có mã thành viên.</span><button data-act="codes">Cấp mã</button></div>`;
   h+=`<div class="panel"><div class="bar" style="margin-bottom:4px"><h2 class="grow">Có mặt hôm nay</h2><span class="pill win num">${here.length} người</span></div>`;
   h+=here.length?here.map(p=>memberRow(D,p,true,busyS.has(p.id))).join(""):`<p class="rule">Chưa ai vào buổi. Bấm “Thêm vào buổi” ở danh sách bên dưới.</p>`;
   h+=`</div>`;
   const q=String(val("q","")).trim().toLowerCase();
-  const list=away.filter(p=>!q||fold(p.name).includes(fold(q))||fold(p.duprId).includes(fold(q)));
-  h+=`<div class="panel"><div class="bar" style="margin-bottom:8px"><h2 class="grow">Tất cả thành viên khác</h2><span class="meta num">${away.length} người</span></div>
-    <input id="q" data-draft="q" type="search" placeholder="Tìm để xem lịch sử hoặc sửa thông tin" value="${esc(val("q",""))}" style="width:100%;margin-bottom:4px">`;
+  const list=away.filter(p=>!q||p.name.toLowerCase().includes(q)||String(p.code||"").toLowerCase().includes(q)||String(p.duprId||"").toLowerCase().includes(q));
+  h+=`<div class="panel"><div class="bar" style="margin-bottom:8px"><h2 class="grow">Thành viên khác</h2><span class="meta num">${away.length} người</span></div>
+    <input id="q" data-draft="q" type="search" placeholder="Tìm theo tên, mã PB hoặc DUPR ID" value="${esc(val("q",""))}" style="width:100%;margin-bottom:4px">`;
   h+=list.length?list.map(p=>memberRow(D,p,false,false)).join(""):`<p class="rule" style="margin-top:8px">${away.length?"Không tìm thấy ai khớp.":"Tất cả thành viên đều đang có mặt."}</p>`;
   h+=`<div class="bar" style="margin-top:12px"><button data-act="copyroster">Copy danh sách thành viên (CSV)</button></div><textarea id="rosterbox" rows="6" readonly hidden></textarea></div>`;
   return h;
@@ -499,9 +479,10 @@ function nextCode(){return S.players.reduce((m,p)=>{const n=parseInt(String(p.co
 async function assignCodes(){let n=nextCode();const miss=[...S.players].filter(p=>!p.code).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
   for(const p of miss){const c="PB-"+String(n++).padStart(3,"0");await db.collection("players").doc(p.id).update({code:c});p.code=c}}
 /* ---------- events ---------- */
-document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q"||k==="add")render()}});
+document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q")render()}});
 document.addEventListener("change",e=>{
-  const t=e.target,s=t.dataset&&t.dataset.save;if(!s)return;
+  const t=e.target;if(t.dataset&&t.dataset.pick){t.checked?pickSel.add(t.dataset.pick):pickSel.delete(t.dataset.pick);render();return}
+  const s=t.dataset&&t.dataset.save;if(!s)return;
   if(s==="name"){const v=t.value.trim();if(!v){toast("Tên không được để trống.");return}
     write(()=>db.collection("players").doc(t.dataset.id).update({name:v}).then(()=>{delete drafts[t.dataset.draft];S.everWrote=true}))}
   else if(s==="rating0")write(()=>db.collection("players").doc(t.dataset.id).update({rating0:Number(t.value)}).then(()=>S.everWrote=true));
@@ -533,19 +514,11 @@ document.addEventListener("click",async e=>{
     try{await navigator.clipboard.writeText(txt);toast("Đã copy, dán vào nhóm Zalo nhé.")}
     catch(x){const box=$("#copybox");box.hidden=false;box.value=txt;box.focus();box.select();toast("Chọn sẵn rồi, bấm giữ để copy.")}
     return}
-  if(act==="phist"){const k="h-"+id;editing.has(k)?editing.delete(k):editing.add(k);render();return}
   if(!canWrite)return;
-  if(act==="addnew"){
-    const nmv=String(drafts.add||"").trim().replace(/\s+/g," ");if(!nmv){toast("Gõ tên trước.");return}
-    const ex=S.players.find(p=>fold(p.name)===fold(nmv));
-    if(ex){toast(`Đã có ${ex.name} trong danh sách, chọn người đó để giữ lịch sử.`);return}
-    const lock=await db.doc("app/lock").acquire({holder,ttlMs:8000});
-    if(!lock.acquired){toast("Có người khác đang cập nhật, thử lại sau vài giây.");return}
-    await write(async()=>{await assignCodes();const n=nextCode();
-      await db.collection("players").doc().set({name:nmv,rating0:Number(drafts.lvl||3),active:true,createdAt:Date.now(),code:"PB-"+String(n).padStart(3,"0")});
-      S.everWrote=true;delete drafts.add},`Đã thêm ${nmv}`);return}
-  if(act==="lastcrew"){const L=lastCrew(derive());
-    await write(async()=>{for(const p of L)await db.collection("players").doc(p.id).update({active:true});S.everWrote=true},`Đã gọi lại ${L.length} người`);return}
+  if(act==="picktoggle"){pickOpen=!pickOpen;render();return}
+  if(act==="pickall"){const away=S.players.filter(p=>p.active===false);if(pickSel.size===away.length)pickSel.clear();else away.forEach(p=>pickSel.add(p.id));render();return}
+  if(act==="pickadd"){const ids=[...pickSel];if(!ids.length){toast("Chọn ít nhất một người.");return}
+    await write(async()=>{for(const i of ids)await db.collection("players").doc(i).update({active:true});S.everWrote=true;pickSel.clear();pickOpen=false},`Đã thêm ${ids.length} người vào buổi`);return}
   if(act==="courts"){const n=Math.min(12,Math.max(1,cfg().courts+Number(b.dataset.d)));write(()=>saveCfg({courts:n}))}
   else if(act==="gen")generate();
   else if(act==="add"){
@@ -568,7 +541,7 @@ document.addEventListener("click",async e=>{
     const lock=await db.doc("app/lock").acquire({holder,ttlMs:8000});
     if(!lock.acquired){toast("Có người khác đang cập nhật, thử lại sau vài giây.");return}
     write(()=>assignCodes().then(()=>S.everWrote=true),"Đã cấp mã")}
-  else if(act==="checkin"){delete drafts.add;write(()=>db.collection("players").doc(id).update({active:true}),"Đã thêm vào buổi")}
+  else if(act==="checkin")write(()=>db.collection("players").doc(id).update({active:true}),"Đã thêm vào buổi")
   else if(act==="checkout"){if(derive().playing.some(m=>[...m.a,...m.b].includes(id))){toast("Người này đang trên sân, lưu tỉ số trước.");return}
     write(()=>db.collection("players").doc(id).update({active:false}),"Đã cho nghỉ")}
   else if(act==="pedit"){editing.add("p-"+id);render()}
@@ -576,7 +549,7 @@ document.addEventListener("click",async e=>{
   else if(act==="pedit-save"){const p=S.players.find(x=>x.id===id);
     const nmv=String(val("nm-"+id,p.name)).trim(),du=String(val("du-"+id,p.duprId||"")).trim(),rt=Number(val("rt-"+id,p.rating0??3));
     if(!nmv){errs["p-"+id]="Tên không được để trống.";render();return}
-    if(S.players.some(x=>x.id!==id&&fold(x.name)===fold(nmv))){errs["p-"+id]="Đã có người trùng tên, thêm họ hoặc biệt danh để phân biệt.";render();return}
+    if(S.players.some(x=>x.id!==id&&x.name.toLowerCase()===nmv.toLowerCase())){errs["p-"+id]="Đã có người trùng tên, thêm họ hoặc biệt danh để phân biệt.";render();return}
     delete errs["p-"+id];
     await write(()=>db.collection("players").doc(id).update({name:nmv,duprId:du,rating0:rt}).then(()=>{S.everWrote=true;editing.delete("p-"+id);["nm-","du-","rt-"].forEach(k=>delete drafts[k+id])}),"Đã lưu")}
   else if(act==="pdel"){if(delArm!==id||Date.now()>resetArm){delArm=id;resetArm=Date.now()+4000;render();setTimeout(render,4100);return}
