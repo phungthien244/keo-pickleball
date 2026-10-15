@@ -3,7 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Round robin pickleball đánh đôi: xếp trận, bảng xếp hạng và tiền quỹ trực tiếp.">
+<meta name="description" content="Bảng rating CLB, kết quả từng trận, tiền quỹ và tổng kết mỗi buổi pickleball đánh đôi. Xem trực tiếp, không cần đăng nhập.">
+<meta name="theme-color" content="#0c2b44">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Round Robin DUPR">
+<meta property="og:title" content="AEP Round Robin DUPR · Rating và kết quả pickleball">
+<meta property="og:description" content="Bảng rating CLB, kết quả từng trận, tiền quỹ và tổng kết mỗi buổi đánh đôi. Xem trực tiếp, không cần đăng nhập.">
+<meta property="og:url" content="https://rr.pikeco.app/">
+<meta property="og:image" content="https://rr.pikeco.app/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Round Robin DUPR – bảng rating và kết quả pickleball tại rr.pikeco.app">
+<meta property="og:locale" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="icon-180.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>Round Robin DUPR</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -272,6 +287,21 @@ tr.top1 td.rank{color:var(--blue)}
 .sharebox .bt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .back{display:inline-flex;align-items:center;gap:8px;color:var(--navy);text-decoration:none;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;min-height:40px}
 @media (min-width:1100px){.hero{margin-inline:0;padding:32px}.hsplit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:start}}
+#splash{position:fixed;inset:0;z-index:100;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;text-align:center;transition:opacity .45s var(--ease),visibility .45s}
+#splash.out{opacity:0;visibility:hidden}
+#splash .ball{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 62% 24%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 48% 54%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 22% 66%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 74% 62%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 46% 84%,#c9b800 0 5px,transparent 6px),var(--yellow);animation:bounce .9s cubic-bezier(.3,0,.7,1) infinite alternate}
+#splash .shadow{width:58px;height:10px;border-radius:50%;background:rgba(0,0,0,.35);margin-top:-12px;animation:shadow .9s cubic-bezier(.3,0,.7,1) infinite alternate}
+#splash .wm{font-family:var(--display);font-size:24px;letter-spacing:.08em;font-weight:600;text-transform:uppercase}
+#splash .wm b{font-weight:900;letter-spacing:.02em}
+#splash .bar2{width:180px;height:4px;background:var(--navy-line);overflow:hidden;position:relative}
+#splash .bar2 i{position:absolute;inset:0;width:40%;background:var(--blue);animation:slide 1.1s ease-in-out infinite}
+#splash p{margin:0;font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.18em;color:var(--sky);text-transform:uppercase}
+#splash .slow{opacity:0;animation:fadein .4s 8s forwards;text-transform:none;letter-spacing:.02em;font-family:var(--body);font-weight:500;font-size:13px}
+@keyframes bounce{from{transform:translateY(-46px)}to{transform:translateY(0) scaleY(.92)}}
+@keyframes shadow{from{transform:scale(.55);opacity:.35}to{transform:scale(1);opacity:.8}}
+@keyframes slide{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+@keyframes fadein{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){#splash .ball,#splash .shadow{animation:none!important}#splash .bar2 i{animation:slide 2s linear infinite!important}}
 /* motion: only on tab change / first data / new items, transform+opacity only */
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -300,6 +330,9 @@ tr.top1 td.rank{color:var(--blue)}
 
 </head>
 <body>
+<div id="splash" role="status" aria-live="polite"><div class="ball" aria-hidden="true"></div><div class="shadow" aria-hidden="true"></div>
+  <div class="wm">Round Robin <b>DUPR</b></div><div class="bar2" aria-hidden="true"><i></i></div>
+  <p>Đang tải kết quả trực tiếp…</p><p class="slow">Mạng hơi chậm, vẫn đang tải, bạn chờ chút nhé.</p></div>
 <header class="top">
   <div class="ticker" aria-live="polite"><span class="tk-label" id="tkl">Trực tiếp</span><span class="tk-text" id="tkt">Đang kết nối…</span></div>
   <div class="hin masthead">
@@ -316,11 +349,7 @@ tr.top1 td.rank{color:var(--blue)}
     <button role="tab" data-tab="ls" aria-selected="false">Lịch sử</button>
   </div></nav>
 <div class="wrap">
-  <main id="view">
-    <section>
-      <div class="empty"><strong>Chưa có người chơi</strong>Vào tab Người chơi, nhập tên cả nhóm (mỗi dòng một người) rồi bấm Xếp trận ở tab Sân.</div>
-    </section>
-  </main>
+  <main id="view"><section></section></main>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -359,6 +388,9 @@ function go(r,opt={}){route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.
   try{scrollTo({top:0})}catch(e){}
   render()}
 addEventListener("popstate",()=>{parseRoute();render()});
+let splashGone=false;
+function hideSplash(){splashGone=true;const el=document.getElementById("splash");if(!el)return;el.classList.add("out");setTimeout(()=>el.remove(),600)}
+setTimeout(()=>{if(!splashGone)hideSplash()},20000);
 const shareUrl=sid=>`${location.origin}${location.pathname}?buoi=${sid}`;
 
 const $=s=>document.querySelector(s);
@@ -426,6 +458,7 @@ function render(){
   const active=D.players.filter(p=>p.active!==false).length;
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:
     `<span class="dot ${S.live?"on":""}"></span> ${S.live?"Trực tiếp":"Đang đồng bộ…"} · <span class="num">${active}</span> người · <span class="num">${c.courts}</span> sân · chạm ${c.target}, cách 2${canWrite?` · <span class="pill win">Đang ở chế độ sửa</span> <button class="ghost" data-act="logout">Thoát</button>`:""}`;
+  if(!splashGone&&(S.offline||(S.live&&S.mReady&&S.hReady)))hideSplash();
   if(autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
   const selTab=route==="home"?"home":route==="buoi"?"ls":tab;
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===selTab));
@@ -697,9 +730,19 @@ function vHome(D){
   <p class="rule">Rating tính như DUPR: so điểm thực tế với điểm dự kiến của từng trận. Đánh tốt hơn dự kiến thì tăng, kể cả khi thua. Rating chốt khi kết thúc mỗi buổi.</p>`;
   return h;
 }
+function shareText(D,x){
+  const r=x.rows,m=r[0],M=x.snap?.money,n=x.ms.length||x.snap?.matchCount||0;
+  const L=[`TỔNG KẾT BUỔI #${x.sid} · ${dmy(x.at)}`,`${D.c.title} · ${n} trận · ${r.length} người`];
+  if(m)L.push(`MVP: ${m.name} ${m.w}–${m.l} (HS ${m.pf-m.pa>0?"+":""}${m.pf-m.pa})`);
+  if(r.length>1)L.push("Top 3: "+r.slice(0,3).map((z,i)=>`${i+1}. ${z.name}`).join(" · "));
+  if(M)L.push(`Quỹ: thu ${fmtK(M.fund)} · chi ${fmtK(M.cost)} · ${M.gap>=0?"dư":"thiếu"} ${fmtK(Math.abs(M.gap))}`);
+  L.push("Xem bảng xếp hạng, từng trận và số tiền mỗi người phải đóng:");
+  return L.join("\n");
+}
 function vBuoi(D,sid){
   const x=sessList(D).find(z=>z.sid===sid);
   const back=`<a class="back" href="./" data-go="home">‹ Rating CLB</a>`;
+  if(!x&&!S.hReady)return back+`<div class="empty"><strong>Đang tải buổi #${sid}…</strong></div>`;
   if(!x)return back+`<div class="empty"><strong>Chưa có tổng kết buổi #${sid||""}</strong>${sid===D.sid?"Buổi này đang diễn ra. Trang tổng kết có sau khi bấm Kết thúc buổi.":"Không tìm thấy buổi này, có thể đã bị xóa."}</div>`;
   const snap=x.snap,rows=x.rows,ms=x.ms,pm=D.pmap,P=r=>pm.get(r.id)||{name:r.name,gender:r.gender};
   const pts=ms.reduce((s,m)=>s+(+m.sa||0)+(+m.sb||0),0);
@@ -721,7 +764,7 @@ function vBuoi(D,sid){
     h+=`<div class="shd"><h2>Tiền quỹ</h2></div><div class="k3"><div class="kpi"><div class="lbl">Quỹ kèo</div><div class="v num">${fmtK(M.fund)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(M.cost)}</div></div><div class="kpi hl"><div class="lbl">${M.gap>=0?"Dư":"Thiếu"}</div><div class="v num">${fmtK(Math.abs(M.gap))}</div></div></div>`;
     if(CC.length)h+=`<div class="panel"><div class="cbar">${CC.map(z=>`<span style="flex:${+cs[z[0]]};background:${z[2]}"></span>`).join("")}</div><div class="bar" style="gap:8px 16px">${CC.map(z=>`<span class="meta" style="display:inline-flex;align-items:center;gap:6px"><i style="width:9px;height:9px;background:${z[2]};display:block"></i>${z[1]} ${fmtK(+cs[z[0]])}</span>`).join("")}</div>${M.gap<0?`<p class="rule" style="margin-top:8px">Quỹ kèo thiếu ${fmtK(-M.gap)} so với chi phí, chia theo số trận mỗi người đã đánh${M.perGame?`: khoảng ${fmtK(M.perGame)}/trận`:""}.</p>`:""}</div>`;
     h+=`<div class="tbl-wrap"><table class="payt"><thead><tr><th>Tên</th><th>Kèo</th><th>Bù</th><th>Phải đóng</th></tr></thead><tbody>${pr.map(r=>`<tr><td><span class="pn">${av(P(r),"sm")}<span><b>${esc(r.name)}</b><span class="meta" style="display:block">${r.w+r.l} trận · thua ${r.l}</span></span></span></td><td>${fmtK(r.charged||0)}${r.capped?` <span class="pill cap">trần</span>`:""}</td><td>${fmtK(Math.max(0,(r.pay||0)-(r.charged||0)))}</td><td><b>${fmtK(r.pay||0)}</b></td></tr>`).join("")}</tbody><tfoot><tr><td colspan="3">TỔNG THU</td><td><b class="num">${fmtK(tot)}</b></td></tr></tfoot></table></div>`}
-  h+=`<div class="sharebox"><span class="lbl">Link riêng của buổi này</span><span class="url">${esc(shareUrl(sid).replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="share" data-id="${sid}">Chia sẻ</button><button data-act="copylink" data-id="${sid}">Copy link</button></div></div>`;
+  h+=`<div class="sharebox"><span class="lbl">Link riêng của buổi này</span><span class="url">${esc(shareUrl(sid).replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="share" data-id="${sid}">Chia sẻ</button><button data-act="copylink" data-id="${sid}">Copy tin nhắn</button></div></div>`;
   return h;
 }
 const dmy=t=>{if(!t)return "";const d=new Date(t);return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`};
@@ -864,9 +907,9 @@ document.addEventListener("click",async e=>{
     return}
   if(act==="bxf"){bxF=b.dataset.v;render();return}
   if(act==="hf"){hF=b.dataset.v;render();return}
-  if(act==="share"||act==="copylink"){const u=shareUrl(id);
-    if(act==="share"&&navigator.share){try{await navigator.share({title:`Tổng kết buổi #${id}`,url:u})}catch(x){}return}
-    try{await navigator.clipboard.writeText(u);toast("Đã copy link, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
+  if(act==="share"||act==="copylink"){const u=shareUrl(id),D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id)),txt=x?shareText(D,x):`Tổng kết buổi #${id}`;
+    if(act==="share"&&navigator.share){try{await navigator.share({title:`Tổng kết buổi #${id}`,text:txt+"\n",url:u})}catch(x){}return}
+    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy tin nhắn kèm link, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
   if(act==="sess"){const k="s-"+id;editing.has(k)?editing.delete(k):editing.add(k);render();return}
   if(act==="copysess"){const D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id));if(!x)return;
     const m=x.snap?.money,L=[`TỔNG KẾT BUỔI #${x.sid} – ${dmy(x.at)}`];
@@ -976,7 +1019,7 @@ function makeDb(){
   const fail=()=>{S.offline=true;render()};
   const live=meta=>{S.live=!meta.fromCache;render()};
   db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;live(s.metadata)},fail);
-  db.collection("app").onSnapshot(q=>{S.hist=q.docs.filter(d=>d.id.startsWith("hist-")).map(d=>({id:d.id,...d.data()}));render()},fail);
+  db.collection("app").onSnapshot(q=>{S.hist=q.docs.filter(d=>d.id.startsWith("hist-")).map(d=>({id:d.id,...d.data()}));S.hReady=true;render()},fail);
   db.collection("players").onSnapshot(q=>{S.players=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail);
   db.collection("matches").onSnapshot(q=>{S.matches=q.docs.map(d=>({id:d.id,...d.data()}));S.mReady=true;live(q.metadata)},fail);
   db.collection("batches").onSnapshot(q=>{S.batches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail);
