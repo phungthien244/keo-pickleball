@@ -194,6 +194,84 @@ tr.top1 td.rank{color:var(--blue)}
 .avup input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .avup i{position:absolute;right:-2px;bottom:-2px;width:18px;height:18px;border-radius:50%;background:var(--blue);color:#fff;font-style:normal;font-weight:800;font-size:13px;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--surface)}
 .avup:hover .av{filter:brightness(.92)}
+.hero{background:var(--navy);color:#fff;margin-inline:-16px;padding:22px 16px 26px;display:flex;flex-direction:column;gap:18px}
+.hero .eyebrow{color:var(--sky)}
+.hero h1{font-size:clamp(40px,8vw,72px);line-height:.95;margin:0}
+.hero .hmeta{margin:0;font-size:14px;color:var(--sky)}
+.spot{background:var(--navy-3);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:18px}
+.spot .t{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tag{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.2em;color:var(--navy);background:var(--yellow);padding:4px 7px;align-self:flex-start;text-transform:uppercase}
+.spot .n{font-family:var(--display);font-weight:900;font-size:clamp(26px,5vw,40px);line-height:1.05;overflow-wrap:anywhere}
+.spot .r{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.spot .r b{font-family:var(--display);font-weight:900;font-size:clamp(36px,7vw,56px);color:var(--yellow);line-height:1}
+.av.xl{--s:clamp(84px,24vw,140px);box-shadow:0 0 0 4px var(--yellow)}
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.mini{background:var(--navy-3);padding:14px;display:flex;align-items:center;gap:12px;min-width:0}
+.mini .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mini .k{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.16em;color:var(--sky);text-transform:uppercase}
+.mini .n{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini .v{font-family:var(--display);font-weight:900;font-size:22px;color:#fff}
+.mini .v.y{color:var(--yellow)}
+.mini .v.s{font-size:12px;font-weight:600;font-family:var(--body);line-height:1.4;color:#fff}
+.lb{background:var(--surface);border:1px solid var(--line)}
+.lbr{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line)}
+.lbr:last-child{border-bottom:none}
+.lbr .rk{font-family:var(--display);font-weight:900;font-size:19px}
+.lbr.top1 .rk{color:var(--blue)}
+.lbr .who{display:flex;align-items:center;gap:12px;min-width:0}
+.lbr .who .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lbr .who b{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbr .who small{font-family:var(--display);font-weight:700;font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.lbr .rt{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.lbr .rt b{font-family:var(--display);font-weight:900;font-size:18px}
+.lbr .rt small{font-family:var(--display);font-weight:800;font-size:10px}
+.sescard{display:grid;grid-template-columns:76px minmax(0,1fr) 28px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink);min-height:84px;transition:border-color .2s var(--ease),transform .2s var(--ease)}
+.sescard:hover{border-color:var(--navy)}
+.sescard:active{transform:scale(.99)}
+.sescard .no{background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.sescard .no small{font-family:var(--display);font-weight:700;font-size:9px;letter-spacing:.18em;color:var(--sky)}
+.sescard .no b{font-family:var(--display);font-weight:900;font-size:28px;line-height:1}
+.sescard .bd{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:12px 14px;min-width:0}
+.sescard .bd b{font-family:var(--display);font-weight:800;font-size:14px;text-transform:uppercase}
+.sescard .bd span{font-size:13px;color:var(--muted)}
+.sescard .bd .mvpl{color:var(--ink)}
+.sescard .chev{display:flex;align-items:center;justify-content:center;color:var(--blue);font-size:22px;font-weight:700}
+.mvptag{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em;background:var(--yellow);color:var(--navy);padding:2px 5px;margin-right:6px}
+.shd{display:flex;align-items:center;gap:10px;margin:6px 0 0}
+.shd::before{content:"";width:10px;height:10px;background:var(--blue);flex:none}
+.shd h2{font-size:22px;margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--navy-line);border-bottom:1px solid var(--navy-line)}
+.stats div{display:flex;flex-direction:column;gap:2px;padding:12px 0 12px 14px}
+.stats div:first-child{padding-left:0}
+.stats div+div{border-left:1px solid var(--navy-line)}
+.stats b{font-family:var(--display);font-weight:900;font-size:clamp(24px,5vw,40px);line-height:1.1}
+.stats small{font-family:var(--display);font-weight:700;font-size:10px;letter-spacing:.16em;color:var(--sky)}
+.mvp{background:var(--yellow);color:var(--navy);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:18px}
+.mvp .t{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mvp .k{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.2em}
+.mvp .n{font-family:var(--display);font-weight:900;font-size:clamp(30px,6vw,48px);line-height:1;overflow-wrap:anywhere}
+.mvp .s{font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:.04em}
+.mvp .av.xl{box-shadow:0 0 0 4px var(--navy)}
+.mcard{background:var(--surface);border:1px solid var(--line)}
+.mcard .mh{display:flex;justify-content:space-between;padding:8px 14px;background:var(--navy);color:var(--sky);font-family:var(--display);font-weight:700;font-size:10px;letter-spacing:.16em}
+.mcard .mh b{color:#fff;font-weight:800}
+.mcard .tr{display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:10px;align-items:center;padding:10px 14px}
+.mcard .tr+.tr{padding-top:0}
+.mcard .tr .who{display:flex;align-items:center;gap:10px;min-width:0;color:var(--muted);font-size:14px}
+.mcard .tr .sc{text-align:right;font-family:var(--display);font-weight:900;font-size:24px;color:var(--muted)}
+.mcard .tr.w .who{color:var(--ink);font-weight:700}.mcard .tr.w .sc{color:var(--ink)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:12px}
+.k3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.k3 .kpi{padding:12px}.k3 .kpi .v{font-size:clamp(20px,4vw,30px)}
+.payt{width:100%}
+.payt td:nth-child(n+2),.payt th:nth-child(n+2){text-align:right}
+.payt tfoot td{background:var(--navy);color:#fff;font-family:var(--display);font-weight:800;letter-spacing:.1em;font-size:11px}
+.payt tfoot td b{color:var(--yellow);font-size:18px;letter-spacing:0}
+.sharebox{background:var(--surface);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:12px}
+.sharebox .url{font-family:var(--display);font-weight:800;font-size:15px;word-break:break-all}
+.sharebox .bt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--navy);text-decoration:none;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;min-height:40px}
+@media (min-width:1100px){.hero{margin-inline:0;padding:32px}.hsplit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:start}}
 /* motion: only on tab change / first data / new items, transform+opacity only */
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -230,8 +308,9 @@ tr.top1 td.rank{color:var(--blue)}
   </div>
 </header>
 <nav class="tabs" role="tablist" id="tabs"><div class="tabs-in">
-    <button role="tab" data-tab="san" aria-selected="true">Sân</button>
-    <button role="tab" data-tab="bxh" aria-selected="false">Xếp hạng</button>
+    <button role="tab" data-tab="home" aria-selected="true">Trang chủ</button>
+    <button role="tab" data-tab="san" aria-selected="false">Sân</button>
+    <button role="tab" data-tab="bxh" aria-selected="false">Hôm nay</button>
     <button role="tab" data-tab="nguoi" aria-selected="false">Người chơi</button>
     <button role="tab" data-tab="tien" aria-selected="false">Tiền quỹ</button>
     <button role="tab" data-tab="ls" aria-selected="false">Lịch sử</button>
@@ -267,6 +346,20 @@ const S={cfg:null,players:[],matches:[],batches:[],hist:[],live:false,offline:fa
 const drafts={}; const editing=new Set(); const errs={};
 let db=null, canWrite=false, authUser=null, tab="san", resetArm=0, delArm=null, holder=Math.random().toString(36).slice(2);
 try{tab=localStorage.getItem("pb-tab")||"san"}catch(e){}
+if(tab==="home")tab="san";
+let route="home",routeSid=0,autoRoute=true,hF="all";
+function parseRoute(){const q=new URLSearchParams(location.search);
+  if(q.has("buoi")){route="buoi";routeSid=Number(q.get("buoi"))||0;autoRoute=false}
+  else if(q.has("san")){route="app";const t=q.get("san");if(["san","bxh","nguoi","tien","ls"].includes(t))tab=t;autoRoute=false}
+  else route="home"}
+parseRoute();
+function go(r,opt={}){route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="app"&&opt.tab)tab=opt.tab;
+  const url=r==="buoi"?`?buoi=${routeSid}`:r==="app"?(tab==="san"?"?san":`?san=${tab}`):location.pathname;
+  try{history.pushState(null,"",url)}catch(e){}
+  try{scrollTo({top:0})}catch(e){}
+  render()}
+addEventListener("popstate",()=>{parseRoute();render()});
+const shareUrl=sid=>`${location.origin}${location.pathname}?buoi=${sid}`;
 
 const $=s=>document.querySelector(s);
 const ARM={k:"",t:0};const armed=k=>ARM.k===k&&Date.now()<ARM.t;
@@ -333,11 +426,14 @@ function render(){
   const active=D.players.filter(p=>p.active!==false).length;
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:
     `<span class="dot ${S.live?"on":""}"></span> ${S.live?"Trực tiếp":"Đang đồng bộ…"} · <span class="num">${active}</span> người · <span class="num">${c.courts}</span> sân · chạm ${c.target}, cách 2${canWrite?` · <span class="pill win">Đang ở chế độ sửa</span> <button class="ghost" data-act="logout">Thoát</button>`:""}`;
-  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
+  if(autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
+  const selTab=route==="home"?"home":route==="buoi"?"ls":tab;
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===selTab));
+  document.title=route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
-  const v={san:vSan,bxh:vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan;
-  const akey=tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim; lastAnim=akey;
-  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${pageHead(D)}${S.offline?"":!canWrite?`<div class="ro login"><span>Bạn đang xem trực tiếp. Người tổ chức nhập PIN để nhập tỉ số.</span><span class="bar" style="gap:6px"><input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN" value="${esc(val("pin",""))}" style="width:120px"><button class="primary" data-act="login">Mở quyền sửa</button></span>${errs.pin?`<p class="err" style="width:100%">${esc(errs.pin)}</p>`:""}</div>`:""}${v(D)}</section>`;
+  const v=route==="home"?vHome:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:vSan,bxh:vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
+  const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim; lastAnim=akey;
+  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":!canWrite?`<div class="ro login"><span>Bạn đang xem trực tiếp. Người tổ chức nhập PIN để nhập tỉ số.</span><span class="bar" style="gap:6px"><input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN" value="${esc(val("pin",""))}" style="width:120px"><button class="primary" data-act="login">Mở quyền sửa</button></span>${errs.pin?`<p class="err" style="width:100%">${esc(errs.pin)}</p>`:""}</div>`:""}${v(D)}</section>`;
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
   if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}
 }
@@ -346,7 +442,7 @@ let lastAnim="",seenReady=false,bxF="all";const seen=new Set();
 const isNew=k=>seenReady&&!seen.has(k);
 const today=()=>{const d=new Date();return `${d.getDate()}/${d.getMonth()+1}`};
 function pageHead(D){
-  const H={san:["Buổi #"+D.sid+" · "+today(),"Sân đấu"],bxh:["Bảng xếp hạng","Buổi #"+D.sid],nguoi:["Thành viên","Người chơi"],tien:["Buổi #"+D.sid+" · "+today(),"Tiền quỹ"],ls:["Lưu trữ","Lịch sử"]}[tab]||["",""];
+  const H={san:["Buổi #"+D.sid+" · "+today(),"Sân đấu"],bxh:["Bảng xếp hạng hôm nay","Buổi #"+D.sid],nguoi:["Thành viên","Người chơi"],tien:["Buổi #"+D.sid+" · "+today(),"Tiền quỹ"],ls:["Lưu trữ","Lịch sử"]}[tab]||["",""];
   return `<div class="phead"><span class="eyebrow">${esc(H[0])}</span><h2 class="ptitle">${esc(H[1])}</h2></div>`;
 }
 let tkItems=[],tkI=0,tkKey="";
@@ -571,6 +667,63 @@ function sessList(D){
     return {sid,snap,ms,rows,at};
   });
 }
+const pct=(w,g)=>g?Math.round(w/g*100):0;
+const dTxt=d=>d==null?"–":Math.abs(d)<0.005?"0.00":(d>0?"▲ ":"▼ ")+Math.abs(d).toFixed(2);
+const dCls=d=>d==null||Math.abs(d)<0.005?"":d>0?"up":"down";
+function lastHist(D){return [...S.hist].filter(h=>h.sid<D.sid).sort((a,b)=>b.sid-a.sid)[0]}
+function vHome(D){
+  const H=lastHist(D),L=sessList(D);
+  const ppl=D.players.map(p=>{const s=D.st.get(p.id),A=D.all.get(p.id),hr=H&&H.rows?H.rows.find(r=>r.id===p.id):null;
+    return {p,r:s.rating,A,d:s.g?s.d:hr?hr.d:null,dl:s.g?"hôm nay":H?`buổi #${H.sid}`:""}}).sort((a,b)=>b.r-a.r||b.A.g-a.A.g);
+  if(!ppl.length)return `<div class="empty"><strong>Chưa có thành viên</strong>Vào Sân để bắt đầu buổi đầu tiên.</div>`;
+  const F=x=>x.p.gender==="F", top=ppl[0], sec=ppl[1], alt=F(top)?ppl.find(x=>!F(x)):ppl.find(F);
+  const mini=(k,x,y)=>x?`<div class="mini">${av(x.p,"md")}<div class="t"><span class="k">${k}</span><span class="n">${esc(x.p.name)}</span><span class="v${y?" y":""} num">${r2(x.r)}</span></div></div>`:"";
+  const nF=ppl.filter(F).length,nM=ppl.length-nF;
+  const q=String(val("hq","")).trim().toLowerCase();
+  const list=ppl.map((x,i)=>({...x,i})).filter(x=>(hF==="all"||(hF==="F")===F(x))&&(!q||x.p.name.toLowerCase().includes(q)));
+  const fb=(v,l,n)=>`<button data-act="hf" data-v="${v}" aria-pressed="${hF===v}">${l} · ${n}</button>`;
+  let h=`<div class="hero">
+    <div class="phead"><span class="eyebrow">Bảng rating CLB${H?` · sau buổi #${H.sid}`:""}</span><h1>Xếp hạng<br>rating</h1>
+    <p class="hmeta num">${ppl.length} thành viên · ${L.length} buổi đã xong${D.done.length?` · buổi #${D.sid} đang diễn ra`:""}</p></div>
+    <div class="hsplit"><div class="spot"><div class="t"><span class="tag">Số 1 rating</span><span class="n">${esc(top.p.name)}</span>
+      <span class="hmeta">${top.p.gender==="F"?"Nữ":"Nam"} · ${top.A.ses.size} buổi · thắng ${pct(top.A.w,top.A.g)}%</span>
+      <span class="r"><b class="num">${r2(top.r)}</b>${top.d!=null?`<span class="${dCls(top.d)} num" style="font-family:var(--display);font-weight:800;font-size:13px">${dTxt(top.d)} ${top.dl}</span>`:""}</span></div>${av(top.p,"xl")}</div>
+    <div class="duo">${mini("Số 2",sec)}${mini(F(top)?"Số 1 nam":"Số 1 nữ",alt,true)}</div></div></div>
+  <div class="bar"><label style="display:flex;flex:1 1 240px"><span class="lbl" style="position:absolute;width:1px;height:1px;overflow:hidden">Tìm thành viên</span><input id="hq" data-draft="hq" type="search" placeholder="Tìm thành viên theo tên" value="${esc(val("hq",""))}" style="width:100%"></label>
+    <span class="seg" role="group" aria-label="Lọc theo giới">${fb("all","Tất cả",ppl.length)}${fb("M","Nam",nM)}${fb("F","Nữ",nF)}</span></div>
+  <div class="lb">${list.length?list.map(x=>`<div class="lbr${x.i===0?" top1":""}"><span class="rk num">${x.i+1}</span><span class="who">${av(x.p,"md")}<span class="t"><b>${esc(x.p.name)}</b><small class="num">${x.p.gender==="F"?"Nữ":"Nam"} · ${x.A.g?`${x.A.ses.size} buổi · thắng ${pct(x.A.w,x.A.g)}%`:"chưa đánh"}</small></span></span><span class="rt"><b class="num">${r2(x.r)}</b><small class="${dCls(x.d)} num">${dTxt(x.d)}</small></span></div>`).join(""):`<p class="rule" style="padding:14px">Không tìm thấy ai khớp.</p>`}</div>`;
+  if(L.length)h+=`<div class="shd"><h2>Các buổi gần đây</h2></div><div class="mgrid">${L.slice(0,6).map(x=>{const m=x.rows[0];return `<a class="sescard" href="?buoi=${x.sid}" data-go="buoi" data-id="${x.sid}"><span class="no"><small>BUỔI</small><b class="num">${x.sid}</b></span><span class="bd"><b>${dmy(x.at)}</b><span class="num">${x.ms.length||x.snap?.matchCount||0} trận · ${x.rows.length} người</span>${m?`<span class="mvpl"><span class="mvptag">MVP</span>${esc(m.name)} · ${m.w}–${m.l}</span>`:""}</span><span class="chev" aria-hidden="true">›</span></a>`}).join("")}</div>`;
+  h+=`<a class="back" href="?san" data-go="app" data-t="san" style="background:var(--blue);color:#fff;padding:0 18px;min-height:52px;align-self:flex-start">Vào sân trực tiếp</a>
+  <p class="rule">Rating tính như DUPR: so điểm thực tế với điểm dự kiến của từng trận. Đánh tốt hơn dự kiến thì tăng, kể cả khi thua. Rating chốt khi kết thúc mỗi buổi.</p>`;
+  return h;
+}
+function vBuoi(D,sid){
+  const x=sessList(D).find(z=>z.sid===sid);
+  const back=`<a class="back" href="./" data-go="home">‹ Rating CLB</a>`;
+  if(!x)return back+`<div class="empty"><strong>Chưa có tổng kết buổi #${sid||""}</strong>${sid===D.sid?"Buổi này đang diễn ra. Trang tổng kết có sau khi bấm Kết thúc buổi.":"Không tìm thấy buổi này, có thể đã bị xóa."}</div>`;
+  const snap=x.snap,rows=x.rows,ms=x.ms,pm=D.pmap,P=r=>pm.get(r.id)||{name:r.name,gender:r.gender};
+  const pts=ms.reduce((s,m)=>s+(+m.sa||0)+(+m.sb||0),0);
+  const mv=rows[0];
+  const big=ms.length?[...ms].sort((a,b)=>Math.abs(b.sa-b.sb)-Math.abs(a.sa-a.sb))[0]:null;
+  const close=ms.length>1?[...ms].sort((a,b)=>Math.abs(a.sa-a.sb)-Math.abs(b.sa-b.sb)||Math.max(b.sa,b.sb)-Math.max(a.sa,a.sb))[0]:null;
+  const tn=ids=>ids.map(id=>nm(D,id)).join(" &amp; ");
+  const hl=(k,m)=>{if(!m)return "";const aw=m.sa>m.sb;return `<div class="mini" style="flex-direction:column;align-items:flex-start"><div class="t"><span class="k">${k}</span><span class="v y num">${Math.max(m.sa,m.sb)}–${Math.min(m.sa,m.sb)}</span><span class="v s">${aw?tn(m.a):tn(m.b)} thắng ${aw?tn(m.b):tn(m.a)} · trận #${m.seq}</span></div></div>`};
+  let h=back+`<div class="hero"><div class="phead"><span class="eyebrow">Tổng kết · ${dmy(x.at)}</span><h1 class="num">Buổi #${sid}</h1></div>
+    <div class="stats"><div><b class="num">${ms.length||snap?.matchCount||0}</b><small>TRẬN</small></div><div><b class="num">${rows.length}</b><small>NGƯỜI CHƠI</small></div><div><b class="num">${pts||"–"}</b><small>ĐIỂM GHI</small></div></div>
+    <div class="hsplit">${mv?`<div class="mvp"><div class="t"><span class="k">NGƯỜI CHƠI CỦA BUỔI</span><span class="n">${esc(mv.name)}</span><span class="s num">${mv.w}–${mv.l} · HS ${mv.pf-mv.pa>0?"+":""}${mv.pf-mv.pa}${mv.d!=null?` · RATING ${dTxt(mv.d)}`:""}</span></div>${av(P(mv),"xl")}</div>`:""}
+    ${big||close?`<div class="duo">${hl("Thắng đậm nhất",big)}${close&&close!==big?hl("Trận sát nhất",close):""}</div>`:""}</div></div>`;
+  h+=`<div class="shd"><h2>Xếp hạng buổi</h2></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>HS</th>${snap?"<th>Rating</th><th>Δ</th>":""}</tr></thead><tbody>${rows.map((r,i)=>{const df=r.pf-r.pa;return `<tr class="${i===0?"top1":""}"><td class="rank">${i+1}</td><td><span class="pn">${av(P(r),"sm")}<b>${esc(r.name)}</b></span></td><td>${r.w}–${r.l}</td><td class="${df>0?"up":df<0?"down":""}">${df>0?"+":""}${df}</td>${snap?`<td><b>${r2(r.rating)}</b></td><td class="${dCls(r.d)}">${dTxt(r.d)}</td>`:""}</tr>`}).join("")}</tbody></table></div>`;
+  if(ms.length)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><div class="mgrid">${ms.map(m=>{const aw=m.sa>m.sb,t=(ids,sc,w)=>`<div class="tr${w?" w":""}"><span class="who"><span class="avs">${ids.map(id=>avId(D,id,"sm")).join("")}</span><span>${tn(ids)}</span></span><span class="sc num">${sc}</span></div>`;
+    return `<article class="mcard"><div class="mh"><b>TRẬN #${m.seq}</b><span>SÂN ${m.court}${m.doneAt?` · ${new Date(m.doneAt).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"})}`:""}</span></div>${t(m.a,m.sa,aw)}${t(m.b,m.sb,!aw)}</article>`}).join("")}</div>`;
+  const M=snap?.money;
+  if(M){const cs=M.costs||{},CC=[["court","Sân","var(--navy)"],["water","Nước","var(--blue)"],["ball","Bóng","var(--blue-2)"],["other","Khác","var(--line-2)"]].filter(z=>+cs[z[0]]>0);
+    const pr=[...rows].sort((a,b)=>(b.pay||0)-(a.pay||0)),tot=pr.reduce((s,r)=>s+(r.pay||0),0);
+    h+=`<div class="shd"><h2>Tiền quỹ</h2></div><div class="k3"><div class="kpi"><div class="lbl">Quỹ kèo</div><div class="v num">${fmtK(M.fund)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(M.cost)}</div></div><div class="kpi hl"><div class="lbl">${M.gap>=0?"Dư":"Thiếu"}</div><div class="v num">${fmtK(Math.abs(M.gap))}</div></div></div>`;
+    if(CC.length)h+=`<div class="panel"><div class="cbar">${CC.map(z=>`<span style="flex:${+cs[z[0]]};background:${z[2]}"></span>`).join("")}</div><div class="bar" style="gap:8px 16px">${CC.map(z=>`<span class="meta" style="display:inline-flex;align-items:center;gap:6px"><i style="width:9px;height:9px;background:${z[2]};display:block"></i>${z[1]} ${fmtK(+cs[z[0]])}</span>`).join("")}</div>${M.gap<0?`<p class="rule" style="margin-top:8px">Quỹ kèo thiếu ${fmtK(-M.gap)} so với chi phí, chia theo số trận mỗi người đã đánh${M.perGame?`: khoảng ${fmtK(M.perGame)}/trận`:""}.</p>`:""}</div>`;
+    h+=`<div class="tbl-wrap"><table class="payt"><thead><tr><th>Tên</th><th>Kèo</th><th>Bù</th><th>Phải đóng</th></tr></thead><tbody>${pr.map(r=>`<tr><td><span class="pn">${av(P(r),"sm")}<span><b>${esc(r.name)}</b><span class="meta" style="display:block">${r.w+r.l} trận · thua ${r.l}</span></span></span></td><td>${fmtK(r.charged||0)}${r.capped?` <span class="pill cap">trần</span>`:""}</td><td>${fmtK(Math.max(0,(r.pay||0)-(r.charged||0)))}</td><td><b>${fmtK(r.pay||0)}</b></td></tr>`).join("")}</tbody><tfoot><tr><td colspan="3">TỔNG THU</td><td><b class="num">${fmtK(tot)}</b></td></tr></tfoot></table></div>`}
+  h+=`<div class="sharebox"><span class="lbl">Link riêng của buổi này</span><span class="url">${esc(shareUrl(sid).replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="share" data-id="${sid}">Chia sẻ</button><button data-act="copylink" data-id="${sid}">Copy link</button></div></div>`;
+  return h;
+}
 const dmy=t=>{if(!t)return "";const d=new Date(t);return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`};
 function vLs(D){
   const L=sessList(D);
@@ -582,7 +735,7 @@ function vLs(D){
       h+=`<h3 class="subh">Xếp hạng</h3><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>HS</th>${x.snap?"<th>Rating</th><th>Δ</th><th>Phải đóng</th>":""}</tr></thead><tbody>${x.rows.map((r,i)=>{const df=r.pf-r.pa;return `<tr class="${i===0?"top1":""}"><td class="rank">${i+1}</td><td><b>${esc(r.name)}</b></td><td>${r.w}–${r.l}</td><td class="${df>0?"up":df<0?"down":""}">${df>0?"+":""}${df}</td>${x.snap?`<td>${r2(r.rating)}</td><td class="${r.d>0.004?"up":r.d<-0.004?"down":""}">${sgn(r.d)}</td><td>${fmtK(r.pay)}</td>`:""}</tr>`}).join("")}</tbody></table></div>`;
       if(m)h+=`<div class="kpis" style="margin-top:12px"><div class="kpi"><div class="lbl">Quỹ thu</div><div class="v num">${fmtK(m.fund)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(m.cost)}</div><div class="meta num">Sân ${fmtK(m.costs.court||0)} · Nước ${fmtK(m.costs.water||0)}${m.costs.ball?` · Bóng ${fmtK(m.costs.ball)}`:""}${m.costs.other?` · Khác ${fmtK(m.costs.other)}`:""}</div></div><div class="kpi hl"><div class="lbl">${m.gap>=0?"Dư":"Thiếu"}</div><div class="v num">${fmtK(Math.abs(m.gap))}</div></div></div>`;
       if(x.ms.length)h+=`<h3 class="subh">Các trận (${x.ms.length})</h3><div class="hist">${x.ms.map(mt=>{const aw=mt.sa>mt.sb,A=mt.a.map(id=>nm(D,id)).join(" &amp; "),B=mt.b.map(id=>nm(D,id)).join(" &amp; ");return `<div class="hrow"><span class="meta num">S${mt.court}<br>#${mt.seq}</span><div class="who">${aw?`<b>${A}</b>`:`<span class="l">${A}</span>`} <span class="l">vs</span> ${!aw?`<b>${B}</b>`:`<span class="l">${B}</span>`}<div class="meta">${KIND[kindOf(D,mt)]}</div></div><div class="sc num">${mt.sa}–${mt.sb}</div></div>`}).join("")}</div>`;
-      h+=`<div class="bar" style="margin-top:10px"><button data-act="copysess" data-id="${x.sid}">Copy tổng kết buổi #${x.sid}</button><span class="grow"></span>${canWrite?delBtn("sdel",x.sid,"Xóa buổi này"):""}</div>`;
+      h+=`<div class="bar" style="margin-top:10px"><a class="back" style="background:var(--blue);color:#fff;padding:0 16px;min-height:44px" href="?buoi=${x.sid}" data-go="buoi" data-id="${x.sid}">Mở trang tổng kết</a><button data-act="copysess" data-id="${x.sid}">Copy tổng kết buổi #${x.sid}</button><span class="grow"></span>${canWrite?delBtn("sdel",x.sid,"Xóa buổi này"):""}</div>`;
     }
     return h+`</div>`;
   }).join("");
@@ -668,7 +821,7 @@ function nextCode(){return S.players.reduce((m,p)=>{const n=parseInt(String(p.co
 async function assignCodes(){let n=nextCode();const miss=[...S.players].filter(p=>!p.code).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
   for(const p of miss){const c="PB-"+String(n++).padStart(3,"0");await db.collection("players").doc(p.id).update({code:c});p.code=c}}
 /* ---------- events ---------- */
-document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q")render()}});
+document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q"||k==="hq")render()}});
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.dataset&&t.dataset.photo){const f=t.files&&t.files[0],id=t.dataset.photo;t.value="";if(!f||!canWrite)return;
@@ -687,7 +840,9 @@ document.addEventListener("change",e=>{
     else{const n=Math.max(0,Number(v)||0);write(()=>saveCfg({[k]:n}).then(()=>delete drafts["cf-"+k]))}}
 });
 document.addEventListener("click",async e=>{
-  const tb=e.target.closest("[data-tab]");if(tb){tab=tb.dataset.tab;try{localStorage.setItem("pb-tab",tab)}catch(x){}render();return}
+  const tb=e.target.closest("[data-tab]");if(tb){const t=tb.dataset.tab;if(t==="home"){go("home");return}
+    try{localStorage.setItem("pb-tab",t)}catch(x){}go("app",{tab:t});return}
+  const gl=e.target.closest("[data-go]");if(gl){e.preventDefault();go(gl.dataset.go,{sid:gl.dataset.id,tab:gl.dataset.t});return}
   const b=e.target.closest("[data-act]");if(!b)return;
   const act=b.dataset.act,id=b.dataset.id;
   if(act==="login"){
@@ -708,6 +863,10 @@ document.addEventListener("click",async e=>{
     catch(x){const box=$("#copybox");box.hidden=false;box.value=txt;box.focus();box.select();toast("Chọn sẵn rồi, bấm giữ để copy.")}
     return}
   if(act==="bxf"){bxF=b.dataset.v;render();return}
+  if(act==="hf"){hF=b.dataset.v;render();return}
+  if(act==="share"||act==="copylink"){const u=shareUrl(id);
+    if(act==="share"&&navigator.share){try{await navigator.share({title:`Tổng kết buổi #${id}`,url:u})}catch(x){}return}
+    try{await navigator.clipboard.writeText(u);toast("Đã copy link, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
   if(act==="sess"){const k="s-"+id;editing.has(k)?editing.delete(k):editing.add(k);render();return}
   if(act==="copysess"){const D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id));if(!x)return;
     const m=x.snap?.money,L=[`TỔNG KẾT BUỔI #${x.sid} – ${dmy(x.at)}`];
@@ -788,7 +947,7 @@ document.addEventListener("click",async e=>{
         money:{fund:M.fund,cost:M.cost,gap:M.gap,share:M.share,perGame:M.perGame,costs:{...D.c.costs}},fee:{fee:D.c.fee,keo:D.c.keo,hi:D.c.hi,lo:D.c.lo,cap:D.c.cap}});
       for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
       await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0}});
-    },"Đã sang buổi mới")}
+    },"Đã lưu buổi, đây là trang tổng kết để chia sẻ");go("buoi",{sid:D.sid})}
 });
 
 /* ---------- boot ---------- */
@@ -819,7 +978,7 @@ function makeDb(){
   db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;live(s.metadata)},fail);
   db.collection("app").onSnapshot(q=>{S.hist=q.docs.filter(d=>d.id.startsWith("hist-")).map(d=>({id:d.id,...d.data()}));render()},fail);
   db.collection("players").onSnapshot(q=>{S.players=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail);
-  db.collection("matches").onSnapshot(q=>{S.matches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail);
+  db.collection("matches").onSnapshot(q=>{S.matches=q.docs.map(d=>({id:d.id,...d.data()}));S.mReady=true;live(q.metadata)},fail);
   db.collection("batches").onSnapshot(q=>{S.batches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail);
 })();
 
