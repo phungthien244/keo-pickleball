@@ -303,11 +303,15 @@ tr.top1 td.rank{color:var(--blue)}
 @keyframes fadein{to{opacity:1}}
 @media (prefers-reduced-motion:reduce){#splash .ball,#splash .shadow{animation:none!important}#splash .bar2 i{animation:slide 2s linear infinite!important}}
 .payt td:first-child,.payt th:first-child{text-align:left}
-.paybtn{min-height:34px;padding:0 9px;font-size:10px;letter-spacing:.08em;background:var(--blue);color:#fff;border-color:var(--blue);margin-top:4px}
-.paidpill{display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.08em;color:var(--win);background:var(--win-bg);padding:4px 7px;text-transform:uppercase;white-space:nowrap}
-.paidtg{min-height:30px;padding:0 8px;font-size:10px;margin-top:4px}
+.paybtn{width:100%;min-height:36px;padding:0 8px;font-size:10px;letter-spacing:.08em;background:var(--blue);color:#fff;border-color:var(--blue);margin:0}
+.paidpill{display:flex;align-items:center;justify-content:center;gap:4px;min-height:36px;font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.08em;color:var(--win);background:var(--win-bg);padding:4px 7px;text-transform:uppercase;white-space:nowrap}
+.paidtg{width:100%;min-height:30px;padding:0 6px;font-size:10px;margin:0}
 .payt td:last-child{white-space:nowrap}
-.payt td:last-child>div{display:flex;flex-direction:column;align-items:flex-end}
+.payt td{vertical-align:middle}
+.payt th,.payt td{padding:10px 8px}
+.payt .pn{gap:8px}
+.paycell{display:inline-flex;flex-direction:column;align-items:stretch;gap:6px;width:96px;text-align:right}
+.paycell>b{font-family:var(--display);font-weight:900;font-size:17px}
 .sheetbg{position:fixed;inset:0;z-index:60;background:rgba(8,33,58,.55);display:flex;align-items:flex-end;justify-content:center;animation:fadein .2s ease both}
 .sheet{background:var(--surface);width:100%;max-width:440px;max-height:92vh;overflow-y:auto;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;animation:sheetup .35s var(--ease) both;border-top:4px solid var(--blue)}
 @media (min-width:700px){.sheetbg{align-items:center}.sheet{border:none;border-top:4px solid var(--blue)}}
@@ -322,9 +326,11 @@ tr.top1 td.rank{color:var(--blue)}
 .sheet .kv b{font-family:var(--display);font-weight:800;overflow-wrap:anywhere}
 .sheet .kv button{min-height:34px;padding:0 10px;font-size:10px}
 .apps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.apps a{display:flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--line-2);text-decoration:none;color:var(--navy);font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.04em;text-align:center;padding:4px}
+.apps a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:84px;border:1px solid var(--line);background:var(--surface);text-decoration:none;color:var(--navy);font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.04em;text-align:center;padding:10px 4px;transition:border-color .15s,transform .12s}
+.apps a img{width:40px;height:40px;border-radius:10px;display:block;box-shadow:0 1px 3px rgba(12,43,68,.18);background:var(--sunk)}
+.apps a span{line-height:1.2}
 .apps a:hover{border-color:var(--navy)}
-.apps a.main{background:var(--navy);color:#fff;border-color:var(--navy)}
+.apps a:active{transform:scale(.96)}
 /* motion: only on tab change / first data / new items, transform+opacity only */
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -412,7 +418,7 @@ function go(r,opt={}){route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.
   render()}
 addEventListener("popstate",()=>{parseRoute();render()});
 const BANK={bin:"970422",code:"mb",name:"MB Bank",acc:"17263544538888",holder:"PHAM TIEN DUNG"};
-const BANK_APPS=[["icb","VietinBank",1],["bidv","BIDV",1],["acb","ACB",1],["ocb","OCB",1],["mb","MB Bank"],["vcb","Vietcombank"],["tcb","Techcombank"],["tpb","TPBank"],["vpb","VPBank"],["vba","Agribank"],["shb","SHB"],["cake","Cake"]];
+const BANK_APPS=[["mb","MB Bank"],["vcb","Vietcombank"],["tcb","Techcombank"],["bidv","BIDV"],["icb","VietinBank"],["acb","ACB"],["tpb","TPBank"],["vpb","VPBank"],["vba","Agribank"],["shb","SHB"],["ocb","OCB"],["cake","Cake"]];
 const noAcc=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9 ]/g,"").replace(/\s+/g," ").trim().toUpperCase();
 const payNote=(sid,name)=>`RR B${sid} ${noAcc(name)}`.slice(0,25).trim();
 const qrUrl=(amt,note)=>`https://img.vietqr.io/image/${BANK.bin}-${BANK.acc}-compact2.png?amount=${amt}&addInfo=${encodeURIComponent(note)}&accountName=${encodeURIComponent(BANK.holder)}`;
@@ -433,8 +439,8 @@ function paySheet(){
       <span>Nội dung</span><b>${esc(note)}</b><button data-act="cp" data-v="${esc(note)}">Copy</button>
       <span>Số tiền</span><b class="num">${amt.toLocaleString("vi-VN")}</b><button data-act="cp" data-v="${amt}">Copy</button></div>
     <span class="lbl">Mở thẳng app ngân hàng</span>
-    <div class="apps">${BANK_APPS.map(([a,l,f])=>`<a class="${f?"main":""}" href="${esc(appUrl(a,amt,note,sid))}" target="_blank" rel="noopener">${l}</a>`).join("")}</div>
-    <p class="rule">Ô xanh đậm: app tự điền sẵn số tiền và nội dung. Ô trắng: app chỉ mở lên, bạn dùng cách lưu mã QR ở trên.</p>
+    <div class="apps">${BANK_APPS.map(([a,l])=>`<a href="${esc(appUrl(a,amt,note,sid))}" target="_blank" rel="noopener"><img src="https://cdn.vietqr.io/bank-app-icon/${a}-android.webp" alt="" width="40" height="40" loading="lazy"><span>${l}</span></a>`).join("")}</div>
+    <p class="rule">Nếu app mở lên mà chưa có số tiền, bấm Lưu mã QR ở trên rồi quét ảnh trong app.</p>
   </div></div>`;
 }
 let splashGone=false;
@@ -720,7 +726,7 @@ function vTien(D){
   h+=`<div class="panel"><h2 style="margin-bottom:10px">Chi phí buổi (nghìn đồng)</h2>${CC.length?`<div class="cbar">${CC.map(x=>`<span style="flex:${+c.costs[x[0]]};background:${x[2]}"></span>`).join("")}</div><div class="cleg">${CC.map(x=>`<div><i style="background:${x[2]}"></i>${x[1]}<b class="num">${fmtK(+c.costs[x[0]])}</b></div>`).join("")}</div>`:""}<div class="form">${inp("court","Tiền sân",c.costs.court)}${inp("water","Tiền nước",c.costs.water)}${inp("ball","Tiền bóng",c.costs.ball)}${inp("other","Khác",c.costs.other)}</div></div>`;
   if(!M.att.length)h+=`<div class="empty"><strong>Chưa có ai phải góp</strong>Tiền sẽ tự cộng khi lưu tỉ số các trận.</div>`;
   else h+=`<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>Trận thua</th><th>Tiền kèo</th><th>Bù thiếu</th><th>Phải đóng</th></tr></thead><tbody>
-    ${[...M.att].sort((a,b)=>D.st.get(b.id).charged-D.st.get(a.id).charged).map((p,i)=>{const s=D.st.get(p.id);return `<tr><td class="rank">${i+1}</td><td><span class="pn">${av(p,"sm")}<b>${esc(p.name)}</b></span></td><td>${s.losses}</td><td>${fmtK(s.charged)}${s.capped?` <span class="pill cap">trần ${c.cap}k</span>`:""}</td><td>${fmtK(M.shareOf(p.id))}</td><td><div style="display:flex;flex-direction:column;align-items:flex-end"><b>${fmtK(s.charged+M.shareOf(p.id))}</b>${s.charged+M.shareOf(p.id)>0?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${s.charged+M.shareOf(p.id)}">Chuyển tiền</button>`:""}</div></td></tr>`}).join("")}
+    ${[...M.att].sort((a,b)=>D.st.get(b.id).charged-D.st.get(a.id).charged).map((p,i)=>{const s=D.st.get(p.id);return `<tr><td class="rank">${i+1}</td><td><span class="pn">${av(p,"sm")}<b>${esc(p.name)}</b></span></td><td>${s.losses}</td><td>${fmtK(s.charged)}${s.capped?` <span class="pill cap">trần ${c.cap}k</span>`:""}</td><td>${fmtK(M.shareOf(p.id))}</td><td><div class="paycell"><b>${fmtK(s.charged+M.shareOf(p.id))}</b>${s.charged+M.shareOf(p.id)>0?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${s.charged+M.shareOf(p.id)}">Chuyển tiền</button>`:""}</div></td></tr>`}).join("")}
     </tbody></table></div>`;
   h+=`<div class="bar"><button class="primary" data-act="copy">Copy tổng kết gửi Zalo</button></div><textarea id="copybox" rows="8" readonly hidden></textarea>`;
   h+=`<div class="panel"><h2 style="margin-bottom:10px">Luật tiền</h2><div class="form">
@@ -813,7 +819,7 @@ function vBuoi(D,sid){
     const pr=[...rows].sort((a,b)=>(b.pay||0)-(a.pay||0)),tot=pr.reduce((s,r)=>s+(r.pay||0),0);
     h+=`<div class="shd"><h2>Tiền quỹ</h2></div><div class="k3"><div class="kpi"><div class="lbl">Quỹ kèo</div><div class="v num">${fmtK(M.fund)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(M.cost)}</div></div><div class="kpi hl"><div class="lbl">${M.gap>=0?"Dư":"Thiếu"}</div><div class="v num">${fmtK(Math.abs(M.gap))}</div></div></div>`;
     if(CC.length)h+=`<div class="panel"><div class="cbar">${CC.map(z=>`<span style="flex:${+cs[z[0]]};background:${z[2]}"></span>`).join("")}</div><div class="bar" style="gap:8px 16px">${CC.map(z=>`<span class="meta" style="display:inline-flex;align-items:center;gap:6px"><i style="width:9px;height:9px;background:${z[2]};display:block"></i>${z[1]} ${fmtK(+cs[z[0]])}</span>`).join("")}</div>${M.gap<0?`<p class="rule" style="margin-top:8px">Quỹ kèo thiếu ${fmtK(-M.gap)} so với chi phí, chia theo số trận mỗi người đã đánh${M.perGame?`: khoảng ${fmtK(M.perGame)}/trận`:""}.</p>`:""}</div>`;
-    h+=`<div class="tbl-wrap"><table class="payt"><thead><tr><th>Tên</th><th>Kèo</th><th>Bù</th><th>Phải đóng</th></tr></thead><tbody>${pr.map(r=>`<tr><td><span class="pn">${av(P(r),"sm")}<span><b>${esc(r.name)}</b><span class="meta" style="display:block">${r.w+r.l} trận · thua ${r.l}</span></span></span></td><td>${fmtK(r.charged||0)}${r.capped?` <span class="pill cap">trần</span>`:""}</td><td>${fmtK(Math.max(0,(r.pay||0)-(r.charged||0)))}</td><td><div><b>${fmtK(r.pay||0)}</b>${(snap.paid||{})[r.id]?`<span class="paidpill">✓ Đã nhận</span>`:r.pay>0?`<button class="paybtn" data-act="pay" data-sid="${sid}" data-n="${esc(r.name)}" data-k="${r.pay}">Chuyển tiền</button>`:""}${canWrite&&r.pay>0?`<button class="ghost paidtg" data-act="paid" data-id="${sid}" data-p="${r.id}">${(snap.paid||{})[r.id]?"Bỏ dấu":"Đã nhận?"}</button>`:""}</div></td></tr>`).join("")}</tbody><tfoot><tr><td colspan="3">TỔNG THU${(()=>{const n=pr.filter(r=>r.pay>0).length,p=pr.filter(r=>r.pay>0&&(snap.paid||{})[r.id]).length;return n?` · ĐÃ NHẬN ${p}/${n}`:""})()}</td><td><b class="num">${fmtK(tot)}</b></td></tr></tfoot></table></div>`}
+    h+=`<div class="tbl-wrap"><table class="payt"><thead><tr><th>Tên</th><th>Kèo</th><th>Bù</th><th>Phải đóng</th></tr></thead><tbody>${pr.map(r=>`<tr><td><span class="pn">${av(P(r),"sm")}<span><b>${esc(r.name)}</b><span class="meta" style="display:block">${r.w+r.l} trận · thua ${r.l}</span></span></span></td><td>${fmtK(r.charged||0)}${r.capped?` <span class="pill cap">trần</span>`:""}</td><td>${fmtK(Math.max(0,(r.pay||0)-(r.charged||0)))}</td><td><div class="paycell"><b>${fmtK(r.pay||0)}</b>${(snap.paid||{})[r.id]?`<span class="paidpill">✓ Đã nhận</span>`:r.pay>0?`<button class="paybtn" data-act="pay" data-sid="${sid}" data-n="${esc(r.name)}" data-k="${r.pay}">Chuyển tiền</button>`:""}${canWrite&&r.pay>0?`<button class="ghost paidtg" data-act="paid" data-id="${sid}" data-p="${r.id}">${(snap.paid||{})[r.id]?"Bỏ dấu":"Đã nhận?"}</button>`:""}</div></td></tr>`).join("")}</tbody><tfoot><tr><td colspan="3">TỔNG THU${(()=>{const n=pr.filter(r=>r.pay>0).length,p=pr.filter(r=>r.pay>0&&(snap.paid||{})[r.id]).length;return n?` · ĐÃ NHẬN ${p}/${n}`:""})()}</td><td><b class="num">${fmtK(tot)}</b></td></tr></tfoot></table></div>`}
   h+=`<div class="sharebox"><span class="lbl">Link riêng của buổi này</span><span class="url">${esc(shareUrl(sid).replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="share" data-id="${sid}">Chia sẻ</button><button data-act="copylink" data-id="${sid}">Copy tin nhắn</button></div></div>`;
   return h;
 }
