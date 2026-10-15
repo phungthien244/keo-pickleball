@@ -313,13 +313,15 @@ tr.top1 td.rank{color:var(--blue)}
 .paycell{display:inline-flex;flex-direction:column;align-items:stretch;gap:6px;width:96px;text-align:right}
 .paycell>b{font-family:var(--display);font-weight:900;font-size:17px}
 .sheetbg{position:fixed;inset:0;z-index:60;background:rgba(8,33,58,.55);display:flex;align-items:flex-end;justify-content:center;animation:fadein .2s ease both}
-.sheet{background:var(--surface);width:100%;max-width:440px;max-height:92vh;overflow-y:auto;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;animation:sheetup .35s var(--ease) both;border-top:4px solid var(--blue)}
+html.lock,html.lock body{overflow:hidden}
+.sheet{background:var(--surface);width:100%;max-width:440px;max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;animation:sheetup .35s var(--ease) both;border-top:4px solid var(--blue)}
 @media (min-width:700px){.sheetbg{align-items:center}.sheet{border:none;border-top:4px solid var(--blue)}}
 @keyframes sheetup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
-.sheet .sh{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sheet .sh{position:sticky;top:0;z-index:2;background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 -16px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.sheet .sh .x{min-height:40px;padding:0 14px;border:1px solid var(--navy);color:var(--navy);background:var(--surface);font-size:11px}
 .sheet .sh h2{font-size:18px}
 .sheet .amt{font-family:var(--display);font-weight:900;font-size:40px;line-height:1;color:var(--navy)}
-.sheet .qr{align-self:center;width:min(280px,80vw);aspect-ratio:1/1.08;background:var(--sunk);display:flex;align-items:center;justify-content:center}
+.sheet .qr{align-self:center;width:min(260px,72vw);aspect-ratio:540/640;background:var(--sunk);display:flex;align-items:center;justify-content:center}
 .sheet .qr img{width:100%;height:100%;object-fit:contain;display:block}
 .sheet .kv{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px 10px;align-items:center;font-size:14px}
 .sheet .kv span{color:var(--muted);font-size:12px}
@@ -424,10 +426,16 @@ const payNote=(sid,name)=>`RR B${sid} ${noAcc(name)}`.slice(0,25).trim();
 const qrUrl=(amt,note)=>`https://img.vietqr.io/image/${BANK.bin}-${BANK.acc}-compact2.png?amount=${amt}&addInfo=${encodeURIComponent(note)}&accountName=${encodeURIComponent(BANK.holder)}`;
 const appUrl=(app,amt,note,sid)=>`https://dl.vietqr.io/pay?app=${app}&ba=${BANK.acc}@${BANK.code}&am=${amt}&tn=${encodeURIComponent(note)}&bn=${encodeURIComponent(BANK.holder)}&url=${encodeURIComponent("https://rr.pikeco.app/?buoi="+sid)}`;
 let payOpen=null;
+function showSheet(){
+  let el=document.getElementById("paysheet");
+  if(!payOpen){if(el)el.remove();document.documentElement.classList.remove("lock");return}
+  if(!el){el=document.createElement("div");el.id="paysheet";document.body.appendChild(el)}
+  el.innerHTML=paySheet();document.documentElement.classList.add("lock");
+}
 function paySheet(){
   if(!payOpen)return "";const {name,k,sid}=payOpen,amt=Math.round(k*1000),note=payNote(sid,name);
   return `<div class="sheetbg" data-act="payx"><div class="sheet" role="dialog" aria-modal="true" aria-label="Chuyển khoản cho ${esc(name)}" data-stop="1">
-    <div class="sh"><h2>Chuyển khoản · ${esc(name)}</h2><button class="ghost" data-act="payx" aria-label="Đóng">Đóng</button></div>
+    <div class="sh"><h2>Chuyển khoản · ${esc(name)}</h2><button class="x" data-act="payx" aria-label="Đóng">✕ Đóng</button></div>
     <div><span class="lbl">Số tiền buổi #${sid}</span><div class="amt num">${amt.toLocaleString("vi-VN")}đ</div></div>
     <div class="qr"><img src="${esc(qrUrl(amt,note))}" alt="Mã QR chuyển ${amt.toLocaleString("vi-VN")}đ tới ${esc(BANK.holder)}"></div>
     <p class="rule" style="text-align:center">Quét bằng app ngân hàng bất kỳ: số tiền và nội dung đã điền sẵn.</p>
@@ -521,7 +529,7 @@ function render(){
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   const v=route==="home"?vHome:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:vSan,bxh:vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
   const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim; lastAnim=akey;
-  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":!canWrite?`<div class="ro login"><span>Bạn đang xem trực tiếp. Người tổ chức nhập PIN để nhập tỉ số.</span><span class="bar" style="gap:6px"><input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN" value="${esc(val("pin",""))}" style="width:120px"><button class="primary" data-act="login">Mở quyền sửa</button></span>${errs.pin?`<p class="err" style="width:100%">${esc(errs.pin)}</p>`:""}</div>`:""}${v(D)}</section>${paySheet()}`;
+  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":!canWrite?`<div class="ro login"><span>Bạn đang xem trực tiếp. Người tổ chức nhập PIN để nhập tỉ số.</span><span class="bar" style="gap:6px"><input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN" value="${esc(val("pin",""))}" style="width:120px"><button class="primary" data-act="login">Mở quyền sửa</button></span>${errs.pin?`<p class="err" style="width:100%">${esc(errs.pin)}</p>`:""}</div>`:""}${v(D)}</section>`;
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
   if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}
 }
@@ -963,8 +971,8 @@ document.addEventListener("click",async e=>{
     return}
   if(act==="bxf"){bxF=b.dataset.v;render();return}
   if(act==="hf"){hF=b.dataset.v;render();return}
-  if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;render();return}
-  if(act==="pay"){payOpen={sid:Number(b.dataset.sid),name:b.dataset.n,k:Number(b.dataset.k)};render();return}
+  if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;showSheet();return}
+  if(act==="pay"){payOpen={sid:Number(b.dataset.sid),name:b.dataset.n,k:Number(b.dataset.k)};showSheet();return}
   if(act==="saveqr"){try{const r=await fetch(b.dataset.v),bl=await r.blob(),fn=`QR-${b.dataset.n.replace(/\s+/g,"-")}.png`,file=new File([bl],fn,{type:bl.type||"image/png"});
       if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:"Mã QR chuyển khoản"})}catch(x){}return}
       const u=URL.createObjectURL(bl),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("Đã lưu mã QR")}
