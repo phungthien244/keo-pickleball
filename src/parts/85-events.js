@@ -150,7 +150,11 @@ document.addEventListener("click",async e=>{
   else if(act==="sdel"){if(!armOr("sdel:"+id))return;const sid=Number(id);
     await write(async()=>{for(const d of (await db.collection("matches").where("session",sid).get()).docs)await db.collection("matches").doc(d.id).delete();
       for(const d of (await db.collection("batches").where("session",sid).get()).docs)await db.collection("batches").doc(d.id).delete();delete S.pm[sid];
-      if(S.hist.some(h=>h.sid===sid))await db.doc("app/hist-"+sid).delete();editing.delete("s-"+sid)},`Đã xóa buổi #${sid}`)}
+      const h=S.hist.find(x=>x.sid===sid);
+      // Trả lại rating: bỏ phần cộng/trừ của buổi này khỏi trình hiện tại của từng người
+      if(h){for(const r of h.rows||[]){const p=S.players.find(x=>x.id===r.id),d=Number(r.d);if(p&&Number.isFinite(d)&&d)await db.collection("players").doc(p.id).update({rating0:Math.round(Math.min(8,Math.max(1,(Number(p.rating0)||3)-d))*100)/100})}
+        await db.doc("app/hist-"+sid).delete()}
+      editing.delete("s-"+sid)},`Đã xóa buổi #${sid}, rating đã trừ lại`)}
   else if(act==="toggle"){const p=S.players.find(p=>p.id===id);write(()=>db.collection("players").doc(id).update({active:p.active===false}))}
   else if(act==="del")write(()=>db.collection("players").doc(id).delete(),"Đã xóa");
   else if(act==="cancel")write(()=>db.collection("matches").doc(id).delete(),"Đã hủy trận");

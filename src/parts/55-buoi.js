@@ -210,6 +210,7 @@ function histEdit(D,x){
 async function savePay(sid,patch){const cur=payDoc(sid),next={paid:{...(cur.paid||{})},adj:{...(cur.adj||{})}};patch(next);
   await db.doc("app/pay-"+sid).set(next);S.pays={...(S.pays||{}),["pay-"+sid]:{id:"pay-"+sid,...next}}}
 async function sessionAct(act,id,b,e){
+  if(act.startsWith("rr"))return rrAct(act);
   if(act==="sheet"){sheetOpen=true;render();return true}
   if(act==="sheetx"){if(b.classList&&b.classList.contains("sheetbg")&&e.target.closest("[data-stop]"))return true;sheetOpen=false;render();return true}
   if(act==="start"){await write(()=>saveCfg({phase:"live"}),`Đã bắt đầu buổi #${derive().sid}`);return true}
@@ -242,5 +243,35 @@ async function sessionAct(act,id,b,e){
     const m=h.money,cs={};for(const [c] of COSTS)cs[c]=Math.max(0,Number(val(`hc-${c}-${sid}`,+(m.costs||{})[c]||0))||0);
     const cost=Object.values(cs).reduce((a,x)=>a+x,0),dl=cost-(+m.cost||0),club=hClub(h);
     await write(()=>db.doc("app/hist-"+sid).update({money:{...m,costs:cs,cost,club:club-dl,gap:(+m.gap||0)-dl},editedAt:Date.now(),editedBy:who()}).then(()=>{editing.delete("hx-"+sid);COSTS.forEach(([c])=>delete drafts[`hc-${c}-${sid}`])}),"Đã sửa buổi, sổ quỹ đã tính lại");return true}
+  return false;
+}
+
+/* ----- Tính lại rating từ các buổi còn lưu (sửa rating lệch sau khi xoá buổi) ----- */
+let rrPlan=null;
+async function rrCompute(){
+  const D=derive(),cur=D.sid,H=[...S.hist].filter(h=>h.sid<cur).sort((a,b)=>a.sid-b.sid);
+  const base=new Map();
+  for(const h of H)for(const r of h.rows||[]){const rt=Number(r.rating),d=Number(r.d);if(!base.has(r.id)&&Number.isFinite(rt)&&Number.isFinite(d))base.set(r.id,rt-d)}
+  const all=(await db.collection("matches").get()).docs.map(d=>({id:d.id,...d.data()}));
+  const ms=all.filter(m=>m.status==="done"&&(m.session||1)<cur&&H.some(h=>h.sid===(m.session||1)))
+    .sort((a,b)=>(a.session||1)-(b.session||1)||(a.doneAt||0)-(b.doneAt||0)||(a.seq||0)-(b.seq||0));
+  const R=new Map(base),get=id=>R.has(id)?R.get(id):(Number(D.pmap.get(id)?.rating0)||3),avg=ids=>ids.reduce((s,id)=>s+get(id),0)/ids.length;
+  for(const m of ms){const pA=expect(avg(m.a),avg(m.b)),dA=K*(m.sa/(m.sa+m.sb)-expShare(pA));
+    for(const id of m.a)R.set(id,Math.min(8,Math.max(1,get(id)+dA)));for(const id of m.b)R.set(id,Math.min(8,Math.max(1,get(id)-dA)))}
+  return D.players.filter(p=>R.has(p.id)).map(p=>({id:p.id,name:p.name,from:Number(p.rating0)||3,to:Math.round(R.get(p.id)*100)/100})).filter(x=>Math.abs(x.to-x.from)>=0.01).sort((a,b)=>Math.abs(b.to-b.from)-Math.abs(a.to-a.from));
+}
+function rrPanel(){
+  if(!canWrite)return "";
+  let b=`<small class="rule">Tính lại trình của mọi người từ đầu, chỉ dựa trên các buổi còn trong Lịch sử. Dùng khi đã xoá một buổi mà rating chưa trừ lại. Rating sửa tay giữa các buổi sẽ bị tính lại theo kết quả trận.</small>`;
+  if(rrPlan==null)b+=`<button class="line" data-act="rrcalc">Kiểm tra rating</button>`;
+  else if(!rrPlan.length)b+=`<p class="rule"><b>Rating đang khớp với các buổi đã lưu.</b> Không cần sửa.</p><button class="line" data-act="rrx">Đóng</button>`;
+  else b+=`<p class="rule"><b>${rrPlan.length} người lệch rating:</b></p>${rrPlan.map(x=>`<div class="srow"><span>${esc(x.name)}</span><span class="num">${r2(x.from)} → <b>${r2(x.to)}</b></span></div>`).join("")}<div class="two"><button class="line" data-act="rrx">Thôi</button><button class="wide" data-act="rrapply">${armed("rrapply:x")?"Bấm lần nữa để áp dụng":"Áp dụng"}</button></div>`;
+  return card("Tính lại rating",b);
+}
+async function rrAct(act){
+  if(act==="rrx"){rrPlan=null;render();return true}
+  if(act==="rrcalc"){try{rrPlan=await rrCompute()}catch(e){toast("Chưa tải được các trận, thử lại.")}render();return true}
+  if(act==="rrapply"){if(!rrPlan||!armOr("rrapply:x"))return true;const P=rrPlan;
+    await write(async()=>{for(const x of P)await db.collection("players").doc(x.id).update({rating0:x.to})},`Đã sửa rating ${P.length} người`);rrPlan=null;render();return true}
   return false;
 }
