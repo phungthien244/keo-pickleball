@@ -15,13 +15,10 @@ function vBxh(D){
   const nM=all.filter(r=>!gF(r)).length,nF=all.length-nM;
   const rows=all.filter(r=>bxF==="all"||(bxF==="F")===gF(r));
   const fb=(v,l,n)=>`<button data-act="bxf" data-v="${v}" aria-pressed="${bxF===v}">${l} · ${n}</button>`;
-  return `<p class="rule">Xếp theo % thắng → hiệu số điểm → rating. Rating tính như DUPR (từ 7/2025): chỉ so điểm thực tế với điểm dự kiến. Đánh tốt hơn dự kiến thì tăng, kể cả khi thua; kém hơn dự kiến thì giảm, kể cả khi thắng.</p>
-  ${played.length?`<div class="no1">${card("Số 1 · Nam",tm)}${card("Số 1 · Nữ",tf)}</div>`:""}
-  <div class="dark"><div class="bar"><span class="lbl grow" style="color:var(--sky)">${played.length} người đã đánh</span><span class="seg dseg" role="group" aria-label="Lọc theo giới">${fb("all","Tất cả",all.length)}${fb("M","Nam",nM)}${fb("F","Nữ",nF)}</span></div>
-  <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>% thắng</th><th>HS</th><th>Rating</th><th>Δ</th><th>Góp quỹ</th></tr></thead><tbody>
-  ${rows.map(r=>{const s=r.s,diff=s.pf-s.pa,i=all.indexOf(r);return `<tr class="${i===0&&s.g?"top1":""}"><td class="rank">${s.g?i+1:"–"}</td><td><span class="pn">${av(r.p,"sm")}<span><b>${esc(r.p.name)}</b> <span class="meta">${gF(r)?"NỮ":"NAM"}</span>${r.p.active===false?` <span class="meta">(đã nghỉ)</span>`:""}</span></span></td>
-  <td>${s.w}–${s.l}</td><td>${s.g?Math.round(s.w/s.g*100)+"%":"–"}</td><td class="${diff>0?"up":diff<0?"down":""}">${diff>0?"+":""}${diff}</td><td><b>${r2(s.rating)}</b></td><td class="${s.d>0.004?"up":s.d<-0.004?"down":""}">${sgn(s.d)}</td><td>${fmtK(s.charged)}${s.capped?` <span class="pill cap">trần</span>`:""}</td></tr>`}).join("")}
-  </tbody></table></div></div>`;
+  return `${meBox(D,{pay:false})}${played.length?`<div class="no1">${card("Số 1 · Nam",tm)}${card("Số 1 · Nữ",tf)}</div>`:""}
+  <div class="bar"><span class="lbl grow">${played.length} người đã đánh</span><span class="seg" role="group" aria-label="Lọc theo giới">${fb("all","Tất cả",all.length)}${fb("M","Nam",nM)}${fb("F","Nữ",nF)}</span></div>
+  <div class="rkl">${rows.map(r=>{const s=r.s,diff=s.pf-s.pa,i=all.indexOf(r);return `<div class="rkr${i===0&&s.g?" top1":""}${r.p.id===ME?" me":""}"><span class="rk num">${s.g?i+1:"–"}</span>${av(r.p,"sm")}<span class="t"><b>${esc(r.p.name)}</b><small>${s.g?`${s.w} thắng ${s.l} thua · ${diff>0?"hơn":diff<0?"kém":"hòa"} ${Math.abs(diff)} điểm`:"chưa đánh hôm nay"}${r.p.active===false?" · đã nghỉ":""}</small></span><span class="rt"><b class="num">${r2(s.rating)}</b><small class="${s.d>0.004?"up":s.d<-0.004?"down":""} num">${s.g&&Math.abs(s.d)>0.004?(s.d>0?"▲ ":"▼ ")+Math.abs(s.d).toFixed(2):""}</small></span></div>`}).join("")}</div>
+  <details class="why"><summary>Xếp hạng tính thế nào?</summary><p>Xếp theo tỉ lệ thắng, bằng nhau thì xét hơn kém điểm, rồi tới rating. Rating tính giống DUPR: mỗi trận app đoán trước tỉ số, đánh tốt hơn dự đoán thì tăng kể cả khi thua, kém hơn thì giảm kể cả khi thắng. Số tiền mỗi người góp xem ở tab Quỹ.</p></details>`;
 }
 
 function memberEdit(p){

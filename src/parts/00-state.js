@@ -37,7 +37,8 @@ function readPath(path){
   if(TSEG[s[1]]){r.route="app";r.tab=TSEG[s[1]]}
   else if(s[1]==="buoi"){r.route="buoi";r.sid=Number(s[2])||0}
   else if(s[1]==="cai-dat")r.route="caidat";
-  else if(s[1]==="moi")r.invite=s[2]||null;
+  else if(s[1]==="dang-nhap")r.route="clogin";
+  else if(s[1]==="moi"){r.invite=s[2]||null;r.route="clogin"}
   return r}
 function applyPath(r){route=r.route;if(r.mode==="club"){if(r.tab)tab=r.tab;if(r.route==="buoi")routeSid=r.sid;if(r.route!=="home")autoRoute=false}}
 {const lp=legacyPath();if(lp)try{history.replaceState(null,"",lp)}catch(e){}
@@ -48,6 +49,7 @@ function pathOf(r,opt={}){
   if(r==="buoi")return `${c}/buoi/${opt.sid!=null?opt.sid:routeSid}`;
   if(r==="app")return `${c}/${SEGT[opt.tab||tab]||"san"}`;
   if(r==="caidat")return c+"/cai-dat";
+  if(r==="clogin")return c+"/dang-nhap";
   return c}
 const absUrl=p=>location.origin+p;
 function go(r,opt={}){

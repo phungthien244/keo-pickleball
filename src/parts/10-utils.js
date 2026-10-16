@@ -58,3 +58,31 @@ function feeFor(pLoser,c){
   return c.fee;
 }
 
+
+/* ---------- "Bạn là ai?": thành viên chọn tên mình, chỉ lưu trên máy ---------- */
+let ME=null;try{ME=localStorage.getItem("pb-me-"+CID)}catch(e){}
+function setMe(id){ME=id||null;try{id?localStorage.setItem("pb-me-"+CID,id):localStorage.removeItem("pb-me-"+CID)}catch(e){}render()}
+const meP=D=>ME?D.pmap.get(ME)||null:null;
+function waitQueue(D){
+  const busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),last=new Map();
+  for(const m of D.done)for(const id of [...m.a,...m.b])last.set(id,Math.max(last.get(id)||0,m.doneAt||m.createdAt||0));
+  return D.players.filter(p=>p.active!==false&&!busy.has(p.id)).sort((a,b)=>(D.st.get(a.id).g-D.st.get(b.id).g)||((last.get(a.id)||0)-(last.get(b.id)||0)));
+}
+function meBox(D,opt={}){
+  const p=meP(D);
+  if(!p){if(!D.players.length)return "";
+    const L=[...D.players].sort((a,b)=>String(a.name).localeCompare(String(b.name),"vi"));
+    return `<div class="mebox ask"><span class="t"><b>Bạn là ai?</b><small>Chọn tên một lần để xem trận, hạng và tiền của bạn.</small></span><label><span class="sr">Chọn tên của bạn</span><select data-me="1"><option value="">Chọn tên…</option>${L.map(o=>`<option value="${o.id}">${esc(o.name)}</option>`).join("")}</select></label></div>`}
+  const s=D.st.get(p.id),all=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating),rank=all.findIndex(x=>x.id===p.id)+1;
+  const pm=D.playing.find(m=>[...m.a,...m.b].includes(p.id));
+  let st;
+  if(pm)st=`Đang đánh sân ${pm.court}`;
+  else if(p.active===false)st="Hôm nay chưa vào buổi";
+  else if(isG(D.c))st="Chờ lượt theo lịch giải";
+  else{const q=waitQueue(D).findIndex(x=>x.id===p.id);st=q>=0?`Thứ ${q+1} trong hàng chờ`:"Đang chờ"}
+  const today=s.g?`${s.w} thắng ${s.l} thua hôm nay`:"Chưa đánh trận nào hôm nay";
+  let h=`<div class="mebox">${av(p,"md")}<span class="t"><small>Của bạn</small><b>${esc(p.name)}</b><span>${st} · ${today}</span></span><span class="r"><b class="num">${r2(s.rating)}</b><small>hạng ${rank}/${all.length}</small></span><button class="lnk" data-act="meclr">Đổi</button></div>`;
+  if(opt.pay!==false){const M=money(D);if(M.att.some(x=>x.id===p.id)){const k=payRow(D,M,p.id).pay;
+    if(k>0)h+=`<div class="mepay"><span>Hôm nay bạn đóng <b class="num">${fmtK(k)}</b><small>tạm tính tới giờ</small></span>${BANK?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${k}">Chuyển tiền</button>`:""}</div>`}}
+  return h;
+}

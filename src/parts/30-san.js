@@ -2,7 +2,8 @@ function vSan(D){
   const c=D.c, busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
   const free=Math.max(0,c.courts-D.playing.length), can=Math.min(free,Math.floor(waiting.length/4));
-  let h=fmtSeg(D)+`<div class="bar">
+  let h=meBox(D,{pay:false});
+  if(canWrite)h+=fmtSeg(D)+`<div class="bar">
     <span class="lbl">Số sân</span>
     <span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân" ${canWrite?"":"disabled"}>−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân" ${canWrite?"":"disabled"}>+</button></span>
     <span class="seg" role="group" aria-label="Ưu tiên ghép theo giới"><button data-act="gmode" data-v="mix" aria-pressed="${c.gmode!=="same"}" ${canWrite?"":"disabled"}>Ưu tiên khác giới</button><button data-act="gmode" data-v="same" aria-pressed="${c.gmode==="same"}" ${canWrite?"":"disabled"}>Ưu tiên cùng giới</button></span>
@@ -11,9 +12,10 @@ function vSan(D){
   </div>`;
   if(errs.gen)h+=`<p class="err">${esc(errs.gen)}</p>`;
   if(!D.players.length)return h+`<div class="empty"><strong>Chưa có người chơi</strong>Vào tab Người chơi, thêm thành viên hoặc chọn người có mặt hôm nay, rồi quay lại đây bấm Xếp trận.</div>`;
-  if(!D.playing.length)h+=`<div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; theo chế độ đang chọn ưu tiên đôi nam nữ hoặc ưu tiên cùng giới; khi lẻ chỉ cho đôi nam hoặc đôi nữ gặp đôi nam nữ, không bao giờ đôi nam gặp đôi nữ.</div>`;
+  if(!D.playing.length)h+=canWrite?`<div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; theo chế độ đang chọn ưu tiên đôi nam nữ hoặc ưu tiên cùng giới; khi lẻ chỉ cho đôi nam hoặc đôi nữ gặp đôi nam nữ, không bao giờ đôi nam gặp đôi nữ.</div>`:`<div class="empty"><strong>Sân đang trống</strong>Chờ ban tổ chức xếp trận. Trang tự cập nhật, không cần tải lại.</div>`;
   else h+=`<div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;
-  h+=`<div><p class="lbl" style="margin:0 0 8px">Đang chờ (${waiting.length})</p>${waiting.length?`<div class="chips">${waiting.map(p=>{const s=D.st.get(p.id);return `<span class="chip">${av(p,"xs")}${esc(p.name)}${p.gender==="F"?" (nữ)":""}<b class="num">${s.g} trận</b></span>`}).join("")}</div>`:`<p class="rule">Không ai phải chờ.</p>`}</div>`;
+  const Q=waitQueue(D);
+  h+=`<div><p class="lbl" style="margin:0 0 8px">Hàng chờ (${Q.length}) · lượt sau theo thứ tự</p>${Q.length?`<div class="chips">${Q.map((p,i)=>{const s=D.st.get(p.id);return `<span class="chip${p.id===ME?" me":""}"><b class="qn num">${i+1}</b>${av(p,"xs")}${esc(p.name)}<b class="num">${s.g} trận</b></span>`}).join("")}</div>`:`<p class="rule">Không ai đang chờ.</p>`}</div>`;
   const hist=[...D.done].reverse();
   h+=`<div class="panel"><div class="bar" style="margin-bottom:6px"><h2 class="grow">Trận đã xong</h2><span class="meta num">${hist.length} trận</span></div>`;
   h+=hist.length?`<div class="hist">${hist.map(m=>histRow(D,m)).join("")}</div>`:`<p class="rule">Kết quả sẽ hiện ở đây sau khi lưu tỉ số.</p>`;

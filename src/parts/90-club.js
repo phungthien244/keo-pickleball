@@ -27,7 +27,7 @@ async function acceptInvite(){
     const iv=s.data();if(iv.exp<Date.now()){toast("Link mời đã hết hạn, nhờ quản lý tạo link mới.");return}
     await FB.setDoc(FB.doc(FB.fs,PFX+"members/"+authUser.uid),{role:iv.role,invite:tok,name:authUser.displayName||"",email:authUser.email||"",at:Date.now()});
     await refreshRole();toast(`Đã nhận quyền ${ROLE_LB[iv.role]} của ${CLUB?.name||"CLB"}.`);
-    INVITE=null;try{history.replaceState(null,"",pathOf(route))}catch(e){}
+    INVITE=null;route="home";try{history.replaceState(null,"",pathOf("home"))}catch(e){}
     render();
   }catch(e){toast("Không nhận được lời mời, thử lại.")}
 }
@@ -91,9 +91,27 @@ function vCaiDat(D){
   if(u&&u.isAnonymous&&canWrite)h+=`<div class="acct"><span class="t"><b>Trọng tài (PIN)</b><small>Máy này đang nhập được tỉ số</small></span><button data-act="logout">Thoát</button></div>`;
   else if(isGoogle(u))h+=`<div class="acct">${av({name:u.displayName||u.email||"?"},"sm")}<span class="t"><b>${esc(u.email||u.displayName||"")}</b><small>${esc(ROLE_LB[ROLE]||"Chưa có quyền ở CLB này")}</small></span><button data-act="logout">Thoát</button></div>`;
   h+=`</div>`;
-  if(!canWrite)return h+loginBar();
+  if(!canWrite)return h+clubLoginBody();
   if(!legacy&&isAdm()){const T=[["Khai ngân hàng nhận tiền",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
     if(ok<T.length)h+=`<div class="todo"><b>Bắt đầu · ${ok}/${T.length} việc đã xong</b><div class="bar2x"><i style="width:${Math.round(ok/T.length*100)}%"></i></div>${T.map(([l,d])=>`<div class="it${d?" ok":""}"><span class="ck" aria-hidden="true">${d?"✓":""}</span>${l}</div>`).join("")}</div>`}
   return h+clubAdmin(D);
 }
 const clubFoot=()=>`<footer class="pfoot"><a href="/">pikeco.app</a> · quản lý CLB pickleball${isPA()?` · <a href="/quan-tri">Quản trị nền tảng</a>`:""}</footer>`;
+function clubLoginBody(){
+  const u=authUser,tok=inviteTok();
+  let h="";
+  h+=`<section class="card2"><h2>${tok?"Nhận lời mời ban tổ chức":"Chủ CLB, quản lý"}</h2><div class="cb">`;
+  if(isGoogle(u)&&!canWrite)h+=`<p class="rule">Đang đăng nhập ${esc(u.email||"")} nhưng tài khoản này chưa có quyền ở CLB. Nhờ chủ CLB gửi link mời, hoặc đổi tài khoản.</p><button class="line" data-act="logout">Đổi tài khoản Google</button>`;
+  else h+=`<p class="rule">${tok?"Bạn được mời vào ban tổ chức. Đăng nhập Google để nhận quyền.":"Đăng nhập Google để sửa cài đặt, xếp sân và quản lý thành viên."}</p><button class="gwide" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập bằng Google</button>`;
+  if(inApp())h+=`<p class="rule">Trình duyệt trong Zalo/Facebook không cho đăng nhập Google. Bấm nút ⋯ ở góc trên rồi chọn Mở bằng trình duyệt.</p>`;
+  h+=`</div></section>`;
+  if(!tok)h+=`<section class="card2"><h2>Trọng tài · vào nhanh bằng PIN</h2><div class="cb"><p class="rule">Không cần tài khoản. Nhập PIN chủ CLB đưa là nhập được tỉ số trên máy này.</p>
+    <div class="pinrow"><label><span class="sr">PIN trọng tài</span><input id="pin" data-draft="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="Nhập PIN" value="${esc(val("pin",""))}"></label><button class="dark" data-act="login">Vào bằng PIN</button></div>
+    ${errs.pin?`<p class="err">${esc(errs.pin)}</p>`:""}</div></section>`;
+  return h;
+}
+function vClubLogin(D){
+  let h=`<div class="dhead"><a class="bk" href="${pathOf("home")}" data-go="home">‹ ${esc(CLUB?.name||D.c.title)}</a><h1>Đăng nhập</h1></div>`;
+  if(canWrite)return h+`<section class="card2"><div class="cb"><p class="rule">Máy này đang có quyền ${esc(ROLE_LB[ROLE]||"nhập tỉ số")}.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào sân</a><button class="line" data-act="logout">Thoát</button></div></section>`;
+  return h+clubLoginBody();
+}

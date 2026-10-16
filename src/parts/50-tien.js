@@ -75,13 +75,13 @@ function payTable(D,sid,list,paid,live){
 }
 function vTien(D){
   const c=D.c,M=money(D),pz=prizes(D,M),cf=clubFund(D.sid);
-  let h=`<div class="kpis"><div class="kpi"><div class="lbl">Phải thu · ${esc(THU[M.thu])}</div><div class="v num">${fmtK(M.collected)}</div></div>
+  let h=meBox(D)+`<div class="kpis"><div class="kpi"><div class="lbl">Phải thu · ${esc(THU[M.thu])}</div><div class="v num">${fmtK(M.collected)}</div></div>
     <div class="kpi"><div class="lbl">Chi phí buổi</div><div class="v num">${fmtK(M.cost)}</div></div>
     <div class="kpi"><div class="lbl">Quỹ giải</div><div class="v num">${fmtK(M.pot)}</div></div>
     <div class="kpi hl"><div class="lbl">${M.club>=0?"Vào quỹ CLB":"Quỹ CLB bù"}</div><div class="v num">${fmtK(Math.abs(M.club))}</div><div class="meta" style="color:var(--sky)">Quỹ CLB sau buổi: ${fmtK(cf+M.club)}</div></div></div>`;
   const CC=[["court","Tiền sân","var(--navy)"],["water","Tiền nước","var(--blue)"],["ball","Tiền bóng","var(--blue-2)"],["other","Khác","var(--line-2)"]].filter(x=>+c.costs[x[0]]>0);
-  if(CC.length)h+=`<div class="panel"><div class="cbar">${CC.map(x=>`<span style="flex:${+c.costs[x[0]]};background:${x[2]}"></span>`).join("")}</div><div class="cleg">${CC.map(x=>`<div><i style="background:${x[2]}"></i>${x[1]}<b class="num">${fmtK(+c.costs[x[0]])}</b></div>`).join("")}</div><p class="rule">Sửa chi phí, cách thu và giải thưởng ở khung Thiết lập buổi trong tab Sân.</p></div>`;
-  else h+=`<p class="rule">Chưa nhập chi phí buổi. Nhập ở khung Thiết lập buổi trong tab Sân.</p>`;
+  if(CC.length)h+=`<div class="panel"><div class="cbar">${CC.map(x=>`<span style="flex:${+c.costs[x[0]]};background:${x[2]}"></span>`).join("")}</div><div class="cleg">${CC.map(x=>`<div><i style="background:${x[2]}"></i>${x[1]}<b class="num">${fmtK(+c.costs[x[0]])}</b></div>`).join("")}</div>${canWrite?`<p class="rule">Sửa chi phí, cách thu và giải thưởng ở khung Thiết lập buổi trong tab Sân.</p>`:""}</div>`;
+  else if(canWrite)h+=`<p class="rule">Chưa nhập chi phí buổi. Nhập ở khung Thiết lập buổi trong tab Sân.</p>`;
   if(M.pot)h+=`<div class="shd"><h2>Giải thưởng${D.done.length?" · tạm tính":""}</h2></div>${pz.length?prizeCards(D,pz):`<p class="rule">Chưa đủ trận để xét giải.</p>`}`;
   if(!M.att.length)h+=`<div class="empty"><strong>Chưa có ai phải góp</strong>Tiền sẽ tự tính khi lưu tỉ số các trận.</div>`;
   else{h+=`<div class="shd"><h2>Mỗi người phải đóng</h2></div>`+payTable(D,D.sid,M.att.map(p=>{const s=D.st.get(p.id);return {id:p.id,name:p.name,P:p,g:s.g,l:s.l,kind:{keo:"kèo",deu:"chia đều",phi:"lệ phí"}[M.thu],...payRow(D,M,p.id)}}),{},true)}

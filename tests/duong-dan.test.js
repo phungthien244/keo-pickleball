@@ -12,7 +12,7 @@ test("link cũ ?clb=..&san=bxh đổi sang /clb/xep-hang", async () => {
   const e = setup({ search: "?clb=q7&san=bxh", data: club("q7") });
   await e.boot();
   expect(e.replaced).toBe("/q7/xep-hang");
-  expect(e.T()).toContain("Bảng xếp hạng hôm nay");
+  expect(e.T()).toContain("Buổi #2 · hôm nay");
 });
 
 test("link cũ ?buoi=1 trên rr.pikeco.app mở tổng kết buổi của AEP", async () => {

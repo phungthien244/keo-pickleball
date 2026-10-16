@@ -2,6 +2,7 @@
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q"||k==="hq"||k==="cq")render()}});
 document.addEventListener("change",e=>{
   const t=e.target;
+  if(t.dataset&&t.dataset.me){setMe(t.value);return}
   if(t.dataset&&t.dataset.photo){const f=t.files&&t.files[0],id=t.dataset.photo;t.value="";if(!f||!canWrite)return;
     if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
     shrink(f).then(d=>write(()=>db.collection("players").doc(id).update({photo:d}),"Đã cập nhật ảnh")).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}
@@ -30,12 +31,13 @@ document.addEventListener("click",async e=>{
     try{
       const u=authUser||(await FB.signInAnonymously(FB.auth)).user;
       await FB.setDoc(FB.doc(FB.fs,PFX+"editors/"+u.uid),{pin,at:Date.now()});
-      await refreshRole();canWrite=true;delete drafts.pin;toast("Đã mở quyền sửa trên máy này.");
+      await refreshRole();canWrite=true;delete drafts.pin;toast("Đã mở quyền nhập tỉ số trên máy này.");if(route==="clogin"){go("app",{tab:"san"});return}
     }catch(x){
       if(authUser&&await isEditor(authUser.uid)){canWrite=true;delete drafts.pin}
       else errs.pin=x&&x.code==="permission-denied"?"Sai PIN.":"Không kết nối được, thử lại.";
     }
     render();return}
+  if(act==="meclr"){setMe(null);return}
   if(act==="logout"){try{await FB.signOut(FB.auth)}catch(x){}canWrite=false;ROLE=null;S.rootEditor=false;watchAdmin();render();return}
   if(act==="glogin"){if(inApp()){toast("Mở trang bằng Chrome hoặc Safari để đăng nhập Google.");return}
     const pr=new FB.GoogleAuthProvider();try{await FB.signInWithPopup(FB.auth,pr)}catch(x){const c=(x&&x.code)||"";if(/popup-blocked|operation-not-supported|web-storage/.test(c)){try{try{sessionStorage.setItem("pb-rd","1")}catch(z){}await FB.signInWithRedirect(FB.auth,pr)}catch(y){toast("Chưa đăng nhập được, thử lại.")}}else if(!/popup-closed|cancelled-popup/.test(c))toast("Chưa đăng nhập được: "+c)}return}
