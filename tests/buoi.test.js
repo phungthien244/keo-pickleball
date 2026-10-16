@@ -118,3 +118,16 @@ test("luật điểm: chạm, cách 2, điểm trần; tên buổi; tắt chi ph
   await e.click("win2", { v: "0" });
   expect(e.store.get("app/config").win2).toBe(false);
 });
+
+test("đổi thể thức trong bảng Sửa không đẩy về bước Chuẩn bị", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ"); await e.click("add");
+  await e.tab("san"); await e.click("start"); await e.click("sheet");
+  await e.click("cset", { k: "fmt", v: "giai" });
+  expect(e.T()).toContain("đang đánh");
+  await e.click("cset", { k: "fmt", v: "xoay" });
+  expect(e.store.get("app/config").phase).toBe("live");
+  expect(e.T()).toContain("đang đánh");
+  expect(e.T()).not.toContain("· chuẩn bị");
+});
