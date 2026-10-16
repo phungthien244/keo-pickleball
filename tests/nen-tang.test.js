@@ -13,7 +13,7 @@ test("tạo CLB: kiểm form, giữ tên dành riêng, ghi đủ tài liệu", a
   expect(e.T()).toContain("Nhập số Zalo");
   e.input("nc-contact", "0901234567"); e.input("nc-slug", "aep"); await e.click("nc-create");
   expect(e.T()).toMatch(/Đường dẫn (đã|này)/);
-  e.input("nc-slug", "clb-quan-7"); await e.click("nc-create"); await e.wait(100);
+  e.input("nc-slug", "clb-quan-7"); await e.click("nc-create"); await e.until(() => e.href);
   expect(e.store.get("clubs/clb-quan-7")).toMatchObject({ name: "CLB Quận 7", owner: "g2", status: "pending", public: true });
   expect(e.store.get("clubs/clb-quan-7")).not.toHaveProperty("contact");
   expect(e.store.get("clubs/clb-quan-7/private/info")).toEqual({ contact: "0901234567", ownerEmail: "new@x.vn" });
@@ -30,7 +30,7 @@ test("tạo CLB bằng mã mời thì hoạt động ngay và đánh dấu mã �
   });
   await e.boot();
   e.input("nc-name", "Hà Nội Dinks"); e.input("nc-contact", "0912345678"); e.input("nc-code", "abcd1234");
-  await e.click("nc-create"); await e.wait(100);
+  await e.click("nc-create"); await e.until(() => e.href);
   expect(e.store.get("clubs/ha-noi-dinks")).toMatchObject({ status: "active", code: "ABCD1234" });
   expect(e.store.get("codes/ABCD1234")).toMatchObject({ used: true, club: "ha-noi-dinks", by: "g3" });
 });
@@ -41,9 +41,8 @@ test("quản trị nền tảng duyệt CLB chờ", async () => {
     user: { uid: "pa", isAnonymous: false, email: "phungthien244@gmail.com", displayName: "PA" },
     data: { "clubs/q7": { name: "Q7", public: true, owner: "u7", status: "pending", createdAt: 1 }, "clubs/q7/private/info": { contact: "0901234567", ownerEmail: "q7@x.vn" } }
   });
-  await e.boot(); await e.wait(100);
-  expect(e.T()).toContain("Chờ duyệt (1)");
+  await e.boot(); await e.until(() => e.T().includes("Chờ duyệt (1)"));
   expect(e.T()).toContain("q7@x.vn");
-  await e.click("qa-ok", { id: "q7" }); await e.wait(50);
+  await e.click("qa-ok", { id: "q7" }); await e.until(() => e.store.get("clubs/q7").status === "active");
   expect(e.store.get("clubs/q7").status).toBe("active");
 });

@@ -73,6 +73,8 @@ export function setup({ search = "", user = null, data = {}, pin = false } = {})
   const tick = () => wait(10);
   return Object.assign(env, {
     FB, mk, H, wait, tick,
+    // chờ tới khi điều kiện đúng (máy CI chậm hơn máy thường)
+    async until(fn, ms = 4000) { const t = Date.now(); while (!fn()) { if (Date.now() - t > ms) throw new Error("Hết thời gian chờ: " + fn); await wait(20); } },
     async boot() { vi.resetModules(); await import("virtual:app"); await wait(120); },
     V: () => mk("#view").innerHTML,
     T: () => mk("#view").innerHTML.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " "),

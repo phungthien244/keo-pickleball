@@ -23,7 +23,7 @@ test("xoay cặp: 4 lượt, tiền kèo, chốt buổi", async () => {
   expect(e.V()).toContain("Số 1 · Nữ");
 
   await e.tab("tien");
-  await e.click("reset"); await e.click("reset"); await e.wait(60);
+  await e.click("reset"); await e.click("reset"); await e.until(() => e.store.has("app/hist-1"));
   const h = e.store.get("app/hist-1");
   expect(h).toBeTruthy();
   expect(h.matchCount).toBe(8);

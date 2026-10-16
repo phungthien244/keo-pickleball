@@ -37,7 +37,7 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   const seen = new Set();
   for (const [, m] of e.docs("matches/", m => m.giai && m.status === "done")) { const key = [m.pa, m.pb].sort().join("~"); expect(seen.has(key)).toBe(false); seen.add(key); }
 
-  await e.click("gend"); await e.click("gend"); await e.wait(60);
+  await e.click("gend"); await e.click("gend"); await e.until(() => e.store.has("app/hist-1"));
   const cfg = e.store.get("app/config");
   expect(cfg.session).toBe(2);
   const h = e.store.get("app/hist-1");

@@ -12,7 +12,7 @@ test("tiền quỹ: trích % giải, chia đều, lệ phí, quỹ CLB cộng d�
   await e.click("cset", { k: "thu", v: "phi" });
   expect(e.store.get("app/config").thu).toBe("deu"); // buổi đã có trận thì khoá cách thu
   await e.tab("tien");
-  await e.click("reset"); await e.click("reset"); await e.wait(60);
+  await e.click("reset"); await e.click("reset"); await e.until(() => e.store.has("app/hist-1"));
   const h = e.store.get("app/hist-1");
   expect(h.money.thu).toBe("deu");
   const pay = h.rows.reduce((s, r) => s + r.pay, 0);
