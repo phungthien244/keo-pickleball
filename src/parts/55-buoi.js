@@ -90,16 +90,24 @@ function cfgChip(D){
   const c=D.c,thu=c.thu||"keo",n=D.players.filter(p=>p.active!==false).length;
   return `<div class="cfgchip"><span class="t"><b>${esc(sessTitle(c,D.sid))} · đang đánh</b><span>${fmtTxt(c)} · ${c.courts} sân · chạm ${c.target}${winBy2(c)?` cách 2${ptMax(c)?`, trần ${ptMax(c)}`:""}`:""} · ${c.cphi===false?"không thu tiền":esc(THU[thu])+(thu==="phi"?` ${fmtK(+c.phi||0)}`:"")} · ${n} người</span></span><button data-act="sheet">Sửa</button></div>`;
 }
-function editSheet(D){
-  return `<div class="sheetbg" data-act="sheetx"><div class="sheet" role="dialog" aria-modal="true" aria-label="Sửa buổi #${D.sid}" data-stop="1">
-    <div class="sh"><h2>Sửa buổi #${D.sid}</h2><button class="x" data-act="sheetx" aria-label="Đóng">✕ Đóng</button></div>
+function sheetInner(D){
+  return `<div class="sh"><h2>Sửa ${esc(sessTitle(D.c,D.sid))}</h2><button class="x" data-act="sheetx" aria-label="Đóng">✕ Đóng</button></div>
     <span class="lbl">Người chơi</span>${attChips(D)}
     <span class="lbl">Buổi này</span>${buoiBlock(D)}
     <span class="lbl">Sân và luật điểm</span>${fmtBlock(D)}
     ${tick("cphi",D.c.cphi!==false,"Chi phí")}${moneyBlock(D)}
     ${tick("gton",(D.c.gt||"khong")!=="khong","Giải thưởng")}${prizeBlock(D)}
     <div class="infonote">Áp dụng từ trận kế tiếp. Trận đang đánh và kết quả đã lưu giữ nguyên. Người cho nghỉ vẫn giữ thành tích đã đánh.</div>
-    <button class="primary" data-act="sheetx">Xong</button></div></div>`;
+    <button class="primary" data-act="sheetx">Xong</button>`;
+}
+// Bảng Sửa nằm ngoài #view: cập nhật nội dung tại chỗ, giữ vị trí cuộn, không chạy lại hiệu ứng mở
+function syncSheet(D){
+  if(typeof document.createElement!=="function")return;
+  let el=document.getElementById("editsheet");
+  const want=sheetOpen&&canWrite&&MODE==="club"&&route==="app"&&tab==="san"&&phaseOf(D)==="live";
+  if(!want){if(el){el.remove();document.documentElement.classList.remove("lock")}if(!want&&sheetOpen&&route!=="app")sheetOpen=false;return}
+  if(!el){el=document.createElement("div");el.id="editsheet";el.innerHTML=`<div class="sheetbg" data-act="sheetx"><div class="sheet" role="dialog" aria-modal="true" aria-label="Sửa buổi" data-stop="1"></div></div>`;document.body.appendChild(el);document.documentElement.classList.add("lock")}
+  const sh=el.querySelector(".sheet"),top=sh.scrollTop;sh.innerHTML=sheetInner(D);sh.scrollTop=top;
 }
 function recv(D,M){
   const paid=payDoc(D.sid).paid||{},L=M.att.filter(p=>M.payOf(p.id)>0);
@@ -226,7 +234,7 @@ async function savePay(sid,patch){const cur=payDoc(sid),next={paid:{...(cur.paid
 async function sessionAct(act,id,b,e){
   if(act.startsWith("rr"))return rrAct(act);
   if(act==="sheet"){sheetOpen=true;render();return true}
-  if(act==="sheetx"){if(b.classList&&b.classList.contains("sheetbg")&&e.target.closest("[data-stop]"))return true;sheetOpen=false;render();return true}
+  if(act==="sheetx"){if(b.classList&&b.classList.contains("sheetbg")&&e.target!==b)return true;sheetOpen=false;render();return true}
   if(act==="start"){await write(()=>saveCfg({phase:"live"}),`Đã bắt đầu buổi #${derive().sid}`);return true}
   if(act==="win2"){const on=b.dataset.v==="1";write(()=>saveCfg({win2:on}),on?"Thắng phải cách 2":"Chạm là thắng");return true}
   if(act==="ptmax"){const c=cfg(),on=b.dataset.v==="1";write(()=>saveCfg({ptMax:on?Math.max(c.target+2,+c.ptMax||c.target+4):0}));return true}

@@ -4,7 +4,7 @@ function vSan(D){
   const c=D.c, busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
   const free=Math.max(0,c.courts-D.playing.length), can=Math.min(free,Math.floor(waiting.length/4));
-  let h=steps3(2)+cfgChip(D)+(sheetOpen?editSheet(D):"");
+  let h=steps3(2)+cfgChip(D);
   if(!D.players.length)return h+`<div class="empty"><strong>Chưa có người chơi</strong>Vào tab Thành viên thêm người, hoặc bấm Sửa để điểm danh.</div>`;
   if(!D.playing.length)h+=`<div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; ưu tiên đôi nam nữ hoặc cùng giới theo cài đặt; không bao giờ đôi nam gặp đôi nữ.</div>`;
   else h+=`<div class="lab"><span class="lbl">Sân đang đánh</span></div><div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;

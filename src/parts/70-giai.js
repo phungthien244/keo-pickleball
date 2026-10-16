@@ -81,7 +81,7 @@ const courtStep=c=>`<span class="lbl">Số sân</span><span class="stepper"><but
 function vGiaiSan(D){
   const G=D.c.giai||{pairs:[]};
   if(canWrite&&!G.locked)return steps3(1)+vPrep(D);
-  if(canWrite)return steps3(2)+cfgChip(D)+(sheetOpen?editSheet(D):"")+gRun(D,gDerive(D));
+  if(canWrite)return steps3(2)+cfgChip(D)+gRun(D,gDerive(D));
   return G.locked?gRun(D,gDerive(D)):gSetup(D,G);
 }
 function gSetup(D,G){
