@@ -65,3 +65,12 @@ test("chuyển từ trang CLB sang trang nền tảng thì tải lại trang", a
   await e.nav("tao");
   expect(e.href).toBe("/tao-clb");
 });
+
+test("rr.pikeco.app chuyển sang pikeco.app/aep kèm query cũ vẫn mở đúng trang", async () => {
+  const e = setup({ host: "pikeco.app", path: "/aep", search: "?buoi=1", data: club("aep", { "clubs/aep/app/hist-1": { sid: 1, title: "AEP", startedAt: 1, endedAt: 2, matchCount: 0, rows: [], money: { gap: 0, cost: 0 } } }) });
+  await e.boot();
+  expect(e.replaced).toBe("/aep/buoi/1");
+  const f = setup({ host: "pikeco.app", path: "/aep", search: "?san=nguoi", data: club("aep") });
+  await f.boot();
+  expect(f.replaced).toBe("/aep/thanh-vien");
+});

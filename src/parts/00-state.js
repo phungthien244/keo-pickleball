@@ -18,11 +18,13 @@ let MODE="platform",CID="aep",PFX="",CLUB=null,ROLE=null,legacy=true,INVITE=null
 const slugClean=x=>String(x||"").toLowerCase().replace(/[^a-z0-9-]/g,"");
 // Link cũ dạng ?clb=..&san=..&buoi=.. vẫn mở được, đổi sang đường dẫn mới
 function legacyPath(){
-  const p=location.pathname||"/";if(p!=="/"&&p!=="/index.html")return null;
-  const q=new URLSearchParams(location.search||"");
-  if(!["clb","san","buoi","start","tao","quantri","moi"].some(k=>q.has(k)))return location.hostname==="rr.pikeco.app"?"/aep":null;
+  const p=location.pathname||"/",seg=p.split("/").filter(Boolean),q=new URLSearchParams(location.search||"");
+  const old=["clb","san","buoi","start","tao","quantri","moi"].some(k=>q.has(k));
+  // rr.pikeco.app chuyển hướng sang pikeco.app/aep kèm nguyên query cũ
+  if(!old)return (p==="/"||p==="/index.html")&&location.hostname==="rr.pikeco.app"?"/aep":null;
+  if(seg.length>1||(seg[0]&&seg[0]!=="index.html"&&PSEG[seg[0]]!==undefined))return null;
   if(q.has("start"))return "/";if(q.has("tao"))return "/tao-clb";if(q.has("quantri"))return "/quan-tri";
-  const c="/"+(slugClean(q.get("clb"))||"aep");
+  const c="/"+(slugClean(q.get("clb"))||(seg[0]&&seg[0]!=="index.html"?slugClean(seg[0]):"")||"aep");
   if(q.has("moi"))return `${c}/moi/${encodeURIComponent(q.get("moi"))}`;
   if(q.has("buoi"))return `${c}/buoi/${Number(q.get("buoi"))||0}`;
   if(q.has("san"))return `${c}/${SEGT[q.get("san")]||"san"}`;
