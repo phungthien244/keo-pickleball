@@ -52,19 +52,24 @@ function clubAdmin(D){
   }
   if(!isAdm())return `<div class="panel clubp"><h2>Tài khoản</h2><p class="rule">Bạn đang có quyền ${esc(ROLE_LB[ROLE]||"")} ở ${esc(CLUB?.name||"CLB")}. Chỉ chủ CLB và quản lý mới đổi được cài đặt CLB.</p></div>`;
   const b=CLUB?.bank||{},mem=[...(S.members||[])].sort((a,b)=>(a.role==="owner"?-1:b.role==="owner"?1:0)||String(a.name).localeCompare(String(b.name),"vi"));
-  let h=`<div class="panel clubp"><h2>Quản lý CLB · ${esc(CLUB?.name||CID)}</h2>
-    <div class="sgrp"><span class="lbl">Ngân hàng nhận tiền (hiện trong mã QR)</span><div class="form">
-      <label><span class="lbl">Ngân hàng</span><select id="bk-code" data-draft="bk-code">${BANKS.map(([c,,n])=>`<option value="${c}" ${val("bk-code",b.code||"mb")===c?"selected":""}>${n}</option>`).join("")}</select></label>
-      <label><span class="lbl">Số tài khoản</span><input id="bk-acc" data-draft="bk-acc" inputmode="numeric" value="${esc(val("bk-acc",b.acc||""))}"></label>
-      <label><span class="lbl">Chủ tài khoản (không dấu)</span><input id="bk-holder" data-draft="bk-holder" value="${esc(val("bk-holder",b.holder||""))}"></label></div>
-      <div class="bar"><span class="meta grow">${b.acc?`Đang dùng: ${esc(bankName(b))} · ${esc(b.acc)} · ${esc(b.holder||"")}`:"Chưa khai ngân hàng: nút Chuyển tiền sẽ bị ẩn."}</span><button class="primary" data-act="bsave">Lưu ngân hàng</button></div></div>
-    <div class="sgrp"><span class="lbl">Ai được xem</span><span class="seg segw"><button data-act="pub" data-v="1" aria-pressed="${CLUB?.public!==false}">Ai có link cũng xem được</button><button data-act="pub" data-v="0" aria-pressed="${CLUB?.public===false}">Chỉ ban tổ chức</button></span></div>
-    <div class="sgrp"><span class="lbl">PIN trọng tài</span><p class="rule">Trọng tài nhập PIN này để nhập tỉ số, không cần tài khoản Google. Đổi PIN không làm mất quyền của các máy đã vào; muốn thu hồi thì bấm Thu hồi.</p>
-      <div class="bar"><input id="newpin" data-draft="newpin" type="password" autocomplete="new-password" placeholder="PIN mới (ít nhất 4 số)" value="${esc(val("newpin",""))}" style="width:180px"><button data-act="pinset">Đặt PIN</button><span class="grow"></span><span class="meta">${(S.editors||[]).length} máy đang dùng PIN</span>${(S.editors||[]).length?`<button class="ghost danger" data-act="edclear">${armed("edclear:x")?"Bấm lần nữa":"Thu hồi tất cả"}</button>`:""}</div></div>
-    <div class="sgrp"><span class="lbl">Ban tổ chức</span>${mem.map(m=>`<div class="mrow2"><span class="mname"><b>${esc(m.name||m.email||m.id)}</b><span class="meta" style="display:block">${esc(m.email||"")}</span></span><span class="pill ${m.role==="owner"?"keo":""}">${ROLE_LB[m.role]||m.role}</span>${m.role!=="owner"&&m.id!==authUser?.uid?(armed("mrm:"+m.id)?`<button class="danger" data-act="mrm" data-id="${m.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="mrm" data-id="${m.id}">Gỡ</button>`):""}</div>`).join("")}
-      <div class="bar" style="margin-top:6px"><button data-act="inv" data-v="admin">Tạo link mời Quản lý</button><button data-act="inv" data-v="scorer">Tạo link mời Trọng tài</button></div>
-      ${S.invLink?`<div class="sharebox" style="margin-top:8px"><span class="lbl">Link mời ${esc(ROLE_LB[S.invLink.role])} · hết hạn sau 7 ngày</span><span class="url">${esc(S.invLink.url.replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="invshare">Gửi qua Zalo</button><button data-act="cp" data-v="${esc(S.invLink.url)}">Copy link</button></div></div>`:""}
-      <p class="rule">Người được mời mở link, đăng nhập Google là có quyền. Quản lý sửa được mọi thứ trừ gỡ chủ CLB; trọng tài chỉ cần nhập tỉ số.</p></div></div>`;
+  const link=absUrl("/"+CID);
+  let h=`<section class="card2"><h2>Thông tin CLB</h2><div class="cb">
+      <div class="fld"><span class="lbl">Ai được xem</span><span class="seg segw"><button data-act="pub" data-v="1" aria-pressed="${CLUB?.public!==false}">Ai có link</button><button data-act="pub" data-v="0" aria-pressed="${CLUB?.public===false}">Chỉ ban tổ chức</button></span></div>
+      <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="cp" data-v="${esc(link)}">Copy link</button></div></div></section>
+    <section class="card2"><h2>Ngân hàng nhận tiền</h2><div class="cb">
+      <label class="fld"><span class="lbl">Ngân hàng</span><select id="bk-code" data-draft="bk-code">${BANKS.map(([c,,n])=>`<option value="${c}" ${val("bk-code",b.code||"mb")===c?"selected":""}>${n}</option>`).join("")}</select></label>
+      <label class="fld"><span class="lbl">Số tài khoản</span><input id="bk-acc" data-draft="bk-acc" inputmode="numeric" value="${esc(val("bk-acc",b.acc||""))}"></label>
+      <label class="fld"><span class="lbl">Chủ tài khoản (không dấu)</span><input id="bk-holder" data-draft="bk-holder" value="${esc(val("bk-holder",b.holder||""))}"></label>
+      <span class="meta">${b.acc?`Đang dùng: ${esc(bankName(b))} · ${esc(b.acc)} · ${esc(b.holder||"")}`:"Chưa khai ngân hàng: nút Chuyển tiền sẽ bị ẩn."}</span>
+      <button class="wide" data-act="bsave">Lưu ngân hàng</button></div></section>
+    <section class="card2"><h2>PIN trọng tài</h2><div class="cb">
+      <p class="rule">Trọng tài mở ${esc(link.replace(/^https?:\/\//,""))}/san, nhập PIN là nhập được tỉ số, không cần tài khoản. Đổi PIN không làm mất quyền của các máy đã vào.</p>
+      <div class="pinrow"><label><span class="sr">PIN mới</span><input id="newpin" data-draft="newpin" type="password" autocomplete="new-password" placeholder="PIN mới, ít nhất 4 số" value="${esc(val("newpin",""))}"></label><button class="dark" data-act="pinset">Đặt PIN</button></div>
+      <div class="bar"><span class="meta grow">${(S.editors||[]).length} máy đang dùng PIN</span>${(S.editors||[]).length?`<button class="ghost danger" data-act="edclear">${armed("edclear:x")?"Bấm lần nữa":"Thu hồi tất cả"}</button>`:""}</div></div></section>
+    <section class="card2"><h2>Ban tổ chức</h2>${mem.map(m=>`<div class="mrow3">${av({name:m.name||m.email||"?"},"sm")}<span class="t"><b>${esc(m.name||m.email||m.id)}</b><small>${esc(m.email||"")}</small></span><span class="rtag${m.role==="owner"?" o":""}">${ROLE_LB[m.role]||m.role}</span>${m.role!=="owner"&&m.id!==authUser?.uid?(armed("mrm:"+m.id)?`<button class="danger" data-act="mrm" data-id="${m.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="mrm" data-id="${m.id}">Gỡ</button>`):""}</div>`).join("")}
+      <div class="cb"><div class="two"><button class="line" data-act="inv" data-v="admin">Mời quản lý</button><button class="line" data-act="inv" data-v="scorer">Mời trọng tài</button></div>
+      ${S.invLink?`<div class="sharebox"><span class="lbl">Link mời ${esc(ROLE_LB[S.invLink.role])} · hết hạn sau 7 ngày</span><span class="url">${esc(S.invLink.url.replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="invshare">Gửi qua Zalo</button><button data-act="cp" data-v="${esc(S.invLink.url)}">Copy link</button></div></div>`:""}
+      <p class="rule">Người được mời mở link, đăng nhập Google là có quyền. Quản lý sửa được mọi thứ trừ gỡ chủ CLB; trọng tài chỉ cần nhập tỉ số.</p></div></section>`;
   return h;
 }
 async function migrate(){
@@ -81,13 +86,14 @@ async function migrate(){
   setTimeout(()=>location.reload(),900);
 }
 function vCaiDat(D){
-  let h=`<div class="phead"><span class="eyebrow">${esc(CLUB?.name||D.c.title)}</span><h2 class="ptitle">Cài đặt CLB</h2></div>`;
-  if(!canWrite)return h+loginBar();
   const u=authUser;
-  if(u&&u.isAnonymous)h+=`<div class="acct"><span class="t"><b>Trọng tài (PIN)</b><small>Máy này đang nhập được tỉ số</small></span><button class="ghost" data-act="logout">Thoát</button></div>`;
-  if(u&&!u.isAnonymous)h+=`<div class="acct">${av({name:u.displayName||u.email||"?"},"sm")}<span class="t"><b>${esc(u.email||u.displayName||"")}</b><small>${esc(ROLE_LB[ROLE]||"")}</small></span><button class="ghost" data-act="logout">Thoát</button></div>`;
+  let h=`<div class="dhead"><a class="bk" href="${pathOf("home")}" data-go="home">‹ ${esc(CLUB?.name||D.c.title)}</a><h1>Cài đặt CLB</h1>`;
+  if(u&&u.isAnonymous&&canWrite)h+=`<div class="acct"><span class="t"><b>Trọng tài (PIN)</b><small>Máy này đang nhập được tỉ số</small></span><button data-act="logout">Thoát</button></div>`;
+  else if(isGoogle(u))h+=`<div class="acct">${av({name:u.displayName||u.email||"?"},"sm")}<span class="t"><b>${esc(u.email||u.displayName||"")}</b><small>${esc(ROLE_LB[ROLE]||"Chưa có quyền ở CLB này")}</small></span><button data-act="logout">Thoát</button></div>`;
+  h+=`</div>`;
+  if(!canWrite)return h+loginBar();
   if(!legacy&&isAdm()){const T=[["Khai ngân hàng nhận tiền",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
-    if(ok<T.length)h+=`<div class="todo"><b style="font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.08em">BẮT ĐẦU · ${ok}/${T.length} VIỆC ĐÃ XONG</b><div class="bar2x"><i style="width:${Math.round(ok/T.length*100)}%"></i></div>${T.map(([l,d])=>`<div class="it${d?" ok":""}"><span class="ck" aria-hidden="true">${d?"✓":""}</span>${l}</div>`).join("")}</div>`}
+    if(ok<T.length)h+=`<div class="todo"><b>Bắt đầu · ${ok}/${T.length} việc đã xong</b><div class="bar2x"><i style="width:${Math.round(ok/T.length*100)}%"></i></div>${T.map(([l,d])=>`<div class="it${d?" ok":""}"><span class="ck" aria-hidden="true">${d?"✓":""}</span>${l}</div>`).join("")}</div>`}
   return h+clubAdmin(D);
 }
 const clubFoot=()=>`<footer class="pfoot"><a href="/">pikeco.app</a> · quản lý CLB pickleball${isPA()?` · <a href="/quan-tri">Quản trị nền tảng</a>`:""}</footer>`;

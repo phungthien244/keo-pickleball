@@ -495,3 +495,73 @@ html.lock,html.lock body{overflow:hidden}
 .steps3{background:var(--navy);color:#fff;padding:20px;display:flex;flex-direction:column;gap:12px;margin-top:8px}
 .steps3 b{font-family:var(--display);font-weight:900;font-size:20px}
 .steps3 ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.5;color:#cfe0ee}
+
+/* ===== khớp bản thiết kế pikeco.app ===== */
+section>.hero:first-child,section>.dhead:first-child{margin-top:-24px}
+.brand .dotapp{color:var(--blue);font-weight:700}
+.eyebrow.y{color:var(--sky)}.eyebrow.y::before{background:var(--yellow)}
+.lab{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px}
+.lab a{font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;color:var(--blue);min-height:44px;display:flex;align-items:center}
+.hero .lead,.hero p.lead{margin:0;font-size:15px;line-height:1.55;color:#cfe0ee}
+.hero h1{font-size:clamp(38px,9vw,64px);line-height:1}
+.ctas{display:grid;gap:10px}
+.cta{display:flex;align-items:center;justify-content:center;min-height:52px;padding:0 16px;text-decoration:none;font-family:var(--display);font-weight:900;font-size:12px;letter-spacing:.14em;text-transform:uppercase;border:none;cursor:pointer;width:100%;box-sizing:border-box}
+.cta.y{background:var(--yellow);color:var(--navy)}
+.cta.o{background:none;border:1px solid var(--navy-line);color:#fff}
+.cta.b{background:var(--blue);color:#fff}
+.clist{display:flex;flex-direction:column;gap:10px}
+.ccard{display:grid;grid-template-columns:64px minmax(0,1fr) 28px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink);min-height:76px}
+.ccard:hover{border-color:var(--navy)}
+.ccard .i{background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:900;font-size:26px}
+.ccard .b{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:10px 14px;min-width:0}
+.ccard .b b{font-family:var(--display);font-weight:800;font-size:14px;letter-spacing:.02em;text-transform:uppercase}
+.ccard .b span{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ccard .c{display:flex;align-items:center;justify-content:center;color:var(--blue);font-size:22px;font-weight:700}
+.clist .sescard{min-height:76px;grid-template-columns:64px minmax(0,1fr) 24px}
+.feat2{display:flex;flex-direction:column;gap:10px}
+.feat2>div{background:var(--surface);border:1px solid var(--line);display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:16px;align-items:start}
+.feat2 .no{width:44px;height:44px;background:var(--navy);color:var(--yellow);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:900;font-size:16px}
+.feat2 b{font-family:var(--display);font-weight:900;font-size:14px;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:4px}
+.feat2 span span{font-size:13px;line-height:1.5;color:var(--muted)}
+.steps3 .cta{margin-top:4px}
+.pfoot2{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
+.pfoot2 b{font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.08em}
+.pfoot2 span{font-size:12px;color:var(--muted)}
+.dhead{background:var(--navy);color:#fff;margin-inline:-16px;padding:12px 16px 20px;display:flex;flex-direction:column;gap:14px}
+.dhead .bk{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--sky);text-decoration:none;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;align-self:flex-start}
+.dhead h1{font-size:clamp(32px,8vw,52px);line-height:1;margin:0}
+.dhead .acct{background:var(--navy-3);margin:0}
+.srch input{width:100%;min-height:50px;box-sizing:border-box}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.hero.login{min-height:calc(100vh - 160px);gap:20px}
+.gwide{display:flex;align-items:center;justify-content:center;gap:12px;min-height:56px;background:#fff;color:var(--navy);border:none;font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;width:100%}
+.gwide .g{width:26px;height:26px;border-radius:50%;border:2px solid var(--blue);color:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px}
+.tip{background:var(--navy-3);padding:16px;display:flex;flex-direction:column;gap:6px}
+.tip b{font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.tip span{font-size:14px;line-height:1.5;color:#cfe0ee}
+.hfoot{border-top:1px solid var(--navy-line);padding-top:18px;display:flex;flex-direction:column;gap:10px;margin-top:auto;font-size:14px;color:#cfe0ee}
+.card2{background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;padding:0;gap:0}
+.card2>h2{padding:14px 16px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:.1em;margin:0}
+.card2 .cb{padding:16px;display:flex;flex-direction:column;gap:12px}
+.card2 .fld{display:flex;flex-direction:column;gap:6px}
+.card2 .fld input,.card2 .fld select{min-height:46px;width:100%;box-sizing:border-box}
+.card2 .seg{display:flex;width:100%}.card2 .seg button{flex:1}
+.linkrow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--sunk);padding:10px 12px;font-size:14px;word-break:break-all}
+.pinrow{display:flex;gap:8px}.pinrow label{flex:1;display:flex}.pinrow input{flex:1;min-width:0;min-height:46px}
+.card2 button.wide,.card2 button.dark{min-height:48px;background:var(--navy);color:#fff;border:none}
+.card2 button.wide{width:100%}
+.card2 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.card2 button.line{min-height:46px;border:1px solid var(--navy);background:var(--surface);color:var(--navy)}
+.mrow3{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.mrow3 .t{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.mrow3 .t b{font-weight:600;font-size:14px}
+.mrow3 .t small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtag{font-family:var(--display);font-weight:800;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:4px 6px;background:var(--sunk);color:var(--navy)}
+.rtag.o{background:var(--yellow)}
+.mrow3 button{min-height:36px;padding:0 10px}
+.todo b{font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+section>.card2+.card2{margin-top:-2px}
+.podium>.pod{background:none;border-top:0;padding:0;gap:8px}
+.pod .av{box-shadow:0 0 0 3px var(--sky)}
+.pod.p1 .av{box-shadow:0 0 0 4px var(--yellow)}
+.pod .stp{display:flex;align-items:flex-start;justify-content:center}

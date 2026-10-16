@@ -36,12 +36,12 @@ test("đường dẫn CLB: tab đổi URL, buổi và cài đặt mở đúng tr
   await e.boot();
   await e.tab("bxh"); expect(e.url).toBe("/q7/xep-hang");
   await e.tab("nguoi"); expect(e.url).toBe("/q7/thanh-vien");
-  expect(e.T()).not.toContain("Quản lý CLB");
+  expect(e.T()).not.toContain("Ngân hàng nhận tiền");
   await e.tab("tien"); expect(e.url).toBe("/q7/quy");
   await e.tab("home"); expect(e.url).toBe("/q7");
   expect(e.mk("#hact").innerHTML).toContain('href="/q7/cai-dat"');
   await e.nav("caidat"); expect(e.url).toBe("/q7/cai-dat");
-  expect(e.T()).toContain("Quản lý CLB");
+  expect(e.T()).toContain("Ngân hàng nhận tiền");
   expect(e.T()).toContain("pikeco.app · quản lý CLB pickleball");
 });
 
