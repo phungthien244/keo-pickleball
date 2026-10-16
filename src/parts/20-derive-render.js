@@ -35,11 +35,12 @@ const nm=(D,id)=>esc(D.pmap.get(id)?.name||"(đã xóa)");
 function render(){
   if(MODE==="platform")return renderPlatform();
   const D=derive(), c=D.c;
-  {const w=String(c.title||"").trim().split(/\s+/),last=w.length>1?w.pop():"";$("#title").innerHTML=esc(w.join(" "))+(last?` <b>${esc(last)}</b>`:"")}
+  {const nm=String(c.title||CLUB?.name||"CLB").trim();$("#title").textContent=nm;$("#clogo").textContent=(nm.charAt(0)||"P").toUpperCase();$("#curl").textContent="pikeco.app/"+CID;
+    const tk=$("#tick");if(tk&&tk.setAttribute)tk.setAttribute("href",pathOf("app",{tab:"san"}));
+    $("#hact").innerHTML=canWrite?`<a href="${pathOf("caidat")}" data-go="caidat" aria-label="Cài đặt CLB"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg></a>`:isGoogle(authUser)?`<button data-act="logout">Thoát</button>`:`<button data-act="glogin">Đăng nhập</button>`}
   ticker(D);
   const active=D.players.filter(p=>p.active!==false).length;
-  $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:
-    `<span class="dot ${S.live?"on":""}"></span> ${S.live?"Trực tiếp":"Đang đồng bộ…"} · <span class="num">${active}</span> người · <span class="num">${c.courts}</span> sân · ${isG(c)?"giải cặp cố định · chạm 11":`chạm ${c.target}, cách 2`}${canWrite?` · <span class="pill win">${esc(ROLE_LB[ROLE]||"Đang ở chế độ sửa")}</span> <a class="gear" href="${pathOf("caidat")}" data-go="caidat">Cài đặt</a> <button class="ghost" data-act="logout">Thoát</button>`:isGoogle(authUser)?` · <button class="ghost" data-act="logout">Thoát</button>`:""}`;
+  $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:"";
   if(!splashGone&&(S.offline||S.noClub||(S.live&&S.mReady&&S.hReady)))hideSplash();
   if(autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
   const selTab=route==="home"?"home":route==="buoi"?"ls":route==="caidat"?"":tab;
@@ -48,8 +49,9 @@ function render(){
   document.title=route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:route==="caidat"?`Cài đặt · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
+  const loading=!S.offline&&!S.noClub&&!S.priv&&!(S.mReady&&S.hReady&&S.pReady);
   const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim; lastAnim=akey;
-  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":loginBar()}${v(D)}${clubFoot()}</section>`;
+  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":loginBar()}${loading?skeleton():v(D)}${clubFoot()}</section>`;
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
   if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}
 }
@@ -74,3 +76,4 @@ function ticker(D){
 function tkShow(){const el=$("#tkt");if(!el)return;el.textContent=tkItems[tkI]||"";el.classList.remove("swap");void el.offsetWidth;el.classList.add("swap")}
 setInterval(()=>{if(tkItems.length>1&&!document.hidden){tkI=(tkI+1)%tkItems.length;tkShow()}},4500);
 
+const skeleton=()=>`<div class="skel" aria-busy="true" aria-label="Đang tải dữ liệu"><i style="height:96px"></i><i style="height:12px;width:180px"></i><i style="height:180px"></i><div class="tiles"><i style="height:84px"></i><i style="height:84px"></i></div><i style="height:64px"></i><i style="height:64px"></i></div>`;

@@ -83,6 +83,11 @@ async function migrate(){
 function vCaiDat(D){
   let h=`<div class="phead"><span class="eyebrow">${esc(CLUB?.name||D.c.title)}</span><h2 class="ptitle">Cài đặt CLB</h2></div>`;
   if(!canWrite)return h+loginBar();
+  const u=authUser;
+  if(u&&u.isAnonymous)h+=`<div class="acct"><span class="t"><b>Trọng tài (PIN)</b><small>Máy này đang nhập được tỉ số</small></span><button class="ghost" data-act="logout">Thoát</button></div>`;
+  if(u&&!u.isAnonymous)h+=`<div class="acct">${av({name:u.displayName||u.email||"?"},"sm")}<span class="t"><b>${esc(u.email||u.displayName||"")}</b><small>${esc(ROLE_LB[ROLE]||"")}</small></span><button class="ghost" data-act="logout">Thoát</button></div>`;
+  if(!legacy&&isAdm()){const T=[["Khai ngân hàng nhận tiền",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
+    if(ok<T.length)h+=`<div class="todo"><b style="font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.08em">BẮT ĐẦU · ${ok}/${T.length} VIỆC ĐÃ XONG</b><div class="bar2x"><i style="width:${Math.round(ok/T.length*100)}%"></i></div>${T.map(([l,d])=>`<div class="it${d?" ok":""}"><span class="ck" aria-hidden="true">${d?"✓":""}</span>${l}</div>`).join("")}</div>`}
   return h+clubAdmin(D);
 }
 const clubFoot=()=>`<footer class="pfoot"><a href="/">pikeco.app</a> · quản lý CLB pickleball${isPA()?` · <a href="/quan-tri">Quản trị nền tảng</a>`:""}</footer>`;

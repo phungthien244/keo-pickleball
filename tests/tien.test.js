@@ -20,7 +20,7 @@ test("tiền quỹ: trích % giải, chia đều, lệ phí, quỹ CLB cộng d�
   expect(h.money.club).toBe(pay - h.money.cost - (h.money.pot || 0));
   expect(h.money.prizes.map(p => p.label)).toEqual(["Số 1 nam", "Số 1 nữ"]);
   await e.tab("home");
-  expect(e.T()).toMatch(/quỹ CLB \d+k/);
+  expect(e.T()).toMatch(/Quỹ CLB \d+k/);
 
   await e.tab("san"); await e.click("cset", { k: "thu", v: "phi" }); await e.cfg("phi", 60); await e.cfg("court", 300);
   await e.click("gen"); await play("11", "9");

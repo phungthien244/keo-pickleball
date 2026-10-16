@@ -433,3 +433,65 @@ html.lock,html.lock body{overflow:hidden}
 .sub .gear{color:#fff;font-weight:600;font-size:13px;text-decoration:none;border:1px solid rgba(255,255,255,.35);padding:2px 10px;margin-left:4px}
 .pfoot{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 .pfoot a{color:inherit;font-weight:600}
+
+/* đầu trang CLB gọn + tab 5 cột (giao diện mới) */
+.chead{display:flex;align-items:center;gap:12px;padding-block:12px}
+.clogo{width:40px;height:40px;flex:none;background:var(--yellow);color:var(--navy);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:900;font-size:20px}
+.clogo[hidden]{display:none}
+.cname{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.cname .brand{font-size:17px;font-weight:900;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cname .brand b{font-weight:900}
+.cname small{font-size:12px;color:var(--sky)}
+.cname small:empty{display:none}
+.hact{display:flex;gap:6px;flex:none}
+.hact a,.hact button{min-width:44px;min-height:44px;border:1px solid var(--navy-line);background:none;color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;cursor:pointer}
+.hact svg{width:20px;height:20px}
+.tkwrap{padding-bottom:8px}
+.tkwrap .ticker{text-decoration:none;min-height:44px;padding:0 12px}
+.tkwrap[hidden]{display:none}
+.sub{padding-bottom:12px}
+.sub:empty{display:none}
+.tabs-in{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:0;padding-inline:0}
+.tabs button{padding:0 2px;font-size:10px;letter-spacing:.06em;white-space:normal;line-height:1.15;min-height:50px}
+.tabs button::after{left:0;right:0}
+@media (min-width:700px){.tabs button{font-size:12px;letter-spacing:.12em}}
+.livecta{background:var(--blue);color:#fff;text-decoration:none;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.livecta .e{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#d9ecfb}
+.livecta .t{font-family:var(--display);font-weight:900;font-size:22px;line-height:1.1;text-transform:uppercase;display:block;margin:4px 0}
+.livecta .m{font-size:13px;color:#e6f2fc}
+.livecta .chev{font-size:28px;color:#fff}
+.podium{background:var(--navy);color:#fff;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:8px;padding:18px 12px 0}
+.pod{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;min-width:0}
+.pod .n{font-weight:600;font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .r{font-family:var(--display);font-weight:900;font-size:20px}
+.pod.p1 .r{color:var(--yellow)}
+.pod .stp{width:100%;background:var(--navy-3);font-family:var(--display);font-weight:900;font-size:16px;color:var(--sky);padding-top:8px;box-sizing:border-box}
+.pod.p1 .stp{height:84px}.pod.p2 .stp{height:56px}.pod.p3 .stp{height:40px}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);padding:14px;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;gap:4px}
+.tile .k{font-family:var(--display);font-weight:700;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.tile b{font-family:var(--display);font-weight:900;font-size:24px}
+.tile small{font-size:12px;color:var(--muted)}
+.btn-line{display:flex;align-items:center;justify-content:center;min-height:48px;border:1px solid var(--navy);color:var(--navy);text-decoration:none;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.skel{display:flex;flex-direction:column;gap:18px;padding-top:4px}
+.skel i{display:block;background:var(--sunk);animation:skl 1.2s ease-in-out infinite}
+@keyframes skl{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.skel i{animation:none}}
+.todo{background:var(--surface);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.todo .bar2x{height:6px;background:var(--sunk)}.todo .bar2x i{display:block;height:6px;background:var(--win)}
+.todo .it{display:flex;align-items:center;gap:10px;font-size:14px;min-height:30px}
+.todo .ck{width:22px;height:22px;flex:none;background:var(--line-2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.todo .it.ok .ck{background:var(--win)}
+.todo .it:not(.ok){color:var(--muted)}
+.acct{display:flex;align-items:center;gap:10px;background:var(--navy);color:#fff;padding:10px 12px;margin-bottom:16px}
+.acct .t{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.acct .t b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis}
+.acct .t small{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.14em;color:var(--yellow)}
+.acct button{color:#fff;border:1px solid var(--navy-line);background:none;min-height:44px}
+.tips{display:grid;gap:10px;margin-top:12px}
+.tips div{background:var(--navy);color:#fff;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.tips b{font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.08em}
+.tips span{font-size:14px;line-height:1.5;color:#cfe0ee}
+.steps3{background:var(--navy);color:#fff;padding:20px;display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.steps3 b{font-family:var(--display);font-weight:900;font-size:20px}
+.steps3 ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.5;color:#cfe0ee}

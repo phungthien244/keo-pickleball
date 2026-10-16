@@ -1,4 +1,6 @@
 /* ---------- boot ---------- */
+// Chỉ hỏi kết quả đăng nhập chuyển hướng khi vừa quay về từ Google: tránh tải khung auth (~1s) cho người chỉ xem
+function fromRedirect(){let f=null;try{f=sessionStorage.getItem("pb-rd");sessionStorage.removeItem("pb-rd")}catch(e){}if(f&&FB.getRedirectResult)FB.getRedirectResult(FB.auth).catch(()=>{})}
 async function isEditor(uid){try{return (await FB.getDoc(FB.doc(FB.fs,PFX+"editors/"+uid))).exists()}catch(e){return false}}
 function makeDb(pfx){
   const wrapDoc=s=>({id:s.id,exists:s.exists(),data:()=>s.data(),metadata:s.metadata});
@@ -23,7 +25,7 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
   render();
   if(MODE==="platform"){
     if(!window.FB)return;
-    if(FB.getRedirectResult)FB.getRedirectResult(FB.auth).catch(()=>{});
+    fromRedirect();
     FB.onAuthStateChanged(FB.auth,u=>{authUser=u;S.codes=null;S.loginJump=false;S.myClub=undefined;loadMyClub();render()});
     return}
   if(!window.FB){S.offline=true;render();return}
@@ -32,7 +34,8 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
     else if(CID!=="aep"){S.noClub=true;hideSplash();render();return}
   }catch(e){if(CID!=="aep"){S.offline=true;render();return}}
   db=makeDb(PFX);
-  if(FB.getRedirectResult)FB.getRedirectResult(FB.auth).catch(()=>{});
+  hideSplash();
+  fromRedirect();
   FB.onAuthStateChanged(FB.auth,async u=>{authUser=u;S.codes=null;await refreshRole();loadMyClub();if(S.priv&&canWrite){location.reload();return}render();acceptInvite()});
   if(!legacy)FB.onSnapshot(FB.doc(FB.fs,"clubs/"+CID),{},s=>{if(s.exists()){CLUB=s.data();BANK=clubBank();render()}},()=>{});
   const fail=()=>{if(!legacy&&CLUB&&CLUB.public===false)S.priv=true;S.offline=true;hideSplash();render()};
@@ -43,6 +46,6 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
     unsubB=db.collection("batches").where("session",sid).onSnapshot(q=>{S.batches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail)};
   db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;subSession(cfg().session||1);live(s.metadata)},fail);
   db.collection("app").onSnapshot(q=>{S.hist=q.docs.filter(d=>d.id.startsWith("hist-")).map(d=>({id:d.id,...d.data()}));S.hReady=true;render()},fail);
-  db.collection("players").onSnapshot(q=>{S.players=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail);
+  db.collection("players").onSnapshot(q=>{S.players=q.docs.map(d=>({id:d.id,...d.data()}));S.pReady=true;live(q.metadata)},fail);
 })();
 

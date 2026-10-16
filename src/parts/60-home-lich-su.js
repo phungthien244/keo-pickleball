@@ -20,26 +20,26 @@ function vHome(D){
   const H=lastHist(D),L=sessList(D);
   const ppl=D.players.map(p=>{const s=D.st.get(p.id),A=D.all.get(p.id),hr=H&&H.rows?H.rows.find(r=>r.id===p.id):null;
     return {p,r:s.rating,A,d:s.g?s.d:hr?hr.d:null,dl:s.g?"hôm nay":H?`buổi #${H.sid}`:""}}).sort((a,b)=>b.r-a.r||b.A.g-a.A.g);
-  if(!ppl.length)return `<div class="empty"><strong>Chưa có thành viên</strong>Vào Sân để bắt đầu buổi đầu tiên.</div>`;
+  const busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),wait=D.players.filter(p=>p.active!==false&&!busy.has(p.id)).length;
+  let h=`<a class="livecta" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san"><span><span class="e">Hôm nay · buổi #${D.sid}</span><span class="t">Vào sân trực tiếp</span><span class="m num">${D.done.length||D.playing.length?`${D.done.length} trận xong · ${D.playing.length} đang đánh · ${wait} người chờ`:`Chưa có trận nào · ${D.players.filter(p=>p.active!==false).length} người có mặt`}</span></span><span class="chev" aria-hidden="true">›</span></a>`;
+  if(!ppl.length)return h+`<div class="empty"><strong>Chưa có thành viên</strong>Vào tab Thành viên để thêm người chơi.</div>`;
   const F=x=>x.p.gender==="F", top=ppl[0], sec=ppl[1], alt=F(top)?ppl.find(x=>!F(x)):ppl.find(F);
-  const mini=(k,x,y)=>x?`<div class="mini">${av(x.p,"md")}<div class="t"><span class="k">${k}</span><span class="n">${esc(x.p.name)}</span><span class="v${y?" y":""} num">${r2(x.r)}</span></div></div>`:"";
+  const pod=(x,cls,lb)=>x?`<div class="pod ${cls}">${av(x.p,cls==="p1"?"lg":"md")}<span class="n">${esc(x.p.name)}</span><span class="r num">${r2(x.r)}</span><span class="stp">${lb}</span></div>`:`<div class="pod ${cls}"></div>`;
   const nF=ppl.filter(F).length,nM=ppl.length-nF;
   const q=String(val("hq","")).trim().toLowerCase();
   const list=ppl.map((x,i)=>({...x,i})).filter(x=>(hF==="all"||(hF==="F")===F(x))&&(!q||x.p.name.toLowerCase().includes(q)));
   const fb=(v,l,n)=>`<button data-act="hf" data-v="${v}" aria-pressed="${hF===v}">${l} · ${n}</button>`;
-  let h=`<div class="hero">
-    <div class="phead"><span class="eyebrow">Bảng rating CLB${H?` · sau buổi #${H.sid}`:""}</span><h1>Xếp hạng<br>rating</h1>
-    <p class="hmeta num">${ppl.length} thành viên · ${L.length} buổi đã xong · quỹ CLB ${fmtK(clubFund())}${D.done.length?` · buổi #${D.sid} đang diễn ra`:""}</p></div>
-    <div class="hsplit"><div class="spot"><div class="t"><span class="tag">Số 1 rating</span><span class="n">${esc(top.p.name)}</span>
-      <span class="hmeta">${top.p.gender==="F"?"Nữ":"Nam"} · ${top.A.ses.size} buổi · thắng ${pct(top.A.w,top.A.g)}%</span>
-      <span class="r"><b class="num">${r2(top.r)}</b>${top.d!=null?`<span class="${dCls(top.d)} num" style="font-family:var(--display);font-weight:800;font-size:13px">${dTxt(top.d)} ${top.dl}</span>`:""}</span></div>${av(top.p,"xl")}</div>
-    <div class="duo">${mini("Số 2",sec)}${mini(F(top)?"Số 1 nam":"Số 1 nữ",alt,true)}</div></div></div>
+  if(ppl.length>=2)h+=`<div class="shd"><h2>Top rating${H?` · sau buổi #${H.sid}`:""}</h2></div>
+  <div class="podium">${pod(sec,"p2","2")}${pod(top,"p1","1")}${pod(alt&&alt!==sec?alt:ppl[2],"p3",alt&&alt!==sec?(F(alt)?"1 NỮ":"1 NAM"):"3")}</div>`;
+  h+=`<div class="tiles" style="margin-top:16px"><a class="tile" href="${pathOf("app",{tab:"tien"})}" data-go="app" data-t="tien"><span class="k">Quỹ CLB</span><b class="num">${fmtK(clubFund())}</b><small>${H?`sau buổi #${H.sid}`:"chưa có buổi nào"}</small></a>
+    <a class="tile" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><span class="k">Thành viên</span><b class="num">${ppl.length}</b><small>${nM} nam · ${nF} nữ</small></a></div>
+  <div class="shd"><h2>Bảng rating CLB</h2></div>
   <div class="bar"><label style="display:flex;flex:1 1 240px"><span class="lbl" style="position:absolute;width:1px;height:1px;overflow:hidden">Tìm thành viên</span><input id="hq" data-draft="hq" type="search" placeholder="Tìm thành viên theo tên" value="${esc(val("hq",""))}" style="width:100%"></label>
     <span class="seg" role="group" aria-label="Lọc theo giới">${fb("all","Tất cả",ppl.length)}${fb("M","Nam",nM)}${fb("F","Nữ",nF)}</span></div>
   <div class="lb">${list.length?list.map(x=>`<div class="lbr${x.i===0?" top1":""}"><span class="rk num">${x.i+1}</span><span class="who">${av(x.p,"md")}<span class="t"><b>${esc(x.p.name)}</b><small class="num">${x.p.gender==="F"?"Nữ":"Nam"} · ${x.A.g?`${x.A.ses.size} buổi · thắng ${pct(x.A.w,x.A.g)}%`:"chưa đánh"}</small></span></span><span class="rt"><b class="num">${r2(x.r)}</b><small class="${dCls(x.d)} num">${dTxt(x.d)}</small></span></div>`).join(""):`<p class="rule" style="padding:14px">Không tìm thấy ai khớp.</p>`}</div>`;
-  if(L.length)h+=`<div class="shd"><h2>Các buổi gần đây</h2></div><div class="mgrid">${L.slice(0,6).map(x=>{const m=x.rows[0];return `<a class="sescard" href="${pathOf("buoi",{sid:x.sid})}" data-go="buoi" data-id="${x.sid}"><span class="no"><small>BUỔI</small><b class="num">${x.sid}</b></span><span class="bd"><b>${dmy(x.at)}</b><span class="num">${x.ms.length||x.snap?.matchCount||0} trận · ${x.rows.length} người</span>${x.snap?.type==="giai"?(()=>{const t=(x.snap.giai?.table||[]).find(t=>!t.out);return t?`<span class="mvpl"><span class="gtag">GIẢI</span>${esc(t.na)} &amp; ${esc(t.nb)} vô địch</span>`:""})():m?`<span class="mvpl"><span class="mvptag">MVP</span>${esc(m.name)} · ${m.w}–${m.l}</span>`:""}</span><span class="chev" aria-hidden="true">›</span></a>`}).join("")}</div>`;
-  h+=`<a class="back" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san" style="background:var(--blue);color:#fff;padding:0 18px;min-height:52px;align-self:flex-start">Vào sân trực tiếp</a>
-  <p class="rule">Rating tính như DUPR: so điểm thực tế với điểm dự kiến của từng trận. Đánh tốt hơn dự kiến thì tăng, kể cả khi thua. Rating chốt khi kết thúc mỗi buổi.</p>`;
+  if(L.length)h+=`<div class="shd"><h2>Các buổi gần đây</h2></div><div class="mgrid">${L.slice(0,3).map(x=>{const m=x.rows[0];return `<a class="sescard" href="${pathOf("buoi",{sid:x.sid})}" data-go="buoi" data-id="${x.sid}"><span class="no"><small>BUỔI</small><b class="num">${x.sid}</b></span><span class="bd"><b>${dmy(x.at)}</b><span class="num">${x.ms.length||x.snap?.matchCount||0} trận · ${x.rows.length} người</span>${x.snap?.type==="giai"?(()=>{const t=(x.snap.giai?.table||[]).find(t=>!t.out);return t?`<span class="mvpl"><span class="gtag">GIẢI</span>${esc(t.na)} &amp; ${esc(t.nb)} vô địch</span>`:""})():m?`<span class="mvpl"><span class="mvptag">MVP</span>${esc(m.name)} · ${m.w}–${m.l}</span>`:""}</span><span class="chev" aria-hidden="true">›</span></a>`}).join("")}</div>
+  <a class="btn-line" style="margin-top:12px" href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls">Lịch sử tất cả các buổi</a>`;
+  h+=`<p class="rule">Rating tính như DUPR: so điểm thực tế với điểm dự kiến của từng trận. Đánh tốt hơn dự kiến thì tăng, kể cả khi thua. Rating chốt khi kết thúc mỗi buổi.</p>`;
   return h;
 }
 function shareText(D,x){
