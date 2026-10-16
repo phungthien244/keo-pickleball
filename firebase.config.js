@@ -8,5 +8,12 @@ export const FIREBASE = {
     messagingSenderId: "882121758141",
     appId: "1:882121758141:web:aa6d2c990c3011cb732ed4"
   },
-  dev: null // dán cấu hình Firebase pikeco-dev vào đây
+  dev: {
+    apiKey: "AIzaSyCbCYsuyrXkPuYLt1e2DxmPg8fFhbpXvbM",
+    authDomain: "pikeco-dev-53834.firebaseapp.com",
+    projectId: "pikeco-dev-53834",
+    storageBucket: "pikeco-dev-53834.firebasestorage.app",
+    messagingSenderId: "916980956435",
+    appId: "1:916980956435:web:d5744a7dc7faf3604f6ee6"
+  }
 };

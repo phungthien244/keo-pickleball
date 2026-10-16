@@ -41,7 +41,7 @@ jobs:
             echo "project=keo-pickleball" >> "$GITHUB_OUTPUT"
             echo "secret=FIREBASE_SERVICE_ACCOUNT" >> "$GITHUB_OUTPUT"
           else
-            echo "project=${{ vars.FIREBASE_DEV_PROJECT }}" >> "$GITHUB_OUTPUT"
+            echo "project=pikeco-dev-53834" >> "$GITHUB_OUTPUT"
             echo "secret=FIREBASE_SERVICE_ACCOUNT_DEV" >> "$GITHUB_OUTPUT"
           fi
       - name: Deploy firestore.rules
