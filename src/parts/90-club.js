@@ -54,6 +54,9 @@ function clubAdmin(D){
   const b=CLUB?.bank||{},mem=[...(S.members||[])].sort((a,b)=>(a.role==="owner"?-1:b.role==="owner"?1:0)||String(a.name).localeCompare(String(b.name),"vi"));
   const link=absUrl("/"+CID);
   let h=`<section class="card2"><h2>Thông tin CLB</h2><div class="cb">
+      <div class="logoed"><span class="clogo big">${logoHtml(CLUB,CLUB?.name)}</span><span class="t"><label class="lnkbtn">${logoOk(CLUB)?"Đổi ảnh đại diện":"Thêm ảnh đại diện"}<input type="file" accept="image/*" data-clogo="1" class="sr"></label>${logoOk(CLUB)?`<button class="ghost danger" data-act="clogodel">Xoá ảnh</button>`:""}<small class="rule">Ảnh vuông, app tự thu nhỏ. Hiện trên đầu trang và danh sách CLB.</small></span></div>
+      <label class="fld"><span class="lbl">Tên CLB · hiện trên đầu trang</span><input id="cl-name" data-draft="cl-name" maxlength="60" value="${esc(val("cl-name",CLUB?.name||""))}"></label>
+      <button class="wide" data-act="cname">Lưu tên CLB</button>
       <div class="fld"><span class="lbl">Ai được xem</span><span class="seg segw"><button data-act="pub" data-v="1" aria-pressed="${CLUB?.public!==false}">Ai có link</button><button data-act="pub" data-v="0" aria-pressed="${CLUB?.public===false}">Chỉ ban tổ chức</button></span></div>
       <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="cp" data-v="${esc(link)}">Copy link</button></div></div></section>
     <section class="card2"><h2>Ngân hàng nhận tiền</h2><div class="cb">

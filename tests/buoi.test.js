@@ -92,3 +92,29 @@ test("thành viên xem tab Sân: không thấy cài đặt, thấy trạng thái
   expect(e2.T()).toContain("Buổi #3 · đang đánh");
   expect(e2.V()).not.toContain('data-act="sheet"');
 });
+
+test("luật điểm: chạm, cách 2, điểm trần; tên buổi; tắt chi phí", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC | nữ\nD | nữ"); await e.click("add");
+  await e.tab("san");
+  e.H.change({ target: { dataset: { save: "cfg", key: "sname" }, value: "Kèo tối thứ 5" } }); await e.tick();
+  expect(e.store.get("app/config").sname).toBe("Kèo tối thứ 5");
+  expect(e.T()).toContain("Kèo tối thứ 5 · Buổi #1");
+  await e.click("ptmax", { v: "1" });
+  expect(e.store.get("app/config").ptMax).toBe(15);
+  await e.click("cphi");
+  expect(e.store.get("app/config").cphi).toBe(false);
+  expect(e.T()).toContain("Buổi này không thu tiền");
+  await e.click("start"); await e.click("gen");
+  const [id] = e.docs("matches/", m => m.status === "playing")[0];
+  const tryScore = async (a, b) => { e.input("sa-" + id, a); e.input("sb-" + id, b); await e.click("save", { id }); return e.store.get("matches/" + id).status; };
+  expect(await tryScore("16", "14")).toBe("playing");     // vượt trần
+  expect(e.V()).toContain("Tối đa 15");
+  expect(await tryScore("15", "14")).toBe("done");        // chạm trần trước
+  await e.tab("tien");
+  expect(e.T()).toContain("Buổi này không thu tiền");
+  await e.tab("san");
+  await e.click("win2", { v: "0" });
+  expect(e.store.get("app/config").win2).toBe(false);
+});

@@ -674,3 +674,13 @@ button.paidpill{border:none}
 .sumbox>div{display:flex;justify-content:space-between;gap:10px}
 .sumbox .big{border-top:1px solid var(--navy-line);padding-top:8px;font-family:var(--display);font-weight:900;font-size:20px;color:var(--yellow);text-transform:uppercase}
 @media (max-width:420px){.tabs button{font-size:9px;letter-spacing:.03em}}
+/* ô tích Chi phí / Giải thưởng, ảnh CLB */
+button.tick{display:inline-flex;align-items:center;gap:10px;border:none;background:none;padding:0;min-height:36px;font-size:13px;letter-spacing:.1em;color:inherit}
+button.tick .box{width:20px;height:20px;flex:none;border:2px solid var(--navy);display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--surface)}
+button.tick.on .box{background:var(--blue);border-color:var(--blue);color:#fff}
+.sheet button.tick{margin-top:6px}
+.clogo{overflow:hidden}.clogo img,.ccard .i img{width:100%;height:100%;object-fit:cover;display:block}
+.ccard .i{overflow:hidden}
+.clogo.big{width:64px;height:64px;font-size:28px}
+.logoed{display:flex;align-items:center;gap:14px}.logoed .t{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.lnkbtn{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border:1px solid var(--navy);color:var(--navy);font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}

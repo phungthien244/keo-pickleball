@@ -37,13 +37,29 @@ const $=s=>document.querySelector(s);
 const ARM={k:"",t:0};const armed=k=>ARM.k===k&&Date.now()<ARM.t;
 function armOr(k){if(armed(k)){ARM.k="";return true}ARM.k=k;ARM.t=Date.now()+4000;render();setTimeout(render,4100);return false}
 const delBtn=(act,id,label)=>armed(act+":"+id)?`<button class="danger" data-act="${act}" data-id="${id}">Bấm lần nữa để xóa</button>`:`<button class="ghost danger" data-act="${act}" data-id="${id}">${label}</button>`;
+const logoOk=c=>c&&typeof c.logo==="string"&&/^data:image\//.test(c.logo);
+const logoHtml=(c,name)=>logoOk(c)?`<img src="${c.logo}" alt="">`:esc(String(name||"P").trim().charAt(0).toUpperCase()||"P");
+const sessTitle=(c,sid)=>c.sname?`${c.sname} · Buổi #${sid}`:`Buổi #${sid}`;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtK=n=>(Math.round(n*10)/10).toLocaleString("vi-VN")+"k";
 const r2=n=>(Math.round(n*100)/100).toFixed(2);
 const sgn=n=>(n>=0?"+":"")+r2(n);
-function cfg(){const c=S.cfg||{};return {...DEF,...(CLUB&&CLUB.name?{title:CLUB.name}:{}),...c,costs:{...DEF.costs,...(c.costs||{})}}}
+function cfg(){const c=S.cfg||{};return {...DEF,...c,...(CLUB&&CLUB.name?{title:CLUB.name}:{}),costs:{...DEF.costs,...(c.costs||{})}}}
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 
+const winBy2=c=>c.win2!=null?!!c.win2:!isG(c);
+const ptMax=c=>winBy2(c)?(+c.ptMax||0):0;
+function ruleTxt(c){const t=+c.target||11;return !winBy2(c)?`Chạm ${t}, không cần cách 2`:`Chạm ${t}, thắng cách 2${ptMax(c)?`, tối đa ${ptMax(c)}`:""}`}
+function validPts(a,b,c){
+  const t=+c.target||11;
+  if(!Number.isInteger(a)||!Number.isInteger(b)||a<0||b<0||a===b)return "Nhập điểm hai đội, không được hòa.";
+  const w=Math.max(a,b),l=Math.min(a,b),mx=ptMax(c);
+  if(!winBy2(c))return w===t&&l<=t-1?null:`Đội thắng đúng ${t} điểm, đội thua từ 0 đến ${t-1}.`;
+  if(l<=t-2)return w===t?null:`Đội thắng phải đúng ${t} điểm khi đội thua có ${l}.`;
+  if(mx&&w===mx&&l===mx-1)return null;
+  if(mx&&w>mx)return `Tối đa ${mx} điểm.`;
+  return w===l+2?null:`Từ ${t-1}–${t-1} phải thắng cách 2 (ví dụ ${l+2}–${l})${mx?`, hoặc ai chạm ${mx} trước`:""}.`;
+}
 function validScore(a,b,t){
   if(!Number.isInteger(a)||!Number.isInteger(b)||a<0||b<0||a===b)return "Nhập điểm hai đội, không được hòa.";
   const w=Math.max(a,b),l=Math.min(a,b);

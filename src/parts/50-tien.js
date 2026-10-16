@@ -1,7 +1,7 @@
 const THU={keo:"Kèo thua góp",deu:"Chia đều chi phí",phi:"Lệ phí cố định",khong:"Quỹ CLB trả"};
 const GT={khong:"Không có giải",trich:"Trích % phần dư",codinh:"Số tiền cố định",gop:"Góp thêm vào giải"};
 function money(D,extra){
-  const c=D.c,thu=c.thu||"keo",gt=c.gt||"khong",cs=c.costs||{};
+  const c=D.c,off=c.cphi===false,thu=off?"khong":(c.thu||"keo"),gt=c.gt||"khong",cs=off?{}:(c.costs||{});
   const cost=(+cs.court||0)+(+cs.water||0)+(+cs.ball||0)+(+cs.other||0);
   const att=D.players.filter(p=>D.st.get(p.id).g>0),n=att.length;
   const games=att.reduce((s,p)=>s+D.st.get(p.id).g,0);
@@ -32,7 +32,7 @@ const hClub=h=>h&&h.money?(h.money.club!=null?h.money.club:(h.rows||[]).reduce((
 function clubFund(before){return S.hist.filter(h=>before==null||h.sid<before).reduce((a,h)=>a+hClub(h),0)}
 function moneySnap(D,M){
   const pz=prizes(D,M);
-  return {thu:M.thu,gt:M.gt,gtv:+D.c.gtv||0,chia:D.c.chia||"",phi:+D.c.phi||0,fund:M.fund,cost:M.cost,gap:M.gap,buTot:M.buTot,gopTot:M.gopTot,pot:M.pot,club:M.club,collected:M.collected,share:M.share,perGame:M.perGame,costs:{...D.c.costs},
+  return {thu:M.thu,gt:M.gt,gtv:+D.c.gtv||0,chia:D.c.chia||"",phi:+D.c.phi||0,fund:M.fund,cost:M.cost,gap:M.gap,buTot:M.buTot,gopTot:M.gopTot,pot:M.pot,club:M.club,collected:M.collected,share:M.share,perGame:M.perGame,costs:D.c.cphi===false?{}:{...D.c.costs},
     prizes:pz.map(x=>({label:x.label,ids:x.ids,names:x.ids.map(id=>D.pmap.get(id)?.name||"?"),k:x.k}))};
 }
 const payRow=(D,M,id)=>{const s=D.st.get(id);return {charged:s.charged,capped:!!s.capped,base:M.baseOf(id),bu:M.shareOf(id),gop:M.gopOf(id),pay:M.payOf(id)}};

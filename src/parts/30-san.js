@@ -28,11 +28,11 @@ function vSanView(D){
   const c=D.c,act=D.players.filter(p=>p.active!==false);
   if(phaseOf(D)==="prep"){
     const last=[...S.hist].sort((a,b)=>b.sid-a.sid)[0],meIn=ME&&act.some(p=>p.id===ME),thu=c.thu||"keo";
-    const box=act.length?`<div class="soon"><span class="lbl">Sắp bắt đầu</span><b>Buổi #${D.sid} sắp bắt đầu</b><span>${fmtTxt(c)} · ${c.courts} sân · ${act.length} người đã điểm danh${thu==="phi"?` · ${fmtK(+c.phi||0)}/người`:` · ${esc(THU[thu])}`}</span>${ME?`<span class="${meIn?"in":""}">${meIn?"Có bạn trong danh sách hôm nay.":"Bạn chưa có trong danh sách hôm nay."}</span>`:""}</div>`
+    const box=act.length?`<div class="soon"><span class="lbl">Sắp bắt đầu</span><b>${esc(sessTitle(c,D.sid))} sắp bắt đầu</b><span>${fmtTxt(c)} · ${c.courts} sân · ${act.length} người đã điểm danh${c.cphi===false?" · không thu tiền":thu==="phi"?` · ${fmtK(+c.phi||0)}/người`:` · ${esc(THU[thu])}`} · ${esc(ruleTxt(c))}</span>${ME?`<span class="${meIn?"in":""}">${meIn?"Có bạn trong danh sách hôm nay.":"Bạn chưa có trong danh sách hôm nay."}</span>`:""}</div>`
       :`<div class="soon"><b>Hôm nay chưa có buổi</b><span>${last?`Buổi gần nhất: #${last.sid} · ${dmy(last.endedAt||last.startedAt)}. <a href="${pathOf("buoi",{sid:last.sid})}" data-go="buoi" data-id="${last.sid}">Xem kết quả</a>`:"Ban tổ chức sẽ mở buổi ở đây. Trang tự cập nhật."}</span></div>`;
     return meBox(D,{pay:false})+box;
   }
-  let h=`<div class="liveln"><span class="dot"></span>Buổi #${D.sid} · đang đánh · ${D.playing.length} sân · ${act.length} người</div>`+meBox(D);
+  let h=`<div class="liveln"><span class="dot"></span>${esc(sessTitle(c,D.sid))} · đang đánh · ${D.playing.length} sân · ${act.length} người</div>`+meBox(D);
   h+=D.playing.length?`<div class="lab"><span class="lbl">Đang đánh</span></div><div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`:`<div class="empty"><strong>Sân đang trống</strong>Chờ ban tổ chức xếp trận. Trang tự cập nhật, không cần tải lại.</div>`;
   return h+queueBox(D,false)+doneBox(D);
 }

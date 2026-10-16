@@ -35,9 +35,9 @@ const nm=(D,id)=>esc(D.pmap.get(id)?.name||"(đã xóa)");
 function render(){
   if(MODE==="platform")return renderPlatform();
   const D=derive(), c=D.c;
-  {const nm=String(c.title||CLUB?.name||"CLB").trim();$("#title").textContent=nm;$("#clogo").textContent=(nm.charAt(0)||"P").toUpperCase();$("#curl").textContent="pikeco.app/"+CID;
+  {const nm=String(c.title||CLUB?.name||"CLB").trim();$("#title").textContent=nm;$("#clogo").innerHTML=logoHtml(CLUB,nm);$("#curl").textContent="pikeco.app/"+CID;
     const tk=$("#tick");if(tk&&tk.setAttribute)tk.setAttribute("href",pathOf("app",{tab:"san"}));
-    $("#hact").innerHTML=canWrite?`<a href="${pathOf("caidat")}" data-go="caidat" aria-label="Cài đặt CLB"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg></a>`:`<a href="${pathOf("clogin")}" data-go="clogin">Đăng nhập</a>`}
+    $("#hact").innerHTML=canWrite?`<a href="${pathOf("caidat")}" data-go="caidat" aria-label="Cài đặt CLB"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37 1 .608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg></a>`:`<a href="${pathOf("clogin")}" data-go="clogin">Đăng nhập</a>`}
   ticker(D);
   const active=D.players.filter(p=>p.active!==false).length;
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:"";
@@ -60,7 +60,7 @@ let lastAnim="",seenReady=false,bxF="all";const seen=new Set();
 const isNew=k=>seenReady&&!seen.has(k);
 const today=()=>{const d=new Date();return `${d.getDate()}/${d.getMonth()+1}`};
 function pageHead(D){
-  const H={san:["Buổi #"+D.sid+" · "+today(),"Sân đấu"],bxh:["Buổi #"+D.sid+" · hôm nay","Xếp hạng"],nguoi:[(CLUB?.name||D.c.title),"Thành viên"],tien:["Buổi #"+D.sid+" · "+today(),"Quỹ"],ls:["Các buổi đã đánh","Lịch sử"]}[tab]||["",""];
+  const H={san:[sessTitle(D.c,D.sid)+" · "+today(),"Sân đấu"],bxh:["Buổi #"+D.sid+" · hôm nay","Xếp hạng"],nguoi:[(CLUB?.name||D.c.title),"Thành viên"],tien:["Buổi #"+D.sid+" · "+today(),"Quỹ"],ls:["Các buổi đã đánh","Lịch sử"]}[tab]||["",""];
   if(isG(D.c)){if(tab==="san"||tab==="tien")H[1]="Giải cặp cố định";if(tab==="bxh"){H[0]="Giải cặp cố định · buổi #"+D.sid;H[1]="Xếp hạng cặp"}}
   return `<div class="phead"><span class="eyebrow">${esc(H[0])}</span><h2 class="ptitle">${esc(H[1])}</h2></div>`;
 }

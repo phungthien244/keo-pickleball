@@ -18,7 +18,7 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   expect(playing().length).toBe(2);
   const [id0] = playing()[0];
   e.input("sa-" + id0, "11"); e.input("sb-" + id0, "11"); await e.click("save", { id: id0 });
-  expect(e.V()).toContain("Đội thắng đúng 11");
+  expect(e.V()).toContain("không được hòa"); expect(e.V()).toContain("Chạm 11, không cần cách 2");
 
   let k = 0, withdrew = null;
   while (playing().length && k < 30) {
