@@ -374,6 +374,13 @@ i.md1,i.md2,i.md3{width:10px;height:10px;display:block}i.md1{background:var(--ye
 .clubp{display:flex;flex-direction:column;gap:6px;border-top:4px solid var(--navy)}
 .mrow2{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .mrow2 button{min-height:36px;padding:0 10px}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.feat>div{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--blue);padding:14px;display:flex;flex-direction:column;gap:6px}
+.feat b{font-family:var(--display);font-weight:900;font-size:15px;text-transform:uppercase}
+.feat span{font-size:13px;color:var(--muted);line-height:1.5}
+.qrow{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}
+.qrow .bt{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.qrow .bt button{min-height:38px;padding:0 12px}
 #splash{position:fixed;inset:0;z-index:100;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;text-align:center;transition:opacity .45s var(--ease),visibility .45s}
 #splash.out{opacity:0;visibility:hidden}
 #splash .ball{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 62% 24%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 48% 54%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 22% 66%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 74% 62%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 46% 84%,#c9b800 0 5px,transparent 6px),var(--yellow);animation:bounce .9s cubic-bezier(.3,0,.7,1) infinite alternate}
@@ -473,7 +480,7 @@ html.lock,html.lock body{overflow:hidden}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, signInAnonymously, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 // Cấu hình web app Firebase (thông tin công khai, bảo mật nằm ở Firestore Rules)
 const firebaseConfig = {
@@ -486,7 +493,7 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const fs = getFirestore(app), auth = getAuth(app);
-window.FB = { fs, auth, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, query, where, getDocs, signInAnonymously, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult };
+window.FB = { fs, auth, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, query, where, getDocs, writeBatch, signInAnonymously, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult };
 const DEF={title:"Round Robin DUPR",courts:2,target:11,fee:10,keo:true,hi:15,lo:5,thr:0.7,cap:100,gmode:"mix",costs:{court:0,water:0,ball:0,other:0}};
 const K=0.3, SPREAD=2.5;
 const S={cfg:null,players:[],matches:[],batches:[],hist:[],pm:{},live:false,offline:false,ready:false};
@@ -498,10 +505,13 @@ let route="home",routeSid=0,autoRoute=true,hF="all";
 function parseRoute(){const q=new URLSearchParams(location.search);
   if(q.has("buoi")){route="buoi";routeSid=Number(q.get("buoi"))||0;autoRoute=false}
   else if(q.has("san")){route="app";const t=q.get("san");if(["san","bxh","nguoi","tien","ls"].includes(t))tab=t;autoRoute=false}
+  else if(q.has("start"))route="start";
+  else if(q.has("tao"))route="tao";
+  else if(q.has("quantri"))route="qt";
   else route="home"}
 parseRoute();
 function go(r,opt={}){route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="app"&&opt.tab)tab=opt.tab;
-  let url=r==="buoi"?`?buoi=${routeSid}`:r==="app"?(tab==="san"?"?san":`?san=${tab}`):"";if(CID!=="aep")url=(url?url+"&":"?")+"clb="+CID;if(!url)url=location.pathname;
+  let url=r==="start"?"?start":r==="tao"?"?tao":r==="qt"?"?quantri":r==="buoi"?`?buoi=${routeSid}`:r==="app"?(tab==="san"?"?san":`?san=${tab}`):"";if(CID!=="aep"&&!["start","tao","qt"].includes(r))url=(url?url+"&":"?")+"clb="+CID;if(!url)url=location.pathname;
   try{history.pushState(null,"",url)}catch(e){}
   try{scrollTo({top:0})}catch(e){}
   render()}
@@ -553,7 +563,7 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const fmtK=n=>(Math.round(n*10)/10).toLocaleString("vi-VN")+"k";
 const r2=n=>(Math.round(n*100)/100).toFixed(2);
 const sgn=n=>(n>=0?"+":"")+r2(n);
-function cfg(){const c=S.cfg||{};return {...DEF,...c,costs:{...DEF.costs,...(c.costs||{})}}}
+function cfg(){const c=S.cfg||{};return {...DEF,...(CLUB&&CLUB.name?{title:CLUB.name}:{}),...c,costs:{...DEF.costs,...(c.costs||{})}}}
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
 
 function validScore(a,b,t){
@@ -606,19 +616,19 @@ const nm=(D,id)=>esc(D.pmap.get(id)?.name||"(đã xóa)");
 
 function render(){
   const D=derive(), c=D.c;
-  {const w=String(c.title||"").trim().split(/\s+/),last=w.length>1?w.pop():"";$("#title").innerHTML=esc(w.join(" "))+(last?` <b>${esc(last)}</b>`:"")}
+  {const w=String(c.title||"").trim().split(/\s+/),last=w.length>1?w.pop():"";$("#title").innerHTML=PROUTES.includes(route)?"PIKECO <b>CLB</b>":esc(w.join(" "))+(last?` <b>${esc(last)}</b>`:"")}
   ticker(D);
   const active=D.players.filter(p=>p.active!==false).length;
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:
     `<span class="dot ${S.live?"on":""}"></span> ${S.live?"Trực tiếp":"Đang đồng bộ…"} · <span class="num">${active}</span> người · <span class="num">${c.courts}</span> sân · ${isG(c)?"giải cặp cố định · chạm 11":`chạm ${c.target}, cách 2`}${canWrite?` · <span class="pill win">${esc(ROLE_LB[ROLE]||"Đang ở chế độ sửa")}</span> <button class="ghost" data-act="logout">Thoát</button>`:isGoogle(authUser)?` · <button class="ghost" data-act="logout">Thoát</button>`:""}`;
-  if(!splashGone&&(S.offline||(S.live&&S.mReady&&S.hReady)))hideSplash();
+  if(!splashGone&&(S.offline||PROUTES.includes(route)||(S.live&&S.mReady&&S.hReady)))hideSplash();
   if(autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
-  const selTab=route==="home"?"home":route==="buoi"?"ls":tab;
+  const selTab=route==="home"?"home":route==="buoi"?"ls":PROUTES.includes(route)?"":tab;
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===selTab));
   {const tb=document.querySelector('#tabs [data-tab="tien"]');if(tb)tb.style.display=isG(c)&&(c.thu||"keo")==="khong"&&(c.gt||"khong")==="khong"?"none":""}
-  document.title=route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:c.title;
+  document.title=route==="start"?"pikeco.app · Quản lý CLB pickleball":route==="tao"?"Tạo CLB · pikeco.app":route==="qt"?"Quản trị · pikeco.app":route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
-  const v=S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
+  const v=route==="start"?vStart:route==="tao"?vTao:route==="qt"?vQt:(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
   const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim; lastAnim=akey;
   $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":loginBar()}${v(D)}</section>`;
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
@@ -957,6 +967,7 @@ function vHome(D){
   <div class="lb">${list.length?list.map(x=>`<div class="lbr${x.i===0?" top1":""}"><span class="rk num">${x.i+1}</span><span class="who">${av(x.p,"md")}<span class="t"><b>${esc(x.p.name)}</b><small class="num">${x.p.gender==="F"?"Nữ":"Nam"} · ${x.A.g?`${x.A.ses.size} buổi · thắng ${pct(x.A.w,x.A.g)}%`:"chưa đánh"}</small></span></span><span class="rt"><b class="num">${r2(x.r)}</b><small class="${dCls(x.d)} num">${dTxt(x.d)}</small></span></div>`).join(""):`<p class="rule" style="padding:14px">Không tìm thấy ai khớp.</p>`}</div>`;
   if(L.length)h+=`<div class="shd"><h2>Các buổi gần đây</h2></div><div class="mgrid">${L.slice(0,6).map(x=>{const m=x.rows[0];return `<a class="sescard" href="?buoi=${x.sid}" data-go="buoi" data-id="${x.sid}"><span class="no"><small>BUỔI</small><b class="num">${x.sid}</b></span><span class="bd"><b>${dmy(x.at)}</b><span class="num">${x.ms.length||x.snap?.matchCount||0} trận · ${x.rows.length} người</span>${x.snap?.type==="giai"?(()=>{const t=(x.snap.giai?.table||[]).find(t=>!t.out);return t?`<span class="mvpl"><span class="gtag">GIẢI</span>${esc(t.na)} &amp; ${esc(t.nb)} vô địch</span>`:""})():m?`<span class="mvpl"><span class="mvptag">MVP</span>${esc(m.name)} · ${m.w}–${m.l}</span>`:""}</span><span class="chev" aria-hidden="true">›</span></a>`}).join("")}</div>`;
   h+=`<a class="back" href="?san" data-go="app" data-t="san" style="background:var(--blue);color:#fff;padding:0 18px;min-height:52px;align-self:flex-start">Vào sân trực tiếp</a>
+  <div class="bar"><a class="back" href="?start" data-go="start">Mở CLB của bạn trên pikeco.app ›</a>${isPA()?`<a class="back" href="?quantri" data-go="qt">Quản trị nền tảng ›</a>`:""}</div>
   <p class="rule">Rating tính như DUPR: so điểm thực tế với điểm dự kiến của từng trận. Đánh tốt hơn dự kiến thì tăng, kể cả khi thua. Rating chốt khi kết thúc mỗi buổi.</p>`;
   return h;
 }
@@ -1372,6 +1383,7 @@ document.addEventListener("click",async e=>{
     if(m)L.push(`Quỹ kèo: ${fmtK(m.fund)} | Chi: ${fmtK(m.cost)} | ${m.gap>=0?"Dư":"Thiếu"}: ${fmtK(Math.abs(m.gap))}`);
     L.push("","BẢNG XẾP HẠNG");x.rows.forEach((r,i)=>L.push(`${i+1}. ${r.name} — ${r.w}T-${r.l}B, HS ${r.pf-r.pa>0?"+":""}${r.pf-r.pa}${x.snap?`, phải đóng ${fmtK(r.pay)}`:""}`));
     const txt=L.join("\n");try{await navigator.clipboard.writeText(txt);toast("Đã copy tổng kết buổi.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
+  if(await platformAct(act,id,b))return;
   if(!canWrite)return;
   if(act==="migrate"){if(!legacy||!isGoogle(authUser)||!S.rootEditor){toast("Cần đăng nhập Google và nhập PIN trước.");return}if(!armOr("migrate:x"))return;try{await migrate()}catch(x){S.migMsg="Chuyển chưa xong ("+((x&&x.code)||"lỗi")+"). Kiểm tra luật Firestore mới đã xuất bản chưa rồi thử lại.";render()}return}
   if(act==="bsave"&&isAdm()){const code=val("bk-code",CLUB?.bank?.code||"mb"),bk=BANKS.find(z=>z[0]===code)||BANKS[0],acc=String(val("bk-acc",CLUB?.bank?.acc||"")).replace(/\s/g,""),hd=noAcc(val("bk-holder",CLUB?.bank?.holder||""));
@@ -1569,6 +1581,140 @@ async function migrate(){
   S.migMsg=`Đã chép ${all.length} mục. Đang tải lại…`;render();
   setTimeout(()=>location.reload(),900);
 }
+/* ---------- nền tảng: tạo CLB, duyệt, quản trị ---------- */
+const PA_EMAIL=window.PA_OVERRIDE||"phungthien244@gmail.com";
+const isPA=()=>isGoogle(authUser)&&authUser.email===PA_EMAIL;
+const RESERVED=["aep","admin","www","quantri","tao","start","api","app","pikeco","clb","login","help"];
+const PROUTES=["start","tao","qt"];
+const ST_LB={pending:"Chờ duyệt",active:"Đang hoạt động",locked:"Đã khoá",rejected:"Từ chối"};
+const clubSt=c=>(c&&c.status)||"active";
+const slugOf=t=>noAcc(t).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,20);
+let clubsLoading=false,codesLoading=false;
+function loadClubs(force){
+  if(!window.FB||clubsLoading||(S.clubs&&!force))return;clubsLoading=true;
+  FB.getDocs(FB.collection(FB.fs,"clubs")).then(async q=>{let L=q.docs.map(d=>({id:d.id,...d.data()}));if(isPA())L=await Promise.all(L.map(c=>FB.getDoc(FB.doc(FB.fs,"clubs/"+c.id+"/private/info")).then(s=>s.exists()?{...c,...s.data()}:c).catch(()=>c)));S.clubs=L;clubsLoading=false;render()}).catch(()=>{S.clubs=[];clubsLoading=false;render()});
+}
+function loadCodes(force){
+  if(!window.FB||codesLoading||(S.codes&&!force)||!isPA())return;codesLoading=true;
+  Promise.all([FB.getDocs(FB.collection(FB.fs,"codes")),FB.getDoc(FB.doc(FB.fs,"platform/config"))]).then(([q,p])=>{S.codes=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.at||0)-(a.at||0));S.pcfg=p.exists()?p.data():{};codesLoading=false;render()}).catch(()=>{S.codes=[];S.pcfg={};codesLoading=false;render()});
+}
+function loadMyClub(){
+  const u=authUser;S.myClub=undefined;if(!isGoogle(u)||!window.FB)return;
+  FB.getDoc(FB.doc(FB.fs,"users/"+u.uid)).then(async s=>{S.myClub=s.exists()?s.data().club:null;
+    if(S.myClub===null&&!legacy&&ROLE==="owner"&&CLUB&&CLUB.owner===u.uid){try{await FB.setDoc(FB.doc(FB.fs,"users/"+u.uid),{club:CID,at:Date.now()});S.myClub=CID}catch(e){}}
+    render()}).catch(()=>{S.myClub=null;render()});
+}
+const gBtn=`<button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button>`;
+const clubUrl=id=>`${location.origin}${location.pathname}?clb=${id}`;
+function vStart(){
+  loadClubs();
+  const list=(S.clubs||[]).filter(c=>c.public!==false&&clubSt(c)==="active").sort((a,b)=>String(a.name).localeCompare(String(b.name),"vi"));
+  const F=[["Xoay cặp theo trình","App tự ghép đôi, ai chờ lâu đánh trước, ưu tiên đôi nam nữ hoặc cùng giới."],["Giải cặp cố định","Vòng tròn đến 10 cặp, lịch tự xếp, bảng xếp hạng và đối đầu trực tiếp."],["Rating kiểu DUPR","Rating tăng giảm theo điểm thực tế so với dự kiến, chốt sau mỗi buổi."],["Quỹ và giải thưởng","Kèo, chia đều hoặc lệ phí; trích quỹ trao giải; chuyển khoản bằng mã QR."]];
+  let h=`<div class="hero"><div class="phead"><span class="eyebrow">pikeco.app</span><h1>Quản lý CLB<br>pickleball</h1><p class="hmeta">Một trang cho cả CLB: xếp sân, nhập tỉ số trực tiếp, rating, lịch sử và quỹ. Miễn phí cho CLB.</p></div>
+    <div class="bar"><a class="back" href="?tao" data-go="tao" style="background:var(--yellow);color:var(--navy);padding:0 20px;min-height:52px">Tạo CLB của bạn ›</a></div></div>
+  <div class="feat">${F.map(([t,d])=>`<div><b>${t}</b><span>${d}</span></div>`).join("")}</div>
+  <div class="shd"><h2>Các CLB đang dùng</h2></div>`;
+  h+=!S.clubs?`<p class="rule">Đang tải…</p>`:list.length?`<div class="mgrid">${list.map(c=>`<a class="sescard" href="?clb=${esc(c.id)}"><span class="no"><small>CLB</small><b>${esc(String(c.name||c.id).trim().charAt(0).toUpperCase())}</b></span><span class="bd"><b>${esc(c.name||c.id)}</b><span>${esc(c.city||"")}${c.city?" · ":""}pikeco.app/${esc(c.id)}</span></span><span class="chev" aria-hidden="true">›</span></a>`).join("")}</div>`:`<p class="rule">Chưa có CLB công khai nào.</p>`;
+  h+=`<p class="rule">Mỗi tài khoản Google tạo được một CLB. CLB mới được quản trị pikeco.app duyệt, thường trong vòng một ngày.</p>`;
+  if(isPA())h+=`<a class="back" href="?quantri" data-go="qt">Quản trị nền tảng ›</a>`;
+  return h;
+}
+function vTao(){
+  let h=`<div class="phead"><span class="eyebrow">pikeco.app</span><h2 class="ptitle">Tạo CLB</h2></div>`;
+  const u=authUser;
+  if(!isGoogle(u))return h+`<div class="panel clubp"><p class="rule">Đăng nhập bằng tài khoản Google của người làm chủ CLB. Tài khoản này sẽ là Chủ CLB, mời thêm quản lý sau.</p><div class="bar" style="margin-top:10px">${gBtn}</div>${inApp()?`<p class="rule" style="margin-top:8px">Trình duyệt trong Zalo/Facebook không cho đăng nhập Google. Bấm nút ⋯ ở góc trên rồi chọn Mở bằng trình duyệt.</p>`:""}</div>`;
+  if(S.myClub===undefined){loadMyClub();return h+`<p class="rule">Đang kiểm tra tài khoản…</p>`}
+  if(S.myClub)return h+`<div class="panel clubp"><h2>Tài khoản này đã có CLB</h2><p class="rule">${esc(u.email||"")} đang là chủ CLB <b>${esc(S.myClub)}</b>. Mỗi tài khoản Google tạo được một CLB.</p><div class="bar" style="margin-top:10px"><a class="back" href="?clb=${esc(S.myClub)}" style="background:var(--blue);color:#fff;padding:0 16px;min-height:44px">Mở CLB của bạn ›</a><button class="ghost" data-act="logout">Đổi tài khoản</button></div></div>`;
+  const name=val("nc-name",""),sug=slugOf(name),slug=val("nc-slug","")||sug;
+  const inp=(k,l,v,extra="")=>`<label><span class="lbl">${l}</span><input id="${k}" data-draft="${k}" value="${esc(v)}" ${extra}></label>`;
+  h+=`<div class="panel clubp"><p class="rule">Đang đăng nhập ${esc(u.email||"")} · tài khoản này sẽ là Chủ CLB.</p>
+    <div class="form" style="margin-top:8px">${inp("nc-name","Tên CLB",name,'placeholder="Ví dụ: CLB Pickleball Quận 7" maxlength="60"')}
+      <label><span class="lbl">Đường dẫn</span><input id="nc-slug" data-draft="nc-slug" value="${esc(slug)}" placeholder="vd: q7-pickleball" maxlength="20" autocapitalize="off"><span class="meta">pikeco.app/${esc(slug||"…")}</span></label>
+      ${inp("nc-city","Tỉnh / thành",val("nc-city",""),'maxlength="40"')}
+      <label><span class="lbl">Số thành viên</span><select id="nc-size" data-draft="nc-size">${["Dưới 20","20–50","50–100","Trên 100"].map(x=>`<option ${val("nc-size","20–50")===x?"selected":""}>${x}</option>`).join("")}</select></label>
+      ${inp("nc-contact","Số Zalo liên hệ",val("nc-contact",""),'inputmode="tel" maxlength="15"')}
+      ${inp("nc-code","Mã mời (nếu có)",val("nc-code",""),'maxlength="12" autocapitalize="characters"')}</div>
+    ${errs.tao?`<p class="err" style="margin-top:8px">${esc(errs.tao)}</p>`:""}
+    <div class="bar" style="margin-top:12px"><button class="ball" data-act="nc-create">${S.creating?"Đang tạo…":"Tạo CLB"}</button></div>
+    <p class="rule" style="margin-top:8px">Không có mã mời: CLB ở trạng thái Chờ duyệt cho tới khi quản trị pikeco.app duyệt. Trong lúc chờ, bạn khai ngân hàng, đặt PIN trọng tài và mời quản lý được.</p></div>`;
+  return h;
+}
+async function createClub(){
+  const u=authUser;if(!isGoogle(u)||S.creating)return;
+  const name=String(val("nc-name","")).trim(),slug=String(val("nc-slug","")||slugOf(name)).trim().toLowerCase(),city=String(val("nc-city","")).trim(),size=val("nc-size","20–50"),contact=String(val("nc-contact","")).replace(/\s/g,""),code=String(val("nc-code","")).trim().toUpperCase();
+  const bad=m=>{errs.tao=m;render()};
+  if(name.length<3)return bad("Tên CLB cần ít nhất 3 ký tự.");
+  if(!/^[a-z0-9-]{3,20}$/.test(slug)||/^-|-$/.test(slug))return bad("Đường dẫn 3–20 ký tự, chỉ gồm chữ thường không dấu, số và gạch ngang.");
+  if(RESERVED.includes(slug))return bad("Đường dẫn này đã được giữ, chọn tên khác.");
+  if(!/^0\d{8,10}$/.test(contact))return bad("Nhập số Zalo liên hệ, ví dụ 0901234567.");
+  delete errs.tao;S.creating=true;render();
+  try{
+    if((await FB.getDoc(FB.doc(FB.fs,"clubs/"+slug))).exists()){S.creating=false;return bad("Đường dẫn đã có CLB dùng, chọn tên khác.")}
+    if(code){const cs=await FB.getDoc(FB.doc(FB.fs,"codes/"+code));if(!cs.exists()||cs.data().used){S.creating=false;return bad("Mã mời không đúng hoặc đã được dùng.")}}
+    const now=Date.now(),b=FB.writeBatch(FB.fs),club={name,public:true,owner:u.uid,status:code?"active":"pending",city,size,createdAt:now};
+    if(code)club.code=code;
+    b.set(FB.doc(FB.fs,"clubs/"+slug),club);
+    b.set(FB.doc(FB.fs,"clubs/"+slug+"/private/info"),{contact,ownerEmail:u.email||""});
+    b.set(FB.doc(FB.fs,"clubs/"+slug+"/members/"+u.uid),{role:"owner",name:u.displayName||"",email:u.email||"",at:now});
+    b.set(FB.doc(FB.fs,"users/"+u.uid),{club:slug,at:now});
+    if(code)b.update(FB.doc(FB.fs,"codes/"+code),{used:true,club:slug,by:u.uid,at:now});
+    await b.commit();
+    await notifyEmail({club_name:name,club_link:clubUrl(slug),club_slug:slug,owner_email:u.email||"",city,size,contact,status:ST_LB[club.status],admin_link:`${location.origin}${location.pathname}?quantri`});
+    ["nc-name","nc-slug","nc-city","nc-size","nc-contact","nc-code"].forEach(k=>delete drafts[k]);
+    location.href=`${location.pathname}?clb=${slug}&san=nguoi`;
+  }catch(x){S.creating=false;bad("Chưa tạo được CLB ("+((x&&x.code)||"lỗi")+"). Thử lại sau ít phút.")}
+}
+async function notifyEmail(p){
+  try{const s=await FB.getDoc(FB.doc(FB.fs,"platform/config"));const e=s.exists()&&s.data().emailjs;if(!e||!e.service||!e.template||!e.key)return;
+    await fetch("https://api.emailjs.com/api/v1.0/email/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({service_id:e.service,template_id:e.template,user_id:e.key,template_params:p})})}catch(x){}
+}
+function vQt(){
+  let h=`<div class="phead"><span class="eyebrow">pikeco.app</span><h2 class="ptitle">Quản trị</h2></div>`;
+  if(!isPA())return h+`<div class="panel clubp"><p class="rule">Trang này chỉ dành cho quản trị nền tảng.</p>${isGoogle(authUser)?`<p class="rule">Đang đăng nhập ${esc(authUser.email||"")}.</p>`:`<div class="bar" style="margin-top:10px">${gBtn}</div>`}</div>`;
+  loadClubs();loadCodes();
+  const all=S.clubs||[],by=st=>all.filter(c=>clubSt(c)===st).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const row=(c,btns)=>`<div class="qrow"><span class="mname"><b>${esc(c.name||c.id)}</b> <span class="pill ${clubSt(c)==="active"?"win":clubSt(c)==="pending"?"keo":"lose"}">${ST_LB[clubSt(c)]}</span><span class="meta" style="display:block"><a href="?clb=${esc(c.id)}">pikeco.app/${esc(c.id)}</a>${c.ownerEmail?" · "+esc(c.ownerEmail):""}${c.city?" · "+esc(c.city):""}${c.size?" · "+esc(c.size)+" người":""}${c.contact?" · Zalo "+esc(c.contact):""}${c.createdAt?" · tạo "+dmy(c.createdAt):""}${c.code?" · mã "+esc(c.code):""}</span>${c.statusNote?`<span class="meta" style="display:block">Ghi chú: ${esc(c.statusNote)}</span>`:""}</span><span class="bt">${btns}</span></div>`;
+  const pend=by("pending");
+  h+=`<div class="panel clubp"><h2>Chờ duyệt (${pend.length})</h2>${!S.clubs?`<p class="rule">Đang tải…</p>`:pend.length?pend.map(c=>row(c,`<button class="primary" data-act="qa-ok" data-id="${esc(c.id)}">Duyệt</button>${armed("qa-no:"+c.id)?`<button class="danger" data-act="qa-no" data-id="${esc(c.id)}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="qa-no" data-id="${esc(c.id)}">Từ chối</button>`}`)).join(""):`<p class="rule">Không có CLB nào chờ duyệt.</p>`}
+    ${pend.length?`<label class="form" style="margin-top:8px"><span class="lbl">Lý do từ chối (gửi kèm, không bắt buộc)</span><input id="qa-note" data-draft="qa-note" value="${esc(val("qa-note",""))}" maxlength="120"></label>`:""}</div>`;
+  h+=`<div class="panel clubp"><h2>Đang hoạt động (${by("active").length})</h2>${by("active").map(c=>row(c,c.id==="aep"?"":armed("qa-lock:"+c.id)?`<button class="danger" data-act="qa-lock" data-id="${esc(c.id)}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="qa-lock" data-id="${esc(c.id)}">Khoá</button>`)).join("")||`<p class="rule">Chưa có.</p>`}</div>`;
+  const off=[...by("locked"),...by("rejected")];
+  if(off.length)h+=`<div class="panel clubp"><h2>Đã khoá / từ chối (${off.length})</h2>${off.map(c=>row(c,`<button class="ghost" data-act="qa-ok" data-id="${esc(c.id)}">${clubSt(c)==="locked"?"Mở khoá":"Duyệt lại"}</button>`)).join("")}</div>`;
+  const codes=S.codes||[];
+  h+=`<div class="panel clubp"><h2>Mã mời tạo CLB</h2><p class="rule">Người có mã mời tạo CLB xong là dùng được ngay, không cần chờ duyệt. Mỗi mã dùng một lần.</p>
+    <div class="bar" style="margin-top:8px"><button data-act="qa-code">Tạo mã mới</button></div>
+    ${codes.map(k=>`<div class="mrow2"><span class="mname"><b class="num">${esc(k.id)}</b><span class="meta" style="display:block">${k.used?`Đã dùng cho ${esc(k.club||"")}`:"Chưa dùng"}</span></span>${k.used?"":`<button data-act="cp" data-v="${esc(k.id)}">Copy</button>`}${k.used?"":`<button class="ghost danger" data-act="qa-codedel" data-id="${esc(k.id)}">Xoá</button>`}</div>`).join("")}</div>`;
+  const e=(S.pcfg&&S.pcfg.emailjs)||{};
+  h+=`<div class="panel clubp"><h2>Email báo CLB mới</h2><p class="rule">Dùng EmailJS (miễn phí 200 email/tháng). Có CLB mới, trình duyệt của người tạo gửi email cho bạn với tên CLB, chủ CLB, số Zalo và link duyệt.</p>
+    <div class="form" style="margin-top:8px"><label><span class="lbl">Service ID</span><input id="ej-s" data-draft="ej-s" value="${esc(val("ej-s",e.service||""))}"></label><label><span class="lbl">Template ID</span><input id="ej-t" data-draft="ej-t" value="${esc(val("ej-t",e.template||""))}"></label><label><span class="lbl">Public key</span><input id="ej-k" data-draft="ej-k" value="${esc(val("ej-k",e.key||""))}"></label></div>
+    <div class="bar" style="margin-top:8px"><span class="meta grow">${e.service&&e.template&&e.key?"Đã bật email":"Chưa bật email"}</span><button data-act="qa-mailtest">Gửi thử</button><button class="primary" data-act="qa-mail">Lưu</button></div></div>`;
+  return h;
+}
+function vStatus(D){
+  const st=clubSt(CLUB),own=isAdm();
+  let h=`<div class="empty"><strong>${st==="pending"?"CLB đang chờ duyệt":st==="locked"?"CLB tạm khoá":"Yêu cầu tạo CLB chưa được duyệt"}</strong>${st==="pending"?`${esc(CLUB.name||CID)} đã được tạo và đang chờ quản trị pikeco.app duyệt, thường trong vòng một ngày. Trong lúc chờ, chủ CLB khai ngân hàng, đặt PIN trọng tài và mời quản lý ở bên dưới.`:st==="locked"?"CLB này đang tạm khoá. Liên hệ quản trị pikeco.app để biết thêm.":`${esc(CLUB.statusNote||"")} Bạn có thể tạo yêu cầu mới với tên khác.`}</div>`;
+  if(st==="rejected"&&isGoogle(authUser)&&CLUB.owner===authUser.uid)h+=`<a class="back" href="?tao" data-go="tao">Tạo yêu cầu mới ›</a>`;
+  if(st==="pending")h+=own?clubAdmin(D):loginBar();
+  return h;
+}
+async function platformAct(act,id,b){
+  if(act==="nc-create"){await createClub();return true}
+  if(!act.startsWith("qa-"))return false;
+  if(!isPA())return true;
+  const upd=(cid,patch,msg)=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+cid),patch).then(()=>{toast(msg);loadClubs(true)}).catch(x=>toast("Chưa lưu được ("+((x&&x.code)||"lỗi")+")"));
+  if(act==="qa-ok"){await upd(id,{status:"active",reviewedAt:Date.now(),statusNote:""},"Đã duyệt CLB "+id)}
+  else if(act==="qa-no"){if(!armOr("qa-no:"+id))return true;const c=(S.clubs||[]).find(z=>z.id===id);
+    await upd(id,{status:"rejected",reviewedAt:Date.now(),statusNote:String(drafts["qa-note"]||"").trim()},"Đã từ chối "+id);
+    if(c&&c.owner)try{await FB.deleteDoc(FB.doc(FB.fs,"users/"+c.owner))}catch(x){}delete drafts["qa-note"]}
+  else if(act==="qa-lock"){if(!armOr("qa-lock:"+id))return true;await upd(id,{status:"locked",reviewedAt:Date.now()},"Đã khoá "+id)}
+  else if(act==="qa-code"){const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=crypto.getRandomValues(new Uint8Array(8)),k=Array.from(r,x=>A[x%A.length]).join("");
+    try{await FB.setDoc(FB.doc(FB.fs,"codes/"+k),{used:false,at:Date.now()});toast("Đã tạo mã "+k);loadCodes(true)}catch(x){toast("Chưa tạo được mã")}}
+  else if(act==="qa-codedel"){try{await FB.deleteDoc(FB.doc(FB.fs,"codes/"+id));loadCodes(true)}catch(x){toast("Chưa xoá được")}}
+  else if(act==="qa-mail"){const e={service:String(val("ej-s",S.pcfg?.emailjs?.service||"")).trim(),template:String(val("ej-t",S.pcfg?.emailjs?.template||"")).trim(),key:String(val("ej-k",S.pcfg?.emailjs?.key||"")).trim()};
+    try{await FB.setDoc(FB.doc(FB.fs,"platform/config"),{...(S.pcfg||{}),emailjs:e});["ej-s","ej-t","ej-k"].forEach(k=>delete drafts[k]);toast("Đã lưu cài đặt email");loadCodes(true)}catch(x){toast("Chưa lưu được")}}
+  else if(act==="qa-mailtest"){await notifyEmail({club_name:"CLB thử nghiệm",club_link:clubUrl("thu"),club_slug:"thu",owner_email:authUser.email||"",city:"",size:"",contact:"",status:"Thử",admin_link:`${location.origin}${location.pathname}?quantri`});toast("Đã gửi thử, kiểm tra hộp thư (cả mục Spam).")}
+  return true;
+}
 /* ---------- boot ---------- */
 async function isEditor(uid){try{return (await FB.getDoc(FB.doc(FB.fs,PFX+"editors/"+uid))).exists()}catch(e){return false}}
 function makeDb(pfx){
@@ -1599,7 +1745,7 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
   }catch(e){if(CID!=="aep"){S.offline=true;render();return}}
   db=makeDb(PFX);
   if(FB.getRedirectResult)FB.getRedirectResult(FB.auth).catch(()=>{});
-  FB.onAuthStateChanged(FB.auth,async u=>{authUser=u;await refreshRole();if(S.priv&&canWrite){location.reload();return}render();acceptInvite()});
+  FB.onAuthStateChanged(FB.auth,async u=>{authUser=u;S.codes=null;await refreshRole();loadMyClub();if(S.priv&&canWrite){location.reload();return}render();acceptInvite()});
   if(!legacy)FB.onSnapshot(FB.doc(FB.fs,"clubs/"+CID),{},s=>{if(s.exists()){CLUB=s.data();BANK=clubBank();render()}},()=>{});
   const fail=()=>{if(!legacy&&CLUB&&CLUB.public===false)S.priv=true;S.offline=true;hideSplash();render()};
   const live=meta=>{S.live=!meta.fromCache;render()};
