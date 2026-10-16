@@ -1,25 +1,40 @@
 function vSan(D){
+  if(!canWrite)return vSanView(D);
+  if(phaseOf(D)==="prep")return steps3(1)+vPrep(D);
   const c=D.c, busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
   const free=Math.max(0,c.courts-D.playing.length), can=Math.min(free,Math.floor(waiting.length/4));
-  let h=meBox(D,{pay:false});
-  if(canWrite)h+=fmtSeg(D)+`<div class="bar">
-    <span class="lbl">Số sân</span>
-    <span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân" ${canWrite?"":"disabled"}>−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân" ${canWrite?"":"disabled"}>+</button></span>
-    <span class="seg" role="group" aria-label="Ưu tiên ghép theo giới"><button data-act="gmode" data-v="mix" aria-pressed="${c.gmode!=="same"}" ${canWrite?"":"disabled"}>Ưu tiên khác giới</button><button data-act="gmode" data-v="same" aria-pressed="${c.gmode==="same"}" ${canWrite?"":"disabled"}>Ưu tiên cùng giới</button></span>
-    <span class="grow"></span>
-    ${canWrite?`<button class="ball" data-act="gen">Xếp trận cho ${can||""} sân trống</button>`:""}
-  </div>`;
+  let h=steps3(2)+cfgChip(D)+(sheetOpen?editSheet(D):"");
+  if(!D.players.length)return h+`<div class="empty"><strong>Chưa có người chơi</strong>Vào tab Thành viên thêm người, hoặc bấm Sửa để điểm danh.</div>`;
+  if(!D.playing.length)h+=`<div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; ưu tiên đôi nam nữ hoặc cùng giới theo cài đặt; không bao giờ đôi nam gặp đôi nữ.</div>`;
+  else h+=`<div class="lab"><span class="lbl">Sân đang đánh</span></div><div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;
+  h+=queueBox(D,true);
+  h+=`<button class="ball wide" data-act="gen">${can?`Xếp trận cho ${can} sân trống`:"Xếp trận tiếp"}</button>`;
   if(errs.gen)h+=`<p class="err">${esc(errs.gen)}</p>`;
-  if(!D.players.length)return h+`<div class="empty"><strong>Chưa có người chơi</strong>Vào tab Người chơi, thêm thành viên hoặc chọn người có mặt hôm nay, rồi quay lại đây bấm Xếp trận.</div>`;
-  if(!D.playing.length)h+=canWrite?`<div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; theo chế độ đang chọn ưu tiên đôi nam nữ hoặc ưu tiên cùng giới; khi lẻ chỉ cho đôi nam hoặc đôi nữ gặp đôi nam nữ, không bao giờ đôi nam gặp đôi nữ.</div>`:`<div class="empty"><strong>Sân đang trống</strong>Chờ ban tổ chức xếp trận. Trang tự cập nhật, không cần tải lại.</div>`;
-  else h+=`<div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;
+  h+=moneyMini(D);
+  h+=`<a class="btn-line" href="${pathOf("chot")}" data-go="chot">Kết thúc &amp; chốt buổi →</a><p class="rule" style="text-align:center;margin-top:-6px">Chưa chốt thì vẫn đánh tiếp được. Chốt rồi vẫn mở lại để sửa được.</p>`;
+  return h+doneBox(D);
+}
+function queueBox(D,org){
   const Q=waitQueue(D);
-  h+=`<div><p class="lbl" style="margin:0 0 8px">Hàng chờ (${Q.length}) · lượt sau theo thứ tự</p>${Q.length?`<div class="chips">${Q.map((p,i)=>{const s=D.st.get(p.id);return `<span class="chip${p.id===ME?" me":""}"><b class="qn num">${i+1}</b>${av(p,"xs")}${esc(p.name)}<b class="num">${s.g} trận</b></span>`}).join("")}</div>`:`<p class="rule">Không ai đang chờ.</p>`}</div>`;
+  return `<div><div class="lab"><span class="lbl">Hàng chờ (${Q.length}) · ai đánh ít lên trước</span>${org?`<button class="lnk" data-act="sheet">+ Người đến muộn</button>`:""}</div>${Q.length?`<div class="chips">${Q.map((p,i)=>{const s=D.st.get(p.id);return `<span class="chip${p.id===ME?" me":""}"><b class="qn num">${i+1}</b>${av(p,"xs")}${esc(p.name)}<b class="num">${s.g} trận</b></span>`}).join("")}</div>`:`<p class="rule">Không ai đang chờ.</p>`}</div>`;
+}
+function doneBox(D){
   const hist=[...D.done].reverse();
-  h+=`<div class="panel"><div class="bar" style="margin-bottom:6px"><h2 class="grow">Trận đã xong</h2><span class="meta num">${hist.length} trận</span></div>`;
-  h+=hist.length?`<div class="hist">${hist.map(m=>histRow(D,m)).join("")}</div>`:`<p class="rule">Kết quả sẽ hiện ở đây sau khi lưu tỉ số.</p>`;
-  return h+`</div>`;
+  return `<div class="panel"><div class="bar" style="margin-bottom:6px"><h2 class="grow">Trận đã xong</h2><span class="meta num">${hist.length} trận</span></div>`+
+    (hist.length?`<div class="hist">${hist.map(m=>histRow(D,m)).join("")}</div>`:`<p class="rule">Kết quả sẽ hiện ở đây sau khi lưu tỉ số.</p>`)+`</div>`;
+}
+function vSanView(D){
+  const c=D.c,act=D.players.filter(p=>p.active!==false);
+  if(phaseOf(D)==="prep"){
+    const last=[...S.hist].sort((a,b)=>b.sid-a.sid)[0],meIn=ME&&act.some(p=>p.id===ME),thu=c.thu||"keo";
+    const box=act.length?`<div class="soon"><span class="lbl">Sắp bắt đầu</span><b>Buổi #${D.sid} sắp bắt đầu</b><span>${fmtTxt(c)} · ${c.courts} sân · ${act.length} người đã điểm danh${thu==="phi"?` · ${fmtK(+c.phi||0)}/người`:` · ${esc(THU[thu])}`}</span>${ME?`<span class="${meIn?"in":""}">${meIn?"Có bạn trong danh sách hôm nay.":"Bạn chưa có trong danh sách hôm nay."}</span>`:""}</div>`
+      :`<div class="soon"><b>Hôm nay chưa có buổi</b><span>${last?`Buổi gần nhất: #${last.sid} · ${dmy(last.endedAt||last.startedAt)}. <a href="${pathOf("buoi",{sid:last.sid})}" data-go="buoi" data-id="${last.sid}">Xem kết quả</a>`:"Ban tổ chức sẽ mở buổi ở đây. Trang tự cập nhật."}</span></div>`;
+    return meBox(D,{pay:false})+box;
+  }
+  let h=`<div class="liveln"><span class="dot"></span>Buổi #${D.sid} · đang đánh · ${D.playing.length} sân · ${act.length} người</div>`+meBox(D);
+  h+=D.playing.length?`<div class="lab"><span class="lbl">Đang đánh</span></div><div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`:`<div class="empty"><strong>Sân đang trống</strong>Chờ ban tổ chức xếp trận. Trang tự cập nhật, không cần tải lại.</div>`;
+  return h+queueBox(D,false)+doneBox(D);
 }
 const gOf=(D,id)=>D.pmap.get(id)?.gender==="F"?"F":"M";
 const tType=(D,ids)=>ids.map(id=>gOf(D,id)).sort().join("");

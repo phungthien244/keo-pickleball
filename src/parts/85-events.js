@@ -47,6 +47,7 @@ document.addEventListener("click",async e=>{
     return}
   if(act==="bxf"){bxF=b.dataset.v;render();return}
   if(act==="hf"){hF=b.dataset.v;render();return}
+  if(act==="qv"){qView=b.dataset.v==="so"?"so":"buoi";render();return}
   if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;showSheet();return}
   if(act==="pay"){payOpen={sid:Number(b.dataset.sid),name:b.dataset.n,k:Number(b.dataset.k)};showSheet();return}
   if(act==="saveqr"){try{const r=await fetch(b.dataset.v),bl=await r.blob(),fn=`QR-${b.dataset.n.replace(/\s+/g,"-")}.png`,file=new File([bl],fn,{type:bl.type||"image/png"});
@@ -79,8 +80,8 @@ document.addEventListener("click",async e=>{
     await write(()=>FB.setDoc(FB.doc(FB.fs,PFX+"invites/"+tok),{role,exp:Date.now()+7*864e5,by:authUser.uid,at:Date.now()}),"Đã tạo link mời");
     S.invLink={role,url:absUrl(`/${CID}/moi/${tok}`)};render();return}
   if(act==="invshare"&&S.invLink){const t=`Mời bạn vào ban tổ chức ${CLUB?.name||""} (${ROLE_LB[S.invLink.role]}). Mở link bằng Chrome/Safari rồi đăng nhập Google:`;if(navigator.share){try{await navigator.share({title:"Lời mời",text:t,url:S.invLink.url})}catch(x){}}else{try{await navigator.clipboard.writeText(t+"\n"+S.invLink.url);toast("Đã copy lời mời")}catch(x){toast(S.invLink.url)}}return}
-  if(act==="setupt"){const D=derive();setupOpen=!(setupOpen==null?!D.SM.length:setupOpen);render();return}
-  if(act==="cset"&&b.dataset.k!=="fmt"){const k=b.dataset.k,v=b.dataset.v;if(derive().SM.length){toast("Buổi đã có trận, không đổi được.");return}
+  if(await sessionAct(act,id,b,e))return;
+  if(act==="cset"&&b.dataset.k!=="fmt"){const k=b.dataset.k,v=b.dataset.v;
     if(cfg()[k]===v)return;const patch={[k]:v};if(k==="gt")patch.gtv=v==="trich"?30:v==="codinh"?200:v==="gop"?20:0;if(k==="thu"&&v==="phi"&&!cfg().phi)patch.phi=50;
     ["cf-gtv","cf-phi"].forEach(x=>delete drafts[x]);write(()=>saveCfg(patch));return}
   if(act==="fmt"||(act==="cset"&&b.dataset.k==="fmt")){const v=b.dataset.v==="giai"?"giai":"xoay";if(derive().SM.length){toast("Buổi đã có trận, không đổi thể thức được.");return}
@@ -167,17 +168,6 @@ document.addEventListener("click",async e=>{
     if(m.giai&&act==="save"&&!errs[id]){if(m.status!=="done")Object.assign(m,{sa:a,sb:bb,status:"done",doneAt:Date.now()});await new Promise(r=>setTimeout(r,60));await gFill()}}
   else if(act==="edit"){editing.add(id);render()}
   else if(act==="edit-x"){editing.delete(id);delete errs[id];render()}
-  else if(act==="reset"){
-    if(Date.now()>resetArm){resetArm=Date.now()+4000;render();setTimeout(render,4100);return}
-    resetArm=0;const D=derive();
-    if(D.playing.length){toast("Còn trận chưa lưu tỉ số. Lưu hoặc hủy trước khi sang buổi mới.");return}
-    await write(async()=>{
-      const M=money(D),firstAt=D.done.reduce((m,x)=>Math.min(m,x.doneAt||x.createdAt||Infinity),Infinity);
-      await db.doc("app/hist-"+D.sid).set({sid:D.sid,title:D.c.title,startedAt:isFinite(firstAt)?firstAt:Date.now(),endedAt:Date.now(),matchCount:D.done.length,
-        rows:standings(D).filter(r=>r.s.g).map(r=>({id:r.p.id,name:r.p.name,gender:r.p.gender||"M",w:r.s.w,l:r.s.l,pf:r.s.pf,pa:r.s.pa,rating:Math.round(r.s.rating*100)/100,d:Math.round(r.s.d*1000)/1000,...payRow(D,M,r.p.id)})),
-        money:moneySnap(D,M),fee:{fee:D.c.fee,keo:D.c.keo,hi:D.c.hi,lo:D.c.lo,cap:D.c.cap}});
-      for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
-      await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0}});
-    },"Đã lưu buổi, đây là trang tổng kết để chia sẻ");go("buoi",{sid:D.sid})}
+  else if(act==="reset"||act==="chot"){if(!armOr("chot:x"))return;await chotBuoi()}
 });
 

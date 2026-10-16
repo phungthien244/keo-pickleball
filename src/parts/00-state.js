@@ -9,7 +9,7 @@ let route="home",routeSid=0,autoRoute=true,hF="all";
 /* ---------- đường dẫn ----------
    Nền tảng: /  /clb  /tao-clb  /dang-nhap  /quan-tri
    CLB:      /aep  /aep/san  /aep/xep-hang  /aep/thanh-vien  /aep/quy  /aep/lich-su
-             /aep/buoi/5  /aep/cai-dat  /aep/moi/<mã mời>                              */
+             /aep/buoi/5  /aep/chot-buoi  /aep/cai-dat  /aep/moi/<mã mời>                              */
 const RSEG={start:"",clb:"clb",tao:"tao-clb",login:"dang-nhap",qt:"quan-tri"};
 const PSEG=Object.fromEntries(Object.entries(RSEG).map(([k,v])=>[v,k]));
 const SEGT={san:"san",bxh:"xep-hang",nguoi:"thanh-vien",tien:"quy",ls:"lich-su"};
@@ -38,6 +38,7 @@ function readPath(path){
   else if(s[1]==="buoi"){r.route="buoi";r.sid=Number(s[2])||0}
   else if(s[1]==="cai-dat")r.route="caidat";
   else if(s[1]==="dang-nhap")r.route="clogin";
+  else if(s[1]==="chot-buoi")r.route="chot";
   else if(s[1]==="moi"){r.invite=s[2]||null;r.route="clogin"}
   return r}
 function applyPath(r){route=r.route;if(r.mode==="club"){if(r.tab)tab=r.tab;if(r.route==="buoi")routeSid=r.sid;if(r.route!=="home")autoRoute=false}}
@@ -50,6 +51,7 @@ function pathOf(r,opt={}){
   if(r==="app")return `${c}/${SEGT[opt.tab||tab]||"san"}`;
   if(r==="caidat")return c+"/cai-dat";
   if(r==="clogin")return c+"/dang-nhap";
+  if(r==="chot")return c+"/chot-buoi";
   return c}
 const absUrl=p=>location.origin+p;
 function go(r,opt={}){

@@ -77,11 +77,12 @@ function validG(a,b){
   return Math.max(a,b)===11&&Math.min(a,b)<=10?null:"Đội thắng đúng 11 điểm, đội thua từ 0 đến 10.";
 }
 const saveG=patch=>saveCfg({giai:{...(cfg().giai||{}),...patch}});
-function fmtSeg(D){return setupPanel(D)}
 const courtStep=c=>`<span class="lbl">Số sân</span><span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân" ${canWrite?"":"disabled"}>−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân" ${canWrite?"":"disabled"}>+</button></span>`;
 function vGiaiSan(D){
   const G=D.c.giai||{pairs:[]};
-  return fmtSeg(D)+(G.locked?gRun(D,gDerive(D)):gSetup(D,G));
+  if(canWrite&&!G.locked)return steps3(1)+vPrep(D);
+  if(canWrite)return steps3(2)+cfgChip(D)+(sheetOpen?editSheet(D):"")+gRun(D,gDerive(D));
+  return G.locked?gRun(D,gDerive(D)):gSetup(D,G);
 }
 function gSetup(D,G){
   const c=D.c,P=G.pairs||[],n=P.length,tot=n*(n-1)/2,mins=Math.ceil(tot/Math.max(1,c.courts))*GSLOT,pz=G.prizes||[0,0,0];
@@ -97,7 +98,7 @@ function gSetup(D,G){
     else{const opt=k=>`<option value="">Chọn người</option>`+free.map(p=>`<option value="${p.id}" ${val(k,"")===p.id?"selected":""}>${esc(p.name)} · ${r2(D.st.get(p.id).rating)}</option>`).join("");
       h+=`<div class="gadd"><span class="lbl">Thêm cặp mới · còn ${GMAX-n} chỗ</span><div class="form"><label><span class="lbl">Người 1</span><select id="gp1" data-draft="gp1">${opt("gp1")}</select></label><label><span class="lbl">Người 2</span><select id="gp2" data-draft="gp2">${opt("gp2")}</select></label></div><div class="bar"><span class="grow"></span><button class="primary" data-act="gadd">Thêm cặp</button></div></div>`}}
   if(errs.gadd)h+=`<p class="err">${esc(errs.gadd)}</p>`;
-  h+=`</div><p class="rule">Hạng 1, 2, 3 lấy từ bảng xếp hạng cuối cùng sau khi đánh hết vòng tròn. Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Tiền thưởng chỉnh ở khung Thiết lập buổi phía trên.</p>`;
+  h+=`</div><p class="rule">Hạng 1, 2, 3 lấy từ bảng xếp hạng cuối cùng sau khi đánh hết vòng tròn. Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Tiền thưởng chỉnh ở khung Giải thưởng phía trên.</p>`;
   if(canWrite)h+=`<div class="bar"><button class="ball" data-act="gstart" ${n<3?"disabled":""}>Tạo lịch thi đấu · ${tot} trận</button></div>${errs.giai?`<p class="err">${esc(errs.giai)}</p>`:""}<p class="rule">Tiền buổi và giải thưởng tính theo khung Thiết lập buổi. Rating cá nhân vẫn cập nhật theo từng trận như khi đánh xoay cặp. Sau khi tạo lịch, danh sách cặp được khoá.</p>`;
   else h+=`<div class="empty"><strong>Đang ghép cặp</strong>Người tổ chức đang ghép cặp cho giải. Lịch thi đấu sẽ hiện ở đây.</div>`;
   return h;
@@ -175,12 +176,12 @@ async function endGiai(){
     const nmOf=id=>D.pmap.get(id)?.name||"(đã xóa)",M=money(D);
     await db.doc("app/hist-"+D.sid).set({sid:D.sid,type:"giai",title:D.c.title,startedAt:isFinite(firstAt)?firstAt:(GD.G.startedAt||Date.now()),endedAt:Date.now(),matchCount:ms.length,
       rows:standings(D).filter(r=>r.s.g).map(r=>({id:r.p.id,name:r.p.name,gender:r.p.gender||"M",w:r.s.w,l:r.s.l,pf:r.s.pf,pa:r.s.pa,rating:Math.round(r.s.rating*100)/100,d:Math.round(r.s.d*1000)/1000,...payRow(D,M,r.p.id)})),
-      money:moneySnap(D,M),
+      money:moneySnap(D,M),paid:{...(payDoc(D.sid).paid||{})},track:true,closedAt:Date.now(),closedBy:who(),
       giai:{prizes:prizes(D,M).map(x=>x.k),complete:GD.complete,
         table:GD.table.map(t=>({id:t.p.id,a:t.p.a,b:t.p.b,na:nmOf(t.p.a),nb:nmOf(t.p.b),gp:t.gp,w:t.w,l:t.l,pf:t.pf,pa:t.pa,wo:t.wo,out:t.out})),
         games:GD.games.filter(g=>g.st==="done"||(g.st==="wo"&&g.wo)).map(g=>({r:g.r,x:g.x,y:g.y,sx:g.sx,sy:g.sy,wo:g.wo||null,court:g.m?.court||null,seq:g.m?.seq||null,at:g.m?.doneAt||null}))}});
     for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
-    await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},fmt:"xoay",giai:null});
+    await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},fmt:"xoay",giai:null,phase:"prep"});
   },"Đã lưu giải, đây là trang tổng kết để chia sẻ");go("buoi",{sid:D.sid});
 }
 function vGiaiSum(D,x,back){

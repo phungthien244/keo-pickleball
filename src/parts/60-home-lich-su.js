@@ -31,7 +31,7 @@ function vHome(D){
   const fb=(v,l,n)=>`<button data-act="hf" data-v="${v}" aria-pressed="${hF===v}">${l} · ${n}</button>`;
   if(ppl.length>=2)h+=`<div class="lab"><span class="eyebrow">Top rating${H?` · sau buổi #${H.sid}`:""}</span><a href="#bang">Xem cả bảng</a></div>
   <div class="podium">${pod(sec,"p2","2")}${pod(top,"p1","1")}${pod(alt&&alt!==sec?alt:ppl[2],"p3",alt&&alt!==sec?(F(alt)?"1 NỮ":"1 NAM"):"3")}</div>`;
-  h+=`<div class="tiles" style="margin-top:16px"><a class="tile" href="${pathOf("app",{tab:"tien"})}" data-go="app" data-t="tien"><span class="k">Quỹ CLB</span><b class="num">${fmtK(clubFund())}</b><small>${H?`sau buổi #${H.sid}`:"chưa có buổi nào"}</small></a>
+  h+=`<div class="tiles" style="margin-top:16px"><a class="tile" href="${pathOf("app",{tab:"tien"})}" data-go="app" data-t="tien"><span class="k">Quỹ CLB</span><b class="num">${(fundNow()<0?"−":"")+fmtK(Math.abs(fundNow()))}</b><small>${H?`sau buổi #${H.sid}`:"chưa có buổi nào"}</small></a>
     <a class="tile" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><span class="k">Thành viên</span><b class="num">${ppl.length}</b><small>${nM} nam · ${nF} nữ</small></a></div>
   <div class="lab" id="bang"><span class="eyebrow">Bảng rating CLB</span></div>
   <div class="bar"><label style="display:flex;flex:1 1 240px"><span class="lbl" style="position:absolute;width:1px;height:1px;overflow:hidden">Tìm thành viên</span><input id="hq" data-draft="hq" type="search" placeholder="Tìm thành viên theo tên" value="${esc(val("hq",""))}" style="width:100%"></label>
@@ -56,7 +56,7 @@ function vBuoi(D,sid){
   const x=sessList(D).find(z=>z.sid===sid);
   const back=`<a class="back" href="${pathOf("home")}" data-go="home">‹ Rating CLB</a>`;
   if(!x&&!S.hReady)return back+`<div class="empty"><strong>Đang tải buổi #${sid}…</strong></div>`;
-  if(!x)return back+`<div class="empty"><strong>Chưa có tổng kết buổi #${sid||""}</strong>${sid===D.sid?"Buổi này đang diễn ra. Trang tổng kết có sau khi bấm Kết thúc buổi.":"Không tìm thấy buổi này, có thể đã bị xóa."}</div>`;
+  if(!x)return back+`<div class="empty"><strong>Chưa có tổng kết buổi #${sid||""}</strong>${sid===D.sid?"Buổi này đang diễn ra. Trang tổng kết có sau khi ban tổ chức chốt buổi.":"Không tìm thấy buổi này, có thể đã bị xóa."}</div>`;
   if(x.snap?.type==="giai")return vGiaiSum(D,x,back);
   const pmL=pastMatches(sid);
   const snap=x.snap,rows=x.rows,ms=x.ms,pm=D.pmap,P=r=>pm.get(r.id)||{name:r.name,gender:r.gender};
@@ -74,14 +74,14 @@ function vBuoi(D,sid){
   if(!ms.length&&!pmL&&snap?.matchCount)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><p class="rule">Đang tải các trận…</p>`;
   if(ms.length)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><div class="mgrid">${ms.map(m=>{const aw=m.sa>m.sb,t=(ids,sc,w)=>`<div class="tr${w?" w":""}"><span class="who"><span class="avs">${ids.map(id=>avId(D,id,"sm")).join("")}</span><span>${tn(ids)}</span></span><span class="sc num">${sc}</span></div>`;
     return `<article class="mcard"><div class="mh"><b>TRẬN #${m.seq}</b><span>SÂN ${m.court}${m.doneAt?` · ${new Date(m.doneAt).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"})}`:""}</span></div>${t(m.a,m.sa,aw)}${t(m.b,m.sb,!aw)}</article>`}).join("")}</div>`;
-  h+=moneySec(D,sid,snap,rows,P);
+  h+=histEdit(D,x)+moneySec(D,sid,snap,rows,P);
   h+=`<div class="sharebox"><span class="lbl">Link riêng của buổi này</span><span class="url">${esc(shareUrl(sid).replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="share" data-id="${sid}">Chia sẻ</button><button data-act="copylink" data-id="${sid}">Copy tin nhắn</button></div></div>${canWrite?`<div class="bar"><span class="grow"></span>${delBtn("sdel",sid,"Xóa buổi này")}</div>`:""}`;
   return h;
 }
 const dmy=t=>{if(!t)return "";const d=new Date(t);return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`};
 function vLs(D){
   const L=sessList(D);
-  if(!L.length)return `<div class="empty"><strong>Chưa có buổi nào kết thúc</strong>Khi bấm “Kết thúc buổi” ở tab Tiền quỹ, buổi đó sẽ được lưu ở đây cùng bảng xếp hạng, các trận và bảng tiền.</div>`;
+  if(!L.length)return `<div class="empty"><strong>Chưa có buổi nào kết thúc</strong>Khi ban tổ chức chốt buổi ở tab Sân, buổi đó sẽ được lưu ở đây cùng bảng xếp hạng, các trận và bảng tiền.</div>`;
   return `<p class="rule">${L.length} buổi đã xong. Bấm vào một buổi để xem chi tiết.</p>`+L.map(x=>{
     const open=editing.has("s-"+x.sid),top=x.snap?.type==="giai"?(x.snap.giai?.table||[]).filter(t=>!t.out).slice(0,1).map(t=>esc(t.na+" & "+t.nb)+" vô địch").join(""):x.rows.slice(0,3).map(r=>esc(r.name)).join(", "),m=x.snap?.money;
     let h=`<div class="panel"><a class="sessh" href="${pathOf("buoi",{sid:x.sid})}" data-go="buoi" data-id="${x.sid}"><span class="code num">#${x.sid}</span><span class="mname"><b>${esc(x.snap?.title||D.c.title)} · ${dmy(x.at)}</b><span class="meta num" style="display:block">${x.rows.length} người · ${x.ms.length||x.snap?.matchCount||0} trận${top?` · Top: ${top}`:""}</span></span>${x.snap?.type==="giai"?`<span class="pill keo">Giải cặp cố định</span>`:m?`<span class="pill ${hClub(x.snap)>=0?"win":"lose"} num">${hClub(x.snap)>=0?"Quỹ +":"Quỹ −"}${fmtK(Math.abs(hClub(x.snap)))}</span>`:`<span class="pill">Chưa có bảng tiền</span>`}<span class="chev" aria-hidden="true" style="color:var(--blue);font-size:22px;font-weight:700">›</span></a>`;
