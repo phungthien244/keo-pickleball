@@ -369,6 +369,11 @@ i.md1,i.md2,i.md3{width:10px;height:10px;display:block}i.md1{background:var(--ye
 .prz .k{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
 .prz b{font-family:var(--display);font-weight:900;font-size:16px;overflow-wrap:anywhere}
 .prz .v{font-family:var(--display);font-weight:900;font-size:20px}
+.gbtn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#1f1f1f;border:1px solid #c9d3db;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:600;font-size:14px}
+.gbtn .g{width:20px;height:20px;border-radius:50%;background:conic-gradient(#ea4335 0 25%,#fbbc05 0 50%,#34a853 0 75%,#4285f4 0);color:#fff;font:800 11px/20px var(--display);text-align:center}
+.clubp{display:flex;flex-direction:column;gap:6px;border-top:4px solid var(--navy)}
+.mrow2{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.mrow2 button{min-height:36px;padding:0 10px}
 #splash{position:fixed;inset:0;z-index:100;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;text-align:center;transition:opacity .45s var(--ease),visibility .45s}
 #splash.out{opacity:0;visibility:hidden}
 #splash .ball{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 62% 24%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 48% 54%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 22% 66%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 74% 62%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 46% 84%,#c9b800 0 5px,transparent 6px),var(--yellow);animation:bounce .9s cubic-bezier(.3,0,.7,1) infinite alternate}
@@ -469,7 +474,7 @@ html.lock,html.lock body{overflow:hidden}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInAnonymously, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 // Cấu hình web app Firebase (thông tin công khai, bảo mật nằm ở Firestore Rules)
 const firebaseConfig = {
   apiKey: "AIzaSyAr_pRMZ1kuelswYpAg6VjTYv1vYpVtmcc",
@@ -481,7 +486,7 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const fs = getFirestore(app), auth = getAuth(app);
-window.FB = { fs, auth, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, signInAnonymously, signOut, onAuthStateChanged };
+window.FB = { fs, auth, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, signInAnonymously, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult };
 const DEF={title:"Round Robin DUPR",courts:2,target:11,fee:10,keo:true,hi:15,lo:5,thr:0.7,cap:100,gmode:"mix",costs:{court:0,water:0,ball:0,other:0}};
 const K=0.3, SPREAD=2.5;
 const S={cfg:null,players:[],matches:[],batches:[],hist:[],live:false,offline:false,ready:false};
@@ -496,12 +501,14 @@ function parseRoute(){const q=new URLSearchParams(location.search);
   else route="home"}
 parseRoute();
 function go(r,opt={}){route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="app"&&opt.tab)tab=opt.tab;
-  const url=r==="buoi"?`?buoi=${routeSid}`:r==="app"?(tab==="san"?"?san":`?san=${tab}`):location.pathname;
+  let url=r==="buoi"?`?buoi=${routeSid}`:r==="app"?(tab==="san"?"?san":`?san=${tab}`):"";if(CID!=="aep")url=(url?url+"&":"?")+"clb="+CID;if(!url)url=location.pathname;
   try{history.pushState(null,"",url)}catch(e){}
   try{scrollTo({top:0})}catch(e){}
   render()}
 addEventListener("popstate",()=>{parseRoute();render()});
-const BANK={bin:"970422",code:"mb",name:"MB Bank",acc:"17263544538888",holder:"PHAM TIEN DUNG"};
+const DEF_BANK={bin:"970422",code:"mb",name:"MB Bank",acc:"17263544538888",holder:"PHAM TIEN DUNG"};let BANK=DEF_BANK;
+let CID="aep",PFX="",CLUB=null,ROLE=null,legacy=true;
+{const q=new URLSearchParams(location.search),c=String(q.get("clb")||"").toLowerCase().replace(/[^a-z0-9-]/g,"");if(c)CID=c}
 const BANK_APPS=[["mb","MB Bank"],["vcb","Vietcombank"],["tcb","Techcombank"],["bidv","BIDV"],["icb","VietinBank"],["acb","ACB"],["tpb","TPBank"],["vpb","VPBank"],["vba","Agribank"],["shb","SHB"],["ocb","OCB"],["cake","Cake"]];
 const noAcc=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9 ]/g,"").replace(/\s+/g," ").trim().toUpperCase();
 const payNote=(sid,name)=>`RR B${sid} ${noAcc(name)}`.slice(0,25).trim();
@@ -536,7 +543,7 @@ function paySheet(){
 let splashGone=false;
 function hideSplash(){splashGone=true;const el=document.getElementById("splash");if(!el)return;el.classList.add("out");setTimeout(()=>el.remove(),600)}
 setTimeout(()=>{if(!splashGone)hideSplash()},20000);
-const shareUrl=sid=>`${location.origin}${location.pathname}?buoi=${sid}`;
+const shareUrl=sid=>`${location.origin}${location.pathname}?${CID!=="aep"?"clb="+CID+"&":""}buoi=${sid}`;
 
 const $=s=>document.querySelector(s);
 const ARM={k:"",t:0};const armed=k=>ARM.k===k&&Date.now()<ARM.t;
@@ -602,7 +609,7 @@ function render(){
   ticker(D);
   const active=D.players.filter(p=>p.active!==false).length;
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:
-    `<span class="dot ${S.live?"on":""}"></span> ${S.live?"Trực tiếp":"Đang đồng bộ…"} · <span class="num">${active}</span> người · <span class="num">${c.courts}</span> sân · ${isG(c)?"giải cặp cố định · chạm 11":`chạm ${c.target}, cách 2`}${canWrite?` · <span class="pill win">Đang ở chế độ sửa</span> <button class="ghost" data-act="logout">Thoát</button>`:""}`;
+    `<span class="dot ${S.live?"on":""}"></span> ${S.live?"Trực tiếp":"Đang đồng bộ…"} · <span class="num">${active}</span> người · <span class="num">${c.courts}</span> sân · ${isG(c)?"giải cặp cố định · chạm 11":`chạm ${c.target}, cách 2`}${canWrite?` · <span class="pill win">${esc(ROLE_LB[ROLE]||"Đang ở chế độ sửa")}</span> <button class="ghost" data-act="logout">Thoát</button>`:isGoogle(authUser)?` · <button class="ghost" data-act="logout">Thoát</button>`:""}`;
   if(!splashGone&&(S.offline||(S.live&&S.mReady&&S.hReady)))hideSplash();
   if(autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
   const selTab=route==="home"?"home":route==="buoi"?"ls":tab;
@@ -610,9 +617,9 @@ function render(){
   {const tb=document.querySelector('#tabs [data-tab="tien"]');if(tb)tb.style.display=isG(c)&&(c.thu||"keo")==="khong"&&(c.gt||"khong")==="khong"?"none":""}
   document.title=route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
-  const v=route==="home"?vHome:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
+  const v=S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
   const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim; lastAnim=akey;
-  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":!canWrite?`<div class="ro login"><span>Bạn đang xem trực tiếp. Người tổ chức nhập PIN để nhập tỉ số.</span><span class="bar" style="gap:6px"><input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN" value="${esc(val("pin",""))}" style="width:120px"><button class="primary" data-act="login">Mở quyền sửa</button></span>${errs.pin?`<p class="err" style="width:100%">${esc(errs.pin)}</p>`:""}</div>`:""}${v(D)}</section>`;
+  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":loginBar()}${v(D)}</section>`;
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
   if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}
 }
@@ -783,7 +790,7 @@ function vNguoi(D){
       <select id="lvl" data-draft="lvl">${LV.map(x=>`<option value="${x}" ${String(val("lvl","2.5"))===String(x)?"selected":""}>${x.toFixed(2)}</option>`).join("")}</select></label>
       <label class="bar"><span class="lbl">Giới tính</span><select id="gnd" data-draft="gnd"><option value="M" ${val("gnd","M")==="M"?"selected":""}>Nam</option><option value="F" ${val("gnd","M")==="F"?"selected":""}>Nữ</option></select></label>
       <button data-act="picktoggle">${pickOpen?"Đóng danh sách":"Chọn từ danh sách"}</button><span class="grow"></span><button class="primary" data-act="add">Thêm và vào buổi luôn</button></div>${pickPanel(D,away)}</div>`;
-  if(!D.players.length)return h+`<div class="empty"><strong>Chưa có thành viên</strong>Nhập tên ở khung trên, mỗi dòng một người.</div>`;
+  if(!D.players.length)return h+`<div class="empty"><strong>Chưa có thành viên</strong>Nhập tên ở khung trên, mỗi dòng một người.</div>`+clubAdmin(D);
   if(canWrite&&D.players.some(p=>!p.code))h+=`<div class="ro bar"><span class="grow">${D.players.filter(p=>!p.code).length} người chưa có mã thành viên.</span><button data-act="codes">Cấp mã</button></div>`;
   h+=`<div class="panel"><div class="bar" style="margin-bottom:4px"><h2 class="grow">Có mặt hôm nay</h2><span class="pill win num">${here.length} người</span></div>`;
   h+=here.length?here.map(p=>memberRow(D,p,true,busyS.has(p.id))).join(""):`<p class="rule">Chưa ai vào buổi. Bấm “Thêm vào buổi” ở danh sách bên dưới.</p>`;
@@ -794,6 +801,7 @@ function vNguoi(D){
     <input id="q" data-draft="q" type="search" placeholder="Tìm theo tên" value="${esc(val("q",""))}" style="width:100%;margin-bottom:4px">`;
   h+=list.length?list.map(p=>memberRow(D,p,false,false)).join(""):`<p class="rule" style="margin-top:8px">${away.length?"Không tìm thấy ai khớp.":"Tất cả thành viên đều đang có mặt."}</p>`;
   h+=`<div class="bar" style="margin-top:12px"><button data-act="copyroster">Copy danh sách thành viên (CSV)</button></div><textarea id="rosterbox" rows="6" readonly hidden></textarea></div>`;
+  h+=clubAdmin(D);
   return h;
 }
 
@@ -870,7 +878,7 @@ function payTable(D,sid,list,paid,live){
   if(!pr.length)return `<p class="rule">Buổi này không ai phải đóng tiền.</p>`;
   const n=pr.filter(r=>r.pay>0).length,p=pr.filter(r=>r.pay>0&&paid[r.id]).length;
   const bd=r=>[r.base?`${r.kind||"tiền buổi"} ${fmtK(r.base)}${r.capped?" (trần)":""}`:"",r.bu?`bù ${fmtK(r.bu)}`:"",r.gop?`giải ${fmtK(r.gop)}`:""].filter(Boolean).join(" + ");
-  return `<div class="tbl-wrap"><table class="payt"><thead><tr><th>Tên</th><th>Phải đóng</th></tr></thead><tbody>${pr.map(r=>`<tr><td><span class="pn">${av(r.P,"sm")}<span><b>${esc(r.name)}</b><span class="meta" style="display:block">${r.g} trận · thua ${r.l}</span><span class="meta" style="display:block">${bd(r)}</span></span></span></td><td><div class="paycell"><b>${fmtK(r.pay)}</b>${paid[r.id]?`<span class="paidpill">✓ Đã nhận</span>`:r.pay>0?`<button class="paybtn" data-act="pay" data-sid="${sid}" data-n="${esc(r.name)}" data-k="${r.pay}">Chuyển tiền</button>`:""}${canWrite&&!live&&r.pay>0?`<button class="ghost paidtg" data-act="paid" data-id="${sid}" data-p="${r.id}">${paid[r.id]?"Bỏ dấu":"Đã nhận?"}</button>`:""}</div></td></tr>`).join("")}</tbody><tfoot><tr><td>TỔNG THU${n&&!live?` · ĐÃ NHẬN ${p}/${n}`:""}</td><td><b class="num">${fmtK(tot)}</b></td></tr></tfoot></table></div>`;
+  return `<div class="tbl-wrap"><table class="payt"><thead><tr><th>Tên</th><th>Phải đóng</th></tr></thead><tbody>${pr.map(r=>`<tr><td><span class="pn">${av(r.P,"sm")}<span><b>${esc(r.name)}</b><span class="meta" style="display:block">${r.g} trận · thua ${r.l}</span><span class="meta" style="display:block">${bd(r)}</span></span></span></td><td><div class="paycell"><b>${fmtK(r.pay)}</b>${paid[r.id]?`<span class="paidpill">✓ Đã nhận</span>`:r.pay>0&&BANK?`<button class="paybtn" data-act="pay" data-sid="${sid}" data-n="${esc(r.name)}" data-k="${r.pay}">Chuyển tiền</button>`:""}${canWrite&&!live&&r.pay>0?`<button class="ghost paidtg" data-act="paid" data-id="${sid}" data-p="${r.id}">${paid[r.id]?"Bỏ dấu":"Đã nhận?"}</button>`:""}</div></td></tr>`).join("")}</tbody><tfoot><tr><td>TỔNG THU${n&&!live?` · ĐÃ NHẬN ${p}/${n}`:""}</td><td><b class="num">${fmtK(tot)}</b></td></tr></tfoot></table></div>`;
 }
 function vTien(D){
   const c=D.c,M=money(D),pz=prizes(D,M),cf=clubFund(D.sid);
@@ -950,7 +958,7 @@ function shareText(D,x){
   if(m)L.push(`MVP: ${m.name} ${m.w}–${m.l} (HS ${m.pf-m.pa>0?"+":""}${m.pf-m.pa})`);
   if(r.length>1)L.push("Top 3: "+r.slice(0,3).map((z,i)=>`${i+1}. ${z.name}`).join(" · "));
   if(M){const cl=M.club!=null?M.club:M.gap;L.push(`Quỹ: thu ${fmtK(M.collected!=null?M.collected:M.fund)} · chi ${fmtK(M.cost)} · ${cl>=0?"vào quỹ CLB":"quỹ CLB bù"} ${fmtK(Math.abs(cl))}`);if(M.prizes&&M.prizes.length)L.push("Giải: "+M.prizes.map(z=>`${z.label} ${(z.names||[]).join(" & ")} ${fmtK(z.k)}`).join(" · "))}
-  L.push(`Chuyển khoản: ${BANK.name} ${BANK.acc} (${BANK.holder})`);
+  if(BANK)L.push(`Chuyển khoản: ${BANK.name} ${BANK.acc} (${BANK.holder})`);
   L.push("Xem số tiền mỗi người phải đóng và bấm Chuyển khoản để có mã QR:");
   return L.join("\n");
 }
@@ -1320,14 +1328,16 @@ document.addEventListener("click",async e=>{
     delete errs.pin;
     try{
       const u=authUser||(await FB.signInAnonymously(FB.auth)).user;
-      await FB.setDoc(FB.doc(FB.fs,"editors/"+u.uid),{pin,at:Date.now()});
-      canWrite=true;delete drafts.pin;toast("Đã mở quyền sửa trên máy này.");
+      await FB.setDoc(FB.doc(FB.fs,PFX+"editors/"+u.uid),{pin,at:Date.now()});
+      await refreshRole();canWrite=true;delete drafts.pin;toast("Đã mở quyền sửa trên máy này.");
     }catch(x){
       if(authUser&&await isEditor(authUser.uid)){canWrite=true;delete drafts.pin}
       else errs.pin=x&&x.code==="permission-denied"?"Sai PIN.":"Không kết nối được, thử lại.";
     }
     render();return}
-  if(act==="logout"){try{await FB.signOut(FB.auth)}catch(x){}canWrite=false;render();return}
+  if(act==="logout"){try{await FB.signOut(FB.auth)}catch(x){}canWrite=false;ROLE=null;S.rootEditor=false;watchAdmin();render();return}
+  if(act==="glogin"){if(inApp()){toast("Mở trang bằng Chrome hoặc Safari để đăng nhập Google.");return}
+    const pr=new FB.GoogleAuthProvider();try{await FB.signInWithPopup(FB.auth,pr)}catch(x){const c=(x&&x.code)||"";if(/popup-blocked|operation-not-supported|web-storage/.test(c)){try{await FB.signInWithRedirect(FB.auth,pr)}catch(y){toast("Chưa đăng nhập được, thử lại.")}}else if(!/popup-closed|cancelled-popup/.test(c))toast("Chưa đăng nhập được: "+c)}return}
   if(act==="copy"){const txt=summaryText(derive());
     try{await navigator.clipboard.writeText(txt);toast("Đã copy, dán vào nhóm Zalo nhé.")}
     catch(x){const box=$("#copybox");box.hidden=false;box.value=txt;box.focus();box.select();toast("Chọn sẵn rồi, bấm giữ để copy.")}
@@ -1353,6 +1363,18 @@ document.addEventListener("click",async e=>{
     L.push("","BẢNG XẾP HẠNG");x.rows.forEach((r,i)=>L.push(`${i+1}. ${r.name} — ${r.w}T-${r.l}B, HS ${r.pf-r.pa>0?"+":""}${r.pf-r.pa}${x.snap?`, phải đóng ${fmtK(r.pay)}`:""}`));
     const txt=L.join("\n");try{await navigator.clipboard.writeText(txt);toast("Đã copy tổng kết buổi.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
   if(!canWrite)return;
+  if(act==="migrate"){if(!legacy||!isGoogle(authUser)||!S.rootEditor){toast("Cần đăng nhập Google và nhập PIN trước.");return}if(!armOr("migrate:x"))return;try{await migrate()}catch(x){S.migMsg="Chuyển chưa xong ("+((x&&x.code)||"lỗi")+"). Kiểm tra luật Firestore mới đã xuất bản chưa rồi thử lại.";render()}return}
+  if(act==="bsave"&&isAdm()){const code=val("bk-code",CLUB?.bank?.code||"mb"),bk=BANKS.find(z=>z[0]===code)||BANKS[0],acc=String(val("bk-acc",CLUB?.bank?.acc||"")).replace(/\s/g,""),hd=noAcc(val("bk-holder",CLUB?.bank?.holder||""));
+    if(!/^\d{6,19}$/.test(acc)){toast("Số tài khoản chỉ gồm 6–19 chữ số.");return}if(!hd){toast("Nhập tên chủ tài khoản.");return}
+    write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{bank:{code:bk[0],bin:bk[1],name:bk[2],acc,holder:hd}}).then(()=>{["bk-code","bk-acc","bk-holder"].forEach(k=>delete drafts[k])}),"Đã lưu ngân hàng");return}
+  if(act==="pub"&&isAdm()){write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{public:b.dataset.v==="1"}),"Đã lưu");return}
+  if(act==="pinset"&&isAdm()){const p=String(drafts.newpin||"").trim();if(p.length<4){toast("PIN cần ít nhất 4 ký tự.");return}write(()=>FB.setDoc(FB.doc(FB.fs,PFX+"secret/pin"),{value:p}).then(()=>delete drafts.newpin),"Đã đặt PIN trọng tài");return}
+  if(act==="edclear"&&isAdm()){if(!armOr("edclear:x"))return;write(async()=>{for(const e of S.editors||[])await FB.deleteDoc(FB.doc(FB.fs,PFX+"editors/"+e.id))},"Đã thu hồi quyền các máy dùng PIN");return}
+  if(act==="mrm"&&isAdm()){if(!armOr("mrm:"+id))return;write(()=>FB.deleteDoc(FB.doc(FB.fs,PFX+"members/"+id)),"Đã gỡ khỏi ban tổ chức");return}
+  if(act==="inv"&&isAdm()){const role=b.dataset.v==="admin"?"admin":"scorer",tok=Array.from(crypto.getRandomValues(new Uint8Array(9))).map(x=>x.toString(16).padStart(2,"0")).join("");
+    await write(()=>FB.setDoc(FB.doc(FB.fs,PFX+"invites/"+tok),{role,exp:Date.now()+7*864e5,by:authUser.uid,at:Date.now()}),"Đã tạo link mời");
+    S.invLink={role,url:`${location.origin}${location.pathname}?${CID!=="aep"?"clb="+CID+"&":""}moi=${tok}`};render();return}
+  if(act==="invshare"&&S.invLink){const t=`Mời bạn vào ban tổ chức ${CLUB?.name||""} (${ROLE_LB[S.invLink.role]}). Mở link bằng Chrome/Safari rồi đăng nhập Google:`;if(navigator.share){try{await navigator.share({title:"Lời mời",text:t,url:S.invLink.url})}catch(x){}}else{try{await navigator.clipboard.writeText(t+"\n"+S.invLink.url);toast("Đã copy lời mời")}catch(x){toast(S.invLink.url)}}return}
   if(act==="setupt"){const D=derive();setupOpen=!(setupOpen==null?!D.SM.length:setupOpen);render();return}
   if(act==="cset"&&b.dataset.k!=="fmt"){const k=b.dataset.k,v=b.dataset.v;if(derive().SM.length){toast("Buổi đã có trận, không đổi được.");return}
     if(cfg()[k]===v)return;const patch={[k]:v};if(k==="gt")patch.gtv=v==="trich"?30:v==="codinh"?200:v==="gop"?20:0;if(k==="thu"&&v==="phi"&&!cfg().phi)patch.phi=50;
@@ -1455,11 +1477,93 @@ document.addEventListener("click",async e=>{
     },"Đã lưu buổi, đây là trang tổng kết để chia sẻ");go("buoi",{sid:D.sid})}
 });
 
+/* ---------- CLB & tài khoản ---------- */
+const BANKS=[["mb","970422","MB Bank"],["vcb","970436","Vietcombank"],["tcb","970407","Techcombank"],["bidv","970418","BIDV"],["icb","970415","VietinBank"],["acb","970416","ACB"],["tpb","970423","TPBank"],["vpb","970432","VPBank"],["vba","970405","Agribank"],["shb","970443","SHB"],["ocb","970448","OCB"],["msb","970426","MSB"],["stb","970403","Sacombank"],["hdb","970437","HDBank"],["vib","970441","VIB"],["cake","546034","Cake"]];
+const ROLE_LB={owner:"Chủ CLB",admin:"Quản lý",scorer:"Trọng tài",pin:"Trọng tài (PIN)"};
+const isAdm=()=>ROLE==="owner"||ROLE==="admin";
+const isGoogle=u=>!!u&&!u.isAnonymous;
+const inApp=()=>/Zalo|FBAN|FBAV|Instagram|Line\//i.test(navigator.userAgent||"");
+let unsubAdm=[];
+function watchAdmin(){
+  unsubAdm.forEach(f=>{try{f()}catch(e){}});unsubAdm=[];
+  if(legacy||!isAdm())return;
+  unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"members"),{},q=>{S.members=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
+  unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"editors"),{},q=>{S.editors=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
+}
+async function refreshRole(){
+  ROLE=null;canWrite=false;const u=authUser;
+  if(u){
+    if(!legacy){try{const m=await FB.getDoc(FB.doc(FB.fs,PFX+"members/"+u.uid));if(m.exists())ROLE=m.data().role}catch(e){}}
+    const ed=await isEditor(u.uid);if(!ROLE&&ed)ROLE="pin";canWrite=!!ROLE;
+    if(legacy&&ed)S.rootEditor=true;
+  }
+  watchAdmin();
+}
+const inviteTok=()=>new URLSearchParams(location.search).get("moi");
+async function acceptInvite(){
+  const tok=inviteTok();if(!tok||legacy||!isGoogle(authUser)||(ROLE&&ROLE!=="pin"))return;
+  try{const s=await FB.getDoc(FB.doc(FB.fs,PFX+"invites/"+tok));if(!s.exists()){toast("Link mời không còn hiệu lực.");return}
+    const iv=s.data();if(iv.exp<Date.now()){toast("Link mời đã hết hạn, nhờ quản lý tạo link mới.");return}
+    await FB.setDoc(FB.doc(FB.fs,PFX+"members/"+authUser.uid),{role:iv.role,invite:tok,name:authUser.displayName||"",email:authUser.email||"",at:Date.now()});
+    await refreshRole();toast(`Đã nhận quyền ${ROLE_LB[iv.role]} của ${CLUB?.name||"CLB"}.`);
+    try{const q=new URLSearchParams(location.search);q.delete("moi");history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:""))}catch(e){}
+    render();
+  }catch(e){toast("Không nhận được lời mời, thử lại.")}
+}
+function loginBar(){
+  if(canWrite)return "";
+  const u=authUser,tok=inviteTok();
+  let h=`<div class="ro login"><span>${tok&&!legacy?"Bạn được mời vào ban tổ chức của CLB. Đăng nhập Google để nhận quyền.":isGoogle(u)?`Đã đăng nhập ${esc(u.email||u.displayName||"")} nhưng chưa có quyền ở CLB này. Nhờ chủ CLB gửi link mời, hoặc nhập PIN trọng tài.`:"Bạn đang xem trực tiếp. Ban tổ chức đăng nhập Google, trọng tài nhập PIN để nhập tỉ số."}</span>
+    <span class="bar" style="gap:6px">${isGoogle(u)?`<button class="ghost" data-act="logout">Đổi tài khoản</button>`:`<button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button>`}
+    <input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN trọng tài" value="${esc(val("pin",""))}" style="width:140px"><button class="primary" data-act="login">Vào bằng PIN</button></span>
+    ${errs.pin?`<p class="err" style="width:100%">${esc(errs.pin)}</p>`:""}${inApp()?`<p class="rule" style="width:100%">Trình duyệt trong Zalo/Facebook không cho đăng nhập Google. Bấm nút ⋯ ở góc trên rồi chọn Mở bằng trình duyệt.</p>`:""}</div>`;
+  return h;
+}
+function bankName(b){const x=BANKS.find(z=>z[0]===b.code);return x?x[2]:(b.name||b.code||"")}
+function clubAdmin(D){
+  if(!canWrite)return "";
+  if(legacy){
+    if(CID!=="aep")return "";
+    if(!isGoogle(authUser))return `<div class="panel clubp"><h2>Tài khoản CLB</h2><p class="rule">Dữ liệu CLB đang ở chế độ cũ (PIN chung). Để chuyển sang tài khoản riêng, chủ CLB đăng nhập Google rồi nhập PIN một lần.</p><div class="bar" style="margin-top:10px"><button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button></div></div>`;
+    return `<div class="panel clubp"><h2>Chuyển sang tài khoản CLB</h2><p class="rule">Bạn đang đăng nhập ${esc(authUser.email||"")}. Bấm nút dưới để tạo không gian riêng cho CLB với bạn là chủ CLB, rồi chép toàn bộ thành viên, các trận, lịch sử và quỹ sang. Dữ liệu cũ vẫn được giữ nguyên làm bản sao lưu.</p>
+      <p class="rule" style="margin-top:6px"><b>Nên làm khi không có buổi nào đang đánh.</b> Sau khi chuyển, mọi máy đang mở trang cần tải lại.</p>
+      <div class="bar" style="margin-top:10px"><button class="ball" data-act="migrate">${armed("migrate:x")?"Bấm lần nữa để bắt đầu chuyển":"Chuyển dữ liệu sang tài khoản CLB"}</button></div>${S.migMsg?`<p class="rule" style="margin-top:8px">${esc(S.migMsg)}</p>`:""}</div>`;
+  }
+  if(!isAdm())return `<div class="panel clubp"><h2>Tài khoản</h2><p class="rule">Bạn đang có quyền ${esc(ROLE_LB[ROLE]||"")} ở ${esc(CLUB?.name||"CLB")}. Chỉ chủ CLB và quản lý mới đổi được cài đặt CLB.</p></div>`;
+  const b=CLUB?.bank||{},mem=[...(S.members||[])].sort((a,b)=>(a.role==="owner"?-1:b.role==="owner"?1:0)||String(a.name).localeCompare(String(b.name),"vi"));
+  let h=`<div class="panel clubp"><h2>Quản lý CLB · ${esc(CLUB?.name||CID)}</h2>
+    <div class="sgrp"><span class="lbl">Ngân hàng nhận tiền (hiện trong mã QR)</span><div class="form">
+      <label><span class="lbl">Ngân hàng</span><select id="bk-code" data-draft="bk-code">${BANKS.map(([c,,n])=>`<option value="${c}" ${val("bk-code",b.code||"mb")===c?"selected":""}>${n}</option>`).join("")}</select></label>
+      <label><span class="lbl">Số tài khoản</span><input id="bk-acc" data-draft="bk-acc" inputmode="numeric" value="${esc(val("bk-acc",b.acc||""))}"></label>
+      <label><span class="lbl">Chủ tài khoản (không dấu)</span><input id="bk-holder" data-draft="bk-holder" value="${esc(val("bk-holder",b.holder||""))}"></label></div>
+      <div class="bar"><span class="meta grow">${b.acc?`Đang dùng: ${esc(bankName(b))} · ${esc(b.acc)} · ${esc(b.holder||"")}`:"Chưa khai ngân hàng: nút Chuyển tiền sẽ bị ẩn."}</span><button class="primary" data-act="bsave">Lưu ngân hàng</button></div></div>
+    <div class="sgrp"><span class="lbl">Ai được xem</span><span class="seg segw"><button data-act="pub" data-v="1" aria-pressed="${CLUB?.public!==false}">Ai có link cũng xem được</button><button data-act="pub" data-v="0" aria-pressed="${CLUB?.public===false}">Chỉ ban tổ chức</button></span></div>
+    <div class="sgrp"><span class="lbl">PIN trọng tài</span><p class="rule">Trọng tài nhập PIN này để nhập tỉ số, không cần tài khoản Google. Đổi PIN không làm mất quyền của các máy đã vào; muốn thu hồi thì bấm Thu hồi.</p>
+      <div class="bar"><input id="newpin" data-draft="newpin" type="password" autocomplete="new-password" placeholder="PIN mới (ít nhất 4 số)" value="${esc(val("newpin",""))}" style="width:180px"><button data-act="pinset">Đặt PIN</button><span class="grow"></span><span class="meta">${(S.editors||[]).length} máy đang dùng PIN</span>${(S.editors||[]).length?`<button class="ghost danger" data-act="edclear">${armed("edclear:x")?"Bấm lần nữa":"Thu hồi tất cả"}</button>`:""}</div></div>
+    <div class="sgrp"><span class="lbl">Ban tổ chức</span>${mem.map(m=>`<div class="mrow2"><span class="mname"><b>${esc(m.name||m.email||m.id)}</b><span class="meta" style="display:block">${esc(m.email||"")}</span></span><span class="pill ${m.role==="owner"?"keo":""}">${ROLE_LB[m.role]||m.role}</span>${m.role!=="owner"&&m.id!==authUser?.uid?(armed("mrm:"+m.id)?`<button class="danger" data-act="mrm" data-id="${m.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="mrm" data-id="${m.id}">Gỡ</button>`):""}</div>`).join("")}
+      <div class="bar" style="margin-top:6px"><button data-act="inv" data-v="admin">Tạo link mời Quản lý</button><button data-act="inv" data-v="scorer">Tạo link mời Trọng tài</button></div>
+      ${S.invLink?`<div class="sharebox" style="margin-top:8px"><span class="lbl">Link mời ${esc(ROLE_LB[S.invLink.role])} · hết hạn sau 7 ngày</span><span class="url">${esc(S.invLink.url.replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="invshare">Gửi qua Zalo</button><button data-act="cp" data-v="${esc(S.invLink.url)}">Copy link</button></div></div>`:""}
+      <p class="rule">Người được mời mở link, đăng nhập Google là có quyền. Quản lý sửa được mọi thứ trừ gỡ chủ CLB; trọng tài chỉ cần nhập tỉ số.</p></div></div>`;
+  return h;
+}
+async function migrate(){
+  const u=authUser,now=Date.now(),base="clubs/"+CID+"/";
+  const put=(p,d)=>FB.setDoc(FB.doc(FB.fs,base+p),d);
+  const strip=o=>{const {id,...r}=o;return r};
+  S.migMsg="Đang tạo CLB…";render();
+  await FB.setDoc(FB.doc(FB.fs,"clubs/"+CID),{name:cfg().title||"CLB",public:true,owner:u.uid,bank:BANK||DEF_BANK,createdAt:now});
+  await put("members/"+u.uid,{role:"owner",name:u.displayName||"",email:u.email||"",at:now});
+  if(S.cfg)await put("app/config",S.cfg);
+  let n=0;const all=[...S.hist.map(h=>["app/"+h.id,strip(h)]),...S.players.map(p=>["players/"+p.id,strip(p)]),...S.matches.map(m=>["matches/"+m.id,strip(m)]),...S.batches.map(b=>["batches/"+b.id,strip(b)])];
+  for(const [p,d] of all){await put(p,d);n++;if(n%10===0){S.migMsg=`Đang chép ${n}/${all.length}…`;render()}}
+  S.migMsg=`Đã chép ${all.length} mục. Đang tải lại…`;render();
+  setTimeout(()=>location.reload(),900);
+}
 /* ---------- boot ---------- */
-async function isEditor(uid){try{return (await FB.getDoc(FB.doc(FB.fs,"editors/"+uid))).exists()}catch(e){return false}}
-function makeDb(){
+async function isEditor(uid){try{return (await FB.getDoc(FB.doc(FB.fs,PFX+"editors/"+uid))).exists()}catch(e){return false}}
+function makeDb(pfx){
   const wrapDoc=s=>({id:s.id,exists:s.exists(),data:()=>s.data(),metadata:s.metadata});
-  const ref=path=>{const r=FB.doc(FB.fs,path);return{
+  const ref=path=>{const r=FB.doc(FB.fs,pfx+path);return{
     id:r.id,path,
     set:d=>FB.setDoc(r,d),update:d=>FB.updateDoc(r,d),delete:()=>FB.deleteDoc(r),
     get:async()=>wrapDoc(await FB.getDoc(r)),
@@ -1469,16 +1573,23 @@ function makeDb(){
       if(d&&d.holder!==holder&&d.expires>now)return{acquired:false};
       t.set(r,{holder,expires:now+(ttlMs||5000)});return{acquired:true}})}catch(e){return{acquired:false}}}
   }};
-  return{doc:ref,collection:path=>{const c=FB.collection(FB.fs,path);return{
-    path,doc:id=>ref(id?path+"/"+id:FB.doc(c).path),
+  return{doc:ref,collection:path=>{const c=FB.collection(FB.fs,pfx+path);return{
+    path,doc:id=>ref(path+"/"+(id||FB.doc(c).id)),
     onSnapshot:(n,e)=>FB.onSnapshot(c,{includeMetadataChanges:true},n,e)}}};
 }
+const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BANK:null);
 (async()=>{
   render();
   if(!window.FB){S.offline=true;render();return}
-  db=makeDb();
-  FB.onAuthStateChanged(FB.auth,async u=>{authUser=u;canWrite=u?await isEditor(u.uid):false;render()});
-  const fail=()=>{S.offline=true;render()};
+  try{const s=await FB.getDoc(FB.doc(FB.fs,"clubs/"+CID));
+    if(s.exists()){CLUB=s.data();PFX="clubs/"+CID+"/";legacy=false;BANK=clubBank()}
+    else if(CID!=="aep"){S.noClub=true;hideSplash();render();return}
+  }catch(e){if(CID!=="aep"){S.offline=true;render();return}}
+  db=makeDb(PFX);
+  if(FB.getRedirectResult)FB.getRedirectResult(FB.auth).catch(()=>{});
+  FB.onAuthStateChanged(FB.auth,async u=>{authUser=u;await refreshRole();if(S.priv&&canWrite){location.reload();return}render();acceptInvite()});
+  if(!legacy)FB.onSnapshot(FB.doc(FB.fs,"clubs/"+CID),{},s=>{if(s.exists()){CLUB=s.data();BANK=clubBank();render()}},()=>{});
+  const fail=()=>{if(!legacy&&CLUB&&CLUB.public===false)S.priv=true;S.offline=true;hideSplash();render()};
   const live=meta=>{S.live=!meta.fromCache;render()};
   db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;live(s.metadata)},fail);
   db.collection("app").onSnapshot(q=>{S.hist=q.docs.filter(d=>d.id.startsWith("hist-")).map(d=>({id:d.id,...d.data()}));S.hReady=true;render()},fail);
