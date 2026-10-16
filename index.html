@@ -824,7 +824,7 @@ function prizes(D,M){
   const m=ok.find(r=>r.p.gender!=="F"),f=ok.find(r=>r.p.gender==="F"),w=[m&&{label:"Số 1 nam",ids:[m.p.id]},f&&{label:"Số 1 nữ",ids:[f.p.id]}].filter(Boolean);
   w.forEach(x=>x.k=Math.round(M.pot/w.length));return w;
 }
-const hClub=h=>h&&h.money?(h.money.club!=null?h.money.club:(h.money.gap||0)):0;
+const hClub=h=>h&&h.money?(h.money.club!=null?h.money.club:(h.rows||[]).reduce((a,r)=>a+(+r.pay||0),0)-(+h.money.cost||0)):0;
 function clubFund(before){return S.hist.filter(h=>before==null||h.sid<before).reduce((a,h)=>a+hClub(h),0)}
 function moneySnap(D,M){
   const pz=prizes(D,M);
