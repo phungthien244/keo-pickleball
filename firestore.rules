@@ -1,0 +1,158 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== Chung =====
+    function signedIn() { return request.auth != null; }
+    function google() { return signedIn() && request.auth.token.firebase.sign_in_provider != 'anonymous'; }
+    function rootEditor() { return signedIn() && exists(/databases/$(database)/documents/editors/$(request.auth.uid)); }
+    // Quản trị nền tảng pikeco.app
+    function isPA() {
+      return google() && request.auth.token.email == 'phungthien244@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    // ===== Dữ liệu cũ (bản sao lưu) =====
+    match /secret/{id} { allow read, write: if false; }
+    match /editors/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['pin', 'at'])
+        && request.resource.data.pin == get(/databases/$(database)/documents/secret/pin).data.value;
+      allow update, delete: if false;
+    }
+    match /app/{docId}     { allow read: if true; allow write: if rootEditor(); }
+    match /players/{docId} { allow read: if true; allow write: if rootEditor(); }
+    match /matches/{docId} { allow read: if true; allow write: if rootEditor(); }
+    match /batches/{docId} { allow read: if true; allow write: if rootEditor(); }
+
+    // ===== Nền tảng =====
+    // Mỗi tài khoản Google một CLB: users/{uid} = { club, at }
+    match /users/{uid} {
+      allow read: if (signedIn() && request.auth.uid == uid) || isPA();
+      allow create: if google() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['club', 'at'])
+        && request.resource.data.club is string
+        && getAfter(/databases/$(database)/documents/clubs/$(request.resource.data.club)).data.owner == uid;
+      allow update: if false;
+      allow delete: if isPA();
+    }
+
+    // Mã mời tạo CLB (dùng một lần)
+    match /codes/{code} {
+      allow read: if signedIn();
+      allow create: if isPA() && request.resource.data.used == false;
+      allow delete: if isPA();
+      allow update: if isPA() || (
+        google() && resource.data.used == false
+        && request.resource.data.used == true
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'club', 'by', 'at'])
+        && getAfter(/databases/$(database)/documents/clubs/$(request.resource.data.club)).data.owner == request.auth.uid
+        && getAfter(/databases/$(database)/documents/clubs/$(request.resource.data.club)).data.code == code
+      );
+    }
+
+    // Cài đặt nền tảng (EmailJS: service/template/public key là khoá công khai)
+    match /platform/{doc} {
+      allow read: if true;
+      allow write: if isPA();
+    }
+
+    // ===== Mỗi CLB một không gian riêng =====
+    match /clubs/{c} {
+      function clubDoc() { return get(/databases/$(database)/documents/clubs/$(c)).data; }
+      function memberPath(uid) { return /databases/$(database)/documents/clubs/$(c)/members/$(uid); }
+      function isMember() { return signedIn() && exists(memberPath(request.auth.uid)); }
+      function myRole() { return get(memberPath(request.auth.uid)).data.role; }
+      function isAdmin() { return isMember() && myRole() in ['owner', 'admin']; }
+      function isPinEditor() { return signedIn() && exists(/databases/$(database)/documents/clubs/$(c)/editors/$(request.auth.uid)); }
+      function active() { return clubDoc().get('status', 'active') == 'active'; }
+      function canEdit() { return active() && (isMember() || isPinEditor()); }
+      function canRead() { return (active() && clubDoc().public == true) || isMember() || isPinEditor() || isPA(); }
+
+      function newClubOk() {
+        let d = request.resource.data;
+        let me = request.auth.uid;
+        return c.matches('^[a-z0-9][a-z0-9-]{1,18}[a-z0-9]$')
+          && !(c in ['aep', 'admin', 'www', 'quantri', 'tao', 'start', 'api', 'app', 'pikeco', 'clb', 'login', 'help'])
+          && d.keys().hasOnly(['name', 'public', 'owner', 'status', 'city', 'size', 'createdAt', 'code'])
+          && d.name is string && d.name.size() >= 3 && d.name.size() <= 60
+          && d.public == true
+          && !exists(/databases/$(database)/documents/users/$(me))
+          && getAfter(/databases/$(database)/documents/users/$(me)).data.club == c
+          && (d.status == 'pending'
+              || (d.status == 'active' && d.code is string
+                  && get(/databases/$(database)/documents/codes/$(d.code)).data.used == false
+                  && getAfter(/databases/$(database)/documents/codes/$(d.code)).data.club == c));
+      }
+
+      // Tên CLB, ngân hàng nhận tiền, trạng thái: ai cũng đọc được
+      allow read: if true;
+      allow create: if google() && request.resource.data.owner == request.auth.uid && (
+          newClubOk()
+          // Đường cũ: chuyển CLB AEP từ dữ liệu PIN chung
+          || (rootEditor() && request.resource.data.keys().hasOnly(['name', 'public', 'owner', 'bank', 'createdAt']))
+        );
+      allow update: if (isAdmin()
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['owner', 'status', 'statusNote', 'reviewedAt', 'createdAt', 'code']))
+        || (isPA()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusNote', 'reviewedAt'])
+          && request.resource.data.status in ['pending', 'active', 'locked', 'rejected']);
+      allow delete: if false;
+
+      // Liên hệ của chủ CLB: chỉ quản trị nền tảng và ban quản lý CLB xem
+      match /private/{doc} {
+        allow read: if isPA() || isAdmin();
+        allow create: if google() && doc == 'info'
+          && getAfter(/databases/$(database)/documents/clubs/$(c)).data.owner == request.auth.uid
+          && !exists(/databases/$(database)/documents/clubs/$(c))
+          && request.resource.data.keys().hasOnly(['contact', 'ownerEmail']);
+        allow update: if isAdmin() && request.resource.data.keys().hasOnly(['contact', 'ownerEmail']);
+        allow delete: if false;
+      }
+
+      match /members/{uid} {
+        allow read: if isMember() || (signedIn() && request.auth.uid == uid) || isPA();
+        allow create: if google() && request.auth.uid == uid && (
+            (request.resource.data.role == 'owner'
+              && getAfter(/databases/$(database)/documents/clubs/$(c)).data.owner == uid)
+            || (request.resource.data.role in ['admin', 'scorer']
+                && request.resource.data.invite is string
+                && get(/databases/$(database)/documents/clubs/$(c)/invites/$(request.resource.data.invite)).data.role == request.resource.data.role
+                && get(/databases/$(database)/documents/clubs/$(c)/invites/$(request.resource.data.invite)).data.exp > request.time.toMillis())
+          );
+        allow update: if isAdmin() && resource.data.role != 'owner' && request.resource.data.role in ['admin', 'scorer'];
+        allow delete: if resource.data.role != 'owner' && (isAdmin() || (signedIn() && request.auth.uid == uid));
+      }
+
+      match /invites/{tok} {
+        allow read: if signedIn();
+        allow create: if isAdmin() && request.resource.data.role in ['admin', 'scorer'];
+        allow delete: if isAdmin();
+        allow update: if false;
+      }
+
+      // PIN trọng tài: chỉ Rules đọc được, quản lý được đặt lại
+      match /secret/{id} {
+        allow read: if false;
+        allow write: if isAdmin();
+      }
+
+      match /editors/{uid} {
+        allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();
+        allow create: if signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['pin', 'at'])
+          && request.resource.data.pin == get(/databases/$(database)/documents/clubs/$(c)/secret/pin).data.value;
+        allow delete: if isAdmin();
+        allow update: if false;
+      }
+
+      // Dữ liệu buổi đánh: CLB phải đang hoạt động mới ghi được
+      match /app/{docId}     { allow read: if canRead(); allow write: if canEdit(); }
+      match /players/{docId} { allow read: if canRead(); allow write: if canEdit(); }
+      match /matches/{docId} { allow read: if canRead(); allow write: if canEdit(); }
+      match /batches/{docId} { allow read: if canRead(); allow write: if canEdit(); }
+    }
+  }
+}

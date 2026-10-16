@@ -1,0 +1,82 @@
+/* ---------- CLB & tài khoản ---------- */
+const BANKS=[["mb","970422","MB Bank"],["vcb","970436","Vietcombank"],["tcb","970407","Techcombank"],["bidv","970418","BIDV"],["icb","970415","VietinBank"],["acb","970416","ACB"],["tpb","970423","TPBank"],["vpb","970432","VPBank"],["vba","970405","Agribank"],["shb","970443","SHB"],["ocb","970448","OCB"],["msb","970426","MSB"],["stb","970403","Sacombank"],["hdb","970437","HDBank"],["vib","970441","VIB"],["cake","546034","Cake"]];
+const ROLE_LB={owner:"Chủ CLB",admin:"Quản lý",scorer:"Trọng tài",pin:"Trọng tài (PIN)"};
+const isAdm=()=>ROLE==="owner"||ROLE==="admin";
+const isGoogle=u=>!!u&&!u.isAnonymous;
+const inApp=()=>/Zalo|FBAN|FBAV|Instagram|Line\//i.test(navigator.userAgent||"");
+let unsubAdm=[];
+function watchAdmin(){
+  unsubAdm.forEach(f=>{try{f()}catch(e){}});unsubAdm=[];
+  if(legacy||!isAdm())return;
+  unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"members"),{},q=>{S.members=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
+  unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"editors"),{},q=>{S.editors=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
+}
+async function refreshRole(){
+  ROLE=null;canWrite=false;const u=authUser;
+  if(u){
+    if(!legacy){try{const m=await FB.getDoc(FB.doc(FB.fs,PFX+"members/"+u.uid));if(m.exists())ROLE=m.data().role}catch(e){}}
+    const ed=await isEditor(u.uid);if(!ROLE&&ed)ROLE="pin";canWrite=!!ROLE;
+    if(legacy&&ed)S.rootEditor=true;
+  }
+  watchAdmin();
+}
+const inviteTok=()=>new URLSearchParams(location.search).get("moi");
+async function acceptInvite(){
+  const tok=inviteTok();if(!tok||legacy||!isGoogle(authUser)||(ROLE&&ROLE!=="pin"))return;
+  try{const s=await FB.getDoc(FB.doc(FB.fs,PFX+"invites/"+tok));if(!s.exists()){toast("Link mời không còn hiệu lực.");return}
+    const iv=s.data();if(iv.exp<Date.now()){toast("Link mời đã hết hạn, nhờ quản lý tạo link mới.");return}
+    await FB.setDoc(FB.doc(FB.fs,PFX+"members/"+authUser.uid),{role:iv.role,invite:tok,name:authUser.displayName||"",email:authUser.email||"",at:Date.now()});
+    await refreshRole();toast(`Đã nhận quyền ${ROLE_LB[iv.role]} của ${CLUB?.name||"CLB"}.`);
+    try{const q=new URLSearchParams(location.search);q.delete("moi");history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:""))}catch(e){}
+    render();
+  }catch(e){toast("Không nhận được lời mời, thử lại.")}
+}
+function loginBar(){
+  if(canWrite)return "";
+  const u=authUser,tok=inviteTok();
+  let h=`<div class="ro login"><span>${tok&&!legacy?"Bạn được mời vào ban tổ chức của CLB. Đăng nhập Google để nhận quyền.":isGoogle(u)?`Đã đăng nhập ${esc(u.email||u.displayName||"")} nhưng chưa có quyền ở CLB này. Nhờ chủ CLB gửi link mời, hoặc nhập PIN trọng tài.`:"Bạn đang xem trực tiếp. Ban tổ chức đăng nhập Google, trọng tài nhập PIN để nhập tỉ số."}</span>
+    <span class="bar" style="gap:6px">${isGoogle(u)?`<button class="ghost" data-act="logout">Đổi tài khoản</button>`:`<button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button>`}
+    <input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN trọng tài" value="${esc(val("pin",""))}" style="width:140px"><button class="primary" data-act="login">Vào bằng PIN</button></span>
+    ${errs.pin?`<p class="err" style="width:100%">${esc(errs.pin)}</p>`:""}${inApp()?`<p class="rule" style="width:100%">Trình duyệt trong Zalo/Facebook không cho đăng nhập Google. Bấm nút ⋯ ở góc trên rồi chọn Mở bằng trình duyệt.</p>`:""}</div>`;
+  return h;
+}
+function bankName(b){const x=BANKS.find(z=>z[0]===b.code);return x?x[2]:(b.name||b.code||"")}
+function clubAdmin(D){
+  if(!canWrite)return "";
+  if(legacy){
+    if(CID!=="aep")return "";
+    if(!isGoogle(authUser))return `<div class="panel clubp"><h2>Tài khoản CLB</h2><p class="rule">Dữ liệu CLB đang ở chế độ cũ (PIN chung). Để chuyển sang tài khoản riêng, chủ CLB đăng nhập Google rồi nhập PIN một lần.</p><div class="bar" style="margin-top:10px"><button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button></div></div>`;
+    return `<div class="panel clubp"><h2>Chuyển sang tài khoản CLB</h2><p class="rule">Bạn đang đăng nhập ${esc(authUser.email||"")}. Bấm nút dưới để tạo không gian riêng cho CLB với bạn là chủ CLB, rồi chép toàn bộ thành viên, các trận, lịch sử và quỹ sang. Dữ liệu cũ vẫn được giữ nguyên làm bản sao lưu.</p>
+      <p class="rule" style="margin-top:6px"><b>Nên làm khi không có buổi nào đang đánh.</b> Sau khi chuyển, mọi máy đang mở trang cần tải lại.</p>
+      <div class="bar" style="margin-top:10px"><button class="ball" data-act="migrate">${armed("migrate:x")?"Bấm lần nữa để bắt đầu chuyển":"Chuyển dữ liệu sang tài khoản CLB"}</button></div>${S.migMsg?`<p class="rule" style="margin-top:8px">${esc(S.migMsg)}</p>`:""}</div>`;
+  }
+  if(!isAdm())return `<div class="panel clubp"><h2>Tài khoản</h2><p class="rule">Bạn đang có quyền ${esc(ROLE_LB[ROLE]||"")} ở ${esc(CLUB?.name||"CLB")}. Chỉ chủ CLB và quản lý mới đổi được cài đặt CLB.</p></div>`;
+  const b=CLUB?.bank||{},mem=[...(S.members||[])].sort((a,b)=>(a.role==="owner"?-1:b.role==="owner"?1:0)||String(a.name).localeCompare(String(b.name),"vi"));
+  let h=`<div class="panel clubp"><h2>Quản lý CLB · ${esc(CLUB?.name||CID)}</h2>
+    <div class="sgrp"><span class="lbl">Ngân hàng nhận tiền (hiện trong mã QR)</span><div class="form">
+      <label><span class="lbl">Ngân hàng</span><select id="bk-code" data-draft="bk-code">${BANKS.map(([c,,n])=>`<option value="${c}" ${val("bk-code",b.code||"mb")===c?"selected":""}>${n}</option>`).join("")}</select></label>
+      <label><span class="lbl">Số tài khoản</span><input id="bk-acc" data-draft="bk-acc" inputmode="numeric" value="${esc(val("bk-acc",b.acc||""))}"></label>
+      <label><span class="lbl">Chủ tài khoản (không dấu)</span><input id="bk-holder" data-draft="bk-holder" value="${esc(val("bk-holder",b.holder||""))}"></label></div>
+      <div class="bar"><span class="meta grow">${b.acc?`Đang dùng: ${esc(bankName(b))} · ${esc(b.acc)} · ${esc(b.holder||"")}`:"Chưa khai ngân hàng: nút Chuyển tiền sẽ bị ẩn."}</span><button class="primary" data-act="bsave">Lưu ngân hàng</button></div></div>
+    <div class="sgrp"><span class="lbl">Ai được xem</span><span class="seg segw"><button data-act="pub" data-v="1" aria-pressed="${CLUB?.public!==false}">Ai có link cũng xem được</button><button data-act="pub" data-v="0" aria-pressed="${CLUB?.public===false}">Chỉ ban tổ chức</button></span></div>
+    <div class="sgrp"><span class="lbl">PIN trọng tài</span><p class="rule">Trọng tài nhập PIN này để nhập tỉ số, không cần tài khoản Google. Đổi PIN không làm mất quyền của các máy đã vào; muốn thu hồi thì bấm Thu hồi.</p>
+      <div class="bar"><input id="newpin" data-draft="newpin" type="password" autocomplete="new-password" placeholder="PIN mới (ít nhất 4 số)" value="${esc(val("newpin",""))}" style="width:180px"><button data-act="pinset">Đặt PIN</button><span class="grow"></span><span class="meta">${(S.editors||[]).length} máy đang dùng PIN</span>${(S.editors||[]).length?`<button class="ghost danger" data-act="edclear">${armed("edclear:x")?"Bấm lần nữa":"Thu hồi tất cả"}</button>`:""}</div></div>
+    <div class="sgrp"><span class="lbl">Ban tổ chức</span>${mem.map(m=>`<div class="mrow2"><span class="mname"><b>${esc(m.name||m.email||m.id)}</b><span class="meta" style="display:block">${esc(m.email||"")}</span></span><span class="pill ${m.role==="owner"?"keo":""}">${ROLE_LB[m.role]||m.role}</span>${m.role!=="owner"&&m.id!==authUser?.uid?(armed("mrm:"+m.id)?`<button class="danger" data-act="mrm" data-id="${m.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="mrm" data-id="${m.id}">Gỡ</button>`):""}</div>`).join("")}
+      <div class="bar" style="margin-top:6px"><button data-act="inv" data-v="admin">Tạo link mời Quản lý</button><button data-act="inv" data-v="scorer">Tạo link mời Trọng tài</button></div>
+      ${S.invLink?`<div class="sharebox" style="margin-top:8px"><span class="lbl">Link mời ${esc(ROLE_LB[S.invLink.role])} · hết hạn sau 7 ngày</span><span class="url">${esc(S.invLink.url.replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="invshare">Gửi qua Zalo</button><button data-act="cp" data-v="${esc(S.invLink.url)}">Copy link</button></div></div>`:""}
+      <p class="rule">Người được mời mở link, đăng nhập Google là có quyền. Quản lý sửa được mọi thứ trừ gỡ chủ CLB; trọng tài chỉ cần nhập tỉ số.</p></div></div>`;
+  return h;
+}
+async function migrate(){
+  const u=authUser,now=Date.now(),base="clubs/"+CID+"/";
+  const put=(p,d)=>FB.setDoc(FB.doc(FB.fs,base+p),d);
+  const strip=o=>{const {id,...r}=o;return r};
+  S.migMsg="Đang tạo CLB…";render();
+  await FB.setDoc(FB.doc(FB.fs,"clubs/"+CID),{name:cfg().title||"CLB",public:true,owner:u.uid,bank:BANK||DEF_BANK,createdAt:now});
+  await put("members/"+u.uid,{role:"owner",name:u.displayName||"",email:u.email||"",at:now});
+  if(S.cfg)await put("app/config",S.cfg);
+  let n=0;const all=[...S.hist.map(h=>["app/"+h.id,strip(h)]),...S.players.map(p=>["players/"+p.id,strip(p)]),...(await db.collection("matches").get()).docs.map(d=>["matches/"+d.id,d.data()]),...(await db.collection("batches").get()).docs.map(d=>["batches/"+d.id,d.data()])];
+  for(const [p,d] of all){await put(p,d);n++;if(n%10===0){S.migMsg=`Đang chép ${n}/${all.length}…`;render()}}
+  S.migMsg=`Đã chép ${all.length} mục. Đang tải lại…`;render();
+  setTimeout(()=>location.reload(),900);
+}

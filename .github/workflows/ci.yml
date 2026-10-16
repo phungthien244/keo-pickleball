@@ -1,0 +1,56 @@
+name: Kiểm tra và đưa rules lên
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+jobs:
+  test:
+    name: Test app và rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - run: npm ci
+      - name: Test app
+        run: npm test
+      - name: Build
+        run: npm run build
+        env: { FB_TARGET: prod }
+      - name: Test rules Firestore (emulator)
+        run: npm run test:rules
+
+  rules:
+    name: Đưa rules lên Firebase
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - name: Chọn Firebase theo nhánh
+        id: target
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "project=keo-pickleball" >> "$GITHUB_OUTPUT"
+            echo "secret=FIREBASE_SERVICE_ACCOUNT" >> "$GITHUB_OUTPUT"
+          else
+            echo "project=${{ vars.FIREBASE_DEV_PROJECT }}" >> "$GITHUB_OUTPUT"
+            echo "secret=FIREBASE_SERVICE_ACCOUNT_DEV" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy firestore.rules
+        env:
+          SA: ${{ secrets[steps.target.outputs.secret] }}
+        run: |
+          if [ -z "$SA" ] || [ -z "${{ steps.target.outputs.project }}" ]; then
+            echo "Chưa có khoá dịch vụ hoặc tên project cho nhánh này, bỏ qua bước đưa rules lên."; exit 0
+          fi
+          echo "$SA" > "$RUNNER_TEMP/sa.json"
+          GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json" npx firebase deploy --only firestore:rules --project "${{ steps.target.outputs.project }}" --non-interactive
+          rm -f "$RUNNER_TEMP/sa.json"

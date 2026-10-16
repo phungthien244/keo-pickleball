@@ -1,0 +1,31 @@
+{
+  "name": "pikeco",
+  "version": "1.0.0",
+  "description": "pikeco.app – quản lý CLB pickleball",
+  "scripts": {
+    "dev": "vite",
+    "dev:mock": "FB_TARGET=mock vite",
+    "build": "vite build",
+    "build:mock": "FB_TARGET=mock vite build --outDir dist-mock",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-pikeco \"vitest run -c vitest.rules.config.js\"",
+    "cf:build": "vitest run && vite build"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "firebase": "^10.12.2"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.4",
+    "firebase-tools": "^13.24.2",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.4"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  }
+}

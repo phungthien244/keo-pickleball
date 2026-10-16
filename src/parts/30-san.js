@@ -1,0 +1,78 @@
+function vSan(D){
+  const c=D.c, busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
+  const waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
+  const free=Math.max(0,c.courts-D.playing.length), can=Math.min(free,Math.floor(waiting.length/4));
+  let h=fmtSeg(D)+`<div class="bar">
+    <span class="lbl">Số sân</span>
+    <span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân" ${canWrite?"":"disabled"}>−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân" ${canWrite?"":"disabled"}>+</button></span>
+    <span class="seg" role="group" aria-label="Ưu tiên ghép theo giới"><button data-act="gmode" data-v="mix" aria-pressed="${c.gmode!=="same"}" ${canWrite?"":"disabled"}>Ưu tiên khác giới</button><button data-act="gmode" data-v="same" aria-pressed="${c.gmode==="same"}" ${canWrite?"":"disabled"}>Ưu tiên cùng giới</button></span>
+    <span class="grow"></span>
+    ${canWrite?`<button class="ball" data-act="gen">Xếp trận cho ${can||""} sân trống</button>`:""}
+  </div>`;
+  if(errs.gen)h+=`<p class="err">${esc(errs.gen)}</p>`;
+  if(!D.players.length)return h+`<div class="empty"><strong>Chưa có người chơi</strong>Vào tab Người chơi, thêm thành viên hoặc chọn người có mặt hôm nay, rồi quay lại đây bấm Xếp trận.</div>`;
+  if(!D.playing.length)h+=`<div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; theo chế độ đang chọn ưu tiên đôi nam nữ hoặc ưu tiên cùng giới; khi lẻ chỉ cho đôi nam hoặc đôi nữ gặp đôi nam nữ, không bao giờ đôi nam gặp đôi nữ.</div>`;
+  else h+=`<div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;
+  h+=`<div><p class="lbl" style="margin:0 0 8px">Đang chờ (${waiting.length})</p>${waiting.length?`<div class="chips">${waiting.map(p=>{const s=D.st.get(p.id);return `<span class="chip">${av(p,"xs")}${esc(p.name)}${p.gender==="F"?" (nữ)":""}<b class="num">${s.g} trận</b></span>`}).join("")}</div>`:`<p class="rule">Không ai phải chờ.</p>`}</div>`;
+  const hist=[...D.done].reverse();
+  h+=`<div class="panel"><div class="bar" style="margin-bottom:6px"><h2 class="grow">Trận đã xong</h2><span class="meta num">${hist.length} trận</span></div>`;
+  h+=hist.length?`<div class="hist">${hist.map(m=>histRow(D,m)).join("")}</div>`:`<p class="rule">Kết quả sẽ hiện ở đây sau khi lưu tỉ số.</p>`;
+  return h+`</div>`;
+}
+const gOf=(D,id)=>D.pmap.get(id)?.gender==="F"?"F":"M";
+const tType=(D,ids)=>ids.map(id=>gOf(D,id)).sort().join("");
+const T_LABEL={FM:"Đôi nam nữ",MM:"Đôi nam",FF:"Đôi nữ"};
+const KIND={mixed:"Đôi nam nữ",gender:"Cùng giới",hybrid:"Trận lai"};
+const kindOf=(D,m)=>m.kind||(()=>{const a=tType(D,m.a),b=tType(D,m.b);return a==="FM"&&b==="FM"?"mixed":a===b?"gender":"hybrid"})();
+const AVC=["#1f8fe5","#3a6ea5","#1a7f45","#c9302c","#7a4cc2","#c7770b","#127a8a","#b0337a"];
+function av(p,cls=""){
+  if(!p)return `<span class="av ${cls}"></span>`;
+  const n=String(p.name||"?").trim(),w=n.split(/\s+/),ini=(w[w.length-1]||"?").charAt(0).toUpperCase();
+  if(p.photo&&/^data:image\//.test(p.photo))return `<span class="av ${cls}"><img src="${esc(p.photo)}" alt="" decoding="async"></span>`;
+  let h=0;for(const ch of n)h=(h*31+ch.charCodeAt(0))>>>0;
+  return `<span class="av ${cls}" style="background:${AVC[h%AVC.length]}" aria-hidden="true">${esc(ini)}</span>`;
+}
+const avId=(D,id,cls)=>av(D.pmap.get(id),cls);
+async function shrink(file){
+  const url=URL.createObjectURL(file);
+  try{const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url});
+    const w=img.naturalWidth,h=img.naturalHeight,s=Math.min(w,h),N=160,c=document.createElement("canvas");c.width=c.height=N;
+    const x=c.getContext("2d");x.imageSmoothingQuality="high";x.drawImage(img,(w-s)/2,(h-s)/2,s,s,0,0,N,N);return c.toDataURL("image/jpeg",.8)}
+  finally{URL.revokeObjectURL(url)}
+}
+const gPill=g=>`<span class="pill g${g}">${g==="F"?"Nữ":"Nam"}</span>`;
+function teamLine(D,ids){
+  const st=ids.map(id=>D.st.get(id)?.rating??3), a=(st[0]+st[1])/2;
+  return `<div class="tl"><span class="avs">${ids.map(id=>avId(D,id,"md")).join("")}</span><div>${ids.map(id=>nm(D,id)).join(" &amp; ")}<small class="num">${T_LABEL[tType(D,ids)]} · Rating TB ${r2(a)}</small></div></div>`;
+}
+function keoPill(c,pA){
+  const fav=Math.max(pA,1-pA);
+  if(c.keo&&fav>=c.thr)return `<span class="pill keo">Kèo lệch: đội mạnh thua ${c.hi}k, đội yếu thua ${c.lo}k</span>`;
+  return `<span class="pill">Thua ${c.fee}k/người</span>`;
+}
+function courtCard(D,m){
+  const c=D.c,i=D.info.get(m.id),pA=i.pA, ka=`sa-${m.id}`,kb=`sb-${m.id}`;
+  return `<article class="court${isNew(m.id+"p")?" new":""}">
+    <div class="court-h"><h3>Sân ${m.court}</h3><span class="num">${KIND[kindOf(D,m)]} · Trận #${m.seq}</span></div>
+    <div class="team"><div class="names">${teamLine(D,m.a)}</div><input class="score num" id="${ka}" data-draft="${ka}" type="number" inputmode="numeric" min="0" max="99" aria-label="Điểm đội 1" value="${esc(val(ka,""))}" ${canWrite?"":"disabled"}></div>
+    <div class="prob" title="Xác suất thắng dự kiến"><i style="width:${Math.round(pA*100)}%"></i></div>
+    <div class="bar" style="justify-content:space-between;padding:6px 16px 0"><span class="lbl num" style="color:var(--navy)">${Math.round(pA*100)}% thắng</span><span class="lbl num">${Math.round((1-pA)*100)}% thắng</span></div>
+    <div class="team"><div class="names">${teamLine(D,m.b)}</div><input class="score num" id="${kb}" data-draft="${kb}" type="number" inputmode="numeric" min="0" max="99" aria-label="Điểm đội 2" value="${esc(val(kb,""))}" ${canWrite?"":"disabled"}></div>
+    <div class="court-f">${keoPill(c,pA)}<span style="flex:1"></span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button><button class="primary" data-act="save" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>
+    ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}
+  </article>`;
+}
+function histRow(D,m){
+  const i=D.info.get(m.id)||{},ka=`ea-${m.id}`,kb=`eb-${m.id}`;
+  if(editing.has(m.id))return `<div class="hrow"><span class="meta">S${m.court}</span>
+    <div class="who">${m.a.map(id=>nm(D,id)).join(" &amp; ")} <span class="l">vs</span> ${m.b.map(id=>nm(D,id)).join(" &amp; ")}
+    <div class="bar" style="margin-top:6px"><input class="score num" style="width:64px;font-size:20px" id="${ka}" data-draft="${ka}" type="number" inputmode="numeric" value="${esc(val(ka,m.sa))}" aria-label="Điểm đội 1"> <span>–</span> <input class="score num" style="width:64px;font-size:20px" id="${kb}" data-draft="${kb}" type="number" inputmode="numeric" value="${esc(val(kb,m.sb))}" aria-label="Điểm đội 2"></div>
+    ${errs[m.id]?`<p class="err">${esc(errs[m.id])}</p>`:""}</div>
+    <div class="bar"><button class="ghost" data-act="edit-x" data-id="${m.id}">Thôi</button><button class="primary" data-act="edit-save" data-id="${m.id}">Lưu</button></div></div>`;
+  const A=m.a.map(id=>nm(D,id)).join(" &amp; "),B=m.b.map(id=>nm(D,id)).join(" &amp; ");
+  return `<div class="hrow${isNew(m.id+"d")?" new":""}"><span class="meta num">S${m.court}<br>#${m.seq}</span>
+    <div class="who">${i.aWin?`<b>${A}</b>`:`<span class="l">${A}</span>`} <span class="l">vs</span> ${!i.aWin?`<b>${B}</b>`:`<span class="l">${B}</span>`}
+      <div class="bar" style="margin-top:4px;gap:6px"><span class="pill lose">Thua góp ${i.fee}k/người</span><span class="pill">${KIND[kindOf(D,m)]}</span><span class="pill num" title="Rating thay đổi theo điểm thực tế so với dự kiến, giống DUPR">Dự kiến ${expScore(i.eS,D.c.target)} · đội thắng ${sgn(i.aWin?i.dA:-i.dA)}</span></div></div>
+    <div style="text-align:right"><div class="sc num">${m.sa}–${m.sb}</div>${canWrite?`<button class="ghost" data-act="edit" data-id="${m.id}">Sửa</button>${delBtn("mdel",m.id,"Xóa")}`:""}</div></div>`;
+}
+
