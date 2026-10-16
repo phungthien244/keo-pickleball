@@ -1,7 +1,7 @@
 // Firebase giả chạy trong trình duyệt: dữ liệu mẫu, đăng nhập sẵn vai chủ CLB và quản trị nền tảng.
 // Dùng cho `npm run dev:mock` và ảnh chụp kiểm tra giao diện.
 (function(){
-const store=new Map();const subs=[];let idc=1000;const notify=()=>setTimeout(()=>subs.forEach(f=>f()),0);
+const store=new Map();const subs=[];let idc=1000;const KEY="pb-mock-v1";const save=()=>{try{localStorage.setItem(KEY,JSON.stringify([...store]))}catch(e){}};const notify=()=>setTimeout(()=>{save();subs.forEach(f=>f())},0);
 const demo=[["Tuấn",3.25,"M"],["Hà",3,"F"],["Minh",3.5,"M"],["Lan",2.75,"F"],["Đức",3.75,"M"],["Bình",3,"M"],["Chi",3.25,"F"],["Dũng",3.5,"M"],["Khoa",3,"M"],["Mai",2.75,"F"],["Vy",3,"F"],["Sơn",3.25,"M"],["Thuỷ",3,"F"],["Trung",3.5,"M"],["Đào",2.75,"F"],["Quân",3,"M"],["Tâm",3,"F"],["Luận",3.25,"M"],["Bi",2.75,"M"],["Phương",3,"F"]];
 demo.forEach(([n,r,g],i)=>store.set("players/d"+i,{name:n,rating0:r,gender:g,active:i<13,createdAt:i,code:"PB-"+String(i+1).padStart(3,"0")}));
 store.set("editors/demo",{pin:"demo"});
@@ -31,6 +31,11 @@ store.set("clubs/q7-smash",{name:"Q7 Smash Pickleball",public:true,owner:"u7",st
 store.set("clubs/hanoi-dinks",{name:"Hà Nội Dinks",public:true,owner:"u8",status:"active",city:"Hà Nội",size:"50–100",createdAt:Date.now()-864e5*3});
 store.set("clubs/q7-smash/private/info",{contact:"0901234567",ownerEmail:"q7smash@demo.vn"});store.set("clubs/hanoi-dinks/private/info",{contact:"0912345678",ownerEmail:"dinks@demo.vn"});
 store.set("codes/K7MX2Q9P",{used:false,at:Date.now()});store.set("codes/A2B3C4D5",{used:true,club:"hanoi-dinks",at:Date.now()-864e5*3});
+// Bản thử: giữ dữ liệu trên máy giữa các lần tải trang; ?lam-lai để về dữ liệu mẫu
+(function(){try{const q=location.search;if(/lam-lai/.test(q)){localStorage.removeItem(KEY);sessionStorage.removeItem("pb-mock-khach")}
+  if(/khach/.test(q))sessionStorage.setItem("pb-mock-khach","1");if(/[?&]chu\b/.test(q))sessionStorage.removeItem("pb-mock-khach");
+  const raw=localStorage.getItem(KEY);if(raw){store.clear();for(const [k,v] of JSON.parse(raw))store.set(k,v)}}catch(e){}})();
+const isGuest=()=>{try{return sessionStorage.getItem("pb-mock-khach")==="1"}catch(e){return /khach/.test(location.search)}};
 const DEMO_USER={uid:"demo",isAnonymous:false,email:"ban@demo.vn",displayName:"Bạn (demo)"};
 window.FB={fs:{},auth:{},
  GoogleAuthProvider:function(){},signInWithPopup:async()=>({user:DEMO_USER}),signInWithRedirect:async()=>{},getRedirectResult:async()=>null,
@@ -44,6 +49,6 @@ window.FB={fs:{},auth:{},
  query:(c,w)=>({isCol:true,path:c.path,flt:w}),where:(f,op,v)=>({f,v}),getDocs:async r=>({docs:[...store].filter(([k,v])=>k.startsWith(r.path+"/")&&k.split("/").length===r.path.split("/").length+1&&(!r.flt||v[r.flt.f]===r.flt.v)).map(([k,v])=>({id:k.split("/").pop(),data:()=>v}))}),
  onSnapshot:(r,o,n)=>{const f=()=>{if(r.isCol){const docs=[...store].filter(([k,v])=>k.startsWith(r.path+"/")&&k.split("/").length===r.path.split("/").length+1&&(!r.flt||v[r.flt.f]===r.flt.v)).map(([k,v])=>({id:k.split("/").pop(),data:()=>v}));n({docs,metadata:{fromCache:false}})}else n({id:r.id,exists:()=>store.has(r.path),data:()=>store.get(r.path),metadata:{fromCache:false}})};subs.push(f);f();return()=>{}},
  runTransaction:async(fs,fn)=>fn({get:window.FB.getDoc,set:(r,d)=>window.FB.setDoc(r,d)}),
- signInAnonymously:async()=>({user:{uid:"demo"}}),signOut:async()=>{},onAuthStateChanged:(a,f)=>setTimeout(()=>f(/khach/.test(location.search)?null:DEMO_USER),0)};
+ signInAnonymously:async()=>({user:{uid:"demo"}}),signOut:async()=>{},onAuthStateChanged:(a,f)=>setTimeout(()=>f(isGuest()?null:DEMO_USER),0)};
 })();
 window.FB_TARGET="mock";

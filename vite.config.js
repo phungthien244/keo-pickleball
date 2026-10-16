@@ -24,6 +24,7 @@ function appParts() {
 function target() {
   if (process.env.FB_TARGET) return process.env.FB_TARGET;
   const br = process.env.CF_PAGES_BRANCH;
+  if (br === "demo") return "mock"; // demo.pikeco.pages.dev: dữ liệu mẫu, chạy trên máy, để thử luồng
   return br && br !== "main" ? "dev" : "prod";
 }
 
