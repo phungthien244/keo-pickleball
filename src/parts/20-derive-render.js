@@ -33,22 +33,23 @@ function derive(){
 const nm=(D,id)=>esc(D.pmap.get(id)?.name||"(đã xóa)");
 
 function render(){
+  if(MODE==="platform")return renderPlatform();
   const D=derive(), c=D.c;
-  {const w=String(c.title||"").trim().split(/\s+/),last=w.length>1?w.pop():"";$("#title").innerHTML=PROUTES.includes(route)?"PIKECO <b>CLB</b>":esc(w.join(" "))+(last?` <b>${esc(last)}</b>`:"")}
+  {const w=String(c.title||"").trim().split(/\s+/),last=w.length>1?w.pop():"";$("#title").innerHTML=esc(w.join(" "))+(last?` <b>${esc(last)}</b>`:"")}
   ticker(D);
   const active=D.players.filter(p=>p.active!==false).length;
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:
-    `<span class="dot ${S.live?"on":""}"></span> ${S.live?"Trực tiếp":"Đang đồng bộ…"} · <span class="num">${active}</span> người · <span class="num">${c.courts}</span> sân · ${isG(c)?"giải cặp cố định · chạm 11":`chạm ${c.target}, cách 2`}${canWrite?` · <span class="pill win">${esc(ROLE_LB[ROLE]||"Đang ở chế độ sửa")}</span> <button class="ghost" data-act="logout">Thoát</button>`:isGoogle(authUser)?` · <button class="ghost" data-act="logout">Thoát</button>`:""}`;
-  if(!splashGone&&(S.offline||PROUTES.includes(route)||(S.live&&S.mReady&&S.hReady)))hideSplash();
+    `<span class="dot ${S.live?"on":""}"></span> ${S.live?"Trực tiếp":"Đang đồng bộ…"} · <span class="num">${active}</span> người · <span class="num">${c.courts}</span> sân · ${isG(c)?"giải cặp cố định · chạm 11":`chạm ${c.target}, cách 2`}${canWrite?` · <span class="pill win">${esc(ROLE_LB[ROLE]||"Đang ở chế độ sửa")}</span> <a class="gear" href="${pathOf("caidat")}" data-go="caidat">Cài đặt</a> <button class="ghost" data-act="logout">Thoát</button>`:isGoogle(authUser)?` · <button class="ghost" data-act="logout">Thoát</button>`:""}`;
+  if(!splashGone&&(S.offline||S.noClub||(S.live&&S.mReady&&S.hReady)))hideSplash();
   if(autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
-  const selTab=route==="home"?"home":route==="buoi"?"ls":PROUTES.includes(route)?"":tab;
+  const selTab=route==="home"?"home":route==="buoi"?"ls":route==="caidat"?"":tab;
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===selTab));
   {const tb=document.querySelector('#tabs [data-tab="tien"]');if(tb)tb.style.display=isG(c)&&(c.thu||"keo")==="khong"&&(c.gt||"khong")==="khong"?"none":""}
-  document.title=route==="start"?"pikeco.app · Quản lý CLB pickleball":route==="tao"?"Tạo CLB · pikeco.app":route==="qt"?"Quản trị · pikeco.app":route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:c.title;
+  document.title=route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:route==="caidat"?`Cài đặt · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
-  const v=route==="start"?vStart:route==="tao"?vTao:route==="qt"?vQt:(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
+  const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
   const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim; lastAnim=akey;
-  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":loginBar()}${v(D)}</section>`;
+  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":loginBar()}${v(D)}${clubFoot()}</section>`;
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
   if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}
 }

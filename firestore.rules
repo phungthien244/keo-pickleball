@@ -75,7 +75,8 @@ service cloud.firestore {
         let d = request.resource.data;
         let me = request.auth.uid;
         return c.matches('^[a-z0-9][a-z0-9-]{1,18}[a-z0-9]$')
-          && !(c in ['aep', 'admin', 'www', 'quantri', 'tao', 'start', 'api', 'app', 'pikeco', 'clb', 'login', 'help'])
+          && !(c in ['aep', 'admin', 'www', 'quantri', 'tao', 'start', 'api', 'app', 'pikeco', 'clb', 'login', 'help',
+                  'tao-clb', 'dang-nhap', 'quan-tri', 'cai-dat', 'assets', 'moi', 'buoi'])
           && d.keys().hasOnly(['name', 'public', 'owner', 'status', 'city', 'size', 'createdAt', 'code'])
           && d.name is string && d.name.size() >= 3 && d.name.size() <= 60
           && d.public == true

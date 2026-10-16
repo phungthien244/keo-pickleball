@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 
 // Môi trường giả cho test: Firestore trong bộ nhớ, DOM tối thiểu, bắt sự kiện click/input/change.
-export function setup({ search = "", user = null, data = {}, pin = false } = {}) {
+export function setup({ search = "", path = "/", host = "rr.pikeco.app", user = null, data = {}, pin = false } = {}) {
   // pin: vào bằng PIN trọng tài chung (dữ liệu kiểu cũ ở gốc)
   if (pin) { user = { uid: "anon", isAnonymous: true }; data = { "editors/anon": { pin: "x" }, ...data }; }
   const store = new Map(Object.entries(data));
@@ -62,10 +62,10 @@ export function setup({ search = "", user = null, data = {}, pin = false } = {})
   globalThis.localStorage = { getItem: () => "san", setItem() {} };
   globalThis.window = { FB };
   globalThis.FB = FB;
-  const loc = { search, origin: "https://rr.pikeco.app", pathname: "/", reload: () => env.reloaded++ };
+  const loc = { search, hostname: host, origin: "https://" + host, pathname: path, reload: () => env.reloaded++ };
   Object.defineProperty(loc, "href", { set: v => (env.href = v), get: () => loc.origin + loc.pathname + loc.search });
   globalThis.location = loc;
-  globalThis.history = { pushState: (a, b, u) => (env.url = u), replaceState: () => {} };
+  globalThis.history = { pushState: (a, b, u) => (env.url = u), replaceState: (a, b, u) => (env.replaced = u) };
   globalThis.addEventListener = () => {};
   globalThis.scrollTo = () => {};
 
@@ -79,6 +79,7 @@ export function setup({ search = "", user = null, data = {}, pin = false } = {})
     V: () => mk("#view").innerHTML,
     T: () => mk("#view").innerHTML.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " "),
     async click(act, ds = {}) { await H.click({ target: { closest: s => (s === "[data-act]" ? { dataset: { act, ...ds } } : null) } }); await tick(); },
+    async nav(go, ds = {}) { await H.click({ target: { closest: s => (s === "[data-go]" ? { dataset: { go, ...ds } } : null) }, preventDefault() {} }); await tick(); },
     async tab(t) { await H.click({ target: { closest: s => (s === "[data-tab]" ? { dataset: { tab: t } } : null) } }); await tick(); },
     input(k, v) { H.input({ target: { dataset: { draft: k }, value: v } }); },
     async cfg(k, v) { H.change({ target: { dataset: { save: "cfg", key: k }, value: String(v) } }); await tick(); },

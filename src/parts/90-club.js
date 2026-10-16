@@ -20,14 +20,14 @@ async function refreshRole(){
   }
   watchAdmin();
 }
-const inviteTok=()=>new URLSearchParams(location.search).get("moi");
+const inviteTok=()=>INVITE||new URLSearchParams(location.search).get("moi");
 async function acceptInvite(){
   const tok=inviteTok();if(!tok||legacy||!isGoogle(authUser)||(ROLE&&ROLE!=="pin"))return;
   try{const s=await FB.getDoc(FB.doc(FB.fs,PFX+"invites/"+tok));if(!s.exists()){toast("Link mời không còn hiệu lực.");return}
     const iv=s.data();if(iv.exp<Date.now()){toast("Link mời đã hết hạn, nhờ quản lý tạo link mới.");return}
     await FB.setDoc(FB.doc(FB.fs,PFX+"members/"+authUser.uid),{role:iv.role,invite:tok,name:authUser.displayName||"",email:authUser.email||"",at:Date.now()});
     await refreshRole();toast(`Đã nhận quyền ${ROLE_LB[iv.role]} của ${CLUB?.name||"CLB"}.`);
-    try{const q=new URLSearchParams(location.search);q.delete("moi");history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:""))}catch(e){}
+    INVITE=null;try{history.replaceState(null,"",pathOf(route))}catch(e){}
     render();
   }catch(e){toast("Không nhận được lời mời, thử lại.")}
 }
@@ -80,3 +80,9 @@ async function migrate(){
   S.migMsg=`Đã chép ${all.length} mục. Đang tải lại…`;render();
   setTimeout(()=>location.reload(),900);
 }
+function vCaiDat(D){
+  let h=`<div class="phead"><span class="eyebrow">${esc(CLUB?.name||D.c.title)}</span><h2 class="ptitle">Cài đặt CLB</h2></div>`;
+  if(!canWrite)return h+loginBar();
+  return h+clubAdmin(D);
+}
+const clubFoot=()=>`<footer class="pfoot"><a href="/">pikeco.app</a> · quản lý CLB pickleball${isPA()?` · <a href="/quan-tri">Quản trị nền tảng</a>`:""}</footer>`;

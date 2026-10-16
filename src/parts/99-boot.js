@@ -21,6 +21,11 @@ function makeDb(pfx){
 const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BANK:null);
 (async()=>{
   render();
+  if(MODE==="platform"){
+    if(!window.FB)return;
+    if(FB.getRedirectResult)FB.getRedirectResult(FB.auth).catch(()=>{});
+    FB.onAuthStateChanged(FB.auth,u=>{authUser=u;S.codes=null;S.loginJump=false;S.myClub=undefined;loadMyClub();render()});
+    return}
   if(!window.FB){S.offline=true;render();return}
   try{const s=await FB.getDoc(FB.doc(FB.fs,"clubs/"+CID));
     if(s.exists()){CLUB=s.data();PFX="clubs/"+CID+"/";legacy=false;BANK=clubBank()}

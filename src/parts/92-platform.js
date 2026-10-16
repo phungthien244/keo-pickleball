@@ -1,8 +1,7 @@
 /* ---------- nền tảng: tạo CLB, duyệt, quản trị ---------- */
 const PA_EMAIL=window.PA_OVERRIDE||"phungthien244@gmail.com";
 const isPA=()=>isGoogle(authUser)&&authUser.email===PA_EMAIL;
-const RESERVED=["aep","admin","www","quantri","tao","start","api","app","pikeco","clb","login","help"];
-const PROUTES=["start","tao","qt"];
+const RESERVED=["aep","admin","www","quantri","tao","start","api","app","pikeco","clb","login","help","tao-clb","dang-nhap","quan-tri","cai-dat","assets","moi","buoi"];
 const ST_LB={pending:"Chờ duyệt",active:"Đang hoạt động",locked:"Đã khoá",rejected:"Từ chối"};
 const clubSt=c=>(c&&c.status)||"active";
 const slugOf=t=>noAcc(t).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,20);
@@ -22,26 +21,57 @@ function loadMyClub(){
     render()}).catch(()=>{S.myClub=null;render()});
 }
 const gBtn=`<button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button>`;
-const clubUrl=id=>`${location.origin}${location.pathname}?clb=${id}`;
+const clubUrl=id=>absUrl("/"+id);
+const clubCard=c=>`<a class="sescard" href="/${esc(c.id)}"><span class="no"><small>CLB</small><b>${esc(String(c.name||c.id).trim().charAt(0).toUpperCase())}</b></span><span class="bd"><b>${esc(c.name||c.id)}</b><span>${esc(c.city||"")}${c.city?" · ":""}pikeco.app/${esc(c.id)}</span></span><span class="chev" aria-hidden="true">›</span></a>`;
+const publicClubs=()=>(S.clubs||[]).filter(c=>c.public!==false&&clubSt(c)==="active").sort((a,b)=>String(a.name).localeCompare(String(b.name),"vi"));
 function vStart(){
   loadClubs();
-  const list=(S.clubs||[]).filter(c=>c.public!==false&&clubSt(c)==="active").sort((a,b)=>String(a.name).localeCompare(String(b.name),"vi"));
+  const list=publicClubs();
   const F=[["Xoay cặp theo trình","App tự ghép đôi, ai chờ lâu đánh trước, ưu tiên đôi nam nữ hoặc cùng giới."],["Giải cặp cố định","Vòng tròn đến 10 cặp, lịch tự xếp, bảng xếp hạng và đối đầu trực tiếp."],["Rating kiểu DUPR","Rating tăng giảm theo điểm thực tế so với dự kiến, chốt sau mỗi buổi."],["Quỹ và giải thưởng","Kèo, chia đều hoặc lệ phí; trích quỹ trao giải; chuyển khoản bằng mã QR."]];
   let h=`<div class="hero"><div class="phead"><span class="eyebrow">pikeco.app</span><h1>Quản lý CLB<br>pickleball</h1><p class="hmeta">Một trang cho cả CLB: xếp sân, nhập tỉ số trực tiếp, rating, lịch sử và quỹ. Miễn phí cho CLB.</p></div>
-    <div class="bar"><a class="back" href="?tao" data-go="tao" style="background:var(--yellow);color:var(--navy);padding:0 20px;min-height:52px">Tạo CLB của bạn ›</a></div></div>
+    <div class="bar"><a class="back" href="/tao-clb" data-go="tao" style="background:var(--yellow);color:var(--navy);padding:0 20px;min-height:52px">Tạo CLB của bạn ›</a><a class="back" href="/dang-nhap" data-go="login" style="color:#fff">Đã có CLB? Đăng nhập ›</a></div></div>
   <div class="feat">${F.map(([t,d])=>`<div><b>${t}</b><span>${d}</span></div>`).join("")}</div>
   <div class="shd"><h2>Các CLB đang dùng</h2></div>`;
-  h+=!S.clubs?`<p class="rule">Đang tải…</p>`:list.length?`<div class="mgrid">${list.map(c=>`<a class="sescard" href="?clb=${esc(c.id)}"><span class="no"><small>CLB</small><b>${esc(String(c.name||c.id).trim().charAt(0).toUpperCase())}</b></span><span class="bd"><b>${esc(c.name||c.id)}</b><span>${esc(c.city||"")}${c.city?" · ":""}pikeco.app/${esc(c.id)}</span></span><span class="chev" aria-hidden="true">›</span></a>`).join("")}</div>`:`<p class="rule">Chưa có CLB công khai nào.</p>`;
+  h+=!S.clubs?`<p class="rule">Đang tải…</p>`:list.length?`<div class="mgrid">${list.slice(0,6).map(clubCard).join("")}</div>${list.length>6?`<a class="back" href="/clb" data-go="clb">Xem tất cả ${list.length} CLB ›</a>`:""}`:`<p class="rule">Chưa có CLB công khai nào.</p>`;
   h+=`<p class="rule">Mỗi tài khoản Google tạo được một CLB. CLB mới được quản trị pikeco.app duyệt, thường trong vòng một ngày.</p>`;
-  if(isPA())h+=`<a class="back" href="?quantri" data-go="qt">Quản trị nền tảng ›</a>`;
   return h;
+}
+function vClb(){
+  loadClubs();
+  const q=noAcc(String(val("cq",""))).toLowerCase().trim(),all=publicClubs(),list=all.filter(c=>!q||noAcc(`${c.name} ${c.city||""} ${c.id}`).toLowerCase().includes(q));
+  let h=`<div class="phead"><span class="eyebrow">pikeco.app</span><h2 class="ptitle">Các CLB</h2></div>
+  <div class="bar"><input id="cq" data-draft="cq" type="search" placeholder="Tìm theo tên CLB hoặc tỉnh thành" value="${esc(val("cq",""))}" style="width:100%"></div>`;
+  h+=!S.clubs?`<p class="rule">Đang tải…</p>`:list.length?`<div class="mgrid">${list.map(clubCard).join("")}</div>`:`<p class="rule">${all.length?"Không có CLB nào khớp.":"Chưa có CLB công khai nào."}</p>`;
+  return h+`<a class="back" href="/tao-clb" data-go="tao">CLB của bạn chưa có ở đây? Tạo CLB ›</a>`;
+}
+function vLogin(){
+  let h=`<div class="phead"><span class="eyebrow">pikeco.app</span><h2 class="ptitle">Đăng nhập</h2></div>`;
+  const u=authUser;
+  if(!isGoogle(u))return h+`<div class="panel clubp"><p class="rule">Chủ CLB và quản lý đăng nhập bằng tài khoản Google để vào CLB của mình. Trọng tài không cần tài khoản, chỉ cần mở link CLB và nhập PIN.</p><div class="bar" style="margin-top:10px">${gBtn}</div>${inApp()?`<p class="rule" style="margin-top:8px">Trình duyệt trong Zalo/Facebook không cho đăng nhập Google. Bấm nút ⋯ ở góc trên rồi chọn Mở bằng trình duyệt.</p>`:""}</div>`;
+  if(S.myClub===undefined){loadMyClub();return h+`<p class="rule">Đang tìm CLB của bạn…</p>`}
+  if(S.myClub){if(!S.loginJump){S.loginJump=true;setTimeout(()=>{location.href="/"+S.myClub},300)}
+    return h+`<div class="panel clubp"><p class="rule">Đang mở CLB của bạn…</p><div class="bar" style="margin-top:10px"><a class="back" href="/${esc(S.myClub)}" style="background:var(--blue);color:#fff;padding:0 16px;min-height:44px">Mở pikeco.app/${esc(S.myClub)} ›</a></div></div>`}
+  return h+`<div class="panel clubp"><h2>Tài khoản này chưa có CLB</h2><p class="rule">${esc(u.email||"")} chưa làm chủ CLB nào. Nếu bạn là quản lý hoặc trọng tài, hãy mở link mời mà chủ CLB gửi.</p>
+    <div class="bar" style="margin-top:10px"><a class="back" href="/tao-clb" data-go="tao" style="background:var(--yellow);color:var(--navy);padding:0 16px;min-height:44px">Tạo CLB ›</a><button class="ghost" data-act="logout">Đổi tài khoản</button></div>${isPA()?`<div class="bar" style="margin-top:10px"><a class="back" href="/quan-tri" data-go="qt">Quản trị nền tảng ›</a></div>`:""}</div>`;
+}
+function renderPlatform(){
+  const u=authUser,t=$(".ticker"),tb=$("#tabs");if(t)t.hidden=true;if(tb)tb.hidden=true;
+  $("#title").innerHTML=`pikeco<b>.app</b>`;
+  $("#sub").innerHTML=`<span class="pnav"><a href="/clb" data-go="clb">Các CLB</a><a href="/tao-clb" data-go="tao">Tạo CLB</a>${isGoogle(u)?`${S.myClub?`<a href="/${esc(S.myClub)}">CLB của tôi</a>`:""}${isPA()?`<a href="/quan-tri" data-go="qt">Quản trị</a>`:""}<button class="ghost" data-act="logout">Thoát</button>`:`<a href="/dang-nhap" data-go="login">Đăng nhập</a>`}</span>`;
+  if(!splashGone)hideSplash();
+  document.title={start:"pikeco.app · Quản lý CLB pickleball",clb:"Các CLB · pikeco.app",tao:"Tạo CLB · pikeco.app",login:"Đăng nhập · pikeco.app",qt:"Quản trị · pikeco.app"}[route]||"pikeco.app";
+  const v={start:vStart,clb:vClb,tao:vTao,login:vLogin,qt:vQt}[route]||vStart;
+  const ae=document.activeElement,aid=ae&&ae.id,sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
+  const akey="p|"+route,doAnim=akey!==lastAnim;lastAnim=akey;
+  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${v()}</section>`;
+  if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}
 }
 function vTao(){
   let h=`<div class="phead"><span class="eyebrow">pikeco.app</span><h2 class="ptitle">Tạo CLB</h2></div>`;
   const u=authUser;
   if(!isGoogle(u))return h+`<div class="panel clubp"><p class="rule">Đăng nhập bằng tài khoản Google của người làm chủ CLB. Tài khoản này sẽ là Chủ CLB, mời thêm quản lý sau.</p><div class="bar" style="margin-top:10px">${gBtn}</div>${inApp()?`<p class="rule" style="margin-top:8px">Trình duyệt trong Zalo/Facebook không cho đăng nhập Google. Bấm nút ⋯ ở góc trên rồi chọn Mở bằng trình duyệt.</p>`:""}</div>`;
   if(S.myClub===undefined){loadMyClub();return h+`<p class="rule">Đang kiểm tra tài khoản…</p>`}
-  if(S.myClub)return h+`<div class="panel clubp"><h2>Tài khoản này đã có CLB</h2><p class="rule">${esc(u.email||"")} đang là chủ CLB <b>${esc(S.myClub)}</b>. Mỗi tài khoản Google tạo được một CLB.</p><div class="bar" style="margin-top:10px"><a class="back" href="?clb=${esc(S.myClub)}" style="background:var(--blue);color:#fff;padding:0 16px;min-height:44px">Mở CLB của bạn ›</a><button class="ghost" data-act="logout">Đổi tài khoản</button></div></div>`;
+  if(S.myClub)return h+`<div class="panel clubp"><h2>Tài khoản này đã có CLB</h2><p class="rule">${esc(u.email||"")} đang là chủ CLB <b>${esc(S.myClub)}</b>. Mỗi tài khoản Google tạo được một CLB.</p><div class="bar" style="margin-top:10px"><a class="back" href="/${esc(S.myClub)}" style="background:var(--blue);color:#fff;padding:0 16px;min-height:44px">Mở CLB của bạn ›</a><button class="ghost" data-act="logout">Đổi tài khoản</button></div></div>`;
   const name=val("nc-name",""),sug=slugOf(name),slug=val("nc-slug","")||sug;
   const inp=(k,l,v,extra="")=>`<label><span class="lbl">${l}</span><input id="${k}" data-draft="${k}" value="${esc(v)}" ${extra}></label>`;
   h+=`<div class="panel clubp"><p class="rule">Đang đăng nhập ${esc(u.email||"")} · tài khoản này sẽ là Chủ CLB.</p>
@@ -76,9 +106,9 @@ async function createClub(){
     b.set(FB.doc(FB.fs,"users/"+u.uid),{club:slug,at:now});
     if(code)b.update(FB.doc(FB.fs,"codes/"+code),{used:true,club:slug,by:u.uid,at:now});
     await b.commit();
-    await notifyEmail({club_name:name,club_link:clubUrl(slug),club_slug:slug,owner_email:u.email||"",city,size,contact,status:ST_LB[club.status],admin_link:`${location.origin}${location.pathname}?quantri`});
+    await notifyEmail({club_name:name,club_link:clubUrl(slug),club_slug:slug,owner_email:u.email||"",city,size,contact,status:ST_LB[club.status],admin_link:absUrl("/quan-tri")});
     ["nc-name","nc-slug","nc-city","nc-size","nc-contact","nc-code"].forEach(k=>delete drafts[k]);
-    location.href=`${location.pathname}?clb=${slug}&san=nguoi`;
+    location.href=`/${slug}/cai-dat`;
   }catch(x){S.creating=false;bad("Chưa tạo được CLB ("+((x&&x.code)||"lỗi")+"). Thử lại sau ít phút.")}
 }
 async function notifyEmail(p){
@@ -90,7 +120,7 @@ function vQt(){
   if(!isPA())return h+`<div class="panel clubp"><p class="rule">Trang này chỉ dành cho quản trị nền tảng.</p>${isGoogle(authUser)?`<p class="rule">Đang đăng nhập ${esc(authUser.email||"")}.</p>`:`<div class="bar" style="margin-top:10px">${gBtn}</div>`}</div>`;
   loadClubs();loadCodes();
   const all=S.clubs||[],by=st=>all.filter(c=>clubSt(c)===st).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-  const row=(c,btns)=>`<div class="qrow"><span class="mname"><b>${esc(c.name||c.id)}</b> <span class="pill ${clubSt(c)==="active"?"win":clubSt(c)==="pending"?"keo":"lose"}">${ST_LB[clubSt(c)]}</span><span class="meta" style="display:block"><a href="?clb=${esc(c.id)}">pikeco.app/${esc(c.id)}</a>${c.ownerEmail?" · "+esc(c.ownerEmail):""}${c.city?" · "+esc(c.city):""}${c.size?" · "+esc(c.size)+" người":""}${c.contact?" · Zalo "+esc(c.contact):""}${c.createdAt?" · tạo "+dmy(c.createdAt):""}${c.code?" · mã "+esc(c.code):""}</span>${c.statusNote?`<span class="meta" style="display:block">Ghi chú: ${esc(c.statusNote)}</span>`:""}</span><span class="bt">${btns}</span></div>`;
+  const row=(c,btns)=>`<div class="qrow"><span class="mname"><b>${esc(c.name||c.id)}</b> <span class="pill ${clubSt(c)==="active"?"win":clubSt(c)==="pending"?"keo":"lose"}">${ST_LB[clubSt(c)]}</span><span class="meta" style="display:block"><a href="/${esc(c.id)}">pikeco.app/${esc(c.id)}</a>${c.ownerEmail?" · "+esc(c.ownerEmail):""}${c.city?" · "+esc(c.city):""}${c.size?" · "+esc(c.size)+" người":""}${c.contact?" · Zalo "+esc(c.contact):""}${c.createdAt?" · tạo "+dmy(c.createdAt):""}${c.code?" · mã "+esc(c.code):""}</span>${c.statusNote?`<span class="meta" style="display:block">Ghi chú: ${esc(c.statusNote)}</span>`:""}</span><span class="bt">${btns}</span></div>`;
   const pend=by("pending");
   h+=`<div class="panel clubp"><h2>Chờ duyệt (${pend.length})</h2>${!S.clubs?`<p class="rule">Đang tải…</p>`:pend.length?pend.map(c=>row(c,`<button class="primary" data-act="qa-ok" data-id="${esc(c.id)}">Duyệt</button>${armed("qa-no:"+c.id)?`<button class="danger" data-act="qa-no" data-id="${esc(c.id)}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="qa-no" data-id="${esc(c.id)}">Từ chối</button>`}`)).join(""):`<p class="rule">Không có CLB nào chờ duyệt.</p>`}
     ${pend.length?`<label class="form" style="margin-top:8px"><span class="lbl">Lý do từ chối (gửi kèm, không bắt buộc)</span><input id="qa-note" data-draft="qa-note" value="${esc(val("qa-note",""))}" maxlength="120"></label>`:""}</div>`;
@@ -110,7 +140,7 @@ function vQt(){
 function vStatus(D){
   const st=clubSt(CLUB),own=isAdm();
   let h=`<div class="empty"><strong>${st==="pending"?"CLB đang chờ duyệt":st==="locked"?"CLB tạm khoá":"Yêu cầu tạo CLB chưa được duyệt"}</strong>${st==="pending"?`${esc(CLUB.name||CID)} đã được tạo và đang chờ quản trị pikeco.app duyệt, thường trong vòng một ngày. Trong lúc chờ, chủ CLB khai ngân hàng, đặt PIN trọng tài và mời quản lý ở bên dưới.`:st==="locked"?"CLB này đang tạm khoá. Liên hệ quản trị pikeco.app để biết thêm.":`${esc(CLUB.statusNote||"")} Bạn có thể tạo yêu cầu mới với tên khác.`}</div>`;
-  if(st==="rejected"&&isGoogle(authUser)&&CLUB.owner===authUser.uid)h+=`<a class="back" href="?tao" data-go="tao">Tạo yêu cầu mới ›</a>`;
+  if(st==="rejected"&&isGoogle(authUser)&&CLUB.owner===authUser.uid)h+=`<a class="back" href="/tao-clb" data-go="tao">Tạo yêu cầu mới ›</a>`;
   if(st==="pending")h+=own?clubAdmin(D):loginBar();
   return h;
 }
@@ -129,6 +159,6 @@ async function platformAct(act,id,b){
   else if(act==="qa-codedel"){try{await FB.deleteDoc(FB.doc(FB.fs,"codes/"+id));loadCodes(true)}catch(x){toast("Chưa xoá được")}}
   else if(act==="qa-mail"){const e={service:String(val("ej-s",S.pcfg?.emailjs?.service||"")).trim(),template:String(val("ej-t",S.pcfg?.emailjs?.template||"")).trim(),key:String(val("ej-k",S.pcfg?.emailjs?.key||"")).trim()};
     try{await FB.setDoc(FB.doc(FB.fs,"platform/config"),{...(S.pcfg||{}),emailjs:e});["ej-s","ej-t","ej-k"].forEach(k=>delete drafts[k]);toast("Đã lưu cài đặt email");loadCodes(true)}catch(x){toast("Chưa lưu được")}}
-  else if(act==="qa-mailtest"){await notifyEmail({club_name:"CLB thử nghiệm",club_link:clubUrl("thu"),club_slug:"thu",owner_email:authUser.email||"",city:"",size:"",contact:"",status:"Thử",admin_link:`${location.origin}${location.pathname}?quantri`});toast("Đã gửi thử, kiểm tra hộp thư (cả mục Spam).")}
+  else if(act==="qa-mailtest"){await notifyEmail({club_name:"CLB thử nghiệm",club_link:clubUrl("thu"),club_slug:"thu",owner_email:authUser.email||"",city:"",size:"",contact:"",status:"Thử",admin_link:absUrl("/quan-tri")});toast("Đã gửi thử, kiểm tra hộp thư (cả mục Spam).")}
   return true;
 }

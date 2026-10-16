@@ -66,7 +66,7 @@ function vNguoi(D){
       <select id="lvl" data-draft="lvl">${LV.map(x=>`<option value="${x}" ${String(val("lvl","2.5"))===String(x)?"selected":""}>${x.toFixed(2)}</option>`).join("")}</select></label>
       <label class="bar"><span class="lbl">Giới tính</span><select id="gnd" data-draft="gnd"><option value="M" ${val("gnd","M")==="M"?"selected":""}>Nam</option><option value="F" ${val("gnd","M")==="F"?"selected":""}>Nữ</option></select></label>
       <button data-act="picktoggle">${pickOpen?"Đóng danh sách":"Chọn từ danh sách"}</button><span class="grow"></span><button class="primary" data-act="add">Thêm và vào buổi luôn</button></div>${pickPanel(D,away)}</div>`;
-  if(!D.players.length)return h+`<div class="empty"><strong>Chưa có thành viên</strong>Nhập tên ở khung trên, mỗi dòng một người.</div>`+clubAdmin(D);
+  if(!D.players.length)return h+`<div class="empty"><strong>Chưa có thành viên</strong>Nhập tên ở khung trên, mỗi dòng một người.</div>`;
   if(canWrite&&D.players.some(p=>!p.code))h+=`<div class="ro bar"><span class="grow">${D.players.filter(p=>!p.code).length} người chưa có mã thành viên.</span><button data-act="codes">Cấp mã</button></div>`;
   h+=`<div class="panel"><div class="bar" style="margin-bottom:4px"><h2 class="grow">Có mặt hôm nay</h2><span class="pill win num">${here.length} người</span></div>`;
   h+=here.length?here.map(p=>memberRow(D,p,true,busyS.has(p.id))).join(""):`<p class="rule">Chưa ai vào buổi. Bấm “Thêm vào buổi” ở danh sách bên dưới.</p>`;
@@ -77,7 +77,6 @@ function vNguoi(D){
     <input id="q" data-draft="q" type="search" placeholder="Tìm theo tên" value="${esc(val("q",""))}" style="width:100%;margin-bottom:4px">`;
   h+=list.length?list.map(p=>memberRow(D,p,false,false)).join(""):`<p class="rule" style="margin-top:8px">${away.length?"Không tìm thấy ai khớp.":"Tất cả thành viên đều đang có mặt."}</p>`;
   h+=`<div class="bar" style="margin-top:12px"><button data-act="copyroster">Copy danh sách thành viên (CSV)</button></div><textarea id="rosterbox" rows="6" readonly hidden></textarea></div>`;
-  h+=clubAdmin(D);
   return h;
 }
 

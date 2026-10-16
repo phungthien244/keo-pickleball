@@ -19,7 +19,7 @@ test("tạo CLB: kiểm form, giữ tên dành riêng, ghi đủ tài liệu", a
   expect(e.store.get("clubs/clb-quan-7/private/info")).toEqual({ contact: "0901234567", ownerEmail: "new@x.vn" });
   expect(e.store.get("users/g2").club).toBe("clb-quan-7");
   expect(e.store.get("clubs/clb-quan-7/members/g2").role).toBe("owner");
-  expect(e.href).toBe("/?clb=clb-quan-7&san=nguoi");
+  expect(e.href).toBe("/clb-quan-7/cai-dat");
 });
 
 test("tạo CLB bằng mã mời thì hoạt động ngay và đánh dấu mã đã dùng", async () => {

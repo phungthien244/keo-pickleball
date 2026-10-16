@@ -14,7 +14,8 @@ test("chủ CLB cũ chuyển dữ liệu PIN chung sang tài khoản CLB", async
     }
   });
   await e.boot();
-  await e.tab("nguoi");
+  await e.nav("caidat");
+  expect(e.url).toBe("/aep/cai-dat");
   expect(e.T()).toContain("Chuyển sang tài khoản CLB");
   await e.click("migrate"); await e.click("migrate"); await e.until(() => e.reloaded === 1);
   const keys = [...e.store.keys()].filter(k => k.startsWith("clubs/")).sort();
@@ -37,7 +38,7 @@ test("quản lý nhận lời mời, đặt PIN, lưu ngân hàng", async () => 
   });
   await e.boot(); await e.until(() => e.store.has("clubs/aep/members/u9"));
   expect(e.store.get("clubs/aep/members/u9")).toMatchObject({ role: "admin", invite: "tok1", email: "ql@x.vn" });
-  await e.tab("nguoi");
+  await e.nav("caidat");
   expect(e.T()).toContain("Quản lý CLB");
   await e.click("inv", { v: "scorer" });
   expect(e.T()).toMatch(/Link mời Trọng tài/);

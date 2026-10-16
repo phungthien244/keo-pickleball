@@ -6,21 +6,56 @@ let db=null, canWrite=false, authUser=null, tab="san", resetArm=0, delArm=null, 
 try{tab=localStorage.getItem("pb-tab")||"san"}catch(e){}
 if(tab==="home")tab="san";
 let route="home",routeSid=0,autoRoute=true,hF="all";
-function parseRoute(){const q=new URLSearchParams(location.search);
-  if(q.has("buoi")){route="buoi";routeSid=Number(q.get("buoi"))||0;autoRoute=false}
-  else if(q.has("san")){route="app";const t=q.get("san");if(["san","bxh","nguoi","tien","ls"].includes(t))tab=t;autoRoute=false}
-  else if(q.has("start"))route="start";
-  else if(q.has("tao"))route="tao";
-  else if(q.has("quantri"))route="qt";
-  else route="home"}
-parseRoute();
-function go(r,opt={}){route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="app"&&opt.tab)tab=opt.tab;
-  let url=r==="start"?"?start":r==="tao"?"?tao":r==="qt"?"?quantri":r==="buoi"?`?buoi=${routeSid}`:r==="app"?(tab==="san"?"?san":`?san=${tab}`):"";if(CID!=="aep"&&!["start","tao","qt"].includes(r))url=(url?url+"&":"?")+"clb="+CID;if(!url)url=location.pathname;
-  try{history.pushState(null,"",url)}catch(e){}
+/* ---------- đường dẫn ----------
+   Nền tảng: /  /clb  /tao-clb  /dang-nhap  /quan-tri
+   CLB:      /aep  /aep/san  /aep/xep-hang  /aep/thanh-vien  /aep/quy  /aep/lich-su
+             /aep/buoi/5  /aep/cai-dat  /aep/moi/<mã mời>                              */
+const RSEG={start:"",clb:"clb",tao:"tao-clb",login:"dang-nhap",qt:"quan-tri"};
+const PSEG=Object.fromEntries(Object.entries(RSEG).map(([k,v])=>[v,k]));
+const SEGT={san:"san",bxh:"xep-hang",nguoi:"thanh-vien",tien:"quy",ls:"lich-su"};
+const TSEG=Object.fromEntries(Object.entries(SEGT).map(([k,v])=>[v,k]));
+let MODE="platform",CID="aep",PFX="",CLUB=null,ROLE=null,legacy=true,INVITE=null;
+const slugClean=x=>String(x||"").toLowerCase().replace(/[^a-z0-9-]/g,"");
+// Link cũ dạng ?clb=..&san=..&buoi=.. vẫn mở được, đổi sang đường dẫn mới
+function legacyPath(){
+  const p=location.pathname||"/";if(p!=="/"&&p!=="/index.html")return null;
+  const q=new URLSearchParams(location.search||"");
+  if(!["clb","san","buoi","start","tao","quantri","moi"].some(k=>q.has(k)))return location.hostname==="rr.pikeco.app"?"/aep":null;
+  if(q.has("start"))return "/";if(q.has("tao"))return "/tao-clb";if(q.has("quantri"))return "/quan-tri";
+  const c="/"+(slugClean(q.get("clb"))||"aep");
+  if(q.has("moi"))return `${c}/moi/${encodeURIComponent(q.get("moi"))}`;
+  if(q.has("buoi"))return `${c}/buoi/${Number(q.get("buoi"))||0}`;
+  if(q.has("san"))return `${c}/${SEGT[q.get("san")]||"san"}`;
+  return c}
+function readPath(path){
+  const s=String(path||"/").split("?")[0].split("/").filter(Boolean).map(x=>{try{return decodeURIComponent(x)}catch(e){return x}});
+  if(!s.length)return{mode:"platform",route:"start"};
+  if(s.length===1&&PSEG[s[0]]!==undefined)return{mode:"platform",route:PSEG[s[0]]};
+  const r={mode:"club",cid:slugClean(s[0])||"aep",route:"home"};
+  if(TSEG[s[1]]){r.route="app";r.tab=TSEG[s[1]]}
+  else if(s[1]==="buoi"){r.route="buoi";r.sid=Number(s[2])||0}
+  else if(s[1]==="cai-dat")r.route="caidat";
+  else if(s[1]==="moi")r.invite=s[2]||null;
+  return r}
+function applyPath(r){route=r.route;if(r.mode==="club"){if(r.tab)tab=r.tab;if(r.route==="buoi")routeSid=r.sid;if(r.route!=="home")autoRoute=false}}
+{const lp=legacyPath();if(lp)try{history.replaceState(null,"",lp)}catch(e){}
+  const r=readPath(lp||location.pathname);MODE=r.mode;if(r.mode==="club"){CID=r.cid;INVITE=r.invite||null}applyPath(r)}
+function pathOf(r,opt={}){
+  if(RSEG[r]!==undefined)return "/"+RSEG[r];
+  const c="/"+CID;
+  if(r==="buoi")return `${c}/buoi/${opt.sid!=null?opt.sid:routeSid}`;
+  if(r==="app")return `${c}/${SEGT[opt.tab||tab]||"san"}`;
+  if(r==="caidat")return c+"/cai-dat";
+  return c}
+const absUrl=p=>location.origin+p;
+function go(r,opt={}){
+  if((RSEG[r]!==undefined?"platform":"club")!==MODE){location.href=pathOf(r,opt);return}
+  route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="app"&&opt.tab)tab=opt.tab;
+  try{history.pushState(null,"",pathOf(r))}catch(e){}
   try{scrollTo({top:0})}catch(e){}
   render()}
-addEventListener("popstate",()=>{parseRoute();render()});
+addEventListener("popstate",()=>{const r=readPath(location.pathname);
+  if(r.mode!==MODE||(r.mode==="club"&&r.cid!==CID)){location.reload();return}
+  autoRoute=false;applyPath(r);render()});
 const DEF_BANK={bin:"970422",code:"mb",name:"MB Bank",acc:"17263544538888",holder:"PHAM TIEN DUNG"};let BANK=DEF_BANK;
-let CID="aep",PFX="",CLUB=null,ROLE=null,legacy=true;
-{const q=new URLSearchParams(location.search),c=String(q.get("clb")||"").toLowerCase().replace(/[^a-z0-9-]/g,"");if(c)CID=c}
 const BANK_APPS=[["mb","MB Bank"],["vcb","Vietcombank"],["tcb","Techcombank"],["bidv","BIDV"],["icb","VietinBank"],["acb","ACB"],["tpb","TPBank"],["vpb","VPBank"],["vba","Agribank"],["shb","SHB"],["ocb","OCB"],["cake","Cake"]];

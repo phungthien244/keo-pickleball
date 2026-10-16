@@ -30,7 +30,7 @@ test("xoay cặp: 4 lượt, tiền kèo, chốt buổi", async () => {
   expect(h.rows.length).toBe(10);
   const paid = h.rows.reduce((s, r) => s + r.pay, 0);
   expect(paid).toBeGreaterThanOrEqual(300);
-  expect(e.url).toContain("buoi=1");
+  expect(e.url).toBe("/aep/buoi/1");
   expect(e.T()).toContain("Kết quả các trận");
   await e.tab("home");
   expect(e.V()).toContain("sescard");

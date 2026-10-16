@@ -31,7 +31,7 @@ function paySheet(){
 let splashGone=false;
 function hideSplash(){splashGone=true;const el=document.getElementById("splash");if(!el)return;el.classList.add("out");setTimeout(()=>el.remove(),600)}
 setTimeout(()=>{if(!splashGone)hideSplash()},20000);
-const shareUrl=sid=>`${location.origin}${location.pathname}?${CID!=="aep"?"clb="+CID+"&":""}buoi=${sid}`;
+const shareUrl=sid=>absUrl(pathOf("buoi",{sid}));
 
 const $=s=>document.querySelector(s);
 const ARM={k:"",t:0};const armed=k=>ARM.k===k&&Date.now()<ARM.t;

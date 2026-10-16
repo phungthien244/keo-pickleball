@@ -83,6 +83,7 @@ describe("tạo CLB", () => {
   });
   test("tên dành riêng và đường dẫn sai bị chặn", async () => {
     await assertFails(newClub(google("n1"), "n1", "admin"));
+    await assertFails(newClub(google("n1"), "n1", "quan-tri"));
     await assertFails(newClub(google("n1"), "n1", "-abc"));
     await assertFails(newClub(google("n1"), "n1", "AB"));
   });

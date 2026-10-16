@@ -1,5 +1,5 @@
 /* ---------- events ---------- */
-document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q"||k==="hq")render()}});
+document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q"||k==="hq"||k==="cq")render()}});
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.dataset&&t.dataset.photo){const f=t.files&&t.files[0],id=t.dataset.photo;t.value="";if(!f||!canWrite)return;
@@ -75,7 +75,7 @@ document.addEventListener("click",async e=>{
   if(act==="mrm"&&isAdm()){if(!armOr("mrm:"+id))return;write(()=>FB.deleteDoc(FB.doc(FB.fs,PFX+"members/"+id)),"Đã gỡ khỏi ban tổ chức");return}
   if(act==="inv"&&isAdm()){const role=b.dataset.v==="admin"?"admin":"scorer",tok=Array.from(crypto.getRandomValues(new Uint8Array(9))).map(x=>x.toString(16).padStart(2,"0")).join("");
     await write(()=>FB.setDoc(FB.doc(FB.fs,PFX+"invites/"+tok),{role,exp:Date.now()+7*864e5,by:authUser.uid,at:Date.now()}),"Đã tạo link mời");
-    S.invLink={role,url:`${location.origin}${location.pathname}?${CID!=="aep"?"clb="+CID+"&":""}moi=${tok}`};render();return}
+    S.invLink={role,url:absUrl(`/${CID}/moi/${tok}`)};render();return}
   if(act==="invshare"&&S.invLink){const t=`Mời bạn vào ban tổ chức ${CLUB?.name||""} (${ROLE_LB[S.invLink.role]}). Mở link bằng Chrome/Safari rồi đăng nhập Google:`;if(navigator.share){try{await navigator.share({title:"Lời mời",text:t,url:S.invLink.url})}catch(x){}}else{try{await navigator.clipboard.writeText(t+"\n"+S.invLink.url);toast("Đã copy lời mời")}catch(x){toast(S.invLink.url)}}return}
   if(act==="setupt"){const D=derive();setupOpen=!(setupOpen==null?!D.SM.length:setupOpen);render();return}
   if(act==="cset"&&b.dataset.k!=="fmt"){const k=b.dataset.k,v=b.dataset.v;if(derive().SM.length){toast("Buổi đã có trận, không đổi được.");return}
