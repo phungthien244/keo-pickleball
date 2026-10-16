@@ -473,7 +473,7 @@ html.lock,html.lock body{overflow:hidden}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, signInAnonymously, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 // Cấu hình web app Firebase (thông tin công khai, bảo mật nằm ở Firestore Rules)
 const firebaseConfig = {
@@ -486,10 +486,10 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const fs = getFirestore(app), auth = getAuth(app);
-window.FB = { fs, auth, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, signInAnonymously, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult };
+window.FB = { fs, auth, doc, collection, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, runTransaction, query, where, getDocs, signInAnonymously, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult };
 const DEF={title:"Round Robin DUPR",courts:2,target:11,fee:10,keo:true,hi:15,lo:5,thr:0.7,cap:100,gmode:"mix",costs:{court:0,water:0,ball:0,other:0}};
 const K=0.3, SPREAD=2.5;
-const S={cfg:null,players:[],matches:[],batches:[],hist:[],live:false,offline:false,ready:false};
+const S={cfg:null,players:[],matches:[],batches:[],hist:[],pm:{},live:false,offline:false,ready:false};
 const drafts={}; const editing=new Set(); const errs={};
 let db=null, canWrite=false, authUser=null, tab="san", resetArm=0, delArm=null, holder=Math.random().toString(36).slice(2);
 try{tab=localStorage.getItem("pb-tab")||"san"}catch(e){}
@@ -578,6 +578,7 @@ function derive(){
   const st=new Map(players.map(p=>[p.id,{w:0,l:0,pf:0,pa:0,g:0,fee:0,losses:0,last:-1,sits:0,d:0}]));
   const sid=c.session||1, SM=S.matches.filter(m=>(m.session||1)===sid), SB=S.batches.filter(b=>(b.session||1)===sid);
   const all=new Map(players.map(p=>[p.id,{g:0,w:0,ses:new Set()}]));
+  for(const h of S.hist)if(h.sid!==sid)for(const r of (h.rows||[])){const x=all.get(r.id);if(x){x.g+=(r.w||0)+(r.l||0);x.w+=(r.w||0);x.ses.add(h.sid)}}
   for(const m of S.matches)if(m.status==="done"){const aWin=m.sa>m.sb;
     for(const id of m.a){const x=all.get(id);if(x){x.g++;if(aWin)x.w++;x.ses.add(m.session||1)}}
     for(const id of m.b){const x=all.get(id);if(x){x.g++;if(!aWin)x.w++;x.ses.add(m.session||1)}}}
@@ -908,12 +909,19 @@ function moneySec(D,sid,snap,rows,P,noPrize){
   h+=payTable(D,sid,rows.map(r=>({id:r.id,name:r.name,P:P(r),kind:{keo:"kèo",deu:"chia đều",phi:"lệ phí"}[M.thu]||"kèo",g:r.w+r.l,l:r.l,capped:r.capped,base:r.base!=null?r.base:(r.charged||0),bu:r.bu!=null?r.bu:Math.max(0,(r.pay||0)-(r.charged||0)),gop:r.gop||0,pay:r.pay||0})),paid,false);
   return h;
 }
+const pmLoading=new Set();
+function pastMatches(sid){
+  if(sid===(cfg().session||1))return S.matches;
+  if(S.pm[sid])return S.pm[sid];
+  if(db&&!pmLoading.has(sid)){pmLoading.add(sid);db.collection("matches").where("session",sid).get().then(q=>{S.pm[sid]=q.docs.map(d=>({id:d.id,...d.data()}));pmLoading.delete(sid);render()}).catch(()=>{S.pm[sid]=[];pmLoading.delete(sid);render()})}
+  return null;
+}
 function sessList(D){
-  const ids=new Set();for(const m of S.matches)if(m.status==="done"&&(m.session||1)<D.sid)ids.add(m.session||1);
+  const ids=new Set();for(const k in S.pm)if(+k<D.sid&&(S.pm[k]||[]).some(m=>m.status==="done"))ids.add(+k);
   for(const h of S.hist)if(h.sid<D.sid)ids.add(h.sid);
   return [...ids].sort((a,b)=>b-a).map(sid=>{
     const snap=S.hist.find(h=>h.sid===sid);
-    const ms=S.matches.filter(m=>m.status==="done"&&(m.session||1)===sid).sort((a,b)=>(a.doneAt||0)-(b.doneAt||0));
+    const ms=(S.pm[sid]||[]).filter(m=>m.status==="done").sort((a,b)=>(a.doneAt||0)-(b.doneAt||0));
     let rows=snap?snap.rows:null;
     if(!rows){const t=new Map();for(const m of ms){const aw=m.sa>m.sb;
       for(const [ids,f,a,w] of [[m.a,m.sa,m.sb,aw],[m.b,m.sb,m.sa,!aw]])for(const id of ids){const x=t.get(id)||{id,name:D.pmap.get(id)?.name||"(đã xóa)",w:0,l:0,pf:0,pa:0};w?x.w++:x.l++;x.pf+=f;x.pa+=a;t.set(id,x)}}
@@ -968,6 +976,7 @@ function vBuoi(D,sid){
   if(!x&&!S.hReady)return back+`<div class="empty"><strong>Đang tải buổi #${sid}…</strong></div>`;
   if(!x)return back+`<div class="empty"><strong>Chưa có tổng kết buổi #${sid||""}</strong>${sid===D.sid?"Buổi này đang diễn ra. Trang tổng kết có sau khi bấm Kết thúc buổi.":"Không tìm thấy buổi này, có thể đã bị xóa."}</div>`;
   if(x.snap?.type==="giai")return vGiaiSum(D,x,back);
+  const pmL=pastMatches(sid);
   const snap=x.snap,rows=x.rows,ms=x.ms,pm=D.pmap,P=r=>pm.get(r.id)||{name:r.name,gender:r.gender};
   const pts=ms.reduce((s,m)=>s+(+m.sa||0)+(+m.sb||0),0);
   const mv=rows[0];
@@ -980,6 +989,7 @@ function vBuoi(D,sid){
     <div class="hsplit">${mv?`<div class="mvp"><div class="t"><span class="k">NGƯỜI CHƠI CỦA BUỔI</span><span class="n">${esc(mv.name)}</span><span class="s num">${mv.w}–${mv.l} · HS ${mv.pf-mv.pa>0?"+":""}${mv.pf-mv.pa}${mv.d!=null?` · RATING ${dTxt(mv.d)}`:""}</span></div>${av(P(mv),"xl")}</div>`:""}
     ${big||close?`<div class="duo">${hl("Thắng đậm nhất",big)}${close&&close!==big?hl("Trận sát nhất",close):""}</div>`:""}</div></div>`;
   h+=`<div class="shd"><h2>Xếp hạng buổi</h2></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>HS</th>${snap?"<th>Rating</th><th>Δ</th>":""}</tr></thead><tbody>${rows.map((r,i)=>{const df=r.pf-r.pa;return `<tr class="${i===0?"top1":""}"><td class="rank">${i+1}</td><td><span class="pn">${av(P(r),"sm")}<b>${esc(r.name)}</b></span></td><td>${r.w}–${r.l}</td><td class="${df>0?"up":df<0?"down":""}">${df>0?"+":""}${df}</td>${snap?`<td><b>${r2(r.rating)}</b></td><td class="${dCls(r.d)}">${dTxt(r.d)}</td>`:""}</tr>`}).join("")}</tbody></table></div>`;
+  if(!ms.length&&!pmL&&snap?.matchCount)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><p class="rule">Đang tải các trận…</p>`;
   if(ms.length)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><div class="mgrid">${ms.map(m=>{const aw=m.sa>m.sb,t=(ids,sc,w)=>`<div class="tr${w?" w":""}"><span class="who"><span class="avs">${ids.map(id=>avId(D,id,"sm")).join("")}</span><span>${tn(ids)}</span></span><span class="sc num">${sc}</span></div>`;
     return `<article class="mcard"><div class="mh"><b>TRẬN #${m.seq}</b><span>SÂN ${m.court}${m.doneAt?` · ${new Date(m.doneAt).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"})}`:""}</span></div>${t(m.a,m.sa,aw)}${t(m.b,m.sb,!aw)}</article>`}).join("")}</div>`;
   h+=moneySec(D,sid,snap,rows,P);
@@ -1443,8 +1453,8 @@ document.addEventListener("click",async e=>{
     if(!armOr("pdel:"+id))return;write(()=>db.collection("players").doc(id).delete(),"Đã xóa người chơi")}
   else if(act==="mdel"){if(!armOr("mdel:"+id))return;write(()=>db.collection("matches").doc(id).delete(),"Đã xóa trận")}
   else if(act==="sdel"){if(!armOr("sdel:"+id))return;const sid=Number(id);
-    await write(async()=>{for(const m of S.matches.filter(m=>(m.session||1)===sid))await db.collection("matches").doc(m.id).delete();
-      for(const b of S.batches.filter(b=>(b.session||1)===sid))await db.collection("batches").doc(b.id).delete();
+    await write(async()=>{for(const d of (await db.collection("matches").where("session",sid).get()).docs)await db.collection("matches").doc(d.id).delete();
+      for(const d of (await db.collection("batches").where("session",sid).get()).docs)await db.collection("batches").doc(d.id).delete();delete S.pm[sid];
       if(S.hist.some(h=>h.sid===sid))await db.doc("app/hist-"+sid).delete();editing.delete("s-"+sid)},`Đã xóa buổi #${sid}`)}
   else if(act==="copyroster"){const D=derive();const rows=[["Ten","Gioi tinh","Rating","So tran","So buoi"]].concat(D.players.map(p=>[p.name,p.gender==="F"?"Nu":"Nam",r2(Number(p.rating0)||3),D.all.get(p.id).g,D.all.get(p.id).ses.size]));
     const txt=rows.map(r=>r.map(v=>/[",\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(",")).join("\n");
@@ -1554,7 +1564,7 @@ async function migrate(){
   await FB.setDoc(FB.doc(FB.fs,"clubs/"+CID),{name:cfg().title||"CLB",public:true,owner:u.uid,bank:BANK||DEF_BANK,createdAt:now});
   await put("members/"+u.uid,{role:"owner",name:u.displayName||"",email:u.email||"",at:now});
   if(S.cfg)await put("app/config",S.cfg);
-  let n=0;const all=[...S.hist.map(h=>["app/"+h.id,strip(h)]),...S.players.map(p=>["players/"+p.id,strip(p)]),...S.matches.map(m=>["matches/"+m.id,strip(m)]),...S.batches.map(b=>["batches/"+b.id,strip(b)])];
+  let n=0;const all=[...S.hist.map(h=>["app/"+h.id,strip(h)]),...S.players.map(p=>["players/"+p.id,strip(p)]),...(await db.collection("matches").get()).docs.map(d=>["matches/"+d.id,d.data()]),...(await db.collection("batches").get()).docs.map(d=>["batches/"+d.id,d.data()])];
   for(const [p,d] of all){await put(p,d);n++;if(n%10===0){S.migMsg=`Đang chép ${n}/${all.length}…`;render()}}
   S.migMsg=`Đã chép ${all.length} mục. Đang tải lại…`;render();
   setTimeout(()=>location.reload(),900);
@@ -1575,7 +1585,9 @@ function makeDb(pfx){
   }};
   return{doc:ref,collection:path=>{const c=FB.collection(FB.fs,pfx+path);return{
     path,doc:id=>ref(path+"/"+(id||FB.doc(c).id)),
-    onSnapshot:(n,e)=>FB.onSnapshot(c,{includeMetadataChanges:true},n,e)}}};
+    onSnapshot:(n,e)=>FB.onSnapshot(c,{includeMetadataChanges:true},n,e),
+    get:()=>FB.getDocs(c),
+    where:(f,v)=>{const q=FB.query(c,FB.where(f,"==",v));return{onSnapshot:(n,e)=>FB.onSnapshot(q,{includeMetadataChanges:true},n,e),get:()=>FB.getDocs(q)}}}}};
 }
 const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BANK:null);
 (async()=>{
@@ -1591,11 +1603,13 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
   if(!legacy)FB.onSnapshot(FB.doc(FB.fs,"clubs/"+CID),{},s=>{if(s.exists()){CLUB=s.data();BANK=clubBank();render()}},()=>{});
   const fail=()=>{if(!legacy&&CLUB&&CLUB.public===false)S.priv=true;S.offline=true;hideSplash();render()};
   const live=meta=>{S.live=!meta.fromCache;render()};
-  db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;live(s.metadata)},fail);
+  let unsubM=null,unsubB=null,subSid=null;
+  const subSession=sid=>{if(sid===subSid)return;if(subSid!=null)S.pm[subSid]=S.matches;subSid=sid;if(unsubM)unsubM();if(unsubB)unsubB();S.mReady=false;S.matches=[];S.batches=[];
+    unsubM=db.collection("matches").where("session",sid).onSnapshot(q=>{S.matches=q.docs.map(d=>({id:d.id,...d.data()}));S.mReady=true;live(q.metadata)},fail);
+    unsubB=db.collection("batches").where("session",sid).onSnapshot(q=>{S.batches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail)};
+  db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;subSession(cfg().session||1);live(s.metadata)},fail);
   db.collection("app").onSnapshot(q=>{S.hist=q.docs.filter(d=>d.id.startsWith("hist-")).map(d=>({id:d.id,...d.data()}));S.hReady=true;render()},fail);
   db.collection("players").onSnapshot(q=>{S.players=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail);
-  db.collection("matches").onSnapshot(q=>{S.matches=q.docs.map(d=>({id:d.id,...d.data()}));S.mReady=true;live(q.metadata)},fail);
-  db.collection("batches").onSnapshot(q=>{S.batches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail);
 })();
 
 </script>
