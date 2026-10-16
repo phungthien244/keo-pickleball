@@ -287,6 +287,88 @@ tr.top1 td.rank{color:var(--blue)}
 .sharebox .bt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .back{display:inline-flex;align-items:center;gap:8px;color:var(--navy);text-decoration:none;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;min-height:40px}
 @media (min-width:1100px){.hero{margin-inline:0;padding:32px}.hsplit{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:start}}
+.gstrip{background:var(--navy);color:#fff;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.gstrip div{padding:12px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.gstrip div+div{border-left:1px solid var(--navy-line)}
+.gstrip b{font-family:var(--display);font-weight:900;font-size:clamp(18px,4vw,26px);line-height:1.1;white-space:nowrap}
+.gstrip small{font-family:var(--display);font-weight:700;font-size:9px;letter-spacing:.12em;color:var(--sky);text-transform:uppercase}
+.prow2{display:grid;grid-template-columns:24px auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.prow2:last-child{border-bottom:none}
+.prow2 .no{font-family:var(--display);font-weight:900;font-size:16px;color:var(--muted)}
+.prow2 .nm{min-width:0;font-weight:600;overflow-wrap:anywhere}
+.prow2 .nm small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.warnbox{background:var(--warn-bg);color:var(--warn);padding:12px 14px;font-size:13px;line-height:1.5}
+.warnbox b{display:block;margin-bottom:2px}
+.prow2.m{grid-template-columns:24px auto minmax(0,1fr)}
+.prow2.m .bt{grid-column:2/-1;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.prow2.m .bt button{min-height:38px;padding:0 12px}
+.gadd{display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line-2)}
+.gprog{display:flex;flex-direction:column;gap:6px}
+.gprog .t{display:flex;justify-content:space-between;gap:10px;font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.gprog .b{height:8px;background:var(--line);display:flex}.gprog .b i{display:block;background:var(--blue)}
+.rnds{display:flex;flex-direction:column;gap:10px}
+.rnd{background:var(--surface);border:1px solid var(--line)}
+.rnd .rh{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.14em;background:var(--sunk);color:var(--muted)}
+.rnd.live .rh{background:var(--navy);color:#fff}
+.rnd.next .rh{background:var(--surface);color:var(--blue)}
+.gr{display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);gap:8px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.gr.e{grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr) auto}
+.gr.bye{grid-template-columns:1fr}
+.gr .r{text-align:right}
+.gr .w{font-weight:700}.gr .l{color:var(--muted)}
+.gr .m{text-align:center;font-family:var(--display);font-weight:900;font-size:14px;background:var(--bg);padding:4px 0}
+.gr .m.live{background:var(--blue);color:#fff;font-size:10px;letter-spacing:.06em}
+.gr .m.vs{background:none;color:var(--muted);font-size:11px}
+.gr .m.wo{background:var(--lose-bg);color:var(--lose);font-size:11px}
+.gr .ed{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.gr > button{min-height:36px;padding:0 10px}
+.h2h{overflow-x:auto;background:var(--surface);border:1px solid var(--line);padding:6px}
+.h2h table{width:auto;font-size:10px}
+.h2h th,.h2h td{padding:0;border:2px solid var(--surface);text-align:center;min-width:40px;height:34px;font-family:var(--display);font-weight:800;letter-spacing:0}
+.h2h th:first-child,.h2h td:first-child{text-align:left;min-width:0;padding-right:8px}
+.h2h td.x{background:var(--navy)}
+.h2h td.w{background:var(--win-bg);color:var(--win)}
+.h2h td.l{background:var(--lose-bg);color:var(--lose)}
+.h2h td.n{background:var(--bg);color:var(--line-2)}
+.h2h td.wo{background:var(--sunk);color:var(--muted)}
+.champ{background:var(--yellow);color:var(--navy);padding:20px 18px;display:flex;flex-direction:column;gap:14px}
+.champ .k{display:flex;justify-content:space-between;gap:10px;font-family:var(--display);font-weight:900;font-size:12px;letter-spacing:.16em}
+.champ .p{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.champ .av{box-shadow:0 0 0 4px var(--yellow)}
+.champ .avs .av+.av{margin-left:-18px}
+.champ .n{font-family:var(--display);font-weight:900;font-size:clamp(24px,5vw,40px);line-height:1.05;text-transform:uppercase;overflow-wrap:anywhere}
+.champ .s{font-family:var(--display);font-weight:800;font-size:13px}
+.champ .endbtn{align-self:flex-start}
+.podium{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.podium > div{background:var(--navy-3);padding:14px;display:flex;flex-direction:column;gap:8px;border-top:5px solid #c9d3db;min-width:0}
+.podium > div.b3{border-top-color:#d9905a}
+.podium .k{font-family:var(--display);font-weight:900;font-size:11px;letter-spacing:.16em;color:var(--sky)}
+.podium .n{font-family:var(--display);font-weight:900;font-size:16px;line-height:1.15;overflow-wrap:anywhere}
+.podium .s{font-size:12px;color:var(--sky)}
+.podium .pz{font-family:var(--display);font-weight:800;font-size:14px;color:var(--yellow)}
+.podium .av{box-shadow:0 0 0 2px var(--navy-3)}
+tr.g1 td.rank{color:#c9a400}tr.g2 td.rank{color:#8a99a6}tr.g3 td.rank{color:#b8682f}
+.dark tr.g1 td.rank{color:var(--yellow)}.dark tr.g2 td.rank{color:#c9d3db}.dark tr.g3 td.rank{color:#d9905a}
+i.md1,i.md2,i.md3{width:10px;height:10px;display:block}i.md1{background:var(--yellow)}i.md2{background:#c9d3db}i.md3{background:#d9905a}
+.gtag{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em;background:var(--blue);color:#fff;padding:2px 6px;margin-right:6px}
+.setup{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--blue)}
+.sethd{display:flex;width:100%;justify-content:space-between;align-items:center;gap:10px;border:none;background:none;padding:12px 16px;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);min-height:56px;color:var(--ink)}
+.sethd > span:first-child{display:flex;flex-direction:column;gap:3px;min-width:0}
+.sethd b{font-weight:600;font-size:14px}
+.setb{display:flex;flex-direction:column;gap:16px;padding:4px 16px 18px;border-top:1px solid var(--line)}
+.sgrp{display:flex;flex-direction:column;gap:8px;padding-top:12px}
+.seg.segw{flex-wrap:wrap;border:none;gap:6px;background:none}
+.seg.segw button{border:1px solid var(--line-2);min-height:40px;font-size:11px;padding:0 12px}
+.seg.segw button+button{border-left:1px solid var(--line-2)}
+.kpis.k4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kpis.k4 .kpi{padding:12px}.kpis.k4 .kpi .v{font-size:22px}
+.przs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+.prz{background:var(--yellow);color:var(--navy);display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px}
+.prz .av{box-shadow:0 0 0 2px var(--yellow)}
+.prz .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.prz .k{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.prz b{font-family:var(--display);font-weight:900;font-size:16px;overflow-wrap:anywhere}
+.prz .v{font-family:var(--display);font-weight:900;font-size:20px}
 #splash{position:fixed;inset:0;z-index:100;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;text-align:center;transition:opacity .45s var(--ease),visibility .45s}
 #splash.out{opacity:0;visibility:hidden}
 #splash .ball{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 62% 24%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 48% 54%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 22% 66%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 74% 62%,#c9b800 0 5px,transparent 6px),radial-gradient(circle at 46% 84%,#c9b800 0 5px,transparent 6px),var(--yellow);animation:bounce .9s cubic-bezier(.3,0,.7,1) infinite alternate}
@@ -499,9 +581,9 @@ function derive(){
     const ra=avg(m.a),rb=avg(m.b),pA=expect(ra,rb);
     const aWin=m.sa>m.sb, share=m.sa/(m.sa+m.sb);
     const eS=expShare(pA), dA=K*(share-eS);
-    const loserP=aWin?1-pA:pA, fee=feeFor(loserP,c);
-    for(const id of m.a){const s=st.get(id);if(!s)continue;s.g++;s.pf+=m.sa;s.pa+=m.sb;s.last=Math.max(s.last,m.seq);if(aWin)s.w++;else{s.l++;s.fee+=fee;s.losses++}rating.set(id,Math.min(8,Math.max(1,rating.get(id)+dA)))}
-    for(const id of m.b){const s=st.get(id);if(!s)continue;s.g++;s.pf+=m.sb;s.pa+=m.sa;s.last=Math.max(s.last,m.seq);if(!aWin)s.w++;else{s.l++;s.fee+=fee;s.losses++}rating.set(id,Math.min(8,Math.max(1,rating.get(id)-dA)))}
+    const loserP=aWin?1-pA:pA, fee=(c.thu||"keo")!=="keo"?0:feeFor(loserP,c);
+    for(const id of m.a){const s=st.get(id);if(!s)continue;s.g++;s.pf+=m.sa;s.pa+=m.sb;s.last=Math.max(s.last,m.seq);if(aWin)s.w++;else{s.l++;s.fee+=fee;if(!m.giai)s.losses++}rating.set(id,Math.min(8,Math.max(1,rating.get(id)+dA)))}
+    for(const id of m.b){const s=st.get(id);if(!s)continue;s.g++;s.pf+=m.sb;s.pa+=m.sa;s.last=Math.max(s.last,m.seq);if(!aWin)s.w++;else{s.l++;s.fee+=fee;if(!m.giai)s.losses++}rating.set(id,Math.min(8,Math.max(1,rating.get(id)-dA)))}
     info.set(m.id,{pA,dA,fee,aWin,eS});
   }
   for(const m of SM.filter(m=>m.status!=="done")){
@@ -520,14 +602,15 @@ function render(){
   ticker(D);
   const active=D.players.filter(p=>p.active!==false).length;
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:
-    `<span class="dot ${S.live?"on":""}"></span> ${S.live?"Trực tiếp":"Đang đồng bộ…"} · <span class="num">${active}</span> người · <span class="num">${c.courts}</span> sân · chạm ${c.target}, cách 2${canWrite?` · <span class="pill win">Đang ở chế độ sửa</span> <button class="ghost" data-act="logout">Thoát</button>`:""}`;
+    `<span class="dot ${S.live?"on":""}"></span> ${S.live?"Trực tiếp":"Đang đồng bộ…"} · <span class="num">${active}</span> người · <span class="num">${c.courts}</span> sân · ${isG(c)?"giải cặp cố định · chạm 11":`chạm ${c.target}, cách 2`}${canWrite?` · <span class="pill win">Đang ở chế độ sửa</span> <button class="ghost" data-act="logout">Thoát</button>`:""}`;
   if(!splashGone&&(S.offline||(S.live&&S.mReady&&S.hReady)))hideSplash();
   if(autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
   const selTab=route==="home"?"home":route==="buoi"?"ls":tab;
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===selTab));
+  {const tb=document.querySelector('#tabs [data-tab="tien"]');if(tb)tb.style.display=isG(c)&&(c.thu||"keo")==="khong"&&(c.gt||"khong")==="khong"?"none":""}
   document.title=route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
-  const v=route==="home"?vHome:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:vSan,bxh:vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
+  const v=route==="home"?vHome:route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
   const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim; lastAnim=akey;
   $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${S.offline||route!=="app"?"":!canWrite?`<div class="ro login"><span>Bạn đang xem trực tiếp. Người tổ chức nhập PIN để nhập tỉ số.</span><span class="bar" style="gap:6px"><input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN" value="${esc(val("pin",""))}" style="width:120px"><button class="primary" data-act="login">Mở quyền sửa</button></span>${errs.pin?`<p class="err" style="width:100%">${esc(errs.pin)}</p>`:""}</div>`:""}${v(D)}</section>`;
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
@@ -539,6 +622,7 @@ const isNew=k=>seenReady&&!seen.has(k);
 const today=()=>{const d=new Date();return `${d.getDate()}/${d.getMonth()+1}`};
 function pageHead(D){
   const H={san:["Buổi #"+D.sid+" · "+today(),"Sân đấu"],bxh:["Bảng xếp hạng hôm nay","Buổi #"+D.sid],nguoi:["Thành viên","Người chơi"],tien:["Buổi #"+D.sid+" · "+today(),"Tiền quỹ"],ls:["Lưu trữ","Lịch sử"]}[tab]||["",""];
+  if(isG(D.c)){if(tab==="san"||tab==="tien")H[1]="Giải cặp cố định";if(tab==="bxh"){H[0]="Giải cặp cố định · buổi #"+D.sid;H[1]="Xếp hạng cặp"}}
   return `<div class="phead"><span class="eyebrow">${esc(H[0])}</span><h2 class="ptitle">${esc(H[1])}</h2></div>`;
 }
 let tkItems=[],tkI=0,tkKey="";
@@ -557,7 +641,7 @@ function vSan(D){
   const c=D.c, busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
   const free=Math.max(0,c.courts-D.playing.length), can=Math.min(free,Math.floor(waiting.length/4));
-  let h=`<div class="bar">
+  let h=fmtSeg(D)+`<div class="bar">
     <span class="lbl">Số sân</span>
     <span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân" ${canWrite?"":"disabled"}>−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân" ${canWrite?"":"disabled"}>+</button></span>
     <span class="seg" role="group" aria-label="Ưu tiên ghép theo giới"><button data-act="gmode" data-v="mix" aria-pressed="${c.gmode!=="same"}" ${canWrite?"":"disabled"}>Ưu tiên khác giới</button><button data-act="gmode" data-v="same" aria-pressed="${c.gmode==="same"}" ${canWrite?"":"disabled"}>Ưu tiên cùng giới</button></span>
@@ -713,42 +797,109 @@ function vNguoi(D){
   return h;
 }
 
+const THU={keo:"Kèo thua góp",deu:"Chia đều chi phí",phi:"Lệ phí cố định",khong:"Quỹ CLB trả"};
+const GT={khong:"Không có giải",trich:"Trích % phần dư",codinh:"Số tiền cố định",gop:"Góp thêm vào giải"};
 function money(D){
-  const c=D.c,cost=(+c.costs.court||0)+(+c.costs.water||0)+(+c.costs.ball||0)+(+c.costs.other||0);
-  const att=D.players.filter(p=>D.st.get(p.id).g>0);
-  const fund=att.reduce((s,p)=>s+D.st.get(p.id).charged,0);
-  const gap=fund-cost, games=att.reduce((s,p)=>s+D.st.get(p.id).g,0);
-  const shareMap=new Map(att.map(p=>[p.id,gap<0&&games?Math.ceil(-gap*D.st.get(p.id).g/games):0]));
-  const shareOf=id=>shareMap.get(id)||0, perGame=gap<0&&games?-gap/games:0;
-  return {cost,att,fund,gap,shareOf,perGame,share:Math.max(0,...shareMap.values())};
+  const c=D.c,thu=c.thu||"keo",gt=c.gt||"khong",cs=c.costs||{};
+  const cost=(+cs.court||0)+(+cs.water||0)+(+cs.ball||0)+(+cs.other||0);
+  const att=D.players.filter(p=>D.st.get(p.id).g>0),n=att.length;
+  const games=att.reduce((s,p)=>s+D.st.get(p.id).g,0);
+  const base=new Map(),bu=new Map(),gop=new Map();
+  for(const p of att)base.set(p.id,thu==="keo"?D.st.get(p.id).charged:thu==="deu"?(n?Math.ceil(cost/n):0):thu==="phi"?(+c.phi||0):0);
+  const fund=[...base.values()].reduce((a,b)=>a+b,0),gap=fund-cost;
+  if(thu==="keo"&&gap<0&&games)for(const p of att)bu.set(p.id,Math.ceil(-gap*D.st.get(p.id).g/games));
+  const buTot=[...bu.values()].reduce((a,b)=>a+b,0);
+  if(gt==="gop")for(const p of att)gop.set(p.id,+c.gtv||0);
+  const gopTot=[...gop.values()].reduce((a,b)=>a+b,0),surplus=fund+buTot-cost;
+  const pot=gt==="trich"?Math.floor(Math.max(0,gap)*(+c.gtv||0)/100):gt==="codinh"?(+c.gtv||0):gt==="gop"?gopTot:0;
+  const club=surplus-(gt==="trich"||gt==="codinh"?pot:0);
+  const baseOf=id=>base.get(id)||0,shareOf=id=>bu.get(id)||0,gopOf=id=>gop.get(id)||0,payOf=id=>baseOf(id)+shareOf(id)+gopOf(id);
+  return {thu,gt,cost,att,fund,gap,buTot,gopTot,pot,club,collected:fund+buTot+gopTot,baseOf,shareOf,gopOf,payOf,perGame:thu==="keo"&&gap<0&&games?-gap/games:0,share:Math.max(0,...bu.values())};
+}
+function prizes(D,M){
+  if(!M.pot)return [];
+  if(isG(D.c)){const GD=gDerive(D);if(!GD)return [];const parts=String(D.c.chia||"50,30,20").split(",").map(Number),T=GD.table.filter(t=>!t.out);
+    return parts.map((p,i)=>T[i]?{label:["Vô địch","Hạng 2","Hạng 3"][i],ids:[T[i].p.a,T[i].p.b],k:Math.round(M.pot*p/100)}:null).filter(Boolean)}
+  const st=standings(D).filter(r=>r.s.g),avg=st.reduce((a,r)=>a+r.s.g,0)/(st.length||1),ok=st.filter(r=>r.s.g>=0.7*avg);
+  const m=ok.find(r=>r.p.gender!=="F"),f=ok.find(r=>r.p.gender==="F"),w=[m&&{label:"Số 1 nam",ids:[m.p.id]},f&&{label:"Số 1 nữ",ids:[f.p.id]}].filter(Boolean);
+  w.forEach(x=>x.k=Math.round(M.pot/w.length));return w;
+}
+const hClub=h=>h&&h.money?(h.money.club!=null?h.money.club:(h.money.gap||0)):0;
+function clubFund(before){return S.hist.filter(h=>before==null||h.sid<before).reduce((a,h)=>a+hClub(h),0)}
+function moneySnap(D,M){
+  const pz=prizes(D,M);
+  return {thu:M.thu,gt:M.gt,gtv:+D.c.gtv||0,chia:D.c.chia||"",phi:+D.c.phi||0,fund:M.fund,cost:M.cost,gap:M.gap,buTot:M.buTot,gopTot:M.gopTot,pot:M.pot,club:M.club,collected:M.collected,share:M.share,perGame:M.perGame,costs:{...D.c.costs},
+    prizes:pz.map(x=>({label:x.label,ids:x.ids,names:x.ids.map(id=>D.pmap.get(id)?.name||"?"),k:x.k}))};
+}
+const payRow=(D,M,id)=>{const s=D.st.get(id);return {charged:s.charged,capped:!!s.capped,base:M.baseOf(id),bu:M.shareOf(id),gop:M.gopOf(id),pay:M.payOf(id)}};
+let setupOpen=null;
+function setupPanel(D){
+  if(!canWrite)return "";
+  const c=D.c,lock=D.SM.length>0,thu=c.thu||"keo",gt=c.gt||"khong",G=isG(c),open=setupOpen==null?!lock:setupOpen;
+  const M=money(D),pz=prizes(D,M);
+  const sum=`${G?"Cặp cố định":"Xoay cặp"} · ${THU[thu]}${thu==="phi"?` ${c.phi||0}k`:""} · ${gt==="khong"?"không có giải":GT[gt]+(gt==="trich"?` ${c.gtv||0}%`:gt==="codinh"?` ${c.gtv||0}k`:gt==="gop"?` ${c.gtv||0}k/người`:"")}`;
+  let h=`<div class="setup"><button class="sethd" data-act="setupt" aria-expanded="${open}"><span><span class="lbl">Thiết lập buổi #${D.sid}${lock?" · đã khoá":""}</span><b>${esc(sum)}</b></span><span aria-hidden="true">${open?"▲":"▼"}</span></button>`;
+  if(!open)return h+`</div>`;
+  const dis=lock?"disabled":"";
+  const sg=(k,v,cur,l)=>`<button data-act="cset" data-k="${k}" data-v="${v}" aria-pressed="${cur===v}" ${dis}>${l}</button>`;
+  const inp=(k,label,v,extra="")=>`<label><span class="lbl">${label}</span><input id="cf-${k}" data-draft="cf-${k}" data-save="cfg" data-key="${k}" type="number" inputmode="decimal" min="0" value="${esc(val("cf-"+k,v))}" ${extra}></label>`;
+  h+=`<div class="setb">${lock?`<p class="rule">Buổi đã có trận nên thể thức, cách thu và cách trao giải đã khoá. Số tiền và chi phí vẫn sửa được đến lúc kết thúc buổi.</p>`:""}
+  <div class="sgrp"><span class="lbl">1 · Thể thức</span><span class="seg segw">${sg("fmt","xoay",G?"giai":"xoay","Xoay cặp")}${sg("fmt","giai",G?"giai":"xoay","Cặp cố định")}</span></div>
+  <div class="sgrp"><span class="lbl">2 · Cách thu tiền</span><span class="seg segw">${Object.entries(THU).map(([v,l])=>sg("thu",v,thu,l)).join("")}</span>
+   <p class="rule">${thu==="keo"?"Đội thua mỗi người góp theo luật kèo bên dưới. Quỹ kèo thiếu so với chi phí thì chia theo số trận mỗi người đã đánh.":thu==="deu"?"Chi phí buổi chia đều cho những người có đánh.":thu==="phi"?"Mỗi người có đánh đóng một mức cố định. Dư vào quỹ CLB, thiếu thì quỹ CLB bù.":"Không ai phải đóng, quỹ CLB trả toàn bộ chi phí buổi."}</p>
+   ${thu==="phi"?`<div class="form">${inp("phi","Lệ phí mỗi người (k)",c.phi||50)}</div>`:""}
+   ${thu==="keo"?`<div class="form">${inp("fee","Thua thường (k/người)",c.fee)}${inp("cap","Trần mỗi người (k)",c.cap)}
+     <label><span class="lbl">Kèo cân trình</span><select id="cf-keo" data-save="cfg" data-key="keo"><option value="1" ${c.keo?"selected":""}>Bật</option><option value="0" ${!c.keo?"selected":""}>Tắt</option></select></label>
+     <label><span class="lbl">Lệch từ</span><select id="cf-thr" data-save="cfg" data-key="thr">${[0.65,0.7,0.75,0.8].map(x=>`<option value="${x}" ${c.thr===x?"selected":""}>${Math.round(x*100)}% thắng</option>`).join("")}</select></label>
+     ${inp("hi","Đội mạnh thua (k)",c.hi)}${inp("lo","Đội yếu thua (k)",c.lo)}</div>`:""}</div>
+  <div class="sgrp"><span class="lbl">3 · Giải thưởng</span><span class="seg segw">${Object.entries(GT).map(([v,l])=>sg("gt",v,gt,l)).join("")}</span>
+   ${gt!=="khong"?`<div class="form">${inp("gtv",gt==="trich"?"Trích bao nhiêu % phần dư":gt==="codinh"?"Quỹ CLB bỏ ra (k)":"Mỗi người góp thêm (k)",c.gtv||(gt==="trich"?30:gt==="codinh"?200:20))}</div>`:""}
+   ${gt!=="khong"&&G?`<span class="seg segw">${[["100","Chỉ vô địch"],["60,40","60 / 40"],["50,30,20","50 / 30 / 20"]].map(([v,l])=>sg("chia",v,c.chia||"50,30,20",l)).join("")}</span>`:""}
+   <p class="rule">${gt==="khong"?"Buổi này không trao giải.":G?"Giải trao cho các cặp đứng đầu bảng xếp hạng cuối giải.":"Giải chia đều cho Số 1 nam và Số 1 nữ theo bảng xếp hạng buổi. Chỉ người đánh đủ ít nhất 70% số trận trung bình của buổi mới được xét."}</p></div>
+  <div class="sgrp"><span class="lbl">Chi phí buổi (k)</span><div class="form">${inp("court","Tiền sân",c.costs.court)}${inp("water","Tiền nước",c.costs.water)}${inp("ball","Tiền bóng",c.costs.ball)}${inp("other","Khác",c.costs.other)}<label><span class="lbl">Tên hiển thị</span><input id="cf-title" data-draft="cf-title" data-save="cfg" data-key="title" value="${esc(val("cf-title",c.title))}"></label></div></div>
+  <div class="kpis k4"><div class="kpi"><div class="lbl">Phải thu</div><div class="v num">${fmtK(M.collected)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(M.cost)}</div></div><div class="kpi"><div class="lbl">Quỹ giải</div><div class="v num">${fmtK(M.pot)}</div></div><div class="kpi hl"><div class="lbl">${M.club>=0?"Vào quỹ CLB":"Quỹ CLB bù"}</div><div class="v num">${fmtK(Math.abs(M.club))}</div></div></div>
+  <p class="rule">Tính theo các trận đã đánh tới giờ${pz.length?` · đang dẫn: ${pz.map(x=>`${x.label} ${x.ids.map(id=>esc(D.pmap.get(id)?.name||"?")).join(" &amp; ")} ${fmtK(x.k)}`).join(" · ")}`:""}. Quỹ CLB hiện có ${fmtK(clubFund(D.sid))}.</p></div>`;
+  return h+`</div>`;
+}
+function prizeCards(D,list){
+  if(!list||!list.length)return "";
+  return `<div class="przs">${list.map(x=>`<div class="prz"><span class="avs">${x.ids.map((id,i)=>av(D.pmap.get(id)||{name:(x.names||[])[i]||"?"},"md")).join("")}</span><span class="t"><span class="k">${esc(x.label)}</span><b>${x.ids.map((id,i)=>esc(D.pmap.get(id)?.name||(x.names||[])[i]||"?")).join(" &amp; ")}</b></span><span class="v num">${fmtK(x.k)}</span></div>`).join("")}</div>`;
+}
+function payTable(D,sid,list,paid,live){
+  const pr=list.filter(r=>r.pay>0||r.base>0).sort((a,b)=>b.pay-a.pay),tot=pr.reduce((s,r)=>s+r.pay,0);
+  if(!pr.length)return `<p class="rule">Buổi này không ai phải đóng tiền.</p>`;
+  const n=pr.filter(r=>r.pay>0).length,p=pr.filter(r=>r.pay>0&&paid[r.id]).length;
+  const bd=r=>[r.base?`${r.kind||"tiền buổi"} ${fmtK(r.base)}${r.capped?" (trần)":""}`:"",r.bu?`bù ${fmtK(r.bu)}`:"",r.gop?`giải ${fmtK(r.gop)}`:""].filter(Boolean).join(" + ");
+  return `<div class="tbl-wrap"><table class="payt"><thead><tr><th>Tên</th><th>Phải đóng</th></tr></thead><tbody>${pr.map(r=>`<tr><td><span class="pn">${av(r.P,"sm")}<span><b>${esc(r.name)}</b><span class="meta" style="display:block">${r.g} trận · thua ${r.l}</span><span class="meta" style="display:block">${bd(r)}</span></span></span></td><td><div class="paycell"><b>${fmtK(r.pay)}</b>${paid[r.id]?`<span class="paidpill">✓ Đã nhận</span>`:r.pay>0?`<button class="paybtn" data-act="pay" data-sid="${sid}" data-n="${esc(r.name)}" data-k="${r.pay}">Chuyển tiền</button>`:""}${canWrite&&!live&&r.pay>0?`<button class="ghost paidtg" data-act="paid" data-id="${sid}" data-p="${r.id}">${paid[r.id]?"Bỏ dấu":"Đã nhận?"}</button>`:""}</div></td></tr>`).join("")}</tbody><tfoot><tr><td>TỔNG THU${n&&!live?` · ĐÃ NHẬN ${p}/${n}`:""}</td><td><b class="num">${fmtK(tot)}</b></td></tr></tfoot></table></div>`;
 }
 function vTien(D){
-  const c=D.c,M=money(D),dis=canWrite?"":"disabled";
-  const inp=(k,label,v,step=1)=>`<label><span class="lbl">${label}</span><input id="cf-${k}" data-draft="cf-${k}" data-save="cfg" data-key="${k}" type="number" inputmode="decimal" min="0" step="${step}" value="${esc(val("cf-"+k,v))}" ${dis}></label>`;
-  let h=`<div class="kpis">
-    <div class="kpi"><div class="lbl">Quỹ thu từ kèo</div><div class="v num">${fmtK(M.fund)}</div></div>
+  const c=D.c,M=money(D),pz=prizes(D,M),cf=clubFund(D.sid);
+  let h=`<div class="kpis"><div class="kpi"><div class="lbl">Phải thu · ${esc(THU[M.thu])}</div><div class="v num">${fmtK(M.collected)}</div></div>
     <div class="kpi"><div class="lbl">Chi phí buổi</div><div class="v num">${fmtK(M.cost)}</div></div>
-    <div class="kpi hl"><div class="lbl">${M.gap>=0?"Dư giữ lại quỹ":"Thiếu, chia theo số trận"}</div><div class="v num">${fmtK(Math.abs(M.gap))}</div></div>
-    <div class="kpi"><div class="lbl">Bù thiếu mỗi trận</div><div class="v num">${fmtK(M.perGame)}</div></div></div>`;
+    <div class="kpi"><div class="lbl">Quỹ giải</div><div class="v num">${fmtK(M.pot)}</div></div>
+    <div class="kpi hl"><div class="lbl">${M.club>=0?"Vào quỹ CLB":"Quỹ CLB bù"}</div><div class="v num">${fmtK(Math.abs(M.club))}</div><div class="meta" style="color:var(--sky)">Quỹ CLB sau buổi: ${fmtK(cf+M.club)}</div></div></div>`;
   const CC=[["court","Tiền sân","var(--navy)"],["water","Tiền nước","var(--blue)"],["ball","Tiền bóng","var(--blue-2)"],["other","Khác","var(--line-2)"]].filter(x=>+c.costs[x[0]]>0);
-  h+=`<div class="panel"><h2 style="margin-bottom:10px">Chi phí buổi (nghìn đồng)</h2>${CC.length?`<div class="cbar">${CC.map(x=>`<span style="flex:${+c.costs[x[0]]};background:${x[2]}"></span>`).join("")}</div><div class="cleg">${CC.map(x=>`<div><i style="background:${x[2]}"></i>${x[1]}<b class="num">${fmtK(+c.costs[x[0]])}</b></div>`).join("")}</div>`:""}<div class="form">${inp("court","Tiền sân",c.costs.court)}${inp("water","Tiền nước",c.costs.water)}${inp("ball","Tiền bóng",c.costs.ball)}${inp("other","Khác",c.costs.other)}</div></div>`;
-  if(!M.att.length)h+=`<div class="empty"><strong>Chưa có ai phải góp</strong>Tiền sẽ tự cộng khi lưu tỉ số các trận.</div>`;
-  else h+=`<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>Trận thua</th><th>Tiền kèo</th><th>Bù thiếu</th><th>Phải đóng</th></tr></thead><tbody>
-    ${[...M.att].sort((a,b)=>D.st.get(b.id).charged-D.st.get(a.id).charged).map((p,i)=>{const s=D.st.get(p.id);return `<tr><td class="rank">${i+1}</td><td><span class="pn">${av(p,"sm")}<b>${esc(p.name)}</b></span></td><td>${s.losses}</td><td>${fmtK(s.charged)}${s.capped?` <span class="pill cap">trần ${c.cap}k</span>`:""}</td><td>${fmtK(M.shareOf(p.id))}</td><td><div class="paycell"><b>${fmtK(s.charged+M.shareOf(p.id))}</b>${s.charged+M.shareOf(p.id)>0?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${s.charged+M.shareOf(p.id)}">Chuyển tiền</button>`:""}</div></td></tr>`}).join("")}
-    </tbody></table></div>`;
+  if(CC.length)h+=`<div class="panel"><div class="cbar">${CC.map(x=>`<span style="flex:${+c.costs[x[0]]};background:${x[2]}"></span>`).join("")}</div><div class="cleg">${CC.map(x=>`<div><i style="background:${x[2]}"></i>${x[1]}<b class="num">${fmtK(+c.costs[x[0]])}</b></div>`).join("")}</div><p class="rule">Sửa chi phí, cách thu và giải thưởng ở khung Thiết lập buổi trong tab Sân.</p></div>`;
+  else h+=`<p class="rule">Chưa nhập chi phí buổi. Nhập ở khung Thiết lập buổi trong tab Sân.</p>`;
+  if(M.pot)h+=`<div class="shd"><h2>Giải thưởng${D.done.length?" · tạm tính":""}</h2></div>${pz.length?prizeCards(D,pz):`<p class="rule">Chưa đủ trận để xét giải.</p>`}`;
+  if(!M.att.length)h+=`<div class="empty"><strong>Chưa có ai phải góp</strong>Tiền sẽ tự tính khi lưu tỉ số các trận.</div>`;
+  else{h+=`<div class="shd"><h2>Mỗi người phải đóng</h2></div>`+payTable(D,D.sid,M.att.map(p=>{const s=D.st.get(p.id);return {id:p.id,name:p.name,P:p,g:s.g,l:s.l,kind:{keo:"kèo",deu:"chia đều",phi:"lệ phí"}[M.thu],...payRow(D,M,p.id)}}),{},true)}
   h+=`<div class="bar"><button class="primary" data-act="copy">Copy tổng kết gửi Zalo</button></div><textarea id="copybox" rows="8" readonly hidden></textarea>`;
-  h+=`<div class="panel"><h2 style="margin-bottom:10px">Luật tiền</h2><div class="form">
-    ${inp("fee","Thua thường (k/người)",c.fee)}${inp("cap","Trần mỗi người (k)",c.cap)}
-    <label><span class="lbl">Kèo cân trình</span><select id="cf-keo" data-save="cfg" data-key="keo" ${dis}><option value="1" ${c.keo?"selected":""}>Bật</option><option value="0" ${!c.keo?"selected":""}>Tắt</option></select></label>
-    <label><span class="lbl">Lệch từ</span><select id="cf-thr" data-save="cfg" data-key="thr" ${dis}>${[0.65,0.7,0.75,0.8].map(x=>`<option value="${x}" ${c.thr===x?"selected":""}>${Math.round(x*100)}% thắng</option>`).join("")}</select></label>
-    ${inp("hi","Đội mạnh thua (k)",c.hi)}${inp("lo","Đội yếu thua (k)",c.lo)}
-    <label><span class="lbl">Tên buổi</span><input id="cf-title" data-draft="cf-title" data-save="cfg" data-key="title" value="${esc(val("cf-title",c.title))}" ${dis}></label>
-    </div><p class="rule" style="margin-top:10px">Mỗi người trong đội thua góp ${c.fee}k. Khi một đội có từ ${Math.round(c.thr*100)}% cơ hội thắng trở lên: đội đó thua góp ${c.hi}k, đội yếu thua chỉ góp ${c.lo}k. Mỗi người góp tối đa ${c.cap}k/buổi. Quỹ thiếu so với chi phí thì chia theo số trận mỗi người đã đánh: ai đánh nhiều bù nhiều.</p></div>`;
-  if(canWrite)h+=`<div class="panel"><h2 style="margin-bottom:6px">Bắt đầu buổi mới</h2><p class="rule">Lưu buổi #${D.sid} (xếp hạng, các trận, bảng tiền) vào tab Lịch sử rồi mở buổi mới với bảng điểm và chi phí trống. Thành viên và lịch sử các buổi được giữ nguyên. Rating cuối buổi này thành trình của mỗi người cho buổi sau.</p>
+  if(canWrite)h+=isG(c)?`<p class="rule">Buổi giải được kết thúc và lưu ở tab Sân (nút Kết thúc giải).</p>`:`<div class="panel"><h2 style="margin-bottom:6px">Bắt đầu buổi mới</h2><p class="rule">Lưu buổi #${D.sid} (xếp hạng, các trận, bảng tiền, giải thưởng) vào tab Lịch sử rồi mở buổi mới. Phần dư hoặc thiếu được cộng vào quỹ CLB. Rating cuối buổi này thành trình của mỗi người cho buổi sau.</p>
     <div class="bar" style="margin-top:10px"><button class="endbtn" data-act="reset">${Date.now()<resetArm?"Bấm lần nữa để xác nhận kết thúc":`Kết thúc buổi #${D.sid}`}</button></div></div>`;
   return h;
 }
-
+function moneySec(D,sid,snap,rows,P,noPrize){
+  const M=snap?.money;if(!M)return "";
+  const nw=M.club!=null,cs=M.costs||{},paid=snap.paid||{};
+  const CC=[["court","Sân","var(--navy)"],["water","Nước","var(--blue)"],["ball","Bóng","var(--blue-2)"],["other","Khác","var(--line-2)"]].filter(z=>+cs[z[0]]>0);
+  const club=nw?M.club:M.gap,coll=nw?M.collected:M.fund;
+  let h=`<div class="shd"><h2>Tiền quỹ</h2></div><div class="k3"><div class="kpi"><div class="lbl">${nw?esc(THU[M.thu]||"Thu"):"Quỹ kèo"}</div><div class="v num">${fmtK(coll)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(M.cost)}</div></div><div class="kpi hl"><div class="lbl">${club>=0?"Vào quỹ CLB":"Quỹ CLB bù"}</div><div class="v num">${fmtK(Math.abs(club))}</div></div></div>`;
+  if(CC.length)h+=`<div class="panel"><div class="cbar">${CC.map(z=>`<span style="flex:${+cs[z[0]]};background:${z[2]}"></span>`).join("")}</div><div class="bar" style="gap:8px 16px">${CC.map(z=>`<span class="meta" style="display:inline-flex;align-items:center;gap:6px"><i style="width:9px;height:9px;background:${z[2]};display:block"></i>${z[1]} ${fmtK(+cs[z[0]])}</span>`).join("")}</div>${M.perGame?`<p class="rule" style="margin-top:8px">Quỹ kèo thiếu ${fmtK(-M.gap)} so với chi phí, chia theo số trận mỗi người đã đánh: khoảng ${fmtK(M.perGame)}/trận.</p>`:""}</div>`;
+  if(!noPrize&&nw&&M.prizes&&M.prizes.length)h+=`<div class="shd"><h2>Giải thưởng</h2></div>${prizeCards(D,M.prizes)}<p class="rule">Quỹ giải ${fmtK(M.pot)} · ${esc(GT[M.gt]||"")}${M.gt==="trich"?` ${M.gtv}% phần dư`:""}.</p>`;
+  h+=payTable(D,sid,rows.map(r=>({id:r.id,name:r.name,P:P(r),kind:{keo:"kèo",deu:"chia đều",phi:"lệ phí"}[M.thu]||"kèo",g:r.w+r.l,l:r.l,capped:r.capped,base:r.base!=null?r.base:(r.charged||0),bu:r.bu!=null?r.bu:Math.max(0,(r.pay||0)-(r.charged||0)),gop:r.gop||0,pay:r.pay||0})),paid,false);
+  return h;
+}
 function sessList(D){
   const ids=new Set();for(const m of S.matches)if(m.status==="done"&&(m.session||1)<D.sid)ids.add(m.session||1);
   for(const h of S.hist)if(h.sid<D.sid)ids.add(h.sid);
@@ -780,7 +931,7 @@ function vHome(D){
   const fb=(v,l,n)=>`<button data-act="hf" data-v="${v}" aria-pressed="${hF===v}">${l} · ${n}</button>`;
   let h=`<div class="hero">
     <div class="phead"><span class="eyebrow">Bảng rating CLB${H?` · sau buổi #${H.sid}`:""}</span><h1>Xếp hạng<br>rating</h1>
-    <p class="hmeta num">${ppl.length} thành viên · ${L.length} buổi đã xong${D.done.length?` · buổi #${D.sid} đang diễn ra`:""}</p></div>
+    <p class="hmeta num">${ppl.length} thành viên · ${L.length} buổi đã xong · quỹ CLB ${fmtK(clubFund())}${D.done.length?` · buổi #${D.sid} đang diễn ra`:""}</p></div>
     <div class="hsplit"><div class="spot"><div class="t"><span class="tag">Số 1 rating</span><span class="n">${esc(top.p.name)}</span>
       <span class="hmeta">${top.p.gender==="F"?"Nữ":"Nam"} · ${top.A.ses.size} buổi · thắng ${pct(top.A.w,top.A.g)}%</span>
       <span class="r"><b class="num">${r2(top.r)}</b>${top.d!=null?`<span class="${dCls(top.d)} num" style="font-family:var(--display);font-weight:800;font-size:13px">${dTxt(top.d)} ${top.dl}</span>`:""}</span></div>${av(top.p,"xl")}</div>
@@ -788,7 +939,7 @@ function vHome(D){
   <div class="bar"><label style="display:flex;flex:1 1 240px"><span class="lbl" style="position:absolute;width:1px;height:1px;overflow:hidden">Tìm thành viên</span><input id="hq" data-draft="hq" type="search" placeholder="Tìm thành viên theo tên" value="${esc(val("hq",""))}" style="width:100%"></label>
     <span class="seg" role="group" aria-label="Lọc theo giới">${fb("all","Tất cả",ppl.length)}${fb("M","Nam",nM)}${fb("F","Nữ",nF)}</span></div>
   <div class="lb">${list.length?list.map(x=>`<div class="lbr${x.i===0?" top1":""}"><span class="rk num">${x.i+1}</span><span class="who">${av(x.p,"md")}<span class="t"><b>${esc(x.p.name)}</b><small class="num">${x.p.gender==="F"?"Nữ":"Nam"} · ${x.A.g?`${x.A.ses.size} buổi · thắng ${pct(x.A.w,x.A.g)}%`:"chưa đánh"}</small></span></span><span class="rt"><b class="num">${r2(x.r)}</b><small class="${dCls(x.d)} num">${dTxt(x.d)}</small></span></div>`).join(""):`<p class="rule" style="padding:14px">Không tìm thấy ai khớp.</p>`}</div>`;
-  if(L.length)h+=`<div class="shd"><h2>Các buổi gần đây</h2></div><div class="mgrid">${L.slice(0,6).map(x=>{const m=x.rows[0];return `<a class="sescard" href="?buoi=${x.sid}" data-go="buoi" data-id="${x.sid}"><span class="no"><small>BUỔI</small><b class="num">${x.sid}</b></span><span class="bd"><b>${dmy(x.at)}</b><span class="num">${x.ms.length||x.snap?.matchCount||0} trận · ${x.rows.length} người</span>${m?`<span class="mvpl"><span class="mvptag">MVP</span>${esc(m.name)} · ${m.w}–${m.l}</span>`:""}</span><span class="chev" aria-hidden="true">›</span></a>`}).join("")}</div>`;
+  if(L.length)h+=`<div class="shd"><h2>Các buổi gần đây</h2></div><div class="mgrid">${L.slice(0,6).map(x=>{const m=x.rows[0];return `<a class="sescard" href="?buoi=${x.sid}" data-go="buoi" data-id="${x.sid}"><span class="no"><small>BUỔI</small><b class="num">${x.sid}</b></span><span class="bd"><b>${dmy(x.at)}</b><span class="num">${x.ms.length||x.snap?.matchCount||0} trận · ${x.rows.length} người</span>${x.snap?.type==="giai"?(()=>{const t=(x.snap.giai?.table||[]).find(t=>!t.out);return t?`<span class="mvpl"><span class="gtag">GIẢI</span>${esc(t.na)} &amp; ${esc(t.nb)} vô địch</span>`:""})():m?`<span class="mvpl"><span class="mvptag">MVP</span>${esc(m.name)} · ${m.w}–${m.l}</span>`:""}</span><span class="chev" aria-hidden="true">›</span></a>`}).join("")}</div>`;
   h+=`<a class="back" href="?san" data-go="app" data-t="san" style="background:var(--blue);color:#fff;padding:0 18px;min-height:52px;align-self:flex-start">Vào sân trực tiếp</a>
   <p class="rule">Rating tính như DUPR: so điểm thực tế với điểm dự kiến của từng trận. Đánh tốt hơn dự kiến thì tăng, kể cả khi thua. Rating chốt khi kết thúc mỗi buổi.</p>`;
   return h;
@@ -798,7 +949,7 @@ function shareText(D,x){
   const L=[`TỔNG KẾT BUỔI #${x.sid} · ${dmy(x.at)}`,`${D.c.title} · ${n} trận · ${r.length} người`];
   if(m)L.push(`MVP: ${m.name} ${m.w}–${m.l} (HS ${m.pf-m.pa>0?"+":""}${m.pf-m.pa})`);
   if(r.length>1)L.push("Top 3: "+r.slice(0,3).map((z,i)=>`${i+1}. ${z.name}`).join(" · "));
-  if(M)L.push(`Quỹ: thu ${fmtK(M.fund)} · chi ${fmtK(M.cost)} · ${M.gap>=0?"dư":"thiếu"} ${fmtK(Math.abs(M.gap))}`);
+  if(M){const cl=M.club!=null?M.club:M.gap;L.push(`Quỹ: thu ${fmtK(M.collected!=null?M.collected:M.fund)} · chi ${fmtK(M.cost)} · ${cl>=0?"vào quỹ CLB":"quỹ CLB bù"} ${fmtK(Math.abs(cl))}`);if(M.prizes&&M.prizes.length)L.push("Giải: "+M.prizes.map(z=>`${z.label} ${(z.names||[]).join(" & ")} ${fmtK(z.k)}`).join(" · "))}
   L.push(`Chuyển khoản: ${BANK.name} ${BANK.acc} (${BANK.holder})`);
   L.push("Xem số tiền mỗi người phải đóng và bấm Chuyển khoản để có mã QR:");
   return L.join("\n");
@@ -808,6 +959,7 @@ function vBuoi(D,sid){
   const back=`<a class="back" href="./" data-go="home">‹ Rating CLB</a>`;
   if(!x&&!S.hReady)return back+`<div class="empty"><strong>Đang tải buổi #${sid}…</strong></div>`;
   if(!x)return back+`<div class="empty"><strong>Chưa có tổng kết buổi #${sid||""}</strong>${sid===D.sid?"Buổi này đang diễn ra. Trang tổng kết có sau khi bấm Kết thúc buổi.":"Không tìm thấy buổi này, có thể đã bị xóa."}</div>`;
+  if(x.snap?.type==="giai")return vGiaiSum(D,x,back);
   const snap=x.snap,rows=x.rows,ms=x.ms,pm=D.pmap,P=r=>pm.get(r.id)||{name:r.name,gender:r.gender};
   const pts=ms.reduce((s,m)=>s+(+m.sa||0)+(+m.sb||0),0);
   const mv=rows[0];
@@ -822,12 +974,7 @@ function vBuoi(D,sid){
   h+=`<div class="shd"><h2>Xếp hạng buổi</h2></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>HS</th>${snap?"<th>Rating</th><th>Δ</th>":""}</tr></thead><tbody>${rows.map((r,i)=>{const df=r.pf-r.pa;return `<tr class="${i===0?"top1":""}"><td class="rank">${i+1}</td><td><span class="pn">${av(P(r),"sm")}<b>${esc(r.name)}</b></span></td><td>${r.w}–${r.l}</td><td class="${df>0?"up":df<0?"down":""}">${df>0?"+":""}${df}</td>${snap?`<td><b>${r2(r.rating)}</b></td><td class="${dCls(r.d)}">${dTxt(r.d)}</td>`:""}</tr>`}).join("")}</tbody></table></div>`;
   if(ms.length)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><div class="mgrid">${ms.map(m=>{const aw=m.sa>m.sb,t=(ids,sc,w)=>`<div class="tr${w?" w":""}"><span class="who"><span class="avs">${ids.map(id=>avId(D,id,"sm")).join("")}</span><span>${tn(ids)}</span></span><span class="sc num">${sc}</span></div>`;
     return `<article class="mcard"><div class="mh"><b>TRẬN #${m.seq}</b><span>SÂN ${m.court}${m.doneAt?` · ${new Date(m.doneAt).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"})}`:""}</span></div>${t(m.a,m.sa,aw)}${t(m.b,m.sb,!aw)}</article>`}).join("")}</div>`;
-  const M=snap?.money;
-  if(M){const cs=M.costs||{},CC=[["court","Sân","var(--navy)"],["water","Nước","var(--blue)"],["ball","Bóng","var(--blue-2)"],["other","Khác","var(--line-2)"]].filter(z=>+cs[z[0]]>0);
-    const pr=[...rows].sort((a,b)=>(b.pay||0)-(a.pay||0)),tot=pr.reduce((s,r)=>s+(r.pay||0),0);
-    h+=`<div class="shd"><h2>Tiền quỹ</h2></div><div class="k3"><div class="kpi"><div class="lbl">Quỹ kèo</div><div class="v num">${fmtK(M.fund)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(M.cost)}</div></div><div class="kpi hl"><div class="lbl">${M.gap>=0?"Dư":"Thiếu"}</div><div class="v num">${fmtK(Math.abs(M.gap))}</div></div></div>`;
-    if(CC.length)h+=`<div class="panel"><div class="cbar">${CC.map(z=>`<span style="flex:${+cs[z[0]]};background:${z[2]}"></span>`).join("")}</div><div class="bar" style="gap:8px 16px">${CC.map(z=>`<span class="meta" style="display:inline-flex;align-items:center;gap:6px"><i style="width:9px;height:9px;background:${z[2]};display:block"></i>${z[1]} ${fmtK(+cs[z[0]])}</span>`).join("")}</div>${M.gap<0?`<p class="rule" style="margin-top:8px">Quỹ kèo thiếu ${fmtK(-M.gap)} so với chi phí, chia theo số trận mỗi người đã đánh${M.perGame?`: khoảng ${fmtK(M.perGame)}/trận`:""}.</p>`:""}</div>`;
-    h+=`<div class="tbl-wrap"><table class="payt"><thead><tr><th>Tên</th><th>Kèo</th><th>Bù</th><th>Phải đóng</th></tr></thead><tbody>${pr.map(r=>`<tr><td><span class="pn">${av(P(r),"sm")}<span><b>${esc(r.name)}</b><span class="meta" style="display:block">${r.w+r.l} trận · thua ${r.l}</span></span></span></td><td>${fmtK(r.charged||0)}${r.capped?` <span class="pill cap">trần</span>`:""}</td><td>${fmtK(Math.max(0,(r.pay||0)-(r.charged||0)))}</td><td><div class="paycell"><b>${fmtK(r.pay||0)}</b>${(snap.paid||{})[r.id]?`<span class="paidpill">✓ Đã nhận</span>`:r.pay>0?`<button class="paybtn" data-act="pay" data-sid="${sid}" data-n="${esc(r.name)}" data-k="${r.pay}">Chuyển tiền</button>`:""}${canWrite&&r.pay>0?`<button class="ghost paidtg" data-act="paid" data-id="${sid}" data-p="${r.id}">${(snap.paid||{})[r.id]?"Bỏ dấu":"Đã nhận?"}</button>`:""}</div></td></tr>`).join("")}</tbody><tfoot><tr><td colspan="3">TỔNG THU${(()=>{const n=pr.filter(r=>r.pay>0).length,p=pr.filter(r=>r.pay>0&&(snap.paid||{})[r.id]).length;return n?` · ĐÃ NHẬN ${p}/${n}`:""})()}</td><td><b class="num">${fmtK(tot)}</b></td></tr></tfoot></table></div>`}
+  h+=moneySec(D,sid,snap,rows,P);
   h+=`<div class="sharebox"><span class="lbl">Link riêng của buổi này</span><span class="url">${esc(shareUrl(sid).replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="share" data-id="${sid}">Chia sẻ</button><button data-act="copylink" data-id="${sid}">Copy tin nhắn</button></div></div>${canWrite?`<div class="bar"><span class="grow"></span>${delBtn("sdel",sid,"Xóa buổi này")}</div>`:""}`;
   return h;
 }
@@ -836,8 +983,8 @@ function vLs(D){
   const L=sessList(D);
   if(!L.length)return `<div class="empty"><strong>Chưa có buổi nào kết thúc</strong>Khi bấm “Kết thúc buổi” ở tab Tiền quỹ, buổi đó sẽ được lưu ở đây cùng bảng xếp hạng, các trận và bảng tiền.</div>`;
   return `<p class="rule">${L.length} buổi đã xong. Bấm vào một buổi để xem chi tiết.</p>`+L.map(x=>{
-    const open=editing.has("s-"+x.sid),top=x.rows.slice(0,3).map(r=>esc(r.name)).join(", "),m=x.snap?.money;
-    let h=`<div class="panel"><a class="sessh" href="?buoi=${x.sid}" data-go="buoi" data-id="${x.sid}"><span class="code num">#${x.sid}</span><span class="mname"><b>${esc(x.snap?.title||D.c.title)} · ${dmy(x.at)}</b><span class="meta num" style="display:block">${x.rows.length} người · ${x.ms.length||x.snap?.matchCount||0} trận${top?` · Top: ${top}`:""}</span></span>${m?`<span class="pill ${m.gap>=0?"win":"lose"} num">${m.gap>=0?"Dư":"Thiếu"} ${fmtK(Math.abs(m.gap))}</span>`:`<span class="pill">Chưa có bảng tiền</span>`}<span class="chev" aria-hidden="true" style="color:var(--blue);font-size:22px;font-weight:700">›</span></a>`;
+    const open=editing.has("s-"+x.sid),top=x.snap?.type==="giai"?(x.snap.giai?.table||[]).filter(t=>!t.out).slice(0,1).map(t=>esc(t.na+" & "+t.nb)+" vô địch").join(""):x.rows.slice(0,3).map(r=>esc(r.name)).join(", "),m=x.snap?.money;
+    let h=`<div class="panel"><a class="sessh" href="?buoi=${x.sid}" data-go="buoi" data-id="${x.sid}"><span class="code num">#${x.sid}</span><span class="mname"><b>${esc(x.snap?.title||D.c.title)} · ${dmy(x.at)}</b><span class="meta num" style="display:block">${x.rows.length} người · ${x.ms.length||x.snap?.matchCount||0} trận${top?` · Top: ${top}`:""}</span></span>${x.snap?.type==="giai"?`<span class="pill keo">Giải cặp cố định</span>`:m?`<span class="pill ${hClub(x.snap)>=0?"win":"lose"} num">${hClub(x.snap)>=0?"Quỹ +":"Quỹ −"}${fmtK(Math.abs(hClub(x.snap)))}</span>`:`<span class="pill">Chưa có bảng tiền</span>`}<span class="chev" aria-hidden="true" style="color:var(--blue);font-size:22px;font-weight:700">›</span></a>`;
     if(open){
       h+=`<h3 class="subh">Xếp hạng</h3><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>HS</th>${x.snap?"<th>Rating</th><th>Δ</th><th>Phải đóng</th>":""}</tr></thead><tbody>${x.rows.map((r,i)=>{const df=r.pf-r.pa;return `<tr class="${i===0?"top1":""}"><td class="rank">${i+1}</td><td><b>${esc(r.name)}</b></td><td>${r.w}–${r.l}</td><td class="${df>0?"up":df<0?"down":""}">${df>0?"+":""}${df}</td>${x.snap?`<td>${r2(r.rating)}</td><td class="${r.d>0.004?"up":r.d<-0.004?"down":""}">${sgn(r.d)}</td><td>${fmtK(r.pay)}</td>`:""}</tr>`}).join("")}</tbody></table></div>`;
       if(m)h+=`<div class="kpis" style="margin-top:12px"><div class="kpi"><div class="lbl">Quỹ thu</div><div class="v num">${fmtK(m.fund)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(m.cost)}</div><div class="meta num">Sân ${fmtK(m.costs.court||0)} · Nước ${fmtK(m.costs.water||0)}${m.costs.ball?` · Bóng ${fmtK(m.costs.ball)}`:""}${m.costs.other?` · Khác ${fmtK(m.costs.other)}`:""}</div></div><div class="kpi hl"><div class="lbl">${m.gap>=0?"Dư":"Thiếu"}</div><div class="v num">${fmtK(Math.abs(m.gap))}</div></div></div>`;
@@ -857,6 +1004,221 @@ function summaryText(D){
   return L.join("\n");
 }
 
+/* ---------- giải cặp cố định ---------- */
+const GMAX=10, GSLOT=11;
+const gk=(x,y)=>x<y?x+"~"+y:y+"~"+x;
+const isG=c=>c.fmt==="giai";
+const dur=m=>m<60?`${m} phút`:`${Math.floor(m/60)}h${String(m%60).padStart(2,"0")}`;
+const pzTxt=k=>k?(Math.round(k*1000)).toLocaleString("vi-VN")+"đ":"";
+function rrSchedule(ids){
+  const a=ids.slice();if(a.length%2)a.push(null);
+  const n=a.length,R=[];
+  for(let r=0;r<n-1;r++){const g=[];for(let i=0;i<n/2;i++){const x=a[i],y=a[n-1-i];if(x&&y)g.push(r%2?[y,x]:[x,y])}R.push(g);a.splice(1,0,a.pop())}
+  return R;
+}
+const pairOf=(D,p)=>p?[D.pmap.get(p.a),D.pmap.get(p.b)]:[];
+const pairNm=(D,p)=>p?`${nm(D,p.a)} &amp; ${nm(D,p.b)}`:"?";
+const pairTx=(D,p)=>p?`${D.pmap.get(p.a)?.name||"?"} & ${D.pmap.get(p.b)?.name||"?"}`:"?";
+const pairAv=(D,p,cls)=>`<span class="avs">${avId(D,p.a,cls)}${avId(D,p.b,cls)}</span>`;
+const pairR=(D,p)=>((D.st.get(p.a)?.rating??3)+(D.st.get(p.b)?.rating??3))/2;
+function gDerive(D){
+  const c=D.c,G=c.giai;if(!isG(c)||!G)return null;
+  const pairs=G.pairs||[],pm=new Map(pairs.map(p=>[p.id,p])),out=G.out||{};
+  const rounds=rrSchedule(pairs.map(p=>p.id));
+  const byKey=new Map();for(const m of D.SM)if(m.giai)byKey.set(gk(m.pa,m.pb),m);
+  const games=[];
+  rounds.forEach((g,ri)=>g.forEach(([x,y],i)=>{const m=byKey.get(gk(x,y));let st="wait",wo=null,sx=null,sy=null;
+    if(m&&m.status==="done"){st="done";sx=m.pa===x?m.sa:m.sb;sy=m.pa===x?m.sb:m.sa}
+    else if(m)st="live";
+    else if(out[x]||out[y]){st="wo";wo=out[x]&&out[y]?null:(out[x]?y:x)}
+    games.push({r:ri+1,i,x,y,key:gk(x,y),m,st,wo,sx,sy})}));
+  const T=new Map(pairs.map((p,i)=>[p.id,{p,no:i+1,gp:0,w:0,l:0,pf:0,pa:0,wo:0,out:!!out[p.id]}]));
+  const win=g=>g.st==="wo"?g.wo:g.st==="done"?(g.sx>g.sy?g.x:g.y):null;
+  for(const g of games){const X=T.get(g.x),Y=T.get(g.y);
+    if(g.st==="done"){X.gp++;Y.gp++;X.pf+=g.sx;X.pa+=g.sy;Y.pf+=g.sy;Y.pa+=g.sx;if(g.sx>g.sy){X.w++;Y.l++}else{Y.w++;X.l++}}
+    else if(g.st==="wo"&&g.wo){const W=g.wo===g.x?X:Y,L=g.wo===g.x?Y:X;W.w++;W.wo++;W.gp++;L.l++;L.gp++}}
+  const list=[...T.values()].sort((a,b)=>(a.out-b.out)||(b.w-a.w));
+  const table=[];
+  for(let i=0;i<list.length;){let j=i;while(j<list.length&&list[j].out===list[i].out&&list[j].w===list[i].w)j++;
+    const grp=list.slice(i,j),ids=new Set(grp.map(t=>t.p.id));
+    for(const t of grp)t.h2h=games.filter(g=>ids.has(g.x)&&ids.has(g.y)&&win(g)===t.p.id).length;
+    grp.sort((a,b)=>(b.h2h-a.h2h)||((b.pf-b.pa)-(a.pf-a.pa))||(b.pf-a.pf)||(pairR(D,b.p)-pairR(D,a.p)));
+    table.push(...grp);i=j}
+  const resolved=games.filter(g=>g.st==="done"||g.st==="wo").length;
+  const curR=(games.find(g=>g.st==="wait"||g.st==="live")||{r:rounds.length}).r;
+  return {G,pairs,pm,out,rounds:rounds.length,games,T,table,win,resolved,total:games.length,complete:games.length>0&&resolved===games.length,curR,locked:!!G.locked};
+}
+const lexLt=(a,b)=>{for(let k=0;k<a.length;k++)if(a[k]!==b[k])return a[k]<b[k];return false};
+function gLast(D){const t=new Map();for(const m of D.done)if(m.giai)for(const p of [m.pa,m.pb])t.set(p,Math.max(t.get(p)||0,m.doneAt||0));return t}
+function gPick(D,GD,busy,rest){
+  const lastT=gLast(D),now=Date.now(),off=GD.G.rest||{},rem=new Map();
+  for(const g of GD.games)if(g.st==="wait")for(const p of [g.x,g.y])rem.set(p,(rem.get(p)||0)+1);
+  const tired=p=>rest.has(p)||(lastT.has(p)&&now-lastT.get(p)<180000)?1:0;
+  let best=null,bs=null;
+  GD.games.forEach((g,i)=>{if(g.st!=="wait"||busy.has(g.x)||busy.has(g.y)||off[g.x]||off[g.y])return;
+    const s=[tired(g.x)+tired(g.y),-(rem.get(g.x)+rem.get(g.y)),i];
+    if(!bs||lexLt(s,bs)){bs=s;best=g}});
+  return best;
+}
+async function gFill(){
+  await new Promise(r=>setTimeout(r,30));
+  const D=derive(),GD=gDerive(D);if(!GD||!GD.locked)return 0;
+  const used=new Set(D.playing.map(m=>m.court)),free=[];for(let i=1;i<=D.c.courts;i++)if(!used.has(i))free.push(i);
+  if(!free.length)return 0;
+  const busy=new Set(D.playing.filter(m=>m.giai).flatMap(m=>[m.pa,m.pb]));
+  const lastDone=D.done.filter(m=>m.giai).slice(-Math.max(1,D.c.courts-1));
+  const rest=new Set(lastDone.flatMap(m=>[m.pa,m.pb]));
+  const pick=[];for(const ct of free){const g=gPick(D,GD,busy,rest);if(!g)break;busy.add(g.x);busy.add(g.y);pick.push([ct,g])}
+  if(!pick.length)return 0;
+  const lock=await db.doc("app/lock").acquire({holder,ttlMs:5000});
+  if(!lock.acquired){toast("Có người khác đang xếp trận, thử lại sau vài giây.");return 0}
+  let seq=D.SM.reduce((m,x)=>Math.max(m,x.seq||0),0);const now=Date.now();
+  await write(async()=>{for(const [ct,g] of pick){const X=GD.pm.get(g.x),Y=GD.pm.get(g.y);seq++;
+    await db.collection("matches").doc().set({session:D.sid,seq,court:ct,giai:true,pa:g.x,pb:g.y,round:g.r,a:[X.a,X.b],b:[Y.a,Y.b],sa:null,sb:null,status:"playing",createdAt:now})}
+    S.everWrote=true},null);
+  return pick.length;
+}
+function validG(a,b){
+  if(!Number.isInteger(a)||!Number.isInteger(b)||a<0||b<0||a===b)return "Nhập điểm hai đội, không được hòa.";
+  return Math.max(a,b)===11&&Math.min(a,b)<=10?null:"Đội thắng đúng 11 điểm, đội thua từ 0 đến 10.";
+}
+const saveG=patch=>saveCfg({giai:{...(cfg().giai||{}),...patch}});
+function fmtSeg(D){return setupPanel(D)}
+const courtStep=c=>`<span class="lbl">Số sân</span><span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân" ${canWrite?"":"disabled"}>−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân" ${canWrite?"":"disabled"}>+</button></span>`;
+function vGiaiSan(D){
+  const G=D.c.giai||{pairs:[]};
+  return fmtSeg(D)+(G.locked?gRun(D,gDerive(D)):gSetup(D,G));
+}
+function gSetup(D,G){
+  const c=D.c,P=G.pairs||[],n=P.length,tot=n*(n-1)/2,mins=Math.ceil(tot/Math.max(1,c.courts))*GSLOT,pz=G.prizes||[0,0,0];
+  const used=new Set(P.flatMap(p=>[p.a,p.b]));
+  const free=D.players.filter(p=>p.active!==false&&!used.has(p.id)).sort((a,b)=>a.name.localeCompare(b.name,"vi"));
+  let h=`<div class="gstrip"><div><b class="num">${n}/${GMAX}</b><small>Cặp</small></div><div><b class="num">${tot}</b><small>Trận</small></div><div><b class="num">${Math.max(0,n-1)}</b><small>Trận/cặp</small></div><div><b class="num">${n>1?dur(mins):"–"}</b><small>Với ${c.courts} sân</small></div></div>
+  <div class="bar">${courtStep(c)}<span class="pill">Chạm 11 · không cần cách 2</span><span class="pill">Vòng tròn · gặp nhau 1 lần</span></div>`;
+  {const rec=Math.max(1,Math.floor(n/4));if(n>=3&&c.courts>rec)h+=`<div class="warnbox"><b>${n} cặp mà mở ${c.courts} sân thì nhiều cặp sẽ phải đánh liền, không kịp nghỉ.</b> Để cặp nào cũng có nghỉ giữa các trận, nên dùng ${rec} sân (khoảng 4 cặp cho mỗi sân).</div>`}
+  h+=`<div class="panel"><div class="bar" style="margin-bottom:4px"><h2 class="grow">Các cặp</h2><span class="meta num">${n} cặp</span></div>`;
+  h+=n?P.map((p,i)=>`<div class="prow2"><span class="no num">${i+1}</span>${pairAv(D,p,"md")}<span class="nm">${pairNm(D,p)}<small class="num">Rating TB ${r2(pairR(D,p))}</small></span>${canWrite?`<button class="ghost danger" data-act="gdel" data-id="${p.id}" aria-label="Bỏ cặp ${esc(pairTx(D,p))}">✕</button>`:""}</div>`).join(""):`<p class="rule">Chưa có cặp nào. Mỗi cặp là 2 người tự chọn nhau, đánh chung từ đầu đến cuối giải.</p>`;
+  if(canWrite&&n<GMAX){
+    if(free.length<2)h+=`<p class="rule" style="margin-top:10px">Cần thêm người có mặt hôm nay ở tab Người chơi để ghép cặp mới.</p>`;
+    else{const opt=k=>`<option value="">Chọn người</option>`+free.map(p=>`<option value="${p.id}" ${val(k,"")===p.id?"selected":""}>${esc(p.name)} · ${r2(D.st.get(p.id).rating)}</option>`).join("");
+      h+=`<div class="gadd"><span class="lbl">Thêm cặp mới · còn ${GMAX-n} chỗ</span><div class="form"><label><span class="lbl">Người 1</span><select id="gp1" data-draft="gp1">${opt("gp1")}</select></label><label><span class="lbl">Người 2</span><select id="gp2" data-draft="gp2">${opt("gp2")}</select></label></div><div class="bar"><span class="grow"></span><button class="primary" data-act="gadd">Thêm cặp</button></div></div>`}}
+  if(errs.gadd)h+=`<p class="err">${esc(errs.gadd)}</p>`;
+  h+=`</div><p class="rule">Hạng 1, 2, 3 lấy từ bảng xếp hạng cuối cùng sau khi đánh hết vòng tròn. Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Tiền thưởng chỉnh ở khung Thiết lập buổi phía trên.</p>`;
+  if(canWrite)h+=`<div class="bar"><button class="ball" data-act="gstart" ${n<3?"disabled":""}>Tạo lịch thi đấu · ${tot} trận</button></div>${errs.giai?`<p class="err">${esc(errs.giai)}</p>`:""}<p class="rule">Tiền buổi và giải thưởng tính theo khung Thiết lập buổi. Rating cá nhân vẫn cập nhật theo từng trận như khi đánh xoay cặp. Sau khi tạo lịch, danh sách cặp được khoá.</p>`;
+  else h+=`<div class="empty"><strong>Đang ghép cặp</strong>Người tổ chức đang ghép cặp cho giải. Lịch thi đấu sẽ hiện ở đây.</div>`;
+  return h;
+}
+function gRun(D,GD){
+  const c=D.c,left=GD.total-GD.resolved,est=Math.ceil(left/Math.max(1,c.courts))*GSLOT,pc=GD.total?Math.round(GD.resolved/GD.total*100):0;
+  const live=D.playing.filter(m=>m.giai);
+  let h=`<div class="gprog"><div class="t"><span class="num">Lượt ${GD.curR}/${GD.rounds} · xong ${GD.resolved}/${GD.total} trận</span><span class="num">${left?`Còn ~${dur(est)}`:"Đã xong"}</span></div><div class="b"><i style="width:${pc}%"></i></div></div>`;
+  if(GD.complete){const t=GD.table[0];h+=`<div class="champ"><div class="k"><span>ĐÃ ĐÁNH XONG VÒNG TRÒN · DẪN ĐẦU</span><span>${(()=>{const p=prizes(D,money(D))[0];return p?fmtK(p.k):""})()}</span></div><div class="p">${pairAv(D,t.p,"lg")}<span><span class="n">${pairNm(D,t.p)}</span><span class="s num" style="display:block">${t.w} thắng · ${t.l} thua · HS ${t.pf-t.pa>0?"+":""}${t.pf-t.pa}</span></span></div>${canWrite?`<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để lưu giải":"Kết thúc giải và lưu"}</button>`:""}</div>`}
+  h+=`<div class="bar">${courtStep(c)}<span class="grow"></span>${canWrite&&!GD.complete&&live.length<c.courts&&gPick(D,GD,new Set(live.flatMap(m=>[m.pa,m.pb])),new Set())?`<button class="ball" data-act="gfill">Đưa trận kế vào sân trống</button>`:""}</div>`;
+  if(live.length)h+=`<div class="courts">${live.map(m=>gCourt(D,GD,m)).join("")}</div>`;
+  else if(!GD.complete)h+=`<div class="empty"><strong>Sân đang trống</strong>${canWrite?"Bấm “Đưa trận kế vào sân trống” để gọi trận tiếp theo theo lịch.":"Chờ người tổ chức gọi trận tiếp theo."}</div>`;
+  h+=`<div class="shd"><h2>Lịch thi đấu</h2></div>${gRounds(D,GD)}`;
+  if(canWrite){
+    h+=`<div class="panel"><h2>Quản lý giải</h2><p class="rule" style="margin-bottom:6px">Cặp bỏ về: các trận chưa đánh của họ tính thắng cho đối thủ nhưng không cộng điểm vào hiệu số, rating không đổi. Trận đã đánh giữ nguyên. Cặp mệt cần nghỉ thì bấm “Cho nghỉ”: app tạm không xếp trận cho cặp đó đến khi bấm “Cho vào lại”.</p>${(()=>{const lt=gLast(D),onC=new Set(live.flatMap(m=>[m.pa,m.pb])),rs=GD.G.rest||{};return GD.pairs.map(p=>{const o=!!GD.out[p.id],st=o?"Đã bỏ giải":onC.has(p.id)?"Đang trên sân":rs[p.id]?"BTC cho nghỉ, chưa xếp trận":lt.has(p.id)?`Đã nghỉ ${Math.max(0,Math.floor((Date.now()-lt.get(p.id))/60000))} phút`:"Chưa đánh trận nào";
+    return `<div class="prow2 m"><span class="no num">${GD.T.get(p.id).no}</span>${pairAv(D,p,"sm")}<span class="nm">${pairNm(D,p)}<small>${st}</small></span><span class="bt">${!o&&!onC.has(p.id)?`<button class="ghost" data-act="grest" data-id="${p.id}">${rs[p.id]?"Cho vào lại":"Cho nghỉ"}</button>`:""}${o?`<button class="ghost" data-act="gin" data-id="${p.id}">Cho quay lại</button>`:armed("gout:"+p.id)?`<button class="danger" data-act="gout" data-id="${p.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="gout" data-id="${p.id}">Bỏ giải</button>`}</span></div>`}).join("")})()}
+    <div class="bar" style="margin-top:12px">${!GD.complete?`<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để kết thúc sớm":"Kết thúc giải sớm"}</button>`:""}${!D.done.some(m=>m.giai)?`<button class="ghost danger" data-act="gcancel">${armed("gcancel:x")?"Bấm lần nữa để hủy":"Hủy lịch, ghép lại cặp"}</button>`:""}</div>
+    ${!GD.complete?`<p class="rule" style="margin-top:8px">Kết thúc sớm: các trận chưa đánh không tính, xếp hạng theo kết quả hiện có.</p>`:""}</div>`}
+  return h;
+}
+function gCourt(D,GD,m){
+  const X=GD.T.get(m.pa),Y=GD.T.get(m.pb),ka=`sa-${m.id}`,kb=`sb-${m.id}`;
+  const side=(t,k,lab)=>`<div class="team"><div class="names"><div class="tl">${pairAv(D,t.p,"md")}<div>${pairNm(D,t.p)}<small class="num">${t.w} thắng · ${t.l} thua · Rating TB ${r2(pairR(D,t.p))}</small></div></div></div><input class="score num" id="${k}" data-draft="${k}" type="number" inputmode="numeric" min="0" max="11" aria-label="${lab}" value="${esc(val(k,""))}" ${canWrite?"":"disabled"}></div>`;
+  return `<article class="court${isNew(m.id+"p")?" new":""}"><div class="court-h"><h3>Sân ${m.court}</h3><span class="num">Lượt ${m.round} · Trận #${m.seq} · chạm 11</span></div>
+    ${side(X,ka,"Điểm đội 1")}${side(Y,kb,"Điểm đội 2")}
+    <div class="court-f"><span class="meta" style="flex:1">Đội thắng đúng 11, đội thua 0–10</span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button><button class="primary" data-act="save" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>
+    ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}</article>`;
+}
+function gRounds(D,GD){
+  const by=[];for(const g of GD.games)(by[g.r-1]=by[g.r-1]||[]).push(g);
+  return `<div class="rnds">`+by.map((gs,ri)=>{
+    const allR=gs.every(g=>g.st==="done"||g.st==="wo"),any=gs.some(g=>g.st!=="wait");
+    const cls=allR?"":any?"live":"next",lab=allR?"Xong":any?"Đang đánh":"Sắp tới";
+    return `<div class="rnd ${cls}"><div class="rh"><span>LƯỢT ${ri+1}</span><span>${lab.toUpperCase()}</span></div>${gs.map(g=>gRow(D,GD,g)).join("")}${GD.pairs.length%2===0?"":(()=>{const inR=new Set(gs.flatMap(g=>[g.x,g.y])),bye=GD.pairs.find(p=>!inR.has(p.id));return bye?`<div class="gr bye"><span class="meta">Nghỉ lượt này: ${pairNm(D,bye)}</span></div>`:""})()}</div>`}).join("")+`</div>`;
+}
+function gRow(D,GD,g){
+  const X=GD.pm.get(g.x),Y=GD.pm.get(g.y),w=GD.win(g);
+  const nmX=`<span class="${w?w===g.x?"w":"l":""}">${pairNm(D,X)}</span>`,nmY=`<span class="r ${w?w===g.y?"w":"l":""}">${pairNm(D,Y)}</span>`;
+  let mid;
+  if(g.st==="done")mid=`<span class="m num">${g.sx}–${g.sy}</span>`;
+  else if(g.st==="live")mid=`<span class="m live">SÂN ${g.m.court}</span>`;
+  else if(g.st==="wo")mid=`<span class="m wo">BỎ</span>`;
+  else mid=`<span class="m vs">VS</span>`;
+  const ed=canWrite&&g.st==="done";
+  let h=`<div class="gr${ed?" e":""}">${nmX}${mid}${nmY}${ed?`<button class="ghost" data-act="edit" data-id="${g.m.id}" aria-label="Sửa tỉ số">Sửa</button>`:""}`;
+  if(ed&&editing.has(g.m.id)){const m=g.m,flip=m.pa!==g.x,k1=flip?`eb-${m.id}`:`ea-${m.id}`,k2=flip?`ea-${m.id}`:`eb-${m.id}`;
+    const inp=(k,v,l)=>`<input class="score num" style="width:60px;height:46px;font-size:20px" id="${k}" data-draft="${k}" type="number" inputmode="numeric" value="${esc(val(k,v))}" aria-label="${l}">`;
+    h+=`<div class="ed">${inp(k1,g.sx,"Điểm "+pairTx(D,X))}<span>–</span>${inp(k2,g.sy,"Điểm "+pairTx(D,Y))}<span class="grow"></span><button class="ghost" data-act="edit-x" data-id="${m.id}">Thôi</button>${delBtn("mdel",m.id,"Xóa")}<button class="primary" data-act="edit-save" data-id="${m.id}">Lưu</button>${errs[m.id]?`<p class="err" style="width:100%">${esc(errs[m.id])}</p>`:""}</div>`}
+  return h+`</div>`;
+}
+function gCodes(D,GD){
+  const seen=new Map();return new Map(GD.table.map(t=>{const ini=id=>{const w=String(D.pmap.get(id)?.name||"?").trim().split(/\s+/);return (w[w.length-1]||"?").charAt(0).toUpperCase()};
+    let k=ini(t.p.a)+ini(t.p.b);const n=(seen.get(k)||0)+1;seen.set(k,n);if(n>1)k+=n;return [t.p.id,k]}));
+}
+function vGiaiBxh(D,GD){
+  if(!GD||!GD.pairs.length)return `<div class="empty"><strong>Chưa có cặp nào</strong>Vào tab Sân để ghép cặp và tạo lịch thi đấu.</div>`;
+  const codes=gCodes(D,GD),res=new Map(GD.games.map(g=>[g.key,g]));
+  let h=`<p class="rule">Xếp theo số trận thắng → đối đầu trực tiếp → hiệu số điểm → tổng điểm ghi. Hết vòng tròn, 3 cặp đứng đầu nhận giải.</p>
+  <div class="dark"><div class="bar"><span class="lbl grow" style="color:var(--sky)">Sau ${GD.resolved}/${GD.total} trận</span></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Cặp</th><th>Đã</th><th>T–B</th><th>HS</th></tr></thead><tbody>
+  ${GD.table.map((t,i)=>{const df=t.pf-t.pa;return `<tr class="${!t.out&&i<3?"g"+(i+1):""}"><td class="rank">${t.out?"–":i+1}</td><td><span class="pn">${pairAv(D,t.p,"sm")}<span><b>${pairNm(D,t.p)}</b>${t.out?` <span class="meta">BỎ GIẢI</span>`:""}</span></span></td><td>${t.gp}</td><td><b>${t.w}–${t.l}</b></td><td class="${df>0?"up":df<0?"down":""}">${df>0?"+":""}${df}</td></tr>`}).join("")}
+  </tbody></table></div><div class="bar" style="gap:8px 16px">${["Hạng 1","Hạng 2","Hạng 3"].map((l,i)=>`<span class="meta" style="display:inline-flex;align-items:center;gap:6px;color:var(--sky)"><i class="md${i+1}"></i>${l}${(()=>{const p=prizes(D,money(D))[i];return p?` · ${fmtK(p.k)}`:""})()}</span>`).join("")}</div></div>`;
+  h+=`<div class="shd"><h2>Bảng đối đầu</h2></div><p class="rule">Đọc theo hàng: điểm của cặp ở hàng đó đứng trước. Xanh là thắng, đỏ là thua, chấm là chưa đánh.</p>
+  <div class="h2h"><table><thead><tr><th></th>${GD.table.map(t=>`<th>${esc(codes.get(t.p.id))}</th>`).join("")}</tr></thead><tbody>${GD.table.map(r=>`<tr><td>${esc(codes.get(r.p.id))}</td>${GD.table.map(cc=>{if(r===cc)return `<td class="x"></td>`;const g=res.get(gk(r.p.id,cc.p.id));
+    if(!g||g.st==="wait"||g.st==="live")return `<td class="n">·</td>`;
+    if(g.st==="wo")return `<td class="wo">${g.wo===r.p.id?"T":g.wo?"B":"–"}</td>`;
+    const me=g.x===r.p.id?g.sx:g.sy,op=g.x===r.p.id?g.sy:g.sx;return `<td class="${me>op?"w":"l"}">${me}-${op}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>
+  <p class="rule">${GD.table.map(t=>`<b>${esc(codes.get(t.p.id))}</b>: ${pairNm(D,t.p)}`).join(" · ")}</p>`;
+  return h;
+}
+async function endGiai(){
+  const D=derive(),GD=gDerive(D);if(!GD)return;
+  if(D.playing.length){toast("Còn trận đang đánh. Lưu tỉ số hoặc hủy trận trước.");return}
+  await write(async()=>{
+    const ms=D.done.filter(m=>m.giai),firstAt=ms.reduce((m,x)=>Math.min(m,x.doneAt||x.createdAt||Infinity),Infinity);
+    const nmOf=id=>D.pmap.get(id)?.name||"(đã xóa)",M=money(D);
+    await db.doc("app/hist-"+D.sid).set({sid:D.sid,type:"giai",title:D.c.title,startedAt:isFinite(firstAt)?firstAt:(GD.G.startedAt||Date.now()),endedAt:Date.now(),matchCount:ms.length,
+      rows:standings(D).filter(r=>r.s.g).map(r=>({id:r.p.id,name:r.p.name,gender:r.p.gender||"M",w:r.s.w,l:r.s.l,pf:r.s.pf,pa:r.s.pa,rating:Math.round(r.s.rating*100)/100,d:Math.round(r.s.d*1000)/1000,...payRow(D,M,r.p.id)})),
+      money:moneySnap(D,M),
+      giai:{prizes:prizes(D,M).map(x=>x.k),complete:GD.complete,
+        table:GD.table.map(t=>({id:t.p.id,a:t.p.a,b:t.p.b,na:nmOf(t.p.a),nb:nmOf(t.p.b),gp:t.gp,w:t.w,l:t.l,pf:t.pf,pa:t.pa,wo:t.wo,out:t.out})),
+        games:GD.games.filter(g=>g.st==="done"||(g.st==="wo"&&g.wo)).map(g=>({r:g.r,x:g.x,y:g.y,sx:g.sx,sy:g.sy,wo:g.wo||null,court:g.m?.court||null,seq:g.m?.seq||null,at:g.m?.doneAt||null}))}});
+    for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
+    await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},fmt:"xoay",giai:null});
+  },"Đã lưu giải, đây là trang tổng kết để chia sẻ");go("buoi",{sid:D.sid});
+}
+function vGiaiSum(D,x,back){
+  const s=x.snap,G=s.giai||{},T=G.table||[],pz=G.prizes||[],tb=new Map(T.map(t=>[t.id,t]));
+  const PP=(id,n)=>D.pmap.get(id)||{name:n};
+  const tAv=(t,cls)=>`<span class="avs">${av(PP(t.a,t.na),cls)}${av(PP(t.b,t.nb),cls)}</span>`;
+  const tNm=t=>`${esc(t.na)} &amp; ${esc(t.nb)}`;
+  const hs=t=>{const d=t.pf-t.pa;return (d>0?"+":"")+d};
+  const games=G.games||[],pts=games.reduce((a,g)=>a+(+g.sx||0)+(+g.sy||0),0),ranked=T.filter(t=>!t.out);
+  const c1=ranked[0],c2=ranked[1],c3=ranked[2];
+  let h=back+`<div class="hero"><div class="phead"><span class="eyebrow">Giải cặp cố định · ${dmy(x.at)}</span><h1 class="num">Buổi #${x.sid}</h1><p class="hmeta">${T.length} cặp đánh vòng tròn, mỗi cặp gặp tất cả các cặp còn lại một lần. Chạm 11, không cần cách 2.${G.complete===false?" Giải kết thúc sớm.":""}</p></div>
+    <div class="stats"><div><b class="num">${T.length}</b><small>CẶP</small></div><div><b class="num">${games.filter(g=>!g.wo).length}</b><small>TRẬN</small></div><div><b class="num">${pts||"–"}</b><small>ĐIỂM GHI</small></div></div>
+    <div class="hsplit">${c1?`<div class="champ"><div class="k"><span>VÔ ĐỊCH</span><span>${pzTxt(pz[0])}</span></div><div class="p">${tAv(c1,"xl")}<span><span class="n">${tNm(c1)}</span><span class="s num" style="display:block;margin-top:6px">${c1.w} thắng · ${c1.l} thua · HS ${hs(c1)}</span></span></div></div>`:""}
+    ${c2?`<div class="podium">${[c2,c3].map((t,i)=>t?`<div class="${i?"b3":"b2"}"><span class="k">HẠNG ${i+2}</span>${tAv(t,"md")}<span class="n">${tNm(t)}</span><span class="s num">${t.w} thắng · ${t.l} thua · HS ${hs(t)}</span>${pz[i+1]?`<span class="pz num">${pzTxt(pz[i+1])}</span>`:""}</div>`:"").join("")}</div>`:""}</div></div>`;
+  h+=`<div class="shd"><h2>Bảng xếp hạng cuối</h2></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Cặp</th><th>T–B</th><th>HS</th></tr></thead><tbody>${T.map((t,i)=>{const d=t.pf-t.pa;return `<tr class="${!t.out&&i<3?"g"+(i+1):""}"><td class="rank">${t.out?"–":i+1}</td><td><span class="pn">${tAv(t,"sm")}<span><b>${tNm(t)}</b>${t.out?` <span class="meta">BỎ GIẢI</span>`:""}</span></span></td><td><b>${t.w}–${t.l}</b></td><td class="${d>0?"up":d<0?"down":""}">${d>0?"+":""}${d}</td></tr>`}).join("")}</tbody></table></div>
+  <p class="rule">Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Trận cặp bỏ giải chưa đánh tính thắng cho đối thủ, không cộng điểm.</p>`;
+  if(games.length)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><div class="mgrid">${[...games].sort((a,b)=>a.r-b.r||(a.seq||0)-(b.seq||0)).map(g=>{const X=tb.get(g.x),Y=tb.get(g.y);if(!X||!Y)return "";
+    const wx=g.wo?g.wo===g.x:g.sx>g.sy,row=(t,sc,w)=>`<div class="tr${w?" w":""}"><span class="who">${tAv(t,"sm")}<span>${tNm(t)}</span></span><span class="sc num">${sc}</span></div>`;
+    return `<article class="mcard"><div class="mh"><b>LƯỢT ${g.r}${g.seq?` · TRẬN #${g.seq}`:""}</b><span>${g.wo?"BỎ GIẢI":g.court?`SÂN ${g.court}`:""}${g.at?` · ${new Date(g.at).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"})}`:""}</span></div>${row(X,g.wo?(wx?"T":"B"):g.sx,wx)}${row(Y,g.wo?(wx?"B":"T"):g.sy,!wx)}</article>`}).join("")}</div>`;
+  const R=[...(s.rows||[])].sort((a,b)=>(b.d||0)-(a.d||0));
+  if(R.length)h+=`<div class="shd"><h2>Rating sau giải</h2></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>Rating</th><th>Δ</th></tr></thead><tbody>${R.map((r,i)=>`<tr><td class="rank">${i+1}</td><td><span class="pn">${av(PP(r.id,r.name),"sm")}<b>${esc(r.name)}</b></span></td><td>${r.w}–${r.l}</td><td><b>${r2(r.rating)}</b></td><td class="${dCls(r.d)}">${dTxt(r.d)}</td></tr>`).join("")}</tbody></table></div>`;
+  h+=moneySec(D,x.sid,s,s.rows||[],r=>PP(r.id,r.name),true);
+  h+=`<div class="sharebox"><span class="lbl">Link riêng của giải này</span><span class="url">${esc(shareUrl(x.sid).replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="share" data-id="${x.sid}">Chia sẻ</button><button data-act="copylink" data-id="${x.sid}">Copy tin nhắn</button></div></div>${canWrite?`<div class="bar"><span class="grow"></span>${delBtn("sdel",x.sid,"Xóa buổi này")}</div>`:""}`;
+  return h;
+}
+function giaiShare(D,x){
+  const G=x.snap.giai||{},T=(G.table||[]).filter(t=>!t.out),pz=G.prizes||[];
+  const L=[`TỔNG KẾT GIẢI CẶP CỐ ĐỊNH · BUỔI #${x.sid} · ${dmy(x.at)}`,`${(G.table||[]).length} cặp · ${(G.games||[]).filter(g=>!g.wo).length} trận · vòng tròn chạm 11`];
+  T.slice(0,3).forEach((t,i)=>L.push(`${["Vô địch","Hạng 2","Hạng 3"][i]}: ${t.na} & ${t.nb} (${t.w}–${t.l})${pz[i]?` · ${pzTxt(pz[i])}`:""}`));
+  L.push("Xem bảng xếp hạng, kết quả từng trận và rating sau giải:");
+  return L.join("\n");
+}
 /* ---------- writes ---------- */
 async function write(fn,okMsg){
   if(!db||!canWrite)return;
@@ -871,7 +1233,7 @@ async function write(fn,okMsg){
 const cfgDoc=()=>db.doc("app/config");
 async function saveCfg(patch){
   const next={...cfg(),...patch,costs:{...cfg().costs,...(patch.costs||{})}};
-  await cfgDoc().set(next); S.everWrote=true;
+  await cfgDoc().set(next); S.cfg=next; S.everWrote=true;
 }
 const key=(x,y)=>x<y?x+"|"+y:y+"|"+x;
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -936,6 +1298,7 @@ document.addEventListener("change",e=>{
     shrink(f).then(d=>write(()=>db.collection("players").doc(id).update({photo:d}),"Đã cập nhật ảnh")).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}
   if(t.dataset&&t.dataset.pick){t.checked?pickSel.add(t.dataset.pick):pickSel.delete(t.dataset.pick);render();return}
   const s=t.dataset&&t.dataset.save;if(!s)return;
+  if(s==="gprize"){if(!canWrite)return;const i=+t.dataset.i,pz=[...(cfg().giai?.prizes||[0,0,0])];pz[i]=Math.max(0,Number(t.value)||0);write(()=>saveG({prizes:pz}).then(()=>delete drafts["gz-"+i]));return}
   if(s==="name"){const v=t.value.trim();if(!v){toast("Tên không được để trống.");return}
     write(()=>db.collection("players").doc(t.dataset.id).update({name:v}).then(()=>{delete drafts[t.dataset.draft];S.everWrote=true}))}
   else if(s==="rating0")write(()=>db.collection("players").doc(t.dataset.id).update({rating0:Number(t.value)}).then(()=>S.everWrote=true));
@@ -980,7 +1343,7 @@ document.addEventListener("click",async e=>{
   if(act==="cp"){try{await navigator.clipboard.writeText(b.dataset.v);toast("Đã copy: "+b.dataset.v)}catch(x){toast(b.dataset.v)}return}
   if(act==="paid"){if(!canWrite)return;const sid=Number(id),h=S.hist.find(z=>z.sid===sid);if(!h)return;const pd={...(h.paid||{})};pd[b.dataset.p]=!pd[b.dataset.p];
     write(()=>db.doc("app/hist-"+sid).update({paid:pd}),pd[b.dataset.p]?"Đã đánh dấu đã nhận tiền":"Đã bỏ đánh dấu");return}
-  if(act==="share"||act==="copylink"){const u=shareUrl(id),D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id)),txt=x?shareText(D,x):`Tổng kết buổi #${id}`;
+  if(act==="share"||act==="copylink"){const u=shareUrl(id),D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id)),txt=x?(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x)):`Tổng kết buổi #${id}`;
     if(act==="share"&&navigator.share){try{await navigator.share({title:`Tổng kết buổi #${id}`,text:txt+"\n",url:u})}catch(x){}return}
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy tin nhắn kèm link, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
   if(act==="sess"){const k="s-"+id;editing.has(k)?editing.delete(k):editing.add(k);render();return}
@@ -990,6 +1353,31 @@ document.addEventListener("click",async e=>{
     L.push("","BẢNG XẾP HẠNG");x.rows.forEach((r,i)=>L.push(`${i+1}. ${r.name} — ${r.w}T-${r.l}B, HS ${r.pf-r.pa>0?"+":""}${r.pf-r.pa}${x.snap?`, phải đóng ${fmtK(r.pay)}`:""}`));
     const txt=L.join("\n");try{await navigator.clipboard.writeText(txt);toast("Đã copy tổng kết buổi.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
   if(!canWrite)return;
+  if(act==="setupt"){const D=derive();setupOpen=!(setupOpen==null?!D.SM.length:setupOpen);render();return}
+  if(act==="cset"&&b.dataset.k!=="fmt"){const k=b.dataset.k,v=b.dataset.v;if(derive().SM.length){toast("Buổi đã có trận, không đổi được.");return}
+    if(cfg()[k]===v)return;const patch={[k]:v};if(k==="gt")patch.gtv=v==="trich"?30:v==="codinh"?200:v==="gop"?20:0;if(k==="thu"&&v==="phi"&&!cfg().phi)patch.phi=50;
+    ["cf-gtv","cf-phi"].forEach(x=>delete drafts[x]);write(()=>saveCfg(patch));return}
+  if(act==="fmt"||(act==="cset"&&b.dataset.k==="fmt")){const v=b.dataset.v==="giai"?"giai":"xoay";if(derive().SM.length){toast("Buổi đã có trận, không đổi thể thức được.");return}
+    if(cfg().fmt===v||(v==="xoay"&&!cfg().fmt))return;
+    write(()=>saveCfg({fmt:v,giai:cfg().giai||{pairs:[],prizes:[0,0,0],out:{},locked:false}}),v==="giai"?"Đã chọn thể thức Cặp cố định":"Đã chọn thể thức Xoay cặp");return}
+  if(act==="gadd"){const a=String(drafts.gp1||""),bb=String(drafts.gp2||""),P=cfg().giai?.pairs||[];
+    if(!a||!bb){errs.gadd="Chọn đủ 2 người.";render();return}
+    if(a===bb){errs.gadd="Hai người phải khác nhau.";render();return}
+    if(P.length>=GMAX){errs.gadd=`Tối đa ${GMAX} cặp.`;render();return}
+    if(P.some(p=>[p.a,p.b].includes(a)||[p.a,p.b].includes(bb))){errs.gadd="Người này đã có cặp.";render();return}
+    delete errs.gadd;write(()=>saveG({pairs:[...P,{id:"c"+Date.now().toString(36),a,b:bb}]}).then(()=>{delete drafts.gp1;delete drafts.gp2}),"Đã thêm cặp");return}
+  if(act==="gdel"){write(()=>saveG({pairs:(cfg().giai?.pairs||[]).filter(p=>p.id!==id)}),"Đã bỏ cặp");return}
+  if(act==="gstart"){const P=cfg().giai?.pairs||[];if(P.length<3){errs.giai="Cần ít nhất 3 cặp.";render();return}delete errs.giai;
+    await write(()=>saveG({locked:true,startedAt:Date.now(),out:{}}),"Đã tạo lịch thi đấu");await gFill();return}
+  if(act==="gfill"){const n=await gFill();toast(n?`Đã đưa ${n} trận vào sân`:"Chưa đưa được trận nào: sân đã đầy hoặc các cặp còn lại đang đánh.");return}
+  if(act==="gout"){if(derive().playing.some(m=>m.giai&&(m.pa===id||m.pb===id))){toast("Cặp này đang trên sân, lưu tỉ số hoặc hủy trận trước.");return}
+    if(!armOr("gout:"+id))return;await write(()=>saveG({out:{...(cfg().giai?.out||{}),[id]:true}}),"Đã ghi nhận cặp bỏ giải");await gFill();return}
+  if(act==="grest"){const r={...(cfg().giai?.rest||{})};const on=!r[id];if(on)r[id]=true;else delete r[id];await write(()=>saveG({rest:r}),on?"Đã cho cặp này nghỉ":"Cặp đã vào lại");if(!on)await gFill();return}
+  if(act==="gin"){const o={...(cfg().giai?.out||{})};delete o[id];write(()=>saveG({out:o}),"Cặp đã quay lại giải");return}
+  if(act==="gcancel"){const D=derive();if(D.done.some(m=>m.giai)){toast("Đã có trận xong, không hủy lịch được.");return}
+    if(!armOr("gcancel:x"))return;
+    await write(async()=>{for(const m of D.playing.filter(m=>m.giai))await db.collection("matches").doc(m.id).delete();await saveG({locked:false})},"Đã hủy lịch, có thể ghép lại cặp");return}
+  if(act==="gend"){if(!armOr("gend:x"))return;await endGiai();return}
   if(act==="gmode"){const v=b.dataset.v==="same"?"same":"mix";if(cfg().gmode!==v)write(()=>saveCfg({gmode:v}),v==="same"?"Đã chuyển sang ưu tiên cùng giới":"Đã chuyển sang ưu tiên khác giới");return}
   if(act==="phdel"){write(()=>db.collection("players").doc(id).update({photo:""}),"Đã xóa ảnh");return}
   if(act==="picktoggle"){pickOpen=!pickOpen;render();return}
@@ -1046,10 +1434,11 @@ document.addEventListener("click",async e=>{
   else if(act==="save"||act==="edit-save"){
     const m=S.matches.find(x=>x.id===id);const pre=act==="save"?["sa-","sb-"]:["ea-","eb-"];
     const a=Number(val(pre[0]+id,act==="save"?"":m.sa)),bb=Number(val(pre[1]+id,act==="save"?"":m.sb));
-    const msg=(val(pre[0]+id,"")===""&&act==="save")||(val(pre[1]+id,"")===""&&act==="save")?"Nhập điểm hai đội.":validScore(a,bb,cfg().target);
+    const msg=(val(pre[0]+id,"")===""&&act==="save")||(val(pre[1]+id,"")===""&&act==="save")?"Nhập điểm hai đội.":(m.giai?validG(a,bb):validScore(a,bb,cfg().target));
     if(msg){errs[id]=msg;render();return}
     delete errs[id];
-    await write(()=>db.collection("matches").doc(id).update(act==="save"?{sa:a,sb:bb,status:"done",doneAt:Date.now()}:{sa:a,sb:bb}).then(()=>{S.everWrote=true;delete drafts[pre[0]+id];delete drafts[pre[1]+id];editing.delete(id)}),act==="save"?"Đã lưu tỉ số":"Đã sửa tỉ số")}
+    await write(()=>db.collection("matches").doc(id).update(act==="save"?{sa:a,sb:bb,status:"done",doneAt:Date.now()}:{sa:a,sb:bb}).then(()=>{S.everWrote=true;delete drafts[pre[0]+id];delete drafts[pre[1]+id];editing.delete(id)}),act==="save"?"Đã lưu tỉ số":"Đã sửa tỉ số");
+    if(m.giai&&act==="save"&&!errs[id]){if(m.status!=="done")Object.assign(m,{sa:a,sb:bb,status:"done",doneAt:Date.now()});await new Promise(r=>setTimeout(r,60));await gFill()}}
   else if(act==="edit"){editing.add(id);render()}
   else if(act==="edit-x"){editing.delete(id);delete errs[id];render()}
   else if(act==="reset"){
@@ -1059,8 +1448,8 @@ document.addEventListener("click",async e=>{
     await write(async()=>{
       const M=money(D),firstAt=D.done.reduce((m,x)=>Math.min(m,x.doneAt||x.createdAt||Infinity),Infinity);
       await db.doc("app/hist-"+D.sid).set({sid:D.sid,title:D.c.title,startedAt:isFinite(firstAt)?firstAt:Date.now(),endedAt:Date.now(),matchCount:D.done.length,
-        rows:standings(D).filter(r=>r.s.g).map(r=>({id:r.p.id,name:r.p.name,gender:r.p.gender||"M",w:r.s.w,l:r.s.l,pf:r.s.pf,pa:r.s.pa,rating:Math.round(r.s.rating*100)/100,d:Math.round(r.s.d*1000)/1000,charged:r.s.charged,capped:!!r.s.capped,pay:r.s.charged+M.shareOf(r.p.id)})),
-        money:{fund:M.fund,cost:M.cost,gap:M.gap,share:M.share,perGame:M.perGame,costs:{...D.c.costs}},fee:{fee:D.c.fee,keo:D.c.keo,hi:D.c.hi,lo:D.c.lo,cap:D.c.cap}});
+        rows:standings(D).filter(r=>r.s.g).map(r=>({id:r.p.id,name:r.p.name,gender:r.p.gender||"M",w:r.s.w,l:r.s.l,pf:r.s.pf,pa:r.s.pa,rating:Math.round(r.s.rating*100)/100,d:Math.round(r.s.d*1000)/1000,...payRow(D,M,r.p.id)})),
+        money:moneySnap(D,M),fee:{fee:D.c.fee,keo:D.c.keo,hi:D.c.hi,lo:D.c.lo,cap:D.c.cap}});
       for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
       await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0}});
     },"Đã lưu buổi, đây là trang tổng kết để chia sẻ");go("buoi",{sid:D.sid})}
