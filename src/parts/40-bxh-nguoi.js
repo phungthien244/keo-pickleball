@@ -73,7 +73,7 @@ function vNguoi(D){
   h+=`<div class="panel"><div class="bar" style="margin-bottom:8px"><h2 class="grow">Thành viên khác</h2><span class="meta num">${away.length} người</span></div>
     <input id="q" data-draft="q" type="search" placeholder="Tìm theo tên" value="${esc(val("q",""))}" style="width:100%;margin-bottom:4px">`;
   h+=list.length?list.map(p=>memberRow(D,p,false,false)).join(""):`<p class="rule" style="margin-top:8px">${away.length?"Không tìm thấy ai khớp.":"Tất cả thành viên đều đang có mặt."}</p>`;
-  h+=`<div class="bar" style="margin-top:12px"><button data-act="copyroster">Copy danh sách thành viên (CSV)</button></div><textarea id="rosterbox" rows="6" readonly hidden></textarea></div>`;
+  h+=`</div>`;
   return h;
 }
 

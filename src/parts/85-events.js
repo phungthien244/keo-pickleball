@@ -151,10 +151,6 @@ document.addEventListener("click",async e=>{
     await write(async()=>{for(const d of (await db.collection("matches").where("session",sid).get()).docs)await db.collection("matches").doc(d.id).delete();
       for(const d of (await db.collection("batches").where("session",sid).get()).docs)await db.collection("batches").doc(d.id).delete();delete S.pm[sid];
       if(S.hist.some(h=>h.sid===sid))await db.doc("app/hist-"+sid).delete();editing.delete("s-"+sid)},`Đã xóa buổi #${sid}`)}
-  else if(act==="copyroster"){const D=derive();const rows=[["Ten","Gioi tinh","Rating","So tran","So buoi"]].concat(D.players.map(p=>[p.name,p.gender==="F"?"Nu":"Nam",r2(Number(p.rating0)||3),D.all.get(p.id).g,D.all.get(p.id).ses.size]));
-    const txt=rows.map(r=>r.map(v=>/[",\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(",")).join("\n");
-    try{await navigator.clipboard.writeText(txt);toast("Đã copy danh sách, dán vào Google Sheets hoặc Excel.")}
-    catch(x){const box=$("#rosterbox");box.hidden=false;box.value=txt;box.focus();box.select();toast("Chọn sẵn rồi, bấm giữ để copy.")}}
   else if(act==="toggle"){const p=S.players.find(p=>p.id===id);write(()=>db.collection("players").doc(id).update({active:p.active===false}))}
   else if(act==="del")write(()=>db.collection("players").doc(id).delete(),"Đã xóa");
   else if(act==="cancel")write(()=>db.collection("matches").doc(id).delete(),"Đã hủy trận");

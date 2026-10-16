@@ -673,3 +673,4 @@ button.paidpill{border:none}
 .sumbox{background:var(--navy);color:#fff;padding:14px 16px;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .sumbox>div{display:flex;justify-content:space-between;gap:10px}
 .sumbox .big{border-top:1px solid var(--navy-line);padding-top:8px;font-family:var(--display);font-weight:900;font-size:20px;color:var(--yellow);text-transform:uppercase}
+@media (max-width:420px){.tabs button{font-size:9px;letter-spacing:.03em}}
