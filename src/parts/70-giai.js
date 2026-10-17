@@ -211,15 +211,19 @@ function vGiaiSum(D,x,back){
     ${c1?`<div class="gpod">${[c1,c2,c3].map((t,i)=>t?`<div class="pc p${i+1}"><span class="md">${["Nhất","Nhì","Ba"][i]}</span>${tAv(t,i?"md":"lg")}<span class="tx"><span class="n">${tNm(t)}</span><span class="s num">${t.w} thắng · ${t.l} thua · HS ${hs(t)}</span></span>${pz[i]?`<span class="pz num">${pzTxt(pz[i])}</span>`:""}</div>`:"").join("")}</div>`:""}</div>`;
   h+=`<div class="shd"><h2>Bảng xếp hạng</h2><span class="meta">Ô xanh thắng · đỏ thua · số là điểm ghi</span></div>`+gRank(T.map(t=>({...t})),games.map(g=>({...g})),pz,PP);
   h+=`<p class="rule">Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Trận cặp bỏ giải chưa đánh tính thắng cho đối thủ, không cộng điểm.</p>`;
-  if(games.length)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><div class="mgrid">${[...games].sort((a,b)=>a.r-b.r||(a.seq||0)-(b.seq||0)).map(g=>{const X=tb.get(g.x),Y=tb.get(g.y);if(!X||!Y)return "";
-    const wx=g.wo?g.wo===g.x:g.sx>g.sy,row=(t,sc,w)=>`<div class="tr${w?" w":""}"><span class="who">${tAv(t,"sm")}<span>${tNm(t)}</span></span><span class="sc num">${sc}</span></div>`;
-    return `<article class="mcard"><div class="mh"><b>LƯỢT ${g.r}${g.seq?` · TRẬN #${g.seq}`:""}</b><span>${g.wo?"BỎ GIẢI":g.court?`SÂN ${g.court}`:""}${g.at?` · ${new Date(g.at).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"})}`:""}</span></div>${row(X,g.wo?(wx?"T":"B"):g.sx,wx)}${row(Y,g.wo?(wx?"B":"T"):g.sy,!wx)}</article>`}).join("")}</div>`;
-  if(games.length&&T.length>2){const ini=n=>{const w=String(n||"?").trim().split(/\s+/);return (w[w.length-1]||"?").charAt(0).toUpperCase()},seen=new Map(),code=new Map(T.map(t=>{let c=ini(t.na)+ini(t.nb);const n=(seen.get(c)||0)+1;seen.set(c,n);if(n>1)c+=n;return [t.id,c]}));
-    const gm=new Map();for(const g of games){gm.set(g.x+"|"+g.y,g);gm.set(g.y+"|"+g.x,g)}
+  if(games.length&&T.length>2){const gm=new Map();for(const g of games){gm.set(g.x+"|"+g.y,g);gm.set(g.y+"|"+g.x,g)}
+    const hdr=t=>`<span class="avs" title="${tNm(t)}">${av(PP(t.a,t.na),"xs")}${av(PP(t.b,t.nb),"xs")}</span>`;
     h+=`<div class="shd"><h2>Bảng đối đầu</h2></div><p class="rule">Đọc theo hàng: điểm của cặp ở hàng đó đứng trước. Xanh là thắng, đỏ là thua.</p>
-    <div class="h2h"><table><thead><tr><th></th>${T.map(t=>`<th>${esc(code.get(t.id))}</th>`).join("")}</tr></thead><tbody>${T.map(r=>`<tr><td>${esc(code.get(r.id))}</td>${T.map(c=>{if(r===c)return `<td class="x"></td>`;const g=gm.get(r.id+"|"+c.id);
+    <div class="h2h h2a"><table><thead><tr><th></th>${T.map((t,i)=>`<th><span class="hc">${hdr(t)}<small>${i+1}</small></span></th>`).join("")}</tr></thead><tbody>${T.map((r,i)=>`<tr><td><span class="hr">${hdr(r)}<small>${i+1}</small></span></td>${T.map(c=>{if(r===c)return `<td class="x"></td>`;const g=gm.get(r.id+"|"+c.id);
       if(!g)return `<td class="n">·</td>`;if(g.wo)return `<td class="wo">${g.wo===r.id?"T":"B"}</td>`;const me=g.x===r.id?g.sx:g.sy,op=g.x===r.id?g.sy:g.sx;return `<td class="${me>op?"w":"l"}">${me}-${op}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>
-    <p class="rule">${T.map(t=>`<b>${esc(code.get(t.id))}</b>: ${tNm(t)}`).join(" · ")}</p>`}
+    <div class="h2l">${T.map((t,i)=>`<span><b class="num">${i+1}</b>${hdr(t)}${tNm(t)}</span>`).join("")}</div>`}
+  if(games.length){const by=new Map();for(const g of games){const k=g.wo?"wo":String(g.court||"?");if(!by.has(k))by.set(k,[]);by.get(k).push(g)}
+    const keys=[...by.keys()].sort((a,b)=>a==="wo"?1:b==="wo"?-1:Number(a)-Number(b));
+    const row=g=>{const X=tb.get(g.x),Y=tb.get(g.y);if(!X||!Y)return "";const wx=g.wo?g.wo===g.x:g.sx>g.sy;
+      const side=(t,sc,w)=>`<span class="sd${w?" w":""}"><span class="avs">${av(PP(t.a,t.na),"xs")}${av(PP(t.b,t.nb),"xs")}</span><span class="nm">${tNm(t)}</span><b class="num">${sc}</b></span>`;
+      return `<div class="mr"><span class="mt num">${g.seq?`#${g.seq}`:"–"}<small>${g.at?new Date(g.at).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}):`Lượt ${g.r}`}</small></span><span class="ms">${side(X,g.wo?(wx?"T":"B"):g.sx,wx)}${side(Y,g.wo?(wx?"B":"T"):g.sy,!wx)}</span></div>`};
+    h+=`<div class="shd"><h2>Kết quả các trận</h2></div><div class="cgl">${keys.map(k=>{const L=by.get(k).sort((a,b)=>(a.at||0)-(b.at||0)||(a.seq||0)-(b.seq||0)||a.r-b.r);
+      return `<details class="cgrp"><summary><b>${k==="wo"?"Bỏ giải":"Sân "+k}</b><span class="num">${L.length} trận</span></summary><div class="ml">${L.map(row).join("")}</div></details>`}).join("")}</div>`}
   const R=[...(s.rows||[])].sort((a,b)=>(b.d||0)-(a.d||0));
   if(R.length)h+=`<div class="shd"><h2>Rating sau giải</h2></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>Rating</th><th>Δ</th></tr></thead><tbody>${R.map((r,i)=>`<tr><td class="rank">${i+1}</td><td><span class="pn">${av(PP(r.id,r.name),"sm")}<b>${esc(r.name)}</b></span></td><td>${r.w}–${r.l}</td><td><b>${r2(r.rating)}</b></td><td class="${dCls(r.d)}">${dTxt(r.d)}</td></tr>`).join("")}</tbody></table></div>`;
   h+=moneySec(D,x.sid,s,s.rows||[],r=>PP(r.id,r.name),true);

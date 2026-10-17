@@ -733,3 +733,30 @@ button.tick.on .box{background:var(--blue);border-color:var(--blue);color:#fff}
 .hpod .s .up{color:var(--win)}.hpod .s .down{color:var(--lose)}
 .hpod .pc:not(.p1) .s .up{color:#7fd6a0}.hpod .pc:not(.p1) .s .down{color:#ff9a8f}
 .hpod .s span{white-space:nowrap}
+/* Tổng kết giải: bảng đối đầu có ảnh, kết quả theo sân */
+.h2a th,.h2a td:first-child{padding:4px}
+.h2a .hc,.h2a .hr{display:inline-flex;align-items:center;gap:3px}
+.h2a .hc{flex-direction:column}
+.h2a .avs .av+.av{margin-left:-6px}
+.h2a small{font-family:var(--display);font-weight:800;font-size:10px;color:var(--muted)}
+.h2l{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:8px}
+.h2l span{display:inline-flex;align-items:center;gap:6px}.h2l b{color:var(--ink);font-family:var(--display)}
+.h2l .avs .av+.av{margin-left:-6px}
+.cgl{display:flex;flex-direction:column;gap:6px}
+.cgrp{background:var(--surface);border:1px solid var(--line)}
+.cgrp summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;min-height:48px;padding:0 14px;font-family:var(--display);text-transform:uppercase;letter-spacing:.08em;font-size:13px}
+.cgrp summary::-webkit-details-marker{display:none}
+.cgrp summary span{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.cgrp summary span::after{content:"▾";font-size:14px;color:var(--blue);transition:transform .2s}
+.cgrp[open] summary span::after{transform:rotate(180deg)}
+.cgrp[open] summary{border-bottom:1px solid var(--line);background:var(--navy);color:#fff}.cgrp[open] summary span{color:var(--sky)}
+.ml{display:flex;flex-direction:column}
+.mr{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid #eef1f4}
+.mr:last-child{border-bottom:none}
+.mr .mt{font-family:var(--display);font-weight:900;font-size:13px;display:flex;flex-direction:column}.mr .mt small{font-family:var(--body);font-weight:500;font-size:11px;color:var(--muted)}
+.mr .ms{display:flex;flex-direction:column;gap:3px;min-width:0}
+.mr .sd{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.mr .sd .avs .av+.av{margin-left:-6px}
+.mr .sd .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mr .sd b{font-family:var(--display);font-size:16px;min-width:24px;text-align:right}
+.mr .sd.w{color:var(--ink);font-weight:700}.mr .sd.w b{color:var(--win)}
