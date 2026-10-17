@@ -49,15 +49,19 @@ export async function onRequest(ctx) {
   if (ctx.request.method !== "GET" || !ct.includes("text/html")) return res;
   let m = null;
   try { m = await Promise.race([meta(new URL(ctx.request.url)), new Promise(r => setTimeout(() => r(null), 1500))]); } catch (e) { m = null; }
-  if (!m) return res;
-  const url = ctx.request.url.split("?")[0];
-  return new HTMLRewriter()
+  const u = new URL(ctx.request.url), url = u.origin + u.pathname;
+  // Ảnh xem trước lấy theo tên miền đang mở (bản thử dùng ảnh của bản thử)
+  let rw = new HTMLRewriter()
+    .on('meta[property="og:image"]', new SetAttr(u.origin + "/og.png?v=2"))
+    .on('meta[name="twitter:image"]', new SetAttr(u.origin + "/og.png?v=2"))
+    .on('meta[property="og:url"]', new SetAttr(url));
+  if (m) rw = rw
     .on("title", new SetText(m.title))
     .on('meta[property="og:title"]', new SetAttr(m.title))
     .on('meta[name="twitter:title"]', new SetAttr(m.title))
     .on('meta[property="og:description"]', new SetAttr(m.desc))
     .on('meta[name="twitter:description"]', new SetAttr(m.desc))
-    .on('meta[name="description"]', new SetAttr(m.desc))
-    .on('meta[property="og:url"]', new SetAttr(url))
+    .on('meta[name="description"]', new SetAttr(m.desc));
+  return rw
     .transform(res);
 }
