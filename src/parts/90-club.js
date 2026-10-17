@@ -66,8 +66,10 @@ function clubAdmin(D){
       <span class="meta">${b.acc?`Đang dùng: ${esc(bankName(b))} · ${esc(b.acc)} · ${esc(b.holder||"")}`:"Chưa khai ngân hàng: nút Chuyển tiền sẽ bị ẩn."}</span>
       <button class="wide" data-act="bsave">Lưu ngân hàng</button></div></section>
     <section class="card2"><h2>PIN trọng tài</h2><div class="cb">
-      <p class="rule">Trọng tài mở ${esc(link.replace(/^https?:\/\//,""))}/san, nhập PIN là nhập được tỉ số, không cần tài khoản. Đổi PIN không làm mất quyền của các máy đã vào.</p>
-      <div class="pinrow"><label><span class="sr">PIN mới</span><input id="newpin" data-draft="newpin" type="password" autocomplete="new-password" placeholder="PIN mới, ít nhất 4 số" value="${esc(val("newpin",""))}"></label><button class="dark" data-act="pinset">Đặt PIN</button></div>
+      <p class="rule">Trọng tài mở ${esc(link.replace(/^https?:\/\//,""))}/dang-nhap, nhập PIN là nhập được tỉ số, không cần tài khoản. Đổi PIN không làm mất quyền của các máy đã vào.</p>
+      <div class="pinst${CLUB?.pinAt?" ok":""}">${CLUB?.pinAt?`✓ Đã có PIN · đổi lần cuối ${dmy(CLUB.pinAt)}`:"Chưa đặt PIN: trọng tài chưa vào được bằng PIN."}</div>
+      <div class="pinrow"><label><span class="sr">PIN mới</span><input id="newpin" data-draft="newpin" type="text" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="PIN mới, ít nhất 4 số" value="${esc(val("newpin",""))}"></label><button class="dark" data-act="pinset">Đặt PIN</button></div>
+      ${errs.pinset?`<p class="err">${esc(errs.pinset)}</p>`:""}
       <div class="bar"><span class="meta grow">${(S.editors||[]).length} máy đang dùng PIN</span>${(S.editors||[]).length?`<button class="ghost danger" data-act="edclear">${armed("edclear:x")?"Bấm lần nữa":"Thu hồi tất cả"}</button>`:""}</div></div></section>
     <section class="card2"><h2>Ban tổ chức</h2>${mem.map(m=>`<div class="mrow3">${av({name:m.name||m.email||"?"},"sm")}<span class="t"><b>${esc(m.name||m.email||m.id)}</b><small>${esc(m.email||"")}</small></span><span class="rtag${m.role==="owner"?" o":""}">${ROLE_LB[m.role]||m.role}</span>${m.role!=="owner"&&m.id!==authUser?.uid?(armed("mrm:"+m.id)?`<button class="danger" data-act="mrm" data-id="${m.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="mrm" data-id="${m.id}">Gỡ</button>`):""}</div>`).join("")}
       <div class="cb"><div class="two"><button class="line" data-act="inv" data-v="admin">Mời quản lý</button><button class="line" data-act="inv" data-v="scorer">Mời trọng tài</button></div>

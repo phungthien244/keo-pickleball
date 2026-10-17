@@ -73,6 +73,15 @@ document.addEventListener("click",async e=>{
   if(act==="copysess"){const D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id));if(!x)return;
     const txt=(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x))+"\n"+shareUrl(x.sid);try{await navigator.clipboard.writeText(txt);toast("Đã copy tin nhắn, dán vào nhóm Zalo nhé.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
   if(await platformAct(act,id,b))return;
+  if(act==="pinset"){if(!isAdm()){toast("Chỉ chủ CLB và quản lý đăng nhập Google mới đặt được PIN.");return}
+    const el=document.getElementById&&document.getElementById("newpin"),p=String((el&&el.value)||drafts.newpin||"").trim();
+    if(!/^\S{4,12}$/.test(p)){errs.pinset="PIN cần 4–12 ký tự, không có khoảng trắng.";render();return}
+    delete errs.pinset;
+    try{await FB.setDoc(FB.doc(FB.fs,PFX+"secret/pin"),{value:p});delete drafts.newpin;if(el)el.value="";
+      try{await FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{pinAt:Date.now()})}catch(x){}
+      toast("Đã đặt PIN trọng tài. Báo PIN mới cho trọng tài.")}
+    catch(x){errs.pinset=x&&x.code==="permission-denied"?"Tài khoản này chưa có quyền quản lý CLB. Đăng nhập Google bằng tài khoản chủ CLB rồi thử lại.":"Chưa lưu được PIN ("+((x&&x.code)||"mất kết nối")+"). Thử lại."}
+    render();return}
   if(!canWrite)return;
   if(act==="migrate"){if(!legacy||!isGoogle(authUser)||!S.rootEditor){toast("Cần đăng nhập Google và nhập PIN trước.");return}if(!armOr("migrate:x"))return;try{await migrate()}catch(x){S.migMsg="Chuyển chưa xong ("+((x&&x.code)||"lỗi")+"). Kiểm tra luật Firestore mới đã xuất bản chưa rồi thử lại.";render()}return}
   if(act==="bsave"&&isAdm()){const code=val("bk-code",CLUB?.bank?.code||"mb"),bk=BANKS.find(z=>z[0]===code)||BANKS[0],acc=String(val("bk-acc",CLUB?.bank?.acc||"")).replace(/\s/g,""),hd=noAcc(val("bk-holder",CLUB?.bank?.holder||""));
@@ -82,7 +91,6 @@ document.addEventListener("click",async e=>{
     write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{name:v}).then(()=>{delete drafts["cl-name"];if(CLUB)CLUB.name=v}),"Đã lưu tên CLB");return}
   if(act==="clogodel"&&isAdm()){write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{logo:""}),"Đã xoá ảnh CLB");return}
   if(act==="pub"&&isAdm()){write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{public:b.dataset.v==="1"}),"Đã lưu");return}
-  if(act==="pinset"&&isAdm()){const p=String(drafts.newpin||"").trim();if(p.length<4){toast("PIN cần ít nhất 4 ký tự.");return}write(()=>FB.setDoc(FB.doc(FB.fs,PFX+"secret/pin"),{value:p}).then(()=>delete drafts.newpin),"Đã đặt PIN trọng tài");return}
   if(act==="edclear"&&isAdm()){if(!armOr("edclear:x"))return;write(async()=>{for(const e of S.editors||[])await FB.deleteDoc(FB.doc(FB.fs,PFX+"editors/"+e.id))},"Đã thu hồi quyền các máy dùng PIN");return}
   if(act==="mrm"&&isAdm()){if(!armOr("mrm:"+id))return;write(()=>FB.deleteDoc(FB.doc(FB.fs,PFX+"members/"+id)),"Đã gỡ khỏi ban tổ chức");return}
   if(act==="inv"&&isAdm()){const role=b.dataset.v==="admin"?"admin":"scorer",tok=Array.from(crypto.getRandomValues(new Uint8Array(9))).map(x=>x.toString(16).padStart(2,"0")).join("");

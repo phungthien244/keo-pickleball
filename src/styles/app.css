@@ -812,3 +812,8 @@ button.tick.on .box{background:var(--blue);border-color:var(--blue);color:#fff}
 .court-h h3{white-space:nowrap}
 .court-h span.num{flex:1;min-width:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .court-h .spk{white-space:nowrap;flex:none;padding:0 12px}
+/* PIN trọng tài */
+.pinrow label{min-width:0}
+.pinrow button{flex:none;display:inline-flex;align-items:center;justify-content:center}
+.pinst{font-size:13px;padding:8px 10px;background:var(--warn-bg);color:var(--warn)}
+.pinst.ok{background:var(--win-bg);color:var(--win);font-weight:600}
