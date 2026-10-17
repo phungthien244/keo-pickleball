@@ -1,6 +1,6 @@
 /* ---------- writes ---------- */
 async function write(fn,okMsg){
-  if(!db||!canWrite)return;
+  if(!db||!(canWrite||REF))return;
   try{await fn(); if(okMsg)toast(okMsg)}
   catch(e){
     if(e&&e.code==="permission-denied"){canWrite=false;toast("Phiên sửa đã hết quyền, nhập lại PIN.")}

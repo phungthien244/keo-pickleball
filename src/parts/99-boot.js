@@ -42,7 +42,7 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
   const live=meta=>{S.live=!meta.fromCache;render()};
   let unsubM=null,unsubB=null,subSid=null;
   const subSession=sid=>{if(sid===subSid)return;if(subSid!=null)S.pm[subSid]=S.matches;subSid=sid;if(unsubM)unsubM();if(unsubB)unsubB();S.mReady=false;S.matches=[];S.batches=[];
-    unsubM=db.collection("matches").where("session",sid).onSnapshot(q=>{S.matches=q.docs.map(d=>({id:d.id,...d.data()}));S.mReady=true;live(q.metadata)},fail);
+    unsubM=db.collection("matches").where("session",sid).onSnapshot(q=>{S.matches=q.docs.map(d=>({id:d.id,...d.data()}));S.mReady=true;live(q.metadata);autoGFill()},fail);
     unsubB=db.collection("batches").where("session",sid).onSnapshot(q=>{S.batches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail)};
   db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;subSession(cfg().session||1);live(s.metadata)},fail);
   db.collection("app").onSnapshot(q=>{const A=q.docs.map(d=>({id:d.id,...d.data()}));

@@ -21,11 +21,21 @@ test("xoá buổi thì rating trừ lại về như trước buổi đó", async
   const r1 = ratings(e);
   expect(r1).not.toEqual(r0);
   await session(e, "11", "1");
-  expect(ratings(e)).not.toEqual(r1);
+  const r2 = ratings(e);
+  expect(r2).not.toEqual(r1);
+  const n2 = e.docs("matches/", m => m.session === 2).length;
   // xoá buổi 2 → về rating sau buổi 1
   await e.click("sdel", { id: "2" }); await e.click("sdel", { id: "2" });
   await e.until(() => !e.store.has("app/hist-2"));
   for (const [id, v] of Object.entries(ratings(e))) expect(v).toBeCloseTo(r1[id], 2);
+  expect(e.docs("matches/", m => m.session === 2).length).toBe(0);
+  // khôi phục → trận, kết quả và rating về như trước khi xoá
+  const [did] = e.docs("deleted/")[0];
+  await e.click("srestore", { id: did }); await e.click("srestore", { id: did });
+  await e.until(() => e.store.has("app/hist-2"));
+  expect(e.docs("matches/", m => m.session === 2).length).toBe(n2);
+  for (const [id, v] of Object.entries(ratings(e))) expect(v).toBeCloseTo(r2[id], 2);
+  expect(e.docs("deleted/").length).toBe(0);
 });
 
 test("công cụ tính lại: rating sửa lệch được kéo về đúng theo các buổi đã lưu", async () => {

@@ -25,6 +25,7 @@ service cloud.firestore {
     match /players/{docId} { allow read: if true; allow write: if rootEditor(); }
     match /matches/{docId} { allow read: if true; allow write: if rootEditor(); }
     match /batches/{docId} { allow read: if true; allow write: if rootEditor(); }
+    match /deleted/{docId} { allow read, write: if rootEditor(); }
 
     // ===== Nền tảng =====
     // Mỗi tài khoản Google một CLB: users/{uid} = { club, at }
@@ -68,7 +69,17 @@ service cloud.firestore {
       function isAdmin() { return isMember() && myRole() in ['owner', 'admin']; }
       function isPinEditor() { return signedIn() && exists(/databases/$(database)/documents/clubs/$(c)/editors/$(request.auth.uid)); }
       function active() { return clubDoc().get('status', 'active') == 'active'; }
-      function canEdit() { return active() && (isMember() || isPinEditor()); }
+      // Chủ CLB và quản lý: sửa mọi thứ. Trọng tài (tài khoản Trọng tài hoặc máy PIN): chỉ nhập tỉ số sân được giao.
+      function canEdit() { return active() && isAdmin(); }
+      function refCourts() {
+        return isMember() ? get(memberPath(request.auth.uid)).data.get('courts', [])
+          : get(/databases/$(database)/documents/clubs/$(c)/editors/$(request.auth.uid)).data.get('courts', []);
+      }
+      function scoreOk() {
+        return active() && (isMember() || isPinEditor())
+          && resource.data.court in refCourts()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sa', 'sb', 'status', 'doneAt']);
+      }
       function canRead() { return (active() && clubDoc().public == true) || isMember() || isPinEditor() || isPA(); }
 
       function newClubOk() {
@@ -143,16 +154,23 @@ service cloud.firestore {
       match /editors/{uid} {
         allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();
         allow create: if signedIn() && request.auth.uid == uid
-          && request.resource.data.keys().hasOnly(['pin', 'at'])
+          && request.resource.data.keys().hasOnly(['pin', 'at', 'name'])
           && request.resource.data.pin == get(/databases/$(database)/documents/clubs/$(c)/secret/pin).data.value;
         allow delete: if isAdmin();
-        allow update: if false;
+        // Ban tổ chức giao sân cho máy PIN
+        allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['courts']);
       }
 
       // Dữ liệu buổi đánh: CLB phải đang hoạt động mới ghi được
       match /app/{docId}     { allow read: if canRead(); allow write: if canEdit(); }
       match /players/{docId} { allow read: if canRead(); allow write: if canEdit(); }
-      match /matches/{docId} { allow read: if canRead(); allow write: if canEdit(); }
+      match /matches/{docId} { allow read: if canRead(); allow write: if canEdit(); allow update: if scoreOk(); }
+      // Buổi đã xóa: chỉ chủ CLB khôi phục
+      match /deleted/{docId} {
+        allow read: if isAdmin();
+        allow create: if canEdit();
+        allow delete: if isMember() && myRole() == 'owner';
+      }
       match /batches/{docId} { allow read: if canRead(); allow write: if canEdit(); }
     }
   }

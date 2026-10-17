@@ -54,7 +54,7 @@ function gPick(D,GD,busy,rest){
     if(!bs||lexLt(s,bs)){bs=s;best=g}});
   return best;
 }
-async function gFill(){
+async function gFill(quiet){
   await new Promise(r=>setTimeout(r,30));
   const D=derive(),GD=gDerive(D);if(!GD||!GD.locked)return 0;
   const used=new Set(D.playing.map(m=>m.court)),free=[];for(let i=1;i<=D.c.courts;i++)if(!used.has(i))free.push(i);
@@ -65,7 +65,7 @@ async function gFill(){
   const pick=[];for(const ct of free){const g=gPick(D,GD,busy,rest);if(!g)break;busy.add(g.x);busy.add(g.y);pick.push([ct,g])}
   if(!pick.length)return 0;
   const lock=await db.doc("app/lock").acquire({holder,ttlMs:5000});
-  if(!lock.acquired){toast("Có người khác đang xếp trận, thử lại sau vài giây.");return 0}
+  if(!lock.acquired){if(!quiet)toast("Có người khác đang xếp trận, thử lại sau vài giây.");return 0}
   let seq=D.SM.reduce((m,x)=>Math.max(m,x.seq||0),0);const now=Date.now();
   await write(async()=>{for(const [ct,g] of pick){const X=GD.pm.get(g.x),Y=GD.pm.get(g.y);seq++;
     await db.collection("matches").doc().set({session:D.sid,seq,court:ct,giai:true,pa:g.x,pb:g.y,round:g.r,a:[X.a,X.b],b:[Y.a,Y.b],sa:null,sb:null,status:"playing",createdAt:now})}
@@ -83,7 +83,7 @@ function vGiaiSan(D){
   if(canWrite&&(phaseOf(D)==="prep"||stepView==="prep"))return steps3(1,D)+vPrep(D);
   if(canWrite&&!G.locked)return steps3(2,D)+cfgChip(D)+undoBar()+gSetup(D,G);
   if(canWrite)return steps3(2,D)+cfgChip(D)+undoBar()+gRun(D,gDerive(D));
-  return G.locked?gRun(D,gDerive(D)):gSetup(D,G);
+  return refNote()+(G.locked?gRun(D,gDerive(D)):gSetup(D,G));
 }
 function gSetup(D,G){
   const c=D.c,P=G.pairs||[],n=P.length,tot=n*(n-1)/2,mins=Math.ceil(tot/Math.max(1,c.courts))*GSLOT,pz=G.prizes||[0,0,0];
@@ -122,10 +122,10 @@ function gRun(D,GD){
 }
 function gCourt(D,GD,m){
   const X=GD.T.get(m.pa),Y=GD.T.get(m.pb),ka=`sa-${m.id}`,kb=`sb-${m.id}`;
-  const side=(t,k,lab)=>`<div class="team"><div class="names"><div class="tl">${pairAv(D,t.p,"md")}<div>${pairNm(D,t.p)}<small class="num">${t.w} thắng · ${t.l} thua · Rating TB ${r2(pairR(D,t.p))}</small></div></div></div><input class="score num" id="${k}" data-draft="${k}" type="number" inputmode="numeric" min="0" max="11" aria-label="${lab}" value="${esc(val(k,""))}" ${canWrite?"":"disabled"}></div>`;
-  return `<article class="court${isNew(m.id+"p")?" new":""}"><div class="court-h"><h3>Sân ${m.court}</h3><span class="num">Lượt ${m.round} · Trận #${m.seq}</span>${canWrite?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>
+  const side=(t,k,lab)=>`<div class="team"><div class="names"><div class="tl">${pairAv(D,t.p,"md")}<div>${pairNm(D,t.p)}<small class="num">${t.w} thắng · ${t.l} thua · Rating TB ${r2(pairR(D,t.p))}</small></div></div></div><input class="score num" id="${k}" data-draft="${k}" type="number" inputmode="numeric" min="0" max="11" aria-label="${lab}" value="${esc(val(k,""))}" ${canScore(m)?"":"disabled"}></div>`;
+  return `<article class="court${isNew(m.id+"p")?" new":""}"><div class="court-h"><h3>Sân ${m.court}</h3><span class="num">Lượt ${m.round} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>
     ${side(X,ka,"Điểm đội 1")}${side(Y,kb,"Điểm đội 2")}
-    <div class="court-f"><span class="meta" style="flex:1">${esc(ruleTxt(D.c))}</span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button><button class="primary" data-act="savechk" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>${saveConfirm(D,m)}${cancelConfirm(D,m)}
+    <div class="court-f"><span class="meta" style="flex:1">${esc(ruleTxt(D.c))}</span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button>`:""}${canScore(m)?`<button class="primary" data-act="savechk" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>${saveConfirm(D,m)}${cancelConfirm(D,m)}
     ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}</article>`;
 }
 function gRounds(D,GD){
@@ -237,4 +237,13 @@ function giaiShare(D,x){
   T.slice(0,3).forEach((t,i)=>L.push(`${["Nhất","Nhì","Ba"][i]}: ${t.na} & ${t.nb} (${t.w}–${t.l})${pz[i]?` · ${pzTxt(pz[i])}`:""}`));
   L.push("Xem bảng xếp hạng, kết quả từng trận và rating sau giải:");
   return L.join("\n");
+}
+
+// Trọng tài lưu xong trận giải: máy ban tổ chức tự đưa trận kế vào sân trống
+let gDoneSeen=null,gAutoT=null;
+function autoGFill(){
+  try{const D=derive();if(!isG(D.c)){gDoneSeen=null;return}
+    const n=D.done.filter(m=>m.giai).length;
+    if(canWrite&&gDoneSeen!=null&&n>gDoneSeen){clearTimeout(gAutoT);gAutoT=setTimeout(()=>gFill(true).catch(()=>{}),1500)}
+    gDoneSeen=n}catch(e){}
 }

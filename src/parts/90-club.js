@@ -4,7 +4,14 @@ const ROLE_LB={owner:"Chủ CLB",admin:"Quản lý",scorer:"Trọng tài",pin:"T
 const isAdm=()=>ROLE==="owner"||ROLE==="admin";
 const isGoogle=u=>!!u&&!u.isAnonymous;
 const inApp=()=>/Zalo|FBAN|FBAV|Instagram|Line\//i.test(navigator.userAgent||"");
-let unsubAdm=[];
+let unsubAdm=[],unsubRef=null;
+// Trọng tài: theo dõi sân được giao (ban tổ chức đổi là máy trọng tài cập nhật ngay)
+function watchRef(){
+  if(unsubRef){try{unsubRef()}catch(e){}unsubRef=null}MYCT=[];
+  if(!REF||!authUser)return;
+  const path=PFX+(ROLE==="scorer"?"members/":"editors/")+authUser.uid;
+  try{unsubRef=FB.onSnapshot(FB.doc(FB.fs,path),{},s=>{MYCT=((s.exists()&&s.data().courts)||[]).map(Number);render()},()=>{})}catch(e){}
+}
 function watchAdmin(){
   unsubAdm.forEach(f=>{try{f()}catch(e){}});unsubAdm=[];
   if(legacy||!isAdm())return;
@@ -18,7 +25,8 @@ async function refreshRole(){
     const ed=await isEditor(u.uid);if(!ROLE&&ed)ROLE="pin";canWrite=!!ROLE;
     if(legacy&&ed)S.rootEditor=true;
   }
-  watchAdmin();
+  REF=!legacy&&(ROLE==="scorer"||ROLE==="pin");if(REF)canWrite=false;
+  watchRef();watchAdmin();
 }
 const inviteTok=()=>INVITE||new URLSearchParams(location.search).get("moi");
 async function acceptInvite(){
@@ -36,7 +44,7 @@ function loginBar(){
   const u=authUser,tok=inviteTok();
   let h=`<div class="ro login"><span>${tok&&!legacy?"Bạn được mời vào ban tổ chức của CLB. Đăng nhập Google để nhận quyền.":isGoogle(u)?`Đã đăng nhập ${esc(u.email||u.displayName||"")} nhưng chưa có quyền ở CLB này. Nhờ chủ CLB gửi link mời, hoặc nhập PIN trọng tài.`:"Bạn đang xem trực tiếp. Ban tổ chức đăng nhập Google, trọng tài nhập PIN để nhập tỉ số."}</span>
     <span class="bar" style="gap:6px">${isGoogle(u)?`<button class="ghost" data-act="logout">Đổi tài khoản</button>`:`<button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button>`}
-    <input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN trọng tài" value="${esc(val("pin",""))}" style="width:140px"><button class="primary" data-act="login">Vào bằng PIN</button></span>
+    <input id="pinname" data-draft="pinname" maxlength="30" autocomplete="off" placeholder="Tên trọng tài" value="${esc(val("pinname",""))}" style="width:130px"><input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN trọng tài" value="${esc(val("pin",""))}" style="width:120px"><button class="primary" data-act="login">Vào bằng PIN</button></span>
     ${errs.pin?`<p class="err" style="width:100%">${esc(errs.pin)}</p>`:""}${inApp()?`<p class="rule" style="width:100%">Trình duyệt trong Zalo/Facebook không cho đăng nhập Google. Bấm nút ⋯ ở góc trên rồi chọn Mở bằng trình duyệt.</p>`:""}</div>`;
   return h;
 }
@@ -74,7 +82,9 @@ function clubAdmin(D){
     <section class="card2"><h2>Ban tổ chức</h2>${mem.map(m=>`<div class="mrow3">${av({name:m.name||m.email||"?"},"sm")}<span class="t"><b>${esc(m.name||m.email||m.id)}</b><small>${esc(m.email||"")}</small></span><span class="rtag${m.role==="owner"?" o":""}">${ROLE_LB[m.role]||m.role}</span>${m.role!=="owner"&&m.id!==authUser?.uid?(armed("mrm:"+m.id)?`<button class="danger" data-act="mrm" data-id="${m.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="mrm" data-id="${m.id}">Gỡ</button>`):""}</div>`).join("")}
       <div class="cb"><div class="two"><button class="line" data-act="inv" data-v="admin">Mời quản lý</button><button class="line" data-act="inv" data-v="scorer">Mời trọng tài</button></div>
       ${S.invLink?`<div class="sharebox"><span class="lbl">Link mời ${esc(ROLE_LB[S.invLink.role])} · hết hạn sau 7 ngày</span><span class="url">${esc(S.invLink.url.replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="invshare">Gửi qua Zalo</button><button data-act="cp" data-v="${esc(S.invLink.url)}">Copy link</button></div></div>`:""}
-      <p class="rule">Người được mời mở link, đăng nhập Google là có quyền. Quản lý sửa được mọi thứ trừ gỡ chủ CLB; trọng tài chỉ cần nhập tỉ số.</p></div></section>`;
+      <p class="rule">Người được mời mở link, đăng nhập Google là có quyền. Quản lý sửa được mọi thứ trừ gỡ chủ CLB; trọng tài chỉ nhập được tỉ số ở sân được giao.</p></div></section>`;
+  h+=refCard();
+  if(ROLE==="owner")h+=delCard();
   return h;
 }
 async function migrate(){
@@ -93,9 +103,10 @@ async function migrate(){
 function vCaiDat(D){
   const u=authUser;
   let h=`<div class="dhead"><a class="bk" href="${pathOf("home")}" data-go="home">‹ ${esc(CLUB?.name||D.c.title)}</a><h1>Cài đặt CLB</h1>`;
-  if(u&&u.isAnonymous&&canWrite)h+=`<div class="acct"><span class="t"><b>Trọng tài (PIN)</b><small>Máy này đang nhập được tỉ số</small></span><button data-act="logout">Thoát</button></div>`;
+  if(u&&u.isAnonymous&&(canWrite||REF))h+=`<div class="acct"><span class="t"><b>Trọng tài (PIN)</b><small>${REF?(MYCT.length?"Nhập tỉ số sân "+MYCT.join(", "):"Chưa được giao sân"):"Máy này đang nhập được tỉ số"}</small></span><button data-act="logout">Thoát</button></div>`;
   else if(isGoogle(u))h+=`<div class="acct">${av({name:u.displayName||u.email||"?"},"sm")}<span class="t"><b>${esc(u.email||u.displayName||"")}</b><small>${esc(ROLE_LB[ROLE]||"Chưa có quyền ở CLB này")}</small></span><button data-act="logout">Thoát</button></div>`;
   h+=`</div>`;
+  if(REF)return h+`<section class="card2"><h2>Quyền trọng tài</h2><div class="cb"><p class="rule">${MYCT.length?`Bạn được giao sân ${MYCT.join(", ")}. Chỉ nhập được tỉ số ở các sân này.`:"Bạn chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào sân</a></div></section>`;
   if(!canWrite)return h+clubLoginBody();
   if(!legacy&&isAdm()){const T=[["Khai ngân hàng nhận tiền",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
     if(ok<T.length)h+=`<div class="todo"><b>Bắt đầu · ${ok}/${T.length} việc đã xong</b><div class="bar2x"><i style="width:${Math.round(ok/T.length*100)}%"></i></div>${T.map(([l,d])=>`<div class="it${d?" ok":""}"><span class="ck" aria-hidden="true">${d?"✓":""}</span>${l}</div>`).join("")}</div>`}
@@ -111,7 +122,7 @@ function clubLoginBody(){
   if(inApp())h+=`<p class="rule">Trình duyệt trong Zalo/Facebook không cho đăng nhập Google. Bấm nút ⋯ ở góc trên rồi chọn Mở bằng trình duyệt.</p>`;
   h+=`</div></section>`;
   if(!tok)h+=`<section class="card2"><h2>Trọng tài · vào nhanh bằng PIN</h2><div class="cb"><p class="rule">Không cần tài khoản. Nhập PIN chủ CLB đưa là nhập được tỉ số trên máy này.</p>
-    <div class="pinrow"><label><span class="sr">PIN trọng tài</span><input id="pin" data-draft="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="Nhập PIN" value="${esc(val("pin",""))}"></label><button class="dark" data-act="login">Vào bằng PIN</button></div>
+    <label class="fld"><span class="lbl">Tên trọng tài · để ban tổ chức giao sân</span><input id="pinname" data-draft="pinname" maxlength="30" autocomplete="off" placeholder="Ví dụ: Hùng" value="${esc(val("pinname",""))}"></label><div class="pinrow"><label><span class="sr">PIN trọng tài</span><input id="pin" data-draft="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="Nhập PIN" value="${esc(val("pin",""))}"></label><button class="dark" data-act="login">Vào bằng PIN</button></div>
     ${errs.pin?`<p class="err">${esc(errs.pin)}</p>`:""}</div></section>`;
   return h;
 }
@@ -119,4 +130,31 @@ function vClubLogin(D){
   let h=`<div class="dhead"><a class="bk" href="${pathOf("home")}" data-go="home">‹ ${esc(CLUB?.name||D.c.title)}</a><h1>Đăng nhập</h1></div>`;
   if(canWrite)return h+`<section class="card2"><div class="cb"><p class="rule">Máy này đang có quyền ${esc(ROLE_LB[ROLE]||"nhập tỉ số")}.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào sân</a><button class="line" data-act="logout">Thoát</button></div></section>`;
   return h+clubLoginBody();
+}
+
+/* ----- Giao sân cho trọng tài ----- */
+function refCard(){
+  const n=Math.max(1,+cfg().courts||2),R=[...(S.members||[]).filter(m=>m.role==="scorer").map(m=>({k:"m:"+m.id,nm:m.name||m.email||"Trọng tài",sub:"Tài khoản Google",ct:m.courts||[]})),
+    ...(S.editors||[]).map(e=>({k:"e:"+e.id,nm:e.name||"Máy chưa đặt tên",sub:`Vào bằng PIN${e.at?" · "+dmy(e.at):""}`,ct:e.courts||[]}))];
+  return `<section class="card2"><h2>Giao sân cho trọng tài</h2><div class="cb"><p class="rule">Trọng tài chỉ nhập được tỉ số ở sân được tick. Không sửa buổi, không xếp trận, không điểm danh, không xóa được gì.</p>
+    ${R.length?R.map(r=>`<div class="refrow"><span class="t"><b>${esc(r.nm)}</b><small>${esc(r.sub)}</small></span><span class="refct">${Array.from({length:n},(_,i)=>i+1).map(c=>{const on=r.ct.map(Number).includes(c);return `<button class="${on?"on":""}" data-act="refct" data-k="${r.k}" data-c="${c}" aria-pressed="${on}">S${c}</button>`}).join("")}</span></div>`).join(""):`<p class="rule">Chưa có trọng tài. Mời trọng tài ở trên hoặc cho trọng tài vào bằng PIN.</p>`}</div></section>`;
+}
+/* ----- Buổi đã xóa: chủ CLB khôi phục ----- */
+let delList=null;
+function delCard(){
+  if(delList===null){delList=[];db.collection("deleted").get().then(q=>{delList=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.at||0)-(a.at||0));render()}).catch(()=>{delList=[];})}
+  return `<section class="card2"><h2>Buổi đã xóa</h2><div class="cb">${delList.length?delList.map(x=>`<div class="refrow"><span class="t"><b>${esc(x.hist&&x.hist.sname?x.hist.sname+" · ":"")}Buổi #${x.sid}</b><small>${x.matches?.length||0} trận${x.hist&&x.hist.endedAt?" · đánh "+dmy(x.hist.endedAt):""} · xóa ${dhm(x.at)}${x.by?" bởi "+esc(x.by):""}</small></span><button class="${armed("srestore:"+x.id)?"primary":"line"}" data-act="srestore" data-id="${x.id}">${armed("srestore:"+x.id)?"Bấm lần nữa":"Khôi phục"}</button></div>`).join(""):`<p class="rule">Chưa có buổi nào bị xóa.</p>`}
+    <p class="rule">Khôi phục sẽ đưa lại trận, kết quả, tiền buổi đó và cộng lại rating cho từng người.</p></div></section>`;
+}
+async function restoreSession(id){
+  const ref=db.collection("deleted").doc(id),snap=await ref.get();if(!snap.exists)return "Không tìm thấy buổi này.";
+  const x=snap.data(),sid=x.sid;
+  if(S.hist.some(h=>h.sid===sid))return `Buổi #${sid} đang có trong Lịch sử, không khôi phục chồng lên được.`;
+  for(const {id:mid,...d} of x.matches||[])await db.collection("matches").doc(mid).set(d);
+  for(const {id:bid,...d} of x.batches||[])await db.collection("batches").doc(bid).set(d);
+  if(x.hist)await db.doc("app/hist-"+sid).set(x.hist);
+  // Cộng lại đúng phần rating đã trừ khi xóa
+  for(const [pid,d] of Object.entries(x.adj||{})){const p=S.players.find(q=>q.id===pid);if(p&&d)await db.collection("players").doc(pid).update({rating0:Math.round(Math.min(8,Math.max(1,(Number(p.rating0)||3)+Number(d)))*100)/100})}
+  await ref.delete();delList=null;delete S.pm[sid];
+  return `Đã khôi phục buổi #${sid}, rating đã tự cộng lại.`;
 }

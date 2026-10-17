@@ -865,3 +865,11 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 
 .anim > .bsteps,.anim > .mutefab{animation:none}
 #view.rp{opacity:.999}
+.refnote{display:flex;flex-direction:column;gap:2px;background:#e6f6ec;border-left:4px solid #1b7a3d;padding:10px 14px;font-size:13px}
+.refnote b{font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#145c2e}
+.refnote.warn{background:#fff3c4;border-left-color:var(--yellow)}.refnote.warn b{color:#7a6400}
+.refrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.refrow .t{flex:1;min-width:0;display:flex;flex-direction:column}.refrow .t small{color:var(--muted);font-size:12px}
+.refct{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.refct button{min-width:40px;min-height:38px;padding:0 8px;border:1.5px solid var(--line-2);background:var(--surface);color:var(--muted);font-weight:800}
+.refct button.on{background:#1b7a3d;border-color:#1b7a3d;color:#fff}

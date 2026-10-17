@@ -36,10 +36,11 @@ document.addEventListener("click",async e=>{
     delete errs.pin;
     try{
       const u=authUser||(await FB.signInAnonymously(FB.auth)).user;
-      await FB.setDoc(FB.doc(FB.fs,PFX+"editors/"+u.uid),{pin,at:Date.now()});
-      await refreshRole();canWrite=true;delete drafts.pin;toast("Đã mở quyền nhập tỉ số trên máy này.");if(route==="clogin"){go("app",{tab:"san"});return}
+      const pn=String(drafts.pinname||"").trim().slice(0,30);
+      await FB.setDoc(FB.doc(FB.fs,PFX+"editors/"+u.uid),pn&&!legacy?{pin,at:Date.now(),name:pn}:{pin,at:Date.now()});
+      if(!authUser)authUser=u;await refreshRole();if(legacy)canWrite=true;delete drafts.pin;toast("Đã mở quyền nhập tỉ số trên máy này.");if(route==="clogin"){go("app",{tab:"san"});return}
     }catch(x){
-      if(authUser&&await isEditor(authUser.uid)){canWrite=true;delete drafts.pin}
+      if(authUser&&await isEditor(authUser.uid)){await refreshRole();if(legacy)canWrite=true;delete drafts.pin}
       else errs.pin=x&&x.code==="permission-denied"?"Sai PIN.":"Không kết nối được, thử lại.";
     }
     render();return}
@@ -103,7 +104,9 @@ document.addEventListener("click",async e=>{
       toast("Đã đặt PIN trọng tài. Báo PIN mới cho trọng tài.")}
     catch(x){errs.pinset=x&&x.code==="permission-denied"?"Tài khoản này chưa có quyền quản lý CLB. Đăng nhập Google bằng tài khoản chủ CLB rồi thử lại.":"Chưa lưu được PIN ("+((x&&x.code)||"mất kết nối")+"). Thử lại."}
     render();return}
-  if(!canWrite)return;
+  // Trọng tài chỉ được lưu tỉ số ở sân được giao
+  const REF_ACTS=["savechk","savex","save","cancelx"];
+  if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
   if(act==="migrate"){if(!legacy||!isGoogle(authUser)||!S.rootEditor){toast("Cần đăng nhập Google và nhập PIN trước.");return}if(!armOr("migrate:x"))return;try{await migrate()}catch(x){S.migMsg="Chuyển chưa xong ("+((x&&x.code)||"lỗi")+"). Kiểm tra luật Firestore mới đã xuất bản chưa rồi thử lại.";render()}return}
   if(act==="bsave"&&isAdm()){const code=val("bk-code",CLUB?.bank?.code||"mb"),bk=BANKS.find(z=>z[0]===code)||BANKS[0],acc=String(val("bk-acc",CLUB?.bank?.acc||"")).replace(/\s/g,""),hd=noAcc(val("bk-holder",CLUB?.bank?.holder||""));
     if(!/^\d{6,19}$/.test(acc)){toast("Số tài khoản chỉ gồm 6–19 chữ số.");return}if(!hd){toast("Nhập tên chủ tài khoản.");return}
@@ -186,18 +189,30 @@ document.addEventListener("click",async e=>{
     if(!armOr("pdel:"+id))return;write(()=>db.collection("players").doc(id).delete(),"Đã xóa người chơi")}
   else if(act==="mdel"){if(!armOr("mdel:"+id))return;const m=findMatch(id);write(()=>m?trashMatches([m],"del"):db.collection("matches").doc(id).delete(),"Đã xóa trận · có thể hoàn tác")}
   else if(act==="sdel"){if(!armOr("sdel:"+id))return;const sid=Number(id);
-    await write(async()=>{for(const d of (await db.collection("matches").where("session",sid).get()).docs)await db.collection("matches").doc(d.id).delete();
-      for(const d of (await db.collection("batches").where("session",sid).get()).docs)await db.collection("batches").doc(d.id).delete();delete S.pm[sid];
-      const h=S.hist.find(x=>x.sid===sid);
-      // Trả lại rating: bỏ phần cộng/trừ của buổi này khỏi trình hiện tại của từng người
-      if(h){for(const r of h.rows||[]){const p=S.players.find(x=>x.id===r.id),d=Number(r.d);if(p&&Number.isFinite(d)&&d)await db.collection("players").doc(p.id).update({rating0:Math.round(Math.min(8,Math.max(1,(Number(p.rating0)||3)-d))*100)/100})}
-        await db.doc("app/hist-"+sid).delete()}
-      editing.delete("s-"+sid)},`Đã xóa buổi #${sid}, rating đã trừ lại`)}
+    await write(async()=>{
+      const M=(await db.collection("matches").where("session",sid).get()).docs.map(d=>({id:d.id,...d.data()}));
+      const B=(await db.collection("batches").where("session",sid).get()).docs.map(d=>({id:d.id,...d.data()}));
+      const h=S.hist.find(x=>x.sid===sid)||null;
+      // Trả lại rating: bỏ phần cộng/trừ của buổi này khỏi trình hiện tại của từng người (ghi lại để khôi phục đúng)
+      const adj={},upd=[];
+      if(h)for(const r of h.rows||[]){const p=S.players.find(x=>x.id===r.id),d=Number(r.d);if(p&&Number.isFinite(d)&&d){const old=Number(p.rating0)||3,nw=Math.round(Math.min(8,Math.max(1,old-d))*100)/100;adj[p.id]=Math.round((old-nw)*100)/100;upd.push([p.id,nw])}}
+      const {id:_hid,...hd}=h||{};
+      await db.collection("deleted").doc("s"+sid+"-"+Date.now().toString(36)).set({sid,hist:h?hd:null,matches:M,batches:B,adj,at:Date.now(),by:who()});
+      for(const m of M)await db.collection("matches").doc(m.id).delete();
+      for(const x of B)await db.collection("batches").doc(x.id).delete();delete S.pm[sid];
+      for(const [pid,nw] of upd)await db.collection("players").doc(pid).update({rating0:nw});
+      if(h)await db.doc("app/hist-"+sid).delete();
+      delList=null;editing.delete("s-"+sid)},`Đã xóa buổi #${sid}, rating đã tự trừ lại. Chủ CLB khôi phục được trong Cài đặt.`)}
   else if(act==="toggle"){const p=S.players.find(p=>p.id===id);write(()=>db.collection("players").doc(id).update({active:p.active===false}))}
   else if(act==="del")write(()=>db.collection("players").doc(id).delete(),"Đã xóa");
   else if(act==="cancel"){pendSave.delete(id);pendCancel.add(id);render()}
   else if(act==="cancelx"){pendCancel.delete(id);render()}
   else if(act==="cancelok"){pendCancel.delete(id);const m=S.matches.find(x=>x.id===id);if(!m)return;write(()=>trashMatches([m],"cancel"),"Đã hủy trận · bấm Hoàn tác nếu nhầm")}
+  else if(act==="refct"){const [t,uid]=String(b.dataset.k).split(":"),c=Number(b.dataset.c);
+    const L=t==="m"?(S.members||[]):(S.editors||[]),r=L.find(x=>x.id===uid);if(!r)return;
+    const cur=(r.courts||[]).map(Number),next=cur.includes(c)?cur.filter(x=>x!==c):[...cur,c].sort((x,y)=>x-y);
+    write(()=>FB.updateDoc(FB.doc(FB.fs,PFX+(t==="m"?"members/":"editors/")+uid),{courts:next}),next.includes(c)?`Đã giao sân ${c}`:`Đã bỏ sân ${c}`)}
+  else if(act==="srestore"){if(ROLE!=="owner"&&!legacy)return;if(!armOr("srestore:"+id))return;let r;await write(async()=>{r=await restoreSession(id)});if(r)toast(r)}
   else if(act==="undoone"){let r;await write(async()=>{r=await undoAll(id)});if(r)toast(r.n?"Đã khôi phục trận":"Chưa khôi phục được: người chơi đang ở sân khác hoặc hết sân trống")}
   else if(act==="undoall"){let r;await write(async()=>{r=await undoAll()});if(r)toast(r.k?`Đã khôi phục ${r.n} trận, ${r.k} trận chưa khôi phục được vì người chơi đang ở sân khác`:`Đã khôi phục ${r.n} trận`)}
   else if(act==="savechk"){const m=S.matches.find(x=>x.id===id);if(!m)return;const ra=val("sa-"+id,""),rb=val("sb-"+id,""),a=Number(ra),bb=Number(rb);
@@ -213,7 +228,7 @@ document.addEventListener("click",async e=>{
     delete errs[id];
     if(act==="save"&&b.dataset.read&&!loaMuted()){const D=derive();if(m)speak(resultText(D,m,a,bb),"","r:"+id)}
     await write(()=>db.collection("matches").doc(id).update(act==="save"?{sa:a,sb:bb,status:"done",doneAt:Date.now()}:{sa:a,sb:bb}).then(()=>{S.everWrote=true;delete drafts[pre[0]+id];delete drafts[pre[1]+id];editing.delete(id)}),act==="save"?"Đã lưu tỉ số":"Đã sửa tỉ số");
-    if(m.giai&&act==="save"&&!errs[id]){if(m.status!=="done")Object.assign(m,{sa:a,sb:bb,status:"done",doneAt:Date.now()});await new Promise(r=>setTimeout(r,60));await gFill()}}
+    if(m.giai&&act==="save"&&!errs[id]&&canWrite){if(m.status!=="done")Object.assign(m,{sa:a,sb:bb,status:"done",doneAt:Date.now()});await new Promise(r=>setTimeout(r,60));await gFill()}}
   else if(act==="edit"){editing.add(id);render()}
   else if(act==="edit-x"){editing.delete(id);delete errs[id];render()}
   else if(act==="reset"||act==="chot"){if(!armOr("chot:x"))return;await chotBuoi()}

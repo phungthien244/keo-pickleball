@@ -19,7 +19,10 @@ beforeEach(async () => {
   await seed({
     "clubs/aep": { name: "AEP", public: true, owner: "own", createdAt: 1 },
     "clubs/aep/members/own": { role: "owner" },
-    "clubs/aep/members/sc": { role: "scorer" },
+    "clubs/aep/members/sc": { role: "scorer", courts: [1] },
+    "clubs/aep/members/ad": { role: "admin" },
+    "clubs/aep/matches/m1": { session: 1, court: 1, status: "playing", sa: null, sb: null },
+    "clubs/aep/matches/m2": { session: 1, court: 2, status: "playing", sa: null, sb: null },
     "clubs/aep/secret/pin": { value: "2468" },
     "clubs/aep/players/p1": { name: "A" },
     "clubs/pend": { name: "Pend", public: true, owner: "po", status: "pending", createdAt: 1 },
@@ -133,16 +136,34 @@ describe("duyệt và trạng thái", () => {
 });
 
 describe("nhập tỉ số", () => {
-  test("trọng tài thành viên ghi được trận ở CLB đang hoạt động", async () => {
-    await assertSucceeds(setDoc(doc(google("sc"), "clubs/aep/matches/m1"), { sa: 11, sb: 5 }));
+  test("trọng tài chỉ nhập tỉ số sân được giao", async () => {
+    await assertSucceeds(updateDoc(doc(google("sc"), "clubs/aep/matches/m1"), { sa: 11, sb: 5, status: "done", doneAt: 1 }));
+    await assertFails(updateDoc(doc(google("sc"), "clubs/aep/matches/m2"), { sa: 11, sb: 5, status: "done", doneAt: 1 }));
+    await assertFails(updateDoc(doc(google("sc"), "clubs/aep/matches/m1"), { court: 2 }));
+    await assertFails(setDoc(doc(google("sc"), "clubs/aep/matches/m9"), { sa: 11, sb: 5 }));
+    await assertFails(deleteDoc(doc(google("sc"), "clubs/aep/matches/m1")));
+    await assertFails(updateDoc(doc(google("sc"), "clubs/aep/players/p1"), { active: false }));
+    await assertFails(setDoc(doc(google("sc"), "clubs/aep/app/config"), { courts: 3 }));
   });
-  test("PIN đúng thì vào được, PIN sai thì không", async () => {
+  test("PIN đúng thì vào được, nhưng chỉ nhập điểm sân được giao", async () => {
     await assertFails(setDoc(doc(anon("a1"), "clubs/aep/editors/a1"), { pin: "0000", at: 1 }));
-    await assertSucceeds(setDoc(doc(anon("a2"), "clubs/aep/editors/a2"), { pin: "2468", at: 1 }));
-    await assertSucceeds(setDoc(doc(anon("a2"), "clubs/aep/matches/m2"), { sa: 11, sb: 9 }));
+    await assertSucceeds(setDoc(doc(anon("a2"), "clubs/aep/editors/a2"), { pin: "2468", at: 1, name: "Hùng" }));
+    await assertFails(updateDoc(doc(anon("a2"), "clubs/aep/matches/m2"), { sa: 11, sb: 9, status: "done" }));
+    await assertFails(updateDoc(doc(anon("a2"), "clubs/aep/editors/a2"), { courts: [2] }));
+    await assertSucceeds(updateDoc(doc(google("own"), "clubs/aep/editors/a2"), { courts: [2] }));
+    await assertSucceeds(updateDoc(doc(anon("a2"), "clubs/aep/matches/m2"), { sa: 11, sb: 9, status: "done" }));
+    await assertFails(updateDoc(doc(anon("a2"), "clubs/aep/players/p1"), { name: "X" }));
+  });
+  test("quản lý sửa được mọi thứ; buổi đã xóa chỉ chủ CLB khôi phục", async () => {
+    await assertSucceeds(setDoc(doc(google("ad"), "clubs/aep/matches/m9"), { court: 1, status: "playing" }));
+    await assertSucceeds(setDoc(doc(google("ad"), "clubs/aep/deleted/s1"), { sid: 1 }));
+    await assertFails(getDoc(doc(google("sc"), "clubs/aep/deleted/s1")));
+    await assertFails(deleteDoc(doc(google("ad"), "clubs/aep/deleted/s1")));
+    await assertSucceeds(deleteDoc(doc(google("own"), "clubs/aep/deleted/s1")));
   });
   test("người lạ không ghi được", async () => {
     await assertFails(setDoc(doc(anon("a3"), "clubs/aep/matches/m3"), { sa: 11, sb: 0 }));
+    await assertFails(updateDoc(doc(anon("a3"), "clubs/aep/matches/m1"), { sa: 11, sb: 0 }));
     await assertFails(setDoc(doc(guest(), "clubs/aep/players/p2"), { name: "X" }));
   });
   test("PIN không ai đọc được", async () => {

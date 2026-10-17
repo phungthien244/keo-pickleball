@@ -25,6 +25,10 @@ function doneBox(D){
   return `<div class="panel"><div class="bar" style="margin-bottom:6px"><h2 class="grow">Trận đã xong</h2><span class="meta num">${hist.length} trận</span></div>`+
     (hist.length?`<div class="hist">${hist.map(m=>histRow(D,m)).join("")}</div>`:`<p class="rule">Kết quả sẽ hiện ở đây sau khi lưu tỉ số.</p>`)+`</div>`;
 }
+function refNote(){
+  if(!REF)return "";
+  return `<div class="refnote${MYCT.length?"":" warn"}"><b>Bạn là trọng tài${MYCT.length?` · sân ${MYCT.join(", ")}`:""}</b><span>${MYCT.length?"Chỉ nhập được tỉ số ở sân được giao. Sân khác chỉ xem.":"Chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</span></div>`;
+}
 function vSanView(D){
   const c=D.c,act=D.players.filter(p=>p.active!==false);
   if(phaseOf(D)==="prep"){
@@ -33,7 +37,7 @@ function vSanView(D){
       :`<div class="soon"><b>Hôm nay chưa có buổi</b><span>${last?`Buổi gần nhất: #${last.sid} · ${dmy(last.endedAt||last.startedAt)}. <a href="${pathOf("buoi",{sid:last.sid})}" data-go="buoi" data-id="${last.sid}">Xem kết quả</a>`:"Ban tổ chức sẽ mở buổi ở đây. Trang tự cập nhật."}</span></div>`;
     return meBox(D,{pay:false})+box;
   }
-  let h=`<div class="liveln"><span class="dot"></span>${esc(sessTitle(c,D.sid))} · đang đánh · ${D.playing.length} sân · ${act.length} người</div>`+meBox(D);
+  let h=refNote()+`<div class="liveln"><span class="dot"></span>${esc(sessTitle(c,D.sid))} · đang đánh · ${D.playing.length} sân · ${act.length} người</div>`+meBox(D);
   h+=D.playing.length?`<div class="lab"><span class="lbl">Đang đánh</span></div><div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`:`<div class="empty"><strong>Sân đang trống</strong>Chờ ban tổ chức xếp trận. Trang tự cập nhật, không cần tải lại.</div>`;
   return h+queueBox(D,false)+doneBox(D);
 }
@@ -72,12 +76,12 @@ function keoPill(c,pA){
 function courtCard(D,m){
   const c=D.c,i=D.info.get(m.id),pA=i.pA, ka=`sa-${m.id}`,kb=`sb-${m.id}`;
   return `<article class="court${isNew(m.id+"p")?" new":""}">
-    <div class="court-h"><h3>Sân ${m.court}</h3><span class="num">${KIND[kindOf(D,m)]} · Trận #${m.seq}</span>${canWrite?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>
-    <div class="team"><div class="names">${teamLine(D,m.a)}</div><input class="score num" id="${ka}" data-draft="${ka}" type="number" inputmode="numeric" min="0" max="99" aria-label="Điểm đội 1" value="${esc(val(ka,""))}" ${canWrite?"":"disabled"}></div>
+    <div class="court-h"><h3>Sân ${m.court}</h3><span class="num">${KIND[kindOf(D,m)]} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>
+    <div class="team"><div class="names">${teamLine(D,m.a)}</div><input class="score num" id="${ka}" data-draft="${ka}" type="number" inputmode="numeric" min="0" max="99" aria-label="Điểm đội 1" value="${esc(val(ka,""))}" ${canScore(m)?"":"disabled"}></div>
     <div class="prob" title="Xác suất thắng dự kiến"><i style="width:${Math.round(pA*100)}%"></i></div>
     <div class="bar" style="justify-content:space-between;padding:6px 16px 0"><span class="lbl num" style="color:var(--navy)">${Math.round(pA*100)}% thắng</span><span class="lbl num">${Math.round((1-pA)*100)}% thắng</span></div>
-    <div class="team"><div class="names">${teamLine(D,m.b)}</div><input class="score num" id="${kb}" data-draft="${kb}" type="number" inputmode="numeric" min="0" max="99" aria-label="Điểm đội 2" value="${esc(val(kb,""))}" ${canWrite?"":"disabled"}></div>
-    <div class="court-f">${keoPill(c,pA)}<span style="flex:1"></span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button><button class="primary" data-act="savechk" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>${saveConfirm(D,m)}${cancelConfirm(D,m)}
+    <div class="team"><div class="names">${teamLine(D,m.b)}</div><input class="score num" id="${kb}" data-draft="${kb}" type="number" inputmode="numeric" min="0" max="99" aria-label="Điểm đội 2" value="${esc(val(kb,""))}" ${canScore(m)?"":"disabled"}></div>
+    <div class="court-f">${keoPill(c,pA)}<span style="flex:1"></span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button>`:""}${canScore(m)?`<button class="primary" data-act="savechk" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>${saveConfirm(D,m)}${cancelConfirm(D,m)}
     ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}
   </article>`;
 }

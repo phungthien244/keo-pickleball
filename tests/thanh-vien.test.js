@@ -34,6 +34,7 @@ test("trang đăng nhập CLB: vào bằng PIN rồi chuyển sang Sân", async 
   await e.boot();
   expect(e.T()).toContain("Đăng nhập bằng Google");
   expect(e.T()).toContain("Vào bằng PIN");
-  e.input("pin", "2468"); await e.click("login"); await e.until(() => e.url === "/q7/san");
+  e.input("pinname", "Hùng"); e.input("pin", "2468"); await e.click("login"); await e.until(() => e.url === "/q7/san");
   expect(e.mk("#hact").innerHTML).toContain('href="/q7/cai-dat"');
+  expect(e.T()).toContain("Chưa được giao sân");
 });

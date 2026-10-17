@@ -14,6 +14,9 @@ const RSEG={start:"",clb:"clb",tao:"tao-clb",login:"dang-nhap",qt:"quan-tri"};
 const PSEG=Object.fromEntries(Object.entries(RSEG).map(([k,v])=>[v,k]));
 const SEGT={san:"san",bxh:"xep-hang",nguoi:"thanh-vien",tien:"quy",ls:"lich-su"};
 const TSEG=Object.fromEntries(Object.entries(SEGT).map(([k,v])=>[v,k]));
+// Trọng tài (tài khoản Trọng tài hoặc máy vào bằng PIN): chỉ nhập điểm sân được giao
+let REF=false,MYCT=[];
+const canScore=m=>!!m&&(canWrite||(REF&&MYCT.includes(Number(m.court))));
 let MODE="platform",CID="aep",PFX="",CLUB=null,ROLE=null,legacy=true,INVITE=null;
 const slugClean=x=>String(x||"").toLowerCase().replace(/[^a-z0-9-]/g,"");
 // Link cũ dạng ?clb=..&san=..&buoi=.. vẫn mở được, đổi sang đường dẫn mới
