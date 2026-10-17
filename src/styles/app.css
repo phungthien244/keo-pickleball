@@ -819,3 +819,8 @@ button.tick.on .box{background:var(--blue);border-color:var(--blue);color:#fff}
 .pinst.ok{background:var(--win-bg);color:var(--win);font-weight:600}
 .cfgchip .mcb{background:none;color:#fff;border:1.5px solid var(--sky);font-size:10px;padding:0 10px;white-space:nowrap}
 textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10px;box-sizing:border-box;border:1px solid var(--line-2)}
+.vlist{display:flex;flex-direction:column}
+.vrow{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:48px;border-bottom:1px solid #eef1f4;font-size:14px}
+.vrow:last-child{border-bottom:none}.vrow.on{background:#fffbe0;margin:0 -8px;padding:0 8px}
+.vrow .vplay{min-height:36px;width:36px;padding:0;border-radius:50%;background:var(--navy);color:var(--yellow);border:none;font-size:13px}
+.vrow b{font-family:var(--display);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--win)}

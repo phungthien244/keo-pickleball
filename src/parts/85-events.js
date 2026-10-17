@@ -56,6 +56,8 @@ document.addEventListener("click",async e=>{
   if(act==="pshare"){const D=derive(),u=absUrl(pathOf("vdv",{pid:id})),txt=profileShare(D,id);
     if(navigator.share){try{await navigator.share({title:"Hồ sơ vận động viên",text:txt+"\n",url:u})}catch(x){}return}
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
+  if(act==="vtry"){speak(VOICE_SAMPLE,b.dataset.v);return}
+  if(act==="vpick"){if(!canWrite)return;const v=b.dataset.v;write(()=>saveCfg({voice:v}),"Đã đổi giọng đọc");speak(VOICE_SAMPLE,v);return}
   if(act==="speakrules"){const D=derive();const el=document.getElementById&&document.getElementById("cf-mc");speak((el&&el.value.trim())||mcText(D));return}
   if(act==="mcreset"){if(!canWrite)return;delete drafts["cf-mc"];write(()=>saveCfg({mc:""}),"Đã về mẫu tự tạo");return}
   if(act==="speak"){const D=derive(),m=D.SM.find(x=>x.id===id);if(m)speak(callText(D,m));return}

@@ -24,7 +24,8 @@ function speakDevice(text){
 }
 // Giọng AI (Google Chirp 3 HD qua /api/tts). Không được thì dùng giọng có sẵn trên máy.
 const ttsCache=new Map();let actx=null,asrc=null,ttsOff=false;
-function speak(text){
+function speak(text,voice){
+  voice=voice||cfg().voice||"";const ck=voice+"|"+text;
   const AC=typeof window!=="undefined"&&(window.AudioContext||window.webkitAudioContext);
   if(ttsOff||!AC||typeof fetch!=="function"){speakDevice(text);return}
   // mở khoá âm thanh ngay trong lúc bấm (iPhone chỉ cho phát khi người dùng vừa bấm)
@@ -32,12 +33,22 @@ function speak(text){
   try{if(asrc)asrc.stop()}catch(e){}
   try{if(hasTTS())speechSynthesis.cancel()}catch(e){}
   const play=buf=>{try{const s=actx.createBufferSource();s.buffer=buf;s.connect(actx.destination);s.start(0);asrc=s}catch(e){speakDevice(text)}};
-  if(ttsCache.has(text)){play(ttsCache.get(text));return}
+  if(ttsCache.has(ck)){play(ttsCache.get(ck));return}
   const ab=typeof AbortController!=="undefined"?new AbortController():null,tm=setTimeout(()=>ab&&ab.abort(),text.length>220?20000:6000);
-  fetch("/api/tts?t="+encodeURIComponent(text),ab?{signal:ab.signal}:{}).then(r=>{clearTimeout(tm);
+  fetch("/api/tts?"+(voice?"v="+encodeURIComponent(voice)+"&":"")+"t="+encodeURIComponent(text),ab?{signal:ab.signal}:{}).then(r=>{clearTimeout(tm);
     if(r.status===503){ttsOff=true;throw 0}
     if(!r.ok||!/audio/.test(r.headers.get("content-type")||""))throw 0;return r.arrayBuffer()})
     .then(b=>new Promise((ok,no)=>{const p=actx.decodeAudioData(b,ok,no);if(p&&p.then)p.then(ok,no)}))
-    .then(buf=>{ttsCache.set(text,buf);play(buf)})
+    .then(buf=>{ttsCache.set(ck,buf);play(buf)})
     .catch(()=>{clearTimeout(tm);speakDevice(text)});
+}
+
+/* ----- Chọn giọng đọc (Cài đặt CLB) ----- */
+const VOICE_LIST=[["vi-VN-Chirp3-HD-Aoede","Aoede · thoáng (mặc định)"],["vi-VN-Chirp3-HD-Leda","Leda · trẻ trung"],["vi-VN-Chirp3-HD-Zephyr","Zephyr · tươi sáng"],["vi-VN-Chirp3-HD-Kore","Kore · rõ ràng"],["vi-VN-Chirp3-HD-Despina","Despina · mượt"],["vi-VN-Chirp3-HD-Callirrhoe","Callirrhoe · nhẹ nhàng"],["vi-VN-Chirp3-HD-Autonoe","Autonoe · sáng"],["vi-VN-Chirp3-HD-Erinome","Erinome · trong"],["vi-VN-Chirp3-HD-Laomedeia","Laomedeia · vui"],["vi-VN-Chirp3-HD-Pulcherrima","Pulcherrima · dứt khoát"],["vi-VN-Chirp3-HD-Sulafat","Sulafat · ấm"],["vi-VN-Chirp3-HD-Vindemiatrix","Vindemiatrix · dịu"],["vi-VN-Chirp3-HD-Achernar","Achernar · mềm"],["vi-VN-Chirp3-HD-Gacrux","Gacrux · chín chắn"],["vi-VN-Wavenet-C","Wavenet C · giọng cũ"],["vi-VN-Wavenet-A","Wavenet A · giọng cũ"],["vi-VN-Neural2-A","Neural2 A · giọng cũ"]];
+const VOICE_SAMPLE="Xin mời cặp anh Tuấn, chị Hà, và cặp anh Minh, chị Lan, vào sân số 1, chuẩn bị thi đấu.";
+function voiceCard(){
+  if(!canWrite)return "";
+  const cur=cfg().voice||VOICE_LIST[0][0];
+  return `<section class="card2"><h2>Giọng đọc loa</h2><div class="cb"><small class="rule">Giọng nữ AI của Google, đọc lời mời vào sân và thể thức. Bấm ▶ để nghe thử, bấm Chọn để dùng.</small>
+    <div class="vlist">${VOICE_LIST.map(([v,l])=>`<div class="vrow${v===cur?" on":""}"><button class="vplay" data-act="vtry" data-v="${v}" aria-label="Nghe thử ${esc(l)}">▶</button><span>${esc(l)}</span>${v===cur?`<b>Đang dùng</b>`:`<button class="sm" data-act="vpick" data-v="${v}">Chọn</button>`}</div>`).join("")}</div></div></section>`;
 }
