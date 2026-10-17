@@ -726,3 +726,10 @@ button.tick.on .box{background:var(--blue);border-color:var(--blue);color:#fff}
 @media (min-width:700px){.gpod{grid-template-columns:1fr 1.3fr 1fr;align-items:end}.gpod .pc.p1{grid-column:2;grid-row:1;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"md md" "av tx" "pz pz";padding:20px 16px}.gpod .pc.p2{grid-column:1;grid-row:1}.gpod .pc.p3{grid-column:3;grid-row:1}.gpod .p1 .pz{text-align:left}}
 @media (max-width:699px){.gpod .pc:not(.p1){grid-template-columns:1fr;grid-template-areas:"md" "av" "tx" "pz"}
 .gpod .pc.p1{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"md md" "av tx" "pz pz"}.gpod .p1 .pz{text-align:left}}
+/* Top rating trang tổng quan: cùng kiểu bục trao giải */
+.hpod{background:none}
+.hpod .pz{font-size:20px}.hpod .p1 .pz{font-size:28px}
+.hpod .p1 .av.lg{--s:64px;box-shadow:0 0 0 3px var(--yellow)}
+.hpod .s .up{color:var(--win)}.hpod .s .down{color:var(--lose)}
+.hpod .pc:not(.p1) .s .up{color:#7fd6a0}.hpod .pc:not(.p1) .s .down{color:#ff9a8f}
+.hpod .s span{white-space:nowrap}

@@ -214,6 +214,12 @@ function vGiaiSum(D,x,back){
   if(games.length)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><div class="mgrid">${[...games].sort((a,b)=>a.r-b.r||(a.seq||0)-(b.seq||0)).map(g=>{const X=tb.get(g.x),Y=tb.get(g.y);if(!X||!Y)return "";
     const wx=g.wo?g.wo===g.x:g.sx>g.sy,row=(t,sc,w)=>`<div class="tr${w?" w":""}"><span class="who">${tAv(t,"sm")}<span>${tNm(t)}</span></span><span class="sc num">${sc}</span></div>`;
     return `<article class="mcard"><div class="mh"><b>LƯỢT ${g.r}${g.seq?` · TRẬN #${g.seq}`:""}</b><span>${g.wo?"BỎ GIẢI":g.court?`SÂN ${g.court}`:""}${g.at?` · ${new Date(g.at).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"})}`:""}</span></div>${row(X,g.wo?(wx?"T":"B"):g.sx,wx)}${row(Y,g.wo?(wx?"B":"T"):g.sy,!wx)}</article>`}).join("")}</div>`;
+  if(games.length&&T.length>2){const ini=n=>{const w=String(n||"?").trim().split(/\s+/);return (w[w.length-1]||"?").charAt(0).toUpperCase()},seen=new Map(),code=new Map(T.map(t=>{let c=ini(t.na)+ini(t.nb);const n=(seen.get(c)||0)+1;seen.set(c,n);if(n>1)c+=n;return [t.id,c]}));
+    const gm=new Map();for(const g of games){gm.set(g.x+"|"+g.y,g);gm.set(g.y+"|"+g.x,g)}
+    h+=`<div class="shd"><h2>Bảng đối đầu</h2></div><p class="rule">Đọc theo hàng: điểm của cặp ở hàng đó đứng trước. Xanh là thắng, đỏ là thua.</p>
+    <div class="h2h"><table><thead><tr><th></th>${T.map(t=>`<th>${esc(code.get(t.id))}</th>`).join("")}</tr></thead><tbody>${T.map(r=>`<tr><td>${esc(code.get(r.id))}</td>${T.map(c=>{if(r===c)return `<td class="x"></td>`;const g=gm.get(r.id+"|"+c.id);
+      if(!g)return `<td class="n">·</td>`;if(g.wo)return `<td class="wo">${g.wo===r.id?"T":"B"}</td>`;const me=g.x===r.id?g.sx:g.sy,op=g.x===r.id?g.sy:g.sx;return `<td class="${me>op?"w":"l"}">${me}-${op}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>
+    <p class="rule">${T.map(t=>`<b>${esc(code.get(t.id))}</b>: ${tNm(t)}`).join(" · ")}</p>`}
   const R=[...(s.rows||[])].sort((a,b)=>(b.d||0)-(a.d||0));
   if(R.length)h+=`<div class="shd"><h2>Rating sau giải</h2></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>Rating</th><th>Δ</th></tr></thead><tbody>${R.map((r,i)=>`<tr><td class="rank">${i+1}</td><td><span class="pn">${av(PP(r.id,r.name),"sm")}<b>${esc(r.name)}</b></span></td><td>${r.w}–${r.l}</td><td><b>${r2(r.rating)}</b></td><td class="${dCls(r.d)}">${dTxt(r.d)}</td></tr>`).join("")}</tbody></table></div>`;
   h+=moneySec(D,x.sid,s,s.rows||[],r=>PP(r.id,r.name),true);

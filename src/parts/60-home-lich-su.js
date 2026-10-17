@@ -29,8 +29,10 @@ function vHome(D){
   const q=String(val("hq","")).trim().toLowerCase();
   const list=ppl.map((x,i)=>({...x,i})).filter(x=>(hF==="all"||(hF==="F")===F(x))&&(!q||x.p.name.toLowerCase().includes(q)));
   const fb=(v,l,n)=>`<button data-act="hf" data-v="${v}" aria-pressed="${hF===v}">${l} · ${n}</button>`;
-  if(ppl.length>=2)h+=`<div class="lab"><span class="eyebrow">Top rating${H?` · sau buổi #${H.sid}`:""}</span><a href="#bang">Xem cả bảng</a></div>
-  <div class="podium">${pod(sec,"p2","2")}${pod(top,"p1","1")}${pod(alt&&alt!==sec?alt:ppl[2],"p3",alt&&alt!==sec?(F(alt)?"1 NỮ":"1 NAM"):"3")}</div>`;
+  if(ppl.length>=2){const third=alt&&alt!==sec?alt:ppl[2],lb3=alt&&alt!==sec?(F(alt)?"Số 1 nữ":"Số 1 nam"):"Số 3";
+    const card=(x,i,lb)=>x?`<div class="pc p${i}"><span class="md">${lb}</span><span class="avs">${av(x.p,i===1?"lg":"md")}</span><span class="tx"><span class="n">${esc(x.p.name)}</span><span class="s num">${x.A.g?`${x.A.ses.size} buổi · thắng ${pct(x.A.w,x.A.g)}%`:"chưa đánh"}${x.d!=null?` · <span class="${dCls(x.d)}">${dTxt(x.d)}</span>`:""}</span></span><span class="pz num">${r2(x.r)}</span></div>`:"";
+    h+=`<div class="lab"><span class="eyebrow">Top rating${H?` · sau buổi #${H.sid}`:""}</span><a href="#bang">Xem cả bảng</a></div>
+  <div class="gpod hpod">${card(top,1,"Số 1 CLB")}${card(sec,2,"Số 2")}${card(third,3,lb3)}</div>`}
   h+=`<div class="tiles" style="margin-top:16px"><a class="tile" href="${pathOf("app",{tab:"tien"})}" data-go="app" data-t="tien"><span class="k">Quỹ CLB</span><b class="num">${(fundNow()<0?"−":"")+fmtK(Math.abs(fundNow()))}</b><small>${H?`sau buổi #${H.sid}`:"chưa có buổi nào"}</small></a>
     <a class="tile" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><span class="k">Thành viên</span><b class="num">${ppl.length}</b><small>${nM} nam · ${nF} nữ</small></a></div>
   <div class="lab" id="bang"><span class="eyebrow">Bảng rating CLB</span></div>
@@ -59,7 +61,7 @@ function shareText(D,x){
 const dmy=t=>{if(!t)return "";const d=new Date(t);return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`};
 function vBuoi(D,sid){
   const x=sessList(D).find(z=>z.sid===sid);
-  const back=`<a class="back" href="${pathOf("home")}" data-go="home">‹ Rating CLB</a>`;
+  const back="";
   if(!x&&!S.hReady)return back+`<div class="empty"><strong>Đang tải buổi #${sid}…</strong></div>`;
   if(!x)return back+`<div class="empty"><strong>Chưa có tổng kết buổi #${sid||""}</strong>${sid===D.sid?"Buổi này đang diễn ra. Trang tổng kết có sau khi ban tổ chức chốt buổi.":"Không tìm thấy buổi này, có thể đã bị xóa."}</div>`;
   if(x.snap?.type==="giai")return vGiaiSum(D,x,back);
