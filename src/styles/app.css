@@ -840,7 +840,7 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 .cfm .two .spkstop{min-height:48px}
 @keyframes spkp{50%{filter:brightness(1.15)}}
 @media (prefers-reduced-motion:reduce){.spkstop{animation:none}}
-.mutefab{position:fixed;right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;min-height:46px;padding:0 16px;border:1.5px solid var(--navy);background:var(--surface);color:var(--navy);font:800 13px Montserrat,sans-serif;box-shadow:0 4px 14px rgba(12,43,68,.22)}
+.mutefab{position:fixed;left:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;min-height:46px;padding:0 16px;border:1.5px solid var(--navy);background:var(--surface);color:var(--navy);font:800 13px Montserrat,sans-serif;box-shadow:0 4px 14px rgba(12,43,68,.22)}
 .mutefab.off{background:#5d6f7e;border-color:#5d6f7e;color:#fff}
 .mutefab.stop{background:var(--lose);border-color:var(--lose);color:#fff}
 .vhead{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;margin-top:8px;padding:0 12px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);font:800 12px Montserrat,sans-serif;letter-spacing:.08em;text-transform:uppercase;text-align:left}
@@ -861,3 +861,4 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 .urow .ut{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:13px}
 .urow .ut small{color:var(--muted);font-size:11px}
 .ulist .wide{margin-top:10px;min-height:44px;border:1.5px solid var(--navy);color:var(--navy);background:var(--surface);font-weight:800}
+#view:has(.mutefab){padding-bottom:76px}
