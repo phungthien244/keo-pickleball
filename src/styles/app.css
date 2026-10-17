@@ -801,3 +801,7 @@ button.tick.on .box{background:var(--blue);border-color:var(--blue);color:#fff}
 .pmc .r{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;font-size:14px;color:var(--muted)}.pmc .r+.r{border-top:1px solid #eef1f4}
 .pmc .r.win{font-weight:700;color:var(--ink);background:#f2faf5}.pmc .r b{font-family:var(--display);font-size:18px}
 .card2 h2.ch2>span:first-child{display:flex;justify-content:space-between;align-items:center;gap:8px;flex:1}
+/* viền ảnh top rating */
+.hpod .p1 .av.lg{box-shadow:0 0 0 3px var(--navy)}
+.hpod .p2 .av.md{--s:44px;box-shadow:0 0 0 3px #c9d3db}
+.hpod .p3 .av.md{--s:44px;box-shadow:0 0 0 3px #d9905a}
