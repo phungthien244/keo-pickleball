@@ -56,11 +56,14 @@ document.addEventListener("click",async e=>{
   if(act==="pshare"){const D=derive(),u=absUrl(pathOf("vdv",{pid:id})),txt=profileShare(D,id);
     if(navigator.share){try{await navigator.share({title:"Hồ sơ vận động viên",text:txt+"\n",url:u})}catch(x){}return}
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
-  if(act==="vtry"){speak(VOICE_SAMPLE,b.dataset.v);return}
+  if(act==="vtry"){speak(VOICE_SAMPLE,b.dataset.v,"v:"+b.dataset.v,true);return}
+  if(act==="spkstop"){stopSpeak();return}
+  if(act==="mute"){const m=!loaMuted();loaSetMute(m);if(m)stopSpeak();toast(m?"Đã tắt loa trên máy này":"Đã bật loa");render();return}
+  if(act==="vgrp"){const g=b.dataset.g;VGOPEN.has(g)?VGOPEN.delete(g):VGOPEN.add(g);render();return}
   if(act==="vpick"){if(!canWrite)return;const v=b.dataset.v;write(()=>saveCfg({voice:v}),"Đã đổi giọng đọc");speak(VOICE_SAMPLE,v);return}
-  if(act==="speakrules"){const D=derive();const el=document.getElementById&&document.getElementById("cf-mc");speak((el&&el.value.trim())||mcText(D));return}
+  if(act==="speakrules"){const D=derive();const el=document.getElementById&&document.getElementById("cf-mc");speak((el&&el.value.trim())||mcText(D),"","rules");return}
   if(act==="mcreset"){if(!canWrite)return;delete drafts["cf-mc"];write(()=>saveCfg({mc:""}),"Đã về mẫu tự tạo");return}
-  if(act==="speak"){const D=derive(),m=D.SM.find(x=>x.id===id);if(m)speak(callText(D,m));return}
+  if(act==="speak"){const D=derive(),m=D.SM.find(x=>x.id===id);if(m)speak(callText(D,m),"","c:"+id);return}
   if(act==="qv"){qView=b.dataset.v==="so"?"so":"buoi";render();return}
   if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;showSheet();return}
   if(act==="pay"){payOpen={sid:Number(b.dataset.sid),name:b.dataset.n,k:Number(b.dataset.k)};showSheet();return}
@@ -187,7 +190,7 @@ document.addEventListener("click",async e=>{
     const msg=ra===""||rb===""?"Nhập điểm hai đội.":validPts(a,bb,cfg());if(msg){errs[id]=msg;pendSave.delete(id);render();return}
     delete errs[id];pendSave.add(id);render()}
   else if(act==="savex"){pendSave.delete(id);render()}
-  else if(act==="readres"){const D=derive(),m=D.SM.find(x=>x.id===id);if(!m)return;speak(resultText(D,m,Number(val("sa-"+id,"")),Number(val("sb-"+id,""))))}
+  else if(act==="readres"){const D=derive(),m=D.SM.find(x=>x.id===id);if(!m)return;speak(resultText(D,m,Number(val("sa-"+id,"")),Number(val("sb-"+id,""))),"","r:"+id)}
   else if(act==="save"||act==="edit-save"){
     const m=S.matches.find(x=>x.id===id);const pre=act==="save"?["sa-","sb-"]:["ea-","eb-"];
     const a=Number(val(pre[0]+id,act==="save"?"":m.sa)),bb=Number(val(pre[1]+id,act==="save"?"":m.sb));

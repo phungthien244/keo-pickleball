@@ -834,3 +834,15 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 .undo{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--yellow);padding:8px 10px 8px 14px;font-size:14px}
 .undo span{flex:1}
 .undo .line{border:1.5px solid var(--navy);color:var(--navy);background:var(--surface);min-height:40px;padding:0 14px;font-weight:700}
+.spkstop{background:var(--lose);border:1.5px solid var(--lose);color:#fff;font-weight:800;padding:0 12px;white-space:nowrap;min-height:36px;animation:spkp 1s ease-in-out infinite}
+.cfm .two .spkstop{min-height:48px}
+@keyframes spkp{50%{filter:brightness(1.15)}}
+@media (prefers-reduced-motion:reduce){.spkstop{animation:none}}
+.mutefab{position:fixed;right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;min-height:46px;padding:0 16px;border:1.5px solid var(--navy);background:var(--surface);color:var(--navy);font:800 13px Montserrat,sans-serif;box-shadow:0 4px 14px rgba(12,43,68,.22)}
+.mutefab.off{background:#5d6f7e;border-color:#5d6f7e;color:#fff}
+.mutefab.stop{background:var(--lose);border-color:var(--lose);color:#fff}
+.vhead{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;margin-top:8px;padding:0 12px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);font:800 12px Montserrat,sans-serif;letter-spacing:.08em;text-transform:uppercase;text-align:left}
+.vhead span{flex:1}.vhead small{font-weight:600;color:var(--muted)}
+.vhead em{font:600 11px 'Be Vietnam Pro',sans-serif;letter-spacing:0;text-transform:none;font-style:normal;color:#1f8fe5}
+.vhead i{font-style:normal}
+.vhead.open{background:var(--surface);border-bottom-color:transparent}

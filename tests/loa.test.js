@@ -66,3 +66,32 @@ test("lưu tỉ số: hiện Xác nhận và Đọc kết quả, đọc đúng s
   await e.click("save", { id });
   expect(e.store.get("matches/" + id).status).toBe("done");
 });
+
+test("đang đọc thì nút thành Dừng màu đỏ, nút tắt loa chặn đọc nhầm, ", async () => {
+  const said = [];
+  const e = setup({ pin: true });
+  globalThis.window.speechSynthesis = { getVoices: () => [{ name: "Linh", lang: "vi-VN" }], cancel() {}, speak: u => said.push(u) };
+  globalThis.SpeechSynthesisUtterance = function (t) { this.text = t; };
+  globalThis.speechSynthesis = globalThis.window.speechSynthesis;
+  await e.boot();
+  e.input("bulk", "Tuấn\nHà | nữ\nMinh\nLan | nữ"); await e.click("add");
+  await e.tab("san"); await e.click("start"); await e.click("gen");
+  expect(e.V()).toContain('data-act="mute"');
+  await e.click("speakrules");
+  expect(said.length).toBe(1);
+  expect(e.V()).toContain('data-act="spkstop"');
+  expect(e.V()).not.toContain('data-act="speakrules"');
+  await e.click("spkstop");
+  expect(e.V()).toContain('data-act="speakrules"');
+  said.at(-1).onend && said.at(-1).onend();
+  await e.click("mute");
+  expect(e.V()).toContain("Loa tắt");
+  await e.click("speakrules");
+  expect(said.length).toBe(1);
+  await e.click("mute");
+  await e.click("speakrules");
+  expect(said.length).toBe(2);
+  said.at(-1).onend();
+  await e.tick();
+  expect(e.V()).not.toContain('data-act="spkstop"');
+});

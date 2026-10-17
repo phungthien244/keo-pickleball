@@ -97,7 +97,7 @@ function vPrep(D){
 /* ----- ② Đang đánh: dải tóm tắt + bảng Sửa ----- */
 function cfgChip(D){
   const c=D.c,thu=c.thu||"keo",n=D.players.filter(p=>p.active!==false).length;
-  return `<div class="cfgchip"><span class="t"><b>${esc(sessTitle(c,D.sid))} · đang đánh</b><span>${fmtTxt(c)} · ${c.courts} sân · chạm ${c.target}${winBy2(c)?` cách 2${ptMax(c)?`, trần ${ptMax(c)}`:""}`:""} · ${c.cphi===false?"không thu tiền":esc(THU[thu])+(thu==="phi"?` ${fmtK(+c.phi||0)}`:"")} · ${n} người</span></span><button class="mcb" data-act="speakrules" aria-label="Đọc thể thức thi đấu">📣 Thể thức</button><button data-act="sheet">Sửa</button></div>`;
+  return `<div class="cfgchip"><span class="t"><b>${esc(sessTitle(c,D.sid))} · đang đánh</b><span>${fmtTxt(c)} · ${c.courts} sân · chạm ${c.target}${winBy2(c)?` cách 2${ptMax(c)?`, trần ${ptMax(c)}`:""}`:""} · ${c.cphi===false?"không thu tiền":esc(THU[thu])+(thu==="phi"?` ${fmtK(+c.phi||0)}`:"")} · ${n} người</span></span>${spkBtn("rules",`<button class="mcb" data-act="speakrules" aria-label="Đọc thể thức thi đấu">📣 Thể thức</button>`)}<button data-act="sheet">Sửa</button></div>${muteFab()}`;
 }
 function sheetInner(D){
   return `<div class="sh"><h2>Sửa ${esc(sessTitle(D.c,D.sid))}</h2><button class="x" data-act="sheetx" aria-label="Đóng">✕ Đóng</button></div>
@@ -334,6 +334,6 @@ const mcText=D=>String(D.c.mc||"").trim()||mcDefault(D);
 function mcBlock(D){
   const custom=!!String(D.c.mc||"").trim();
   return `<label class="fld"><span class="lbl">${custom?"Lời đã sửa":"Tự tạo theo cài đặt"} · MC giọng nữ Google sẽ đọc đoạn này</span><textarea id="cf-mc" data-draft="cf-mc" data-save="cfg" data-key="mc" rows="7" maxlength="1100">${esc(val("cf-mc",mcText(D)))}</textarea></label>
-  <div class="two"><button class="line" data-act="speakrules">📣 Nghe thử</button>${custom?`<button class="line" data-act="mcreset">Về mẫu tự tạo</button>`:`<span></span>`}</div>
+  <div class="two">${spkBtn("rules",`<button class="line" data-act="speakrules">📣 Nghe thử</button>`)}${custom?`<button class="line" data-act="mcreset">Về mẫu tự tạo</button>`:`<span></span>`}</div>
   <small class="rule">Để nguyên thì lời đọc tự đổi theo số sân, luật điểm, thể thức. Sửa tay thì giữ đúng lời bạn viết.</small>`;
 }
