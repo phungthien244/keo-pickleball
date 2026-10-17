@@ -9,10 +9,12 @@ const OK_HOST = /(^|\.)pikeco\.app$|\.pikeco\.pages\.dev$|^pikeco\.pages\.dev$|^
 
 export async function onRequestGet(ctx) {
   const url = new URL(ctx.request.url);
-  const text = (url.searchParams.get("t") || "").slice(0, 220);
-  if (!OK_TEXT.test(text)) return new Response("bad text", { status: 400 });
+  const text = (url.searchParams.get("t") || "").trim();
   const ref = ctx.request.headers.get("referer");
-  if (ref) { try { if (!OK_HOST.test(new URL(ref).hostname)) return new Response("forbidden", { status: 403 }); } catch (e) { return new Response("forbidden", { status: 403 }); } }
+  let refOk = false; try { refOk = !!ref && OK_HOST.test(new URL(ref).hostname); } catch (e) { }
+  if (ref && !refOk) return new Response("forbidden", { status: 403 });
+  // Câu mời vào sân: mẫu cố định. Lời MC đọc thể thức: tự do nhưng phải gửi từ trang pikeco, tối đa 1100 ký tự.
+  if (!(OK_TEXT.test(text) && text.length <= 220) && !(refOk && text.length >= 20 && text.length <= 1100)) return new Response("bad text", { status: 400 });
   const key = ctx.env.GOOGLE_TTS_KEY, gkey = ctx.env.GEMINI_API_KEY;
   if (!key && !gkey) return new Response("no key", { status: 503 });
   const cache = caches.default, ck = new Request(url.origin + "/api/tts?v=1&t=" + encodeURIComponent(text));

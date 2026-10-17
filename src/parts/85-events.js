@@ -19,6 +19,7 @@ document.addEventListener("change",e=>{
     if(["court","water","ball","other"].includes(k)){const n=Math.max(0,Number(v)||0);write(()=>saveCfg({costs:{[k]:n}}).then(()=>delete drafts["cf-"+k]))}
     else if(k==="keo")write(()=>saveCfg({keo:v==="1"}));
     else if(k==="thr")write(()=>saveCfg({thr:Number(v)}));
+    else if(k==="mc"){v=v.trim().slice(0,1100);const D=derive();if(v===mcDefault({...D,c:{...D.c,mc:""}}))v="";write(()=>saveCfg({mc:v}).then(()=>delete drafts["cf-mc"]),v?"Đã lưu lời MC":"Lời MC tự tạo theo cài đặt")}
     else if(k==="sname"){v=v.trim().slice(0,60);write(()=>saveCfg({sname:v}).then(()=>delete drafts["cf-sname"]))}
     else if(k==="title"){v=v.trim()||DEF.title;write(()=>saveCfg({title:v}).then(()=>delete drafts["cf-title"]))}
     else{const n=Math.max(0,Number(v)||0);write(()=>saveCfg({[k]:n}).then(()=>delete drafts["cf-"+k]))}}
@@ -55,6 +56,8 @@ document.addEventListener("click",async e=>{
   if(act==="pshare"){const D=derive(),u=absUrl(pathOf("vdv",{pid:id})),txt=profileShare(D,id);
     if(navigator.share){try{await navigator.share({title:"Hồ sơ vận động viên",text:txt+"\n",url:u})}catch(x){}return}
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
+  if(act==="speakrules"){const D=derive();const el=document.getElementById&&document.getElementById("cf-mc");speak((el&&el.value.trim())||mcText(D));return}
+  if(act==="mcreset"){if(!canWrite)return;delete drafts["cf-mc"];write(()=>saveCfg({mc:""}),"Đã về mẫu tự tạo");return}
   if(act==="speak"){const D=derive(),m=D.SM.find(x=>x.id===id);if(m)speak(callText(D,m));return}
   if(act==="qv"){qView=b.dataset.v==="so"?"so":"buoi";render();return}
   if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;showSheet();return}

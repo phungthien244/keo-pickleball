@@ -87,6 +87,7 @@ function vPrep(D){
   h+=card("Sân và luật điểm",fmtBlock(D));
   h+=card(tick("cphi",c.cphi!==false,"Chi phí"),moneyBlock(D));
   h+=card(tick("gton",(c.gt||"khong")!=="khong","Giải thưởng"),prizeBlock(D));
+  h+=card("Lời MC đọc thể thức",mcBlock(D));
   h+=flexNote;
   if(G)return h+gSetup(D,c.giai||{pairs:[]});
   const n=D.players.filter(p=>p.active!==false).length;
@@ -96,7 +97,7 @@ function vPrep(D){
 /* ----- ② Đang đánh: dải tóm tắt + bảng Sửa ----- */
 function cfgChip(D){
   const c=D.c,thu=c.thu||"keo",n=D.players.filter(p=>p.active!==false).length;
-  return `<div class="cfgchip"><span class="t"><b>${esc(sessTitle(c,D.sid))} · đang đánh</b><span>${fmtTxt(c)} · ${c.courts} sân · chạm ${c.target}${winBy2(c)?` cách 2${ptMax(c)?`, trần ${ptMax(c)}`:""}`:""} · ${c.cphi===false?"không thu tiền":esc(THU[thu])+(thu==="phi"?` ${fmtK(+c.phi||0)}`:"")} · ${n} người</span></span><button data-act="sheet">Sửa</button></div>`;
+  return `<div class="cfgchip"><span class="t"><b>${esc(sessTitle(c,D.sid))} · đang đánh</b><span>${fmtTxt(c)} · ${c.courts} sân · chạm ${c.target}${winBy2(c)?` cách 2${ptMax(c)?`, trần ${ptMax(c)}`:""}`:""} · ${c.cphi===false?"không thu tiền":esc(THU[thu])+(thu==="phi"?` ${fmtK(+c.phi||0)}`:"")} · ${n} người</span></span><button class="mcb" data-act="speakrules" aria-label="Đọc thể thức thi đấu">📣 Thể thức</button><button data-act="sheet">Sửa</button></div>`;
 }
 function sheetInner(D){
   return `<div class="sh"><h2>Sửa ${esc(sessTitle(D.c,D.sid))}</h2><button class="x" data-act="sheetx" aria-label="Đóng">✕ Đóng</button></div>
@@ -105,6 +106,7 @@ function sheetInner(D){
     <span class="lbl">Sân và luật điểm</span>${fmtBlock(D)}
     ${tick("cphi",D.c.cphi!==false,"Chi phí")}${moneyBlock(D)}
     ${tick("gton",(D.c.gt||"khong")!=="khong","Giải thưởng")}${prizeBlock(D)}
+    <span class="lbl">Lời MC đọc thể thức</span>${mcBlock(D)}
     <div class="infonote">Áp dụng từ trận kế tiếp. Trận đang đánh và kết quả đã lưu giữ nguyên. Người cho nghỉ vẫn giữ thành tích đã đánh.</div>
     <button class="primary" data-act="sheetx">Xong</button>`;
 }
@@ -310,4 +312,28 @@ async function rrAct(act){
   if(act==="rrapply"){if(!rrPlan||!armOr("rrapply:x"))return true;const P=rrPlan;
     await write(async()=>{for(const x of P)await db.collection("players").doc(x.id).update({rating0:x.to})},`Đã sửa rating ${P.length} người`);rrPlan=null;render();return true}
   return false;
+}
+
+/* ----- Lời MC đọc thể thức: tự tạo theo cài đặt, sửa được ----- */
+function mcDefault(D){
+  const c=D.c,t=+c.target||11,w2=winBy2(c),mx=ptMax(c),G=isG(c),half=Math.ceil(t/2);
+  const club=String(CLUB?.name||c.title||"câu lạc bộ").trim();
+  const L=[`Xin chào các vận động viên và khán giả, chào mừng đến với ${c.sname||`buổi thi đấu số ${D.sid}`} của ${club}.`,
+    "Ban tổ chức xin phổ biến thể thức thi đấu như sau.",
+    G?`Hôm nay chúng ta thi đấu giải cặp cố định theo thể thức vòng tròn, mỗi cặp sẽ gặp tất cả các cặp còn lại một lần, trên ${c.courts} sân.`
+     :`Hôm nay chúng ta thi đấu đánh đôi xoay cặp trên ${c.courts} sân. Sau mỗi trận, hệ thống sẽ ghép cặp mới theo trình độ, ai chờ lâu sẽ được vào sân trước.`,
+    `Mỗi trận đánh chạm ${t} điểm${w2?`, đội thắng phải cách biệt 2 điểm${mx?`, tối đa ${mx} điểm`:""}`:", không cần cách biệt 2 điểm"}.`,
+    `Khi một đội đạt ${half} điểm, hai đội đổi sân.`,
+    "Trường hợp bóng chạm vạch hoặc có tình huống nhạy cảm mà hai đội không thống nhất được, pha bóng đó sẽ được đánh lại.",
+    G?"Xếp hạng tính theo số trận thắng, sau đó đến kết quả đối đầu trực tiếp, hiệu số điểm và tổng điểm ghi được."
+     :"Xếp hạng tính theo số trận thắng, sau đó đến hiệu số điểm. Kết thúc buổi, rating của từng vận động viên sẽ được cập nhật.",
+    "Chúc các vận động viên thi đấu hết mình, fair-play và thật vui vẻ!"];
+  return L.join(" ");
+}
+const mcText=D=>String(D.c.mc||"").trim()||mcDefault(D);
+function mcBlock(D){
+  const custom=!!String(D.c.mc||"").trim();
+  return `<label class="fld"><span class="lbl">${custom?"Lời đã sửa":"Tự tạo theo cài đặt"} · MC giọng nữ Google sẽ đọc đoạn này</span><textarea id="cf-mc" data-draft="cf-mc" data-save="cfg" data-key="mc" rows="7" maxlength="1100">${esc(val("cf-mc",mcText(D)))}</textarea></label>
+  <div class="two"><button class="line" data-act="speakrules">📣 Nghe thử</button>${custom?`<button class="line" data-act="mcreset">Về mẫu tự tạo</button>`:`<span></span>`}</div>
+  <small class="rule">Để nguyên thì lời đọc tự đổi theo số sân, luật điểm, thể thức. Sửa tay thì giữ đúng lời bạn viết.</small>`;
 }
