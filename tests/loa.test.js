@@ -45,3 +45,24 @@ test("lời MC đọc thể thức: tự tạo theo cài đặt, sửa được,
   await e.click("mcreset");
   expect(e.store.get("app/config").mc).toBe("");
 });
+
+test("lưu tỉ số: hiện Xác nhận và Đọc kết quả, đọc đúng sân và tỉ số", async () => {
+  const said = [];
+  const e = setup({ pin: true });
+  globalThis.window.speechSynthesis = { getVoices: () => [{ name: "Linh", lang: "vi-VN" }], cancel() {}, speak: u => said.push(u) };
+  globalThis.SpeechSynthesisUtterance = function (t) { this.text = t; };
+  globalThis.speechSynthesis = globalThis.window.speechSynthesis;
+  await e.boot();
+  e.input("bulk", "Tuấn\nHà | nữ\nMinh\nLan | nữ"); await e.click("add");
+  await e.tab("san"); await e.click("start"); await e.click("gen");
+  const [id] = e.docs("matches/", x => x.status === "playing")[0];
+  e.input("sa-" + id, "11"); e.input("sb-" + id, "7");
+  await e.click("savechk", { id });
+  expect(e.store.get("matches/" + id).status).toBe("playing");
+  expect(e.T()).toContain("Xác nhận");
+  expect(e.T()).toContain("Đọc kết quả");
+  await e.click("readres", { id });
+  expect(said.pop().text).toMatch(/^Sân số 1 kết thúc\. Cặp .+ đã chiến thắng cặp .+, với tỉ số 11, 7\.$/);
+  await e.click("save", { id });
+  expect(e.store.get("matches/" + id).status).toBe("done");
+});

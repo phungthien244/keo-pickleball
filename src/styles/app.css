@@ -824,3 +824,7 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 .vrow:last-child{border-bottom:none}.vrow.on{background:#fffbe0;margin:0 -8px;padding:0 8px}
 .vrow .vplay{min-height:36px;width:36px;padding:0;border-radius:50%;background:var(--navy);color:var(--yellow);border:none;font-size:13px}
 .vrow b{font-family:var(--display);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--win)}
+.cfm{background:#fffbe0;border-top:3px solid var(--yellow);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.cfm .r{font-size:15px}.cfm .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cfm .two button{min-height:48px}
+.cfm .line{border:1.5px solid var(--navy);color:var(--navy);background:var(--surface)}
+.cfm .ghost{align-self:center}

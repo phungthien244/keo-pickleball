@@ -52,3 +52,18 @@ function voiceCard(){
   return `<section class="card2"><h2>Giọng đọc loa</h2><div class="cb"><small class="rule">Giọng nữ AI của Google, đọc lời mời vào sân và thể thức. Bấm ▶ để nghe thử, bấm Chọn để dùng.</small>
     <div class="vlist">${VOICE_LIST.map(([v,l])=>`<div class="vrow${v===cur?" on":""}"><button class="vplay" data-act="vtry" data-v="${v}" aria-label="Nghe thử ${esc(l)}">▶</button><span>${esc(l)}</span>${v===cur?`<b>Đang dùng</b>`:`<button class="sm" data-act="vpick" data-v="${v}">Chọn</button>`}</div>`).join("")}</div></div></section>`;
 }
+
+/* ----- Xác nhận tỉ số + đọc kết quả ----- */
+const pendSave=new Set();
+function resultText(D,m,a,b){
+  const team=ids=>ids.map(id=>{const p=D.pmap.get(id);return `${xung(p)} ${p?.name||""}`.trim()}).join(", ");
+  const W=a>b?m.a:m.b,L=a>b?m.b:m.a;
+  return `Sân số ${m.court} kết thúc. Cặp ${team(W)} đã chiến thắng cặp ${team(L)}, với tỉ số ${Math.max(a,b)}, ${Math.min(a,b)}.`;
+}
+function saveConfirm(D,m){
+  if(!pendSave.has(m.id))return "";
+  const a=Number(val("sa-"+m.id,"")),b=Number(val("sb-"+m.id,"")),W=a>b?m.a:m.b;
+  return `<div class="cfm"><span class="r">Sân ${m.court}: <b>${W.map(id=>esc(D.pmap.get(id)?.name||"?")).join(" &amp; ")}</b> thắng <b class="num">${Math.max(a,b)}–${Math.min(a,b)}</b></span>
+    <div class="two"><button class="primary" data-act="save" data-id="${m.id}">Xác nhận</button><button class="line" data-act="readres" data-id="${m.id}">📣 Đọc kết quả</button></div>
+    <button class="ghost" data-act="savex" data-id="${m.id}">Sửa lại tỉ số</button></div>`;
+}

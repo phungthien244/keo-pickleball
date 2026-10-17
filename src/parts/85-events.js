@@ -180,10 +180,15 @@ document.addEventListener("click",async e=>{
   else if(act==="toggle"){const p=S.players.find(p=>p.id===id);write(()=>db.collection("players").doc(id).update({active:p.active===false}))}
   else if(act==="del")write(()=>db.collection("players").doc(id).delete(),"Đã xóa");
   else if(act==="cancel")write(()=>db.collection("matches").doc(id).delete(),"Đã hủy trận");
+  else if(act==="savechk"){const m=S.matches.find(x=>x.id===id);if(!m)return;const ra=val("sa-"+id,""),rb=val("sb-"+id,""),a=Number(ra),bb=Number(rb);
+    const msg=ra===""||rb===""?"Nhập điểm hai đội.":validPts(a,bb,cfg());if(msg){errs[id]=msg;pendSave.delete(id);render();return}
+    delete errs[id];pendSave.add(id);render()}
+  else if(act==="savex"){pendSave.delete(id);render()}
+  else if(act==="readres"){const D=derive(),m=D.SM.find(x=>x.id===id);if(!m)return;speak(resultText(D,m,Number(val("sa-"+id,"")),Number(val("sb-"+id,""))))}
   else if(act==="save"||act==="edit-save"){
     const m=S.matches.find(x=>x.id===id);const pre=act==="save"?["sa-","sb-"]:["ea-","eb-"];
     const a=Number(val(pre[0]+id,act==="save"?"":m.sa)),bb=Number(val(pre[1]+id,act==="save"?"":m.sb));
-    const msg=(val(pre[0]+id,"")===""&&act==="save")||(val(pre[1]+id,"")===""&&act==="save")?"Nhập điểm hai đội.":validPts(a,bb,cfg());
+    pendSave.delete(id);const msg=(val(pre[0]+id,"")===""&&act==="save")||(val(pre[1]+id,"")===""&&act==="save")?"Nhập điểm hai đội.":validPts(a,bb,cfg());
     if(msg){errs[id]=msg;render();return}
     delete errs[id];
     await write(()=>db.collection("matches").doc(id).update(act==="save"?{sa:a,sb:bb,status:"done",doneAt:Date.now()}:{sa:a,sb:bb}).then(()=>{S.everWrote=true;delete drafts[pre[0]+id];delete drafts[pre[1]+id];editing.delete(id)}),act==="save"?"Đã lưu tỉ số":"Đã sửa tỉ số");
