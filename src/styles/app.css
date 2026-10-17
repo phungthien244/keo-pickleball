@@ -862,3 +862,6 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 .urow .ut small{color:var(--muted);font-size:11px}
 .ulist .wide{margin-top:10px;min-height:44px;border:1.5px solid var(--navy);color:var(--navy);background:var(--surface);font-weight:800}
 #view:has(.mutefab){padding-bottom:76px}
+
+.anim > .bsteps,.anim > .mutefab{animation:none}
+#view.rp{opacity:.999}

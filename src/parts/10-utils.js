@@ -102,3 +102,6 @@ function meBox(D,opt={}){
     if(k>0)h+=`<div class="mepay"><span>Hôm nay bạn đóng <b class="num">${fmtK(k)}</b><small>tạm tính tới giờ</small></span>${BANK?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${k}">Chuyển tiền</button>`:""}</div>`}}
   return h;
 }
+
+// Ép trình duyệt vẽ lại sau khi thay trang và cuộn bằng code (iPhone đôi khi còn sót hình cũ tới khi cuộn tay)
+function repaint(){try{const v=document.getElementById("view");if(!v||!v.classList)return;v.classList.add("rp");requestAnimationFrame(()=>requestAnimationFrame(()=>v.classList.remove("rp")))}catch(e){}}

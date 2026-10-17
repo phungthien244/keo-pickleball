@@ -63,7 +63,8 @@ document.addEventListener("click",async e=>{
     const y0=window.scrollY||0;
     const natY=()=>{try{const bar=document.querySelector(".bsteps");if(!bar)return null;const st=bar.style.position;bar.style.position="static";const y=bar.getBoundingClientRect().top+(window.scrollY||0)-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tabh"))||49);bar.style.position=st;return Math.max(0,y)}catch(e){return null}};
     const barY=natY();
-    const keepPos=()=>{if(barY==null)return;const nY=natY();try{scrollTo({top:y0>=barY&&nY!=null?nY:Math.min(y0,nY??y0)})}catch(e){}};
+    const keepPos=()=>{if(barY!=null){const nY=natY();try{scrollTo({top:y0>=barY&&nY!=null?nY:Math.min(y0,nY??y0)})}catch(e){}}repaint()};
+    noAnimOnce=true;
     if(v==="chot"){stepView=null;sheetOpen=false;go("chot",{keep:1});keepPos();return}
     if(v==="live"&&phaseOf(D)!=="live"){toast("Buổi chưa bắt đầu. Bấm “Bắt đầu buổi” ở cuối trang Chuẩn bị.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san",keep:1});keepPos()}return}
     stepView=v==="prep"?"prep":null;sheetOpen=false;
