@@ -16,15 +16,23 @@ function cancelConfirm(D,m){
   return `<div class="cfm cx"><span class="r">Hủy trận <b>Sân ${m.court}</b>? Bốn người sẽ quay lại hàng chờ.</span>
     <div class="two"><button class="danger" data-act="cancelok" data-id="${m.id}">Xác nhận hủy</button><button class="line" data-act="cancelx" data-id="${m.id}">Không hủy</button></div></div>`;
 }
+let undoOpen=false;
+const WHY={cancel:"Hủy trận",del:"Xóa trận",gcancel:"Hủy lịch giải"};
 function undoBar(){
-  if(!canWrite)return "";const n=trashItems().length;if(!n)return "";
-  return `<div class="undo"><span>${n} trận đã hủy hoặc xóa</span><button class="line" data-act="undoall">↶ Hoàn tác</button></div>`;
+  if(!canWrite)return "";const T=trashItems(),n=T.length;if(!n)return "";
+  let h=`<div class="undo"><span>${n} thao tác hủy/xóa có thể hoàn tác</span><button class="line" data-act="undoopen" aria-expanded="${undoOpen}">${undoOpen?"Đóng":"↶ Hoàn tác"}</button></div>`;
+  if(!undoOpen)return h;
+  const D=derive(),nm=id=>esc(D.pmap.get(id)?.name||"?");
+  const L=[...T].sort((a,b)=>(b.at||0)-(a.at||0));
+  return h+`<div class="ulist">${L.map(it=>{const d=it.d||{};return `<div class="urow"><span class="ut"><b>${WHY[it.why]||"Xóa"} · Sân ${d.court||"?"}${d.session&&d.session!==D.sid?` · buổi #${d.session}`:""}</b><span>${(d.a||[]).map(nm).join(" &amp; ")} – ${(d.b||[]).map(nm).join(" &amp; ")}${d.status==="done"?` <span class="num">${d.sa}–${d.sb}</span>`:""}</span><small>${hm(it.at)}${it.by?" · "+esc(it.by):""}</small></span><button class="sm" data-act="undoone" data-id="${it.id}">Hoàn tác</button></div>`}).join("")}
+    ${n>1?`<button class="line wide" data-act="undoall">↶ Hoàn tác tất cả (${n})</button>`:""}</div>`;
 }
 // Khôi phục mọi trận trong thùng rác. Trận đang đánh mà người chơi đã lên sân khác thì giữ lại.
-async function undoAll(){
+async function undoAll(only){
   const D=derive(),busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),used=new Set(D.playing.map(m=>m.court));
   const keep=[],back=[];let regiai=false;
   for(const it of trashItems()){
+    if(only&&it.id!==only){keep.push(it);continue}
     const d={...it.d};
     if(d.status==="playing"){
       if((d.session||1)!==D.sid||[...d.a,...d.b].some(id=>busy.has(id))){keep.push(it);continue}

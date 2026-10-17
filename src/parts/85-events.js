@@ -58,9 +58,16 @@ document.addEventListener("click",async e=>{
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
   if(act==="vtry"){speak(VOICE_SAMPLE,b.dataset.v,"v:"+b.dataset.v,true);return}
   if(act==="spkstop"){stopSpeak();return}
+  if(act==="step"){const v=b.dataset.v,D=derive();
+    if(v==="chot"){stepView=null;sheetOpen=false;go("chot");return}
+    if(v==="live"&&phaseOf(D)!=="live"){toast("Buổi chưa bắt đầu. Bấm “Bắt đầu buổi” ở cuối trang Chuẩn bị.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san"})}return}
+    stepView=v==="prep"?"prep":null;sheetOpen=false;
+    if(route!=="app"||tab!=="san")go("app",{tab:"san"});else{render();try{scrollTo({top:0})}catch(e){}}return}
+  if(act==="attadd"){attAdd=!attAdd;render();return}
+  if(act==="undoopen"){undoOpen=!undoOpen;render();return}
   if(act==="mute"){const m=!loaMuted();loaSetMute(m);if(m)stopSpeak();toast(m?"Đã tắt loa trên máy này":"Đã bật loa");render();return}
   if(act==="vgrp"){const g=b.dataset.g;VGOPEN.has(g)?VGOPEN.delete(g):VGOPEN.add(g);render();return}
-  if(act==="vpick"){if(!canWrite)return;const v=b.dataset.v;write(()=>saveCfg({voice:v}),"Đã đổi giọng đọc");speak(VOICE_SAMPLE,v);return}
+  if(act==="vpick"){if(!canWrite)return;const v=b.dataset.v;write(()=>saveCfg({voice:v}),"Đã đổi giọng đọc");speak(VOICE_SAMPLE,v,"v:"+v,true);return}
   if(act==="speakrules"){const D=derive();const el=document.getElementById&&document.getElementById("cf-mc");speak((el&&el.value.trim())||mcText(D),"","rules");return}
   if(act==="mcreset"){if(!canWrite)return;delete drafts["cf-mc"];write(()=>saveCfg({mc:""}),"Đã về mẫu tự tạo");return}
   if(act==="speak"){const D=derive(),m=D.SM.find(x=>x.id===id);if(m)speak(callText(D,m),"","c:"+id);return}
@@ -185,6 +192,7 @@ document.addEventListener("click",async e=>{
   else if(act==="cancel"){pendSave.delete(id);pendCancel.add(id);render()}
   else if(act==="cancelx"){pendCancel.delete(id);render()}
   else if(act==="cancelok"){pendCancel.delete(id);const m=S.matches.find(x=>x.id===id);if(!m)return;write(()=>trashMatches([m],"cancel"),"Đã hủy trận · bấm Hoàn tác nếu nhầm")}
+  else if(act==="undoone"){let r;await write(async()=>{r=await undoAll(id)});if(r)toast(r.n?"Đã khôi phục trận":"Chưa khôi phục được: người chơi đang ở sân khác hoặc hết sân trống")}
   else if(act==="undoall"){let r;await write(async()=>{r=await undoAll()});if(r)toast(r.k?`Đã khôi phục ${r.n} trận, ${r.k} trận chưa khôi phục được vì người chơi đang ở sân khác`:`Đã khôi phục ${r.n} trận`)}
   else if(act==="savechk"){const m=S.matches.find(x=>x.id===id);if(!m)return;const ra=val("sa-"+id,""),rb=val("sb-"+id,""),a=Number(ra),bb=Number(rb);
     const msg=ra===""||rb===""?"Nhập điểm hai đội.":validPts(a,bb,cfg());if(msg){errs[id]=msg;pendSave.delete(id);render();return}
@@ -197,6 +205,7 @@ document.addEventListener("click",async e=>{
     pendSave.delete(id);const msg=(val(pre[0]+id,"")===""&&act==="save")||(val(pre[1]+id,"")===""&&act==="save")?"Nhập điểm hai đội.":validPts(a,bb,cfg());
     if(msg){errs[id]=msg;render();return}
     delete errs[id];
+    if(act==="save"&&b.dataset.read&&!loaMuted()){const D=derive();if(m)speak(resultText(D,m,a,bb),"","r:"+id)}
     await write(()=>db.collection("matches").doc(id).update(act==="save"?{sa:a,sb:bb,status:"done",doneAt:Date.now()}:{sa:a,sb:bb}).then(()=>{S.everWrote=true;delete drafts[pre[0]+id];delete drafts[pre[1]+id];editing.delete(id)}),act==="save"?"Đã lưu tỉ số":"Đã sửa tỉ số");
     if(m.giai&&act==="save"&&!errs[id]){if(m.status!=="done")Object.assign(m,{sa:a,sb:bb,status:"done",doneAt:Date.now()});await new Promise(r=>setTimeout(r,60));await gFill()}}
   else if(act==="edit"){editing.add(id);render()}

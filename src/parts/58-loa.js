@@ -82,6 +82,6 @@ function saveConfirm(D,m){
   if(!pendSave.has(m.id))return "";
   const a=Number(val("sa-"+m.id,"")),b=Number(val("sb-"+m.id,"")),W=a>b?m.a:m.b;
   return `<div class="cfm"><span class="r">Sân ${m.court}: <b>${W.map(id=>esc(D.pmap.get(id)?.name||"?")).join(" &amp; ")}</b> thắng <b class="num">${Math.max(a,b)}–${Math.min(a,b)}</b></span>
-    <div class="two"><button class="primary" data-act="save" data-id="${m.id}">Xác nhận</button>${spkBtn("r:"+m.id,`<button class="line" data-act="readres" data-id="${m.id}">📣 Đọc kết quả</button>`)}</div>
+    <button class="primary" data-act="save" data-read="1" data-id="${m.id}">✓ Xác nhận${loaMuted()?"":" &amp; đọc kết quả"}</button>
     <button class="ghost" data-act="savex" data-id="${m.id}">Sửa lại tỉ số</button></div>`;
 }

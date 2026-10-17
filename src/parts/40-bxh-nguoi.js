@@ -53,16 +53,18 @@ function pickPanel(D,away){
   return `<div class="pick"><div class="bar" style="padding:6px 4px"><span class="lbl grow">Thành viên các buổi trước (${list.length})</span><button class="ghost" data-act="pickall">${pickSel.size===list.length?"Bỏ chọn hết":"Chọn hết"}</button></div>${list.map(p=>{const A=D.all.get(p.id);return `<label class="pickrow"><input type="checkbox" data-pick="${p.id}" ${pickSel.has(p.id)?"checked":""}>${av(p,"sm")}<span class="mname"><b>${esc(p.name)}</b> ${gPill(p.gender==="F"?"F":"M")}<span class="meta num" style="display:block">${A.g} trận · ${A.ses.size} buổi</span></span></label>`}).join("")}</div>
   <div class="bar" style="margin-top:10px"><span class="grow"></span><button class="primary" data-act="pickadd">Thêm ${pickSel.size} người vào buổi</button></div>`;
 }
+function addPanel(D,away){
+  return `<textarea id="bulk" data-draft="bulk" rows="4" placeholder="Mỗi dòng một người&#10;Tuấn&#10;Hà | nữ">${esc(val("bulk",""))}</textarea>
+    <div class="bar" style="margin-top:10px"><label class="bar"><span class="lbl">Trình ban đầu</span>
+      <select id="lvl" data-draft="lvl">${LV.map(x=>`<option value="${x}" ${String(val("lvl","2.5"))===String(x)?"selected":""}>${x.toFixed(2)}</option>`).join("")}</select></label>
+      <label class="bar"><span class="lbl">Giới tính</span><select id="gnd" data-draft="gnd"><option value="M" ${val("gnd","M")==="M"?"selected":""}>Nam</option><option value="F" ${val("gnd","M")==="F"?"selected":""}>Nữ</option></select></label>
+      <button data-act="picktoggle">${pickOpen?"Đóng danh sách":"Chọn từ danh sách"}</button><span class="grow"></span><button class="primary" data-act="add">Thêm và vào buổi luôn</button></div>${pickPanel(D,away)}`;
+}
 function vNguoi(D){
   let h="";
   const busyS=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const here=D.players.filter(p=>p.active!==false), away=D.players.filter(p=>p.active===false);
-  if(canWrite)h+=`<div class="panel"><h2 style="margin-bottom:4px">Thêm thành viên mới</h2>
-    <textarea id="bulk" data-draft="bulk" rows="4" placeholder="Mỗi dòng một người&#10;Tuấn&#10;Hà | nữ">${esc(val("bulk",""))}</textarea>
-    <div class="bar" style="margin-top:10px"><label class="bar"><span class="lbl">Trình ban đầu</span>
-      <select id="lvl" data-draft="lvl">${LV.map(x=>`<option value="${x}" ${String(val("lvl","2.5"))===String(x)?"selected":""}>${x.toFixed(2)}</option>`).join("")}</select></label>
-      <label class="bar"><span class="lbl">Giới tính</span><select id="gnd" data-draft="gnd"><option value="M" ${val("gnd","M")==="M"?"selected":""}>Nam</option><option value="F" ${val("gnd","M")==="F"?"selected":""}>Nữ</option></select></label>
-      <button data-act="picktoggle">${pickOpen?"Đóng danh sách":"Chọn từ danh sách"}</button><span class="grow"></span><button class="primary" data-act="add">Thêm và vào buổi luôn</button></div>${pickPanel(D,away)}</div>`;
+  if(canWrite)h+=`<div class="panel"><h2 style="margin-bottom:4px">Thêm thành viên mới</h2>${addPanel(D,away)}</div>`;
   if(!D.players.length)return h+`<div class="empty"><strong>Chưa có thành viên</strong>Nhập tên ở khung trên, mỗi dòng một người.</div>`;
   if(canWrite&&D.players.some(p=>!p.code))h+=`<div class="ro bar"><span class="grow">${D.players.filter(p=>!p.code).length} người chưa có mã thành viên.</span><button data-act="codes">Cấp mã</button></div>`;
   h+=`<div class="panel"><div class="bar" style="margin-bottom:4px"><h2 class="grow">Có mặt hôm nay</h2><span class="pill win num">${here.length} người</span></div>`;

@@ -12,22 +12,29 @@ const who=()=>authUser&&!authUser.isAnonymous?(authUser.displayName||"Ban tổ c
 const hm=t=>t?new Date(t).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}):"";
 const dhm=t=>t?`${hm(t)} ${dmy(t)}`:"";
 const COSTS=[["court","Tiền sân"],["water","Tiền nước"],["ball","Tiền bóng"],["other","Khác"]];
-function steps3(n){
-  const L=["Chuẩn bị","Đang đánh","Chốt buổi"];
-  return `<ol class="bsteps" aria-label="Các bước của buổi">${L.map((l,i)=>`<li class="${i+1<n?"ok":i+1===n?"on":""}"${i+1===n?' aria-current="step"':""}><b>${i+1<n?"✓":i+1}</b>${l}</li>`).join("")}</ol>`;
+// Thanh 3 bước: luôn dính dưới các tab, bấm để chuyển qua lại. n = bước đang xem, ph = bước thật của buổi.
+let stepView=null;
+function steps3(n,D){
+  const L=[["prep","Chuẩn bị"],["live","Đang đánh"],["chot","Chốt buổi"]];
+  const ph=D?(phaseOf(D)==="live"?2:1):n;
+  return `<nav class="bsteps" aria-label="Các bước của buổi">${L.map(([v,l],i)=>{const k=i+1,on=k===n,ok=k<ph;
+    return `<button class="${on?"on":ok?"ok":""}" data-act="step" data-v="${v}"${on?' aria-current="step"':""}><b>${ok&&!on?"✓":k}</b>${l}</button>`}).join("")}</nav>`;
 }
 const card=(t,body,right="")=>`<section class="card2"><h2 class="ch2"><span>${t}</span>${right}</h2><div class="cb">${body}</div></section>`;
 const cfIn=(k,label,v)=>`<label class="fld"><span class="lbl">${label}</span><input id="cf-${k}" data-draft="cf-${k}" data-save="cfg" data-key="${k}" type="number" inputmode="decimal" min="0" value="${esc(val("cf-"+k,v))}"></label>`;
 const sgB=(k,v,cur,l,dis)=>`<button data-act="cset" data-k="${k}" data-v="${v}" aria-pressed="${cur===v}" ${dis?"disabled":""}>${l}</button>`;
 
 /* ----- các khối cài đặt dùng chung cho Chuẩn bị và bảng Sửa giữa buổi ----- */
+let attAdd=false;
 function attChips(D){
   const busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const n=D.players.filter(p=>p.active!==false).length;
-  if(!D.players.length)return `<p class="rule">Chưa có thành viên. <a href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi">Thêm ở tab Thành viên</a>.</p>`;
-  const L=[...D.players].sort((a,b)=>((a.active===false)-(b.active===false))||String(a.name).localeCompare(String(b.name),"vi"));
+  if(!D.players.length)return `<p class="rule">Chưa có thành viên. Nhập tên bên dưới, mỗi dòng một người.</p><div class="attnew">${addPanel(D,[])}</div>`;
+  const L=[...D.players].sort((a,b)=>(busy.has(b.id)-busy.has(a.id))||((a.active===false)-(b.active===false))||String(a.name).localeCompare(String(b.name),"vi"));
+  const away=D.players.filter(p=>p.active===false);
   return `<div class="lab" style="margin:0"><span class="meta num">${n}/${D.players.length} người có mặt</span><button class="lnk" data-act="attall">${n===D.players.length?"Bỏ chọn hết":"Chọn tất cả"}</button></div>
-  <div class="attc">${L.map(p=>{const on=p.active!==false;return `<button class="ac${on?" on":""}" data-act="att" data-id="${p.id}" aria-pressed="${on}">${on?"✓ ":""}${esc(p.name)}${busy.has(p.id)?" · trên sân":""}</button>`}).join("")}<a class="ac add" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi">+ Người mới</a></div>`;
+  <div class="attc">${L.map(p=>{const on=p.active!==false;return `<button class="ac${on?" on":""}${busy.has(p.id)?" busy":""}" data-act="att" data-id="${p.id}" aria-pressed="${on}">${on?"✓ ":""}${esc(p.name)}${busy.has(p.id)?" · trên sân":""}</button>`}).join("")}<button class="ac add" data-act="attadd" aria-expanded="${attAdd}">${attAdd?"✕ Đóng":"+ Người mới"}</button></div>
+  ${attAdd?`<div class="attnew">${addPanel(D,away)}</div>`:""}`;
 }
 function buoiBlock(D){
   const c=D.c,G=isG(c),lockF=D.SM.length>0;
@@ -81,7 +88,7 @@ const flexNote=`<div class="flexnote"><b>Không khoá cứng.</b> Mọi mục tr
 /* ----- ① Chuẩn bị ----- */
 function vPrep(D){
   const c=D.c,G=isG(c);
-  let h=`<div class="phead2"><h2>${esc(sessTitle(c,D.sid))} · chuẩn bị</h2><p class="rule">Chỉ ban tổ chức thấy phần này. Thành viên thấy “Buổi #${D.sid} sắp bắt đầu”. Mọi thay đổi lưu ngay.</p></div>`;
+  let h=`<div class="phead2"><h2>${esc(sessTitle(c,D.sid))} · chuẩn bị</h2><p class="rule">${phaseOf(D)==="live"?"Buổi đang đánh. Sửa ở đây áp dụng từ trận kế tiếp, mọi thay đổi lưu ngay.":`Chỉ ban tổ chức thấy phần này. Thành viên thấy “Buổi #${D.sid} sắp bắt đầu”. Mọi thay đổi lưu ngay.`}</p></div>`;
   h+=card("Buổi này",buoiBlock(D));
   h+=card("Điểm danh",attChips(D));
   h+=card("Sân và luật điểm",fmtBlock(D));
@@ -89,6 +96,7 @@ function vPrep(D){
   h+=card(tick("gton",(c.gt||"khong")!=="khong","Giải thưởng"),prizeBlock(D));
   h+=card("Lời MC đọc thể thức",mcBlock(D));
   h+=flexNote;
+  if(phaseOf(D)==="live")return h+`<button class="ball wide" data-act="step" data-v="live">Về trang Đang đánh →</button>`;
   if(G)return h+gSetup(D,c.giai||{pairs:[]});
   const n=D.players.filter(p=>p.active!==false).length;
   return h+`<button class="ball wide" data-act="start">Bắt đầu buổi #${D.sid} →</button><p class="rule" style="text-align:center;margin-top:-6px">${n<4?`Cần ít nhất 4 người có mặt để xếp trận, hiện có ${n}.`:"Có thể chuẩn bị từ trước, bấm khi mọi người tới sân."}</p>`;
@@ -192,10 +200,10 @@ function vChot(D){
   const back=`<a class="bk" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">‹ Về Sân</a>`;
   if(!canWrite)return `<div class="dhead">${back}<h1>Chốt buổi</h1></div>`+clubLoginBody();
   const c=D.c;
-  if(isG(c))return `<div class="dhead">${back}<h1>Chốt buổi #${D.sid}</h1></div>${steps3(3)}<div class="empty"><strong>Buổi giải chốt ở tab Sân</strong>Bấm “Kết thúc giải và lưu” ở cuối lịch thi đấu.</div>`;
+  if(isG(c))return `<div class="dhead">${back}<h1>Chốt buổi #${D.sid}</h1></div>${steps3(3,D)}<div class="empty"><strong>Buổi giải chốt ở tab Sân</strong>Bấm “Kết thúc giải và lưu” ở cuối lịch thi đấu.</div>`;
   const M0=money(D),R0=recv(D,M0),extra=chotMien?Object.fromEntries(R0.unpaid.map(p=>[p.id,0])):null,M=money(D,extra),R=recv(D,M),pz=prizes(D,M);
   const ts=D.done.map(m=>m.doneAt||m.createdAt||0).filter(Boolean);
-  let h=`<div class="dhead">${back}<h1>Chốt buổi #${D.sid}</h1><span class="dsub num">${c.sname?esc(c.sname)+" · ":""}${D.done.length} trận · ${M.att.length} người · ${c.courts} sân${ts.length?` · ${hm(Math.min(...ts))}–${hm(Math.max(...ts))}`:""}</span></div>`+steps3(3);
+  let h=`<div class="dhead">${back}<h1>Chốt buổi #${D.sid}</h1><span class="dsub num">${c.sname?esc(c.sname)+" · ":""}${D.done.length} trận · ${M.att.length} người · ${c.courts} sân${ts.length?` · ${hm(Math.min(...ts))}–${hm(Math.max(...ts))}`:""}</span></div>`+steps3(3,D);
   if(D.playing.length)h+=`<div class="warnbox"><b>Còn ${D.playing.length} trận đang đánh.</b>Lưu tỉ số hoặc hủy trận ở tab Sân rồi quay lại chốt.</div>`;
   else if(!D.done.length)h+=`<div class="warnbox"><b>Buổi chưa có trận nào xong.</b>Chốt bây giờ sẽ lưu một buổi trống.</div>`;
   h+=card(`<i class="no">1</i>Chi thật`,`<div class="form">${COSTS.map(([k,l])=>cfIn(k,l,c.costs[k])).join("")}</div><small class="rule">Sửa nếu khác dự kiến: thêm sân, ít nước…</small>`);

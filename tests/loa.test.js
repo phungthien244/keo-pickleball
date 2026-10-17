@@ -46,7 +46,7 @@ test("lời MC đọc thể thức: tự tạo theo cài đặt, sửa được,
   expect(e.store.get("app/config").mc).toBe("");
 });
 
-test("lưu tỉ số: hiện Xác nhận và Đọc kết quả, đọc đúng sân và tỉ số", async () => {
+test("lưu tỉ số: một nút Xác nhận & đọc kết quả, đọc đúng sân và tỉ số", async () => {
   const said = [];
   const e = setup({ pin: true });
   globalThis.window.speechSynthesis = { getVoices: () => [{ name: "Linh", lang: "vi-VN" }], cancel() {}, speak: u => said.push(u) };
@@ -60,10 +60,10 @@ test("lưu tỉ số: hiện Xác nhận và Đọc kết quả, đọc đúng s
   await e.click("savechk", { id });
   expect(e.store.get("matches/" + id).status).toBe("playing");
   expect(e.T()).toContain("Xác nhận");
-  expect(e.T()).toContain("Đọc kết quả");
-  await e.click("readres", { id });
+  expect(e.T()).toContain("Xác nhận & đọc kết quả");
+  expect(e.V()).not.toContain('data-act="readres"');
+  await e.click("save", { id, read: "1" });
   expect(said.pop().text).toMatch(/^Sân số 1 kết thúc\. Cặp (anh|chị) [^,]+, (anh|chị) [^,]+ chiến thắng, tỉ số là 11, 7\.$/);
-  await e.click("save", { id });
   expect(e.store.get("matches/" + id).status).toBe("done");
 });
 

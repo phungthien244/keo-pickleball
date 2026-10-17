@@ -80,8 +80,9 @@ const saveG=patch=>saveCfg({giai:{...(cfg().giai||{}),...patch}});
 const courtStep=c=>`<span class="lbl">Số sân</span><span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân" ${canWrite?"":"disabled"}>−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân" ${canWrite?"":"disabled"}>+</button></span>`;
 function vGiaiSan(D){
   const G=D.c.giai||{pairs:[]};
-  if(canWrite&&!G.locked)return phaseOf(D)==="live"?steps3(2)+cfgChip(D)+undoBar()+gSetup(D,G):steps3(1)+vPrep(D);
-  if(canWrite)return steps3(2)+cfgChip(D)+undoBar()+gRun(D,gDerive(D));
+  if(canWrite&&(phaseOf(D)==="prep"||stepView==="prep"))return steps3(1,D)+vPrep(D);
+  if(canWrite&&!G.locked)return steps3(2,D)+cfgChip(D)+undoBar()+gSetup(D,G);
+  if(canWrite)return steps3(2,D)+cfgChip(D)+undoBar()+gRun(D,gDerive(D));
   return G.locked?gRun(D,gDerive(D)):gSetup(D,G);
 }
 function gSetup(D,G){
