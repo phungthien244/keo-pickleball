@@ -7,8 +7,18 @@ const VOICES = ["vi-VN-Chirp3-HD-Aoede", "vi-VN-Neural2-A", "vi-VN-Wavenet-A"];
 const OK_TEXT = /^Xin mời cặp .{1,160}, vào sân số \d{1,2}, chuẩn bị thi đấu\.$/;
 const OK_HOST = /(^|\.)pikeco\.app$|\.pikeco\.pages\.dev$|^pikeco\.pages\.dev$|^localhost$/;
 
+// Giọng nữ cho phép chọn (tên giọng Google). Giọng mặc định là phần tử đầu.
+const PICK = /^vi-VN-(Chirp3-HD-[A-Za-z]+|Neural2-[A-Z]|Wavenet-[A-Z]|Standard-[A-Z])$/;
 export async function onRequestGet(ctx) {
   const url = new URL(ctx.request.url);
+  if (url.searchParams.has("list")) {
+    const key = ctx.env.GOOGLE_TTS_KEY; if (!key) return new Response("no key", { status: 503 });
+    const r = await fetch("https://texttospeech.googleapis.com/v1/voices?languageCode=vi-VN&key=" + key);
+    const j = await r.json();
+    return Response.json((j.voices || []).map(v => [v.name, v.ssmlGender]));
+  }
+  const want = url.searchParams.get("v") || "";
+  const voices = PICK.test(want) ? [want, ...VOICES] : VOICES;
   const text = (url.searchParams.get("t") || "").trim();
   const ref = ctx.request.headers.get("referer");
   let refOk = false; try { refOk = !!ref && OK_HOST.test(new URL(ref).hostname); } catch (e) { }
@@ -17,7 +27,7 @@ export async function onRequestGet(ctx) {
   if (!(OK_TEXT.test(text) && text.length <= 220) && !(refOk && text.length >= 20 && text.length <= 1100)) return new Response("bad text", { status: 400 });
   const key = ctx.env.GOOGLE_TTS_KEY, gkey = ctx.env.GEMINI_API_KEY;
   if (!key && !gkey) return new Response("no key", { status: 503 });
-  const cache = caches.default, ck = new Request(url.origin + "/api/tts?v=1&t=" + encodeURIComponent(text));
+  const cache = caches.default, ck = new Request(url.origin + "/api/tts?c=1&v=" + encodeURIComponent(voices[0]) + "&t=" + encodeURIComponent(text));
   const hit = await cache.match(ck);
   if (hit) return hit;
   if (gkey) {
@@ -29,7 +39,7 @@ export async function onRequestGet(ctx) {
     }
     if (!key) return new Response("tts failed", { status: 502 });
   }
-  for (const name of VOICES) {
+  for (const name of voices) {
     const r = await fetch("https://texttospeech.googleapis.com/v1/text:synthesize?key=" + key, {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ input: { text }, voice: { languageCode: "vi-VN", name }, audioConfig: { audioEncoding: "MP3", speakingRate: name.includes("Chirp") ? 1 : 0.95 } })
