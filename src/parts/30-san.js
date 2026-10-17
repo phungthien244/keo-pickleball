@@ -45,9 +45,10 @@ const AVC=["#1f8fe5","#3a6ea5","#1a7f45","#c9302c","#7a4cc2","#c7770b","#127a8a"
 function av(p,cls=""){
   if(!p)return `<span class="av ${cls}"></span>`;
   const n=String(p.name||"?").trim(),w=n.split(/\s+/),ini=(w[w.length-1]||"?").charAt(0).toUpperCase();
-  if(p.photo&&/^data:image\//.test(p.photo))return `<span class="av ${cls}"><img src="${esc(p.photo)}" alt="" decoding="async"></span>`;
+  const lk=p.id&&MODE==="club"&&S.players.some(x=>x.id===p.id)?` data-pid="${esc(p.id)}" title="Xem hồ sơ ${esc(n)}"`:"";
+  if(p.photo&&/^data:image\//.test(p.photo))return `<span class="av ${cls}"${lk}><img src="${esc(p.photo)}" alt="" decoding="async"></span>`;
   let h=0;for(const ch of n)h=(h*31+ch.charCodeAt(0))>>>0;
-  return `<span class="av ${cls}" style="background:${AVC[h%AVC.length]}" aria-hidden="true">${esc(ini)}</span>`;
+  return `<span class="av ${cls}" style="background:${AVC[h%AVC.length]}" aria-hidden="true"${lk}>${esc(ini)}</span>`;
 }
 const avId=(D,id,cls)=>av(D.pmap.get(id),cls);
 async function shrink(file){

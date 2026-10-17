@@ -5,7 +5,7 @@ const drafts={}; const editing=new Set(); const errs={};
 let db=null, canWrite=false, authUser=null, tab="san", resetArm=0, delArm=null, holder=Math.random().toString(36).slice(2);
 try{tab=localStorage.getItem("pb-tab")||"san"}catch(e){}
 if(tab==="home")tab="san";
-let route="home",routeSid=0,autoRoute=true,hF="all";
+let routePid="",route="home",routeSid=0,autoRoute=true,hF="all";
 /* ---------- đường dẫn ----------
    Nền tảng: /  /clb  /tao-clb  /dang-nhap  /quan-tri
    CLB:      /aep  /aep/san  /aep/xep-hang  /aep/thanh-vien  /aep/quy  /aep/lich-su
@@ -39,9 +39,10 @@ function readPath(path){
   else if(s[1]==="cai-dat")r.route="caidat";
   else if(s[1]==="dang-nhap")r.route="clogin";
   else if(s[1]==="chot-buoi")r.route="chot";
+  else if(s[1]==="vdv"){r.route="vdv";r.pid=s[2]||""}
   else if(s[1]==="moi"){r.invite=s[2]||null;r.route="clogin"}
   return r}
-function applyPath(r){route=r.route;if(r.mode==="club"){if(r.tab)tab=r.tab;if(r.route==="buoi")routeSid=r.sid;if(r.route!=="home")autoRoute=false}}
+function applyPath(r){route=r.route;if(r.mode==="club"){if(r.tab)tab=r.tab;if(r.route==="buoi")routeSid=r.sid;if(r.route==="vdv")routePid=r.pid;if(r.route!=="home")autoRoute=false}}
 {const lp=legacyPath();if(lp)try{history.replaceState(null,"",lp)}catch(e){}
   const r=readPath(lp||location.pathname);MODE=r.mode;if(r.mode==="club"){CID=r.cid;INVITE=r.invite||null}applyPath(r)}
 function pathOf(r,opt={}){
@@ -52,11 +53,12 @@ function pathOf(r,opt={}){
   if(r==="caidat")return c+"/cai-dat";
   if(r==="clogin")return c+"/dang-nhap";
   if(r==="chot")return c+"/chot-buoi";
+  if(r==="vdv")return `${c}/vdv/${encodeURIComponent(opt.pid!=null?opt.pid:routePid)}`;
   return c}
 const absUrl=p=>location.origin+p;
 function go(r,opt={}){
   if((RSEG[r]!==undefined?"platform":"club")!==MODE){location.href=pathOf(r,opt);return}
-  route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="app"&&opt.tab)tab=opt.tab;
+  route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="vdv")routePid=String(opt.pid||"");if(r==="app"&&opt.tab)tab=opt.tab;
   try{history.pushState(null,"",pathOf(r))}catch(e){}
   try{scrollTo({top:0})}catch(e){}
   render()}

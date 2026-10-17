@@ -37,6 +37,9 @@ export async function meta(url) {
         desc = [`${h.matchCount || 0} trận · ${R.length} người · ${dmy(h.startedAt)}`, R.length && "Top 3: " + R.slice(0, 3).map(r => r.name).join(", ")].filter(Boolean).join(" · ");
       }
     }
+  } else if (seg[1] === "vdv" && seg[2] && club.public !== false) {
+    const p = await getDoc(project, `clubs/${cid}/players/${encodeURIComponent(seg[2])}`);
+    if (p && p.name) { title = `Hồ sơ ${p.name} · ${name}`; desc = `Rating ${(+p.rating0 || 3).toFixed(2)} · thành tích, phong độ, đồng đội hợp nhất của ${p.name} tại ${name}.`; }
   } else if (TAB[seg[1]]) title = `${TAB[seg[1]]} · ${name}`;
   return { title, desc };
 }

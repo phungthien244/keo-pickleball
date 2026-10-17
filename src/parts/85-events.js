@@ -24,6 +24,7 @@ document.addEventListener("change",e=>{
     else{const n=Math.max(0,Number(v)||0);write(()=>saveCfg({[k]:n}).then(()=>delete drafts["cf-"+k]))}}
 });
 document.addEventListener("click",async e=>{
+  {const pv=e.target.closest("[data-pid]");if(pv&&!e.target.closest("label")){e.preventDefault&&e.preventDefault();go("vdv",{pid:pv.dataset.pid});return}}
   const tb=e.target.closest("[data-tab]");if(tb){const t=tb.dataset.tab;if(t==="home"){go("home");return}
     try{localStorage.setItem("pb-tab",t)}catch(x){}go("app",{tab:t});return}
   const gl=e.target.closest("[data-go]");if(gl){e.preventDefault();go(gl.dataset.go,{sid:gl.dataset.id,tab:gl.dataset.t});return}
@@ -51,6 +52,9 @@ document.addEventListener("click",async e=>{
     return}
   if(act==="bxf"){bxF=b.dataset.v;render();return}
   if(act==="hf"){hF=b.dataset.v;render();return}
+  if(act==="pshare"){const D=derive(),u=absUrl(pathOf("vdv",{pid:id})),txt=profileShare(D,id);
+    if(navigator.share){try{await navigator.share({title:"Hồ sơ vận động viên",text:txt+"\n",url:u})}catch(x){}return}
+    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
   if(act==="qv"){qView=b.dataset.v==="so"?"so":"buoi";render();return}
   if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;showSheet();return}
   if(act==="pay"){payOpen={sid:Number(b.dataset.sid),name:b.dataset.n,k:Number(b.dataset.k)};showSheet();return}
