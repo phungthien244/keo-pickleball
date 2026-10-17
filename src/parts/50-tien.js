@@ -34,7 +34,7 @@ const hClub=h=>h&&h.money?(h.money.club!=null?h.money.club:(h.rows||[]).reduce((
 function clubFund(before){return S.hist.filter(h=>before==null||h.sid<before).reduce((a,h)=>a+hClub(h),0)}
 function moneySnap(D,M){
   const pz=prizes(D,M);
-  return {thu:M.thu,gt:M.gt,gtv:+D.c.gtv||0,chia:chiaOf(D.c).join(","),hang:hangOf(D.c),phi:+D.c.phi||0,fund:M.fund,cost:M.cost,gap:M.gap,buTot:M.buTot,gopTot:M.gopTot,pot:M.pot,club:M.club,collected:M.collected,share:M.share,perGame:M.perGame,costs:D.c.cphi===false?{}:{...D.c.costs},
+  return {on:D.c.cphi!==false,thu:M.thu,gt:M.gt,gtv:+D.c.gtv||0,chia:chiaOf(D.c).join(","),hang:hangOf(D.c),phi:+D.c.phi||0,fund:M.fund,cost:M.cost,gap:M.gap,buTot:M.buTot,gopTot:M.gopTot,pot:M.pot,club:M.club,collected:M.collected,share:M.share,perGame:M.perGame,costs:D.c.cphi===false?{}:{...D.c.costs},
     prizes:pz.map(x=>({label:x.label,ids:x.ids,names:x.ids.map(id=>D.pmap.get(id)?.name||"?"),k:x.k}))};
 }
 const payRow=(D,M,id)=>{const s=D.st.get(id);return {charged:s.charged,capped:!!s.capped,base:M.baseOf(id),bu:M.shareOf(id),gop:M.gopOf(id),pay:M.payOf(id)}};
@@ -51,6 +51,8 @@ function payTable(D,sid,list,paid,live){
 }
 function moneySec(D,sid,snap,rows,P,noPrize){
   const M=snap?.money;if(!M)return "";
+  // Buổi không tích "Chi phí": không hiện phần tiền, chỉ hiện giải thưởng nếu có
+  if(M.on===false)return !noPrize&&M.prizes&&M.prizes.length?`<div class="shd"><h2>Giải thưởng</h2></div>${prizeCards(D,M.prizes)}`:"";
   const nw=M.club!=null,cs=M.costs||{},paid=snap.paid||{};
   const CC=[["court","Sân","var(--navy)"],["water","Nước","var(--blue)"],["ball","Bóng","var(--blue-2)"],["other","Khác","var(--line-2)"]].filter(z=>+cs[z[0]]>0);
   const club=nw?M.club:M.gap,coll=nw?M.collected:M.fund;

@@ -178,7 +178,7 @@ function vSoQuy(D){
     else h+=`<div class="two2"><button class="ball" data-act="ledf" data-v="thu">+ Ghi thu</button><button class="line2" data-act="ledf" data-v="chi">− Ghi chi</button></div>`;
   }
   if(DB.length)h+=card(`Còn nợ · ${fmtK(dt)}`,DB.map(x=>`<div class="lrow"><span class="t"><b>${esc(x.name)}</b><small>Buổi #${x.sid}</small></span><b class="num neg">${fmtK(x.k)}</b>${canWrite?`<button class="sm" data-act="paid" data-id="${x.sid}" data-p="${x.id}">Đã nhận</button>`:""}</div>`).join(""));
-  const E=[...S.hist.filter(x=>x.money).map(x=>({at:x.endedAt||x.startedAt||0,t:(x.type==="giai"?"Giải · buổi #":"Buổi #")+x.sid,auto:true,k:hClub(x),
+  const E=[...S.hist.filter(x=>x.money&&(x.money.on!==false||hClub(x))).map(x=>({at:x.endedAt||x.startedAt||0,t:(x.type==="giai"?"Giải · buổi #":"Buổi #")+x.sid,auto:true,k:hClub(x),
       sub:`Thu ${fmtK(x.money.collected!=null?x.money.collected:x.money.fund)} · chi ${fmtK(x.money.cost)}${x.money.pot?` · giải ${fmtK(x.money.pot)}`:""}${x.editedAt?` · đã sửa ${dmy(x.editedAt)}`:""}`})),
     ...(S.led||[]).map(x=>({at:x.at||0,t:esc(x.note||""),auto:false,k:+x.k||0,sub:x.by?`Ghi bởi ${esc(x.by)}`:"",id:x.id}))].sort((a,b)=>b.at-a.at);
   h+=card("Sổ thu chi",E.length?E.map(x=>{const d=x.at?new Date(x.at):null;return `<div class="lrow"><span class="d num">${d?`${d.getDate()}<br>T${d.getMonth()+1}`:"–"}</span><span class="t"><b>${x.t}</b><span class="tag ${x.auto?"a":"m"}">${x.auto?"Tự động":"Ghi tay"}</span><small>${x.sub}</small></span><b class="num ${x.k>=0?"pos":"neg"}">${x.k>=0?"+":"−"}${fmtK(Math.abs(x.k))}</b>${canWrite&&!x.auto?delBtn("leddel",x.id,"Xoá"):""}</div>`}).join(""):`<p class="rule">Chưa có khoản nào. Mỗi buổi chốt xong tự ghi một dòng.</p>`);
@@ -228,7 +228,7 @@ async function chotBuoi(){
 
 /* ----- Sau buổi: mở lại để sửa ----- */
 function histEdit(D,x){
-  if(!canWrite||!x.snap||!x.snap.money)return "";
+  if(!canWrite||!x.snap||!x.snap.money||x.snap.money.on===false)return "";
   const s=x.snap,m=s.money,k="hx-"+x.sid,cs=m.costs||{};
   const meta=`${s.closedAt?`Chốt lúc ${dhm(s.closedAt)}${s.closedBy?` bởi ${esc(s.closedBy)}`:""}`:`Lưu ngày ${dmy(s.endedAt)}`}${s.editedAt?` · sửa lần cuối ${dhm(s.editedAt)}`:""}`;
   if(!editing.has(k))return card(`Buổi #${x.sid} · đã chốt`,`<small class="rule">${meta}</small><div class="two"><button class="line" data-act="hopen" data-id="${x.sid}">Mở lại để sửa</button><button class="line" data-act="share" data-id="${x.sid}">Chia sẻ tổng kết</button></div>`);

@@ -146,3 +146,19 @@ test("giải vòng tròn: giải thưởng nhất nhì ba tuỳ chỉnh", async 
   await e.cfg("chia1", 70); await e.cfg("chia2", 30); await e.cfg("chia3", 0);
   expect(e.T()).toContain("Tổng 100%");
 });
+
+test("buổi không tích Chi phí và Giải thưởng: trang tổng kết không hiện phần tiền", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC | nữ\nD | nữ"); await e.click("add");
+  await e.tab("san"); await e.click("cphi"); await e.click("start"); await e.click("gen");
+  for (const [id] of e.docs("matches/", m => m.status === "playing")) { e.input("sa-" + id, "11"); e.input("sb-" + id, "4"); await e.click("save", { id }); }
+  await e.click("chot"); await e.click("chot"); await e.until(() => e.store.has("app/hist-1"));
+  expect(e.store.get("app/hist-1").money.on).toBe(false);
+  expect(e.T()).toContain("Kết quả các trận");
+  expect(e.T()).not.toContain("Tiền quỹ");
+  expect(e.T()).not.toContain("Phải đóng");
+  await e.tab("ls");
+  expect(e.T()).not.toContain("Quỹ +");
+  expect(e.T()).not.toContain("Chưa có bảng tiền");
+});
