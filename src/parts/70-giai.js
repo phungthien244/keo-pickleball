@@ -206,10 +206,9 @@ function vGiaiSum(D,x,back){
   const hs=t=>{const d=t.pf-t.pa;return (d>0?"+":"")+d};
   const games=G.games||[],pts=games.reduce((a,g)=>a+(+g.sx||0)+(+g.sy||0),0),ranked=T.filter(t=>!t.out);
   const c1=ranked[0],c2=ranked[1],c3=ranked[2];
-  let h=back+`<div class="hero"><div class="phead"><span class="eyebrow">${s.sname?esc(s.sname):"Giải cặp cố định"} · ${dmy(x.at)}</span><h1 class="num">Buổi #${x.sid}</h1><p class="hmeta">${T.length} cặp đánh vòng tròn, mỗi cặp gặp tất cả các cặp còn lại một lần. Chạm 11, không cần cách 2.${G.complete===false?" Giải kết thúc sớm.":""}</p></div>
+  let h=back+`<div class="hero"><div class="phead"><span class="eyebrow">${s.sname?esc(s.sname):"Giải cặp cố định"} · ${dmy(x.at)}</span><h1 class="num">Buổi #${x.sid}</h1><p class="hmeta">${T.length} cặp đánh vòng tròn, mỗi cặp gặp tất cả các cặp còn lại một lần. ${esc(s.rule||"Chạm 11, không cần cách 2")}.${G.complete===false?" Giải kết thúc sớm.":""}</p></div>
     <div class="stats"><div><b class="num">${T.length}</b><small>CẶP</small></div><div><b class="num">${games.filter(g=>!g.wo).length}</b><small>TRẬN</small></div><div><b class="num">${pts||"–"}</b><small>ĐIỂM GHI</small></div></div>
-    <div class="hsplit">${c1?`<div class="champ"><div class="k"><span>VÔ ĐỊCH</span><span>${pzTxt(pz[0])}</span></div><div class="p">${tAv(c1,"xl")}<span><span class="n">${tNm(c1)}</span><span class="s num" style="display:block;margin-top:6px">${c1.w} thắng · ${c1.l} thua · HS ${hs(c1)}</span></span></div></div>`:""}
-    ${c2?`<div class="podium">${[c2,c3].map((t,i)=>t?`<div class="${i?"b3":"b2"}"><span class="k">HẠNG ${i+2}</span>${tAv(t,"md")}<span class="n">${tNm(t)}</span><span class="s num">${t.w} thắng · ${t.l} thua · HS ${hs(t)}</span>${pz[i+1]?`<span class="pz num">${pzTxt(pz[i+1])}</span>`:""}</div>`:"").join("")}</div>`:""}</div></div>`;
+    ${c1?`<div class="gpod">${[c1,c2,c3].map((t,i)=>t?`<div class="pc p${i+1}"><span class="md">${["Nhất","Nhì","Ba"][i]}</span>${tAv(t,i?"md":"lg")}<span class="tx"><span class="n">${tNm(t)}</span><span class="s num">${t.w} thắng · ${t.l} thua · HS ${hs(t)}</span></span>${pz[i]?`<span class="pz num">${pzTxt(pz[i])}</span>`:""}</div>`:"").join("")}</div>`:""}</div>`;
   h+=`<div class="shd"><h2>Bảng xếp hạng</h2><span class="meta">Ô xanh thắng · đỏ thua · số là điểm ghi</span></div>`+gRank(T.map(t=>({...t})),games.map(g=>({...g})),pz,PP);
   h+=`<p class="rule">Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Trận cặp bỏ giải chưa đánh tính thắng cho đối thủ, không cộng điểm.</p>`;
   if(games.length)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><div class="mgrid">${[...games].sort((a,b)=>a.r-b.r||(a.seq||0)-(b.seq||0)).map(g=>{const X=tb.get(g.x),Y=tb.get(g.y);if(!X||!Y)return "";
@@ -222,10 +221,9 @@ function vGiaiSum(D,x,back){
   return h;
 }
 function giaiShare(D,x){
-  const s=x.snap,G=s.giai||{},T=(G.table||[]).filter(t=>!t.out),pz=G.prizes||[],md=["🥇","🥈","🥉"];
-  const L=[`🏓 ${clubNm(D).toUpperCase()} · ${s.sname||"GIẢI CẶP CỐ ĐỊNH"} · BUỔI #${x.sid} · ${dmy(x.at)}`,`Vòng tròn · ${s.rule||"chạm 11"} · ${(G.table||[]).length} cặp · ${(G.games||[]).filter(g=>!g.wo).length} trận`,""];
-  T.slice(0,3).forEach((t,i)=>L.push(`${md[i]} ${["Nhất","Nhì","Ba"][i]}: ${t.na} & ${t.nb} (${t.w}–${t.l}, HS ${t.pf-t.pa>0?"+":""}${t.pf-t.pa})${pz[i]?` · ${pzTxt(pz[i])}`:""}`));
-  if(T.length>3)L.push("Các cặp còn lại: "+T.slice(3).map((t,i)=>`${i+4}. ${t.na} & ${t.nb}`).join(" · "));
-  L.push("","Xem bảng xếp hạng, kết quả từng trận và rating sau giải:");
+  const s=x.snap,G=s.giai||{},T=(G.table||[]).filter(t=>!t.out),pz=G.prizes||[];
+  const L=[`TỔNG KẾT ${s.sname?s.sname.toUpperCase():"GIẢI CẶP CỐ ĐỊNH"} · BUỔI #${x.sid} · ${dmy(x.at)}`,`${clubNm(D)} · vòng tròn ${(G.table||[]).length} cặp · ${s.rule||"chạm 11"}`];
+  T.slice(0,3).forEach((t,i)=>L.push(`${["Nhất","Nhì","Ba"][i]}: ${t.na} & ${t.nb} (${t.w}–${t.l})${pz[i]?` · ${pzTxt(pz[i])}`:""}`));
+  L.push("Xem bảng xếp hạng, kết quả từng trận và rating sau giải:");
   return L.join("\n");
 }

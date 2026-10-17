@@ -45,7 +45,7 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   expect(h.giai.prizes.length).toBeGreaterThan(0);
   const sv = e.V();
   expect((sv.match(/class="av /g) || []).length).toBeGreaterThanOrEqual(10);
-  expect(sv).toContain('class="champ"');
+  expect(sv).toContain('class="gpod"');
   await e.tab("home");
   expect(e.V()).toContain("vô địch");
 });
