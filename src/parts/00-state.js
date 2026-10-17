@@ -60,7 +60,7 @@ function go(r,opt={}){
   if((RSEG[r]!==undefined?"platform":"club")!==MODE){location.href=pathOf(r,opt);return}
   route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="vdv")routePid=String(opt.pid||"");if(r==="app"&&opt.tab)tab=opt.tab;
   try{history.pushState(null,"",pathOf(r))}catch(e){}
-  try{scrollTo({top:0})}catch(e){}
+  if(!opt.keep)try{scrollTo({top:0})}catch(e){}
   render()}
 addEventListener("popstate",()=>{const r=readPath(location.pathname);
   if(r.mode!==MODE||(r.mode==="club"&&r.cid!==CID)){location.reload();return}

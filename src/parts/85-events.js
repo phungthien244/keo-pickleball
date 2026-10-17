@@ -59,10 +59,14 @@ document.addEventListener("click",async e=>{
   if(act==="vtry"){speak(VOICE_SAMPLE,b.dataset.v,"v:"+b.dataset.v,true);return}
   if(act==="spkstop"){stopSpeak();return}
   if(act==="step"){const v=b.dataset.v,D=derive();
-    if(v==="chot"){stepView=null;sheetOpen=false;go("chot");return}
-    if(v==="live"&&phaseOf(D)!=="live"){toast("Buổi chưa bắt đầu. Bấm “Bắt đầu buổi” ở cuối trang Chuẩn bị.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san"})}return}
+    // Giữ vị trí: thanh 3 bước nằm yên chỗ cũ, không nhảy lên đầu trang
+    const bar=document.querySelector&&document.querySelector(".bsteps"),y0=window.scrollY||0;
+    let barY=null;try{if(bar){const st=bar.style.position;bar.style.position="static";barY=bar.getBoundingClientRect().top+y0-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tabh"))||49);bar.style.position=st}}catch(e){}
+    const keepPos=()=>{if(barY==null)return;try{scrollTo({top:Math.max(0,Math.min(y0,barY))})}catch(e){}};
+    if(v==="chot"){stepView=null;sheetOpen=false;go("chot",{keep:1});keepPos();return}
+    if(v==="live"&&phaseOf(D)!=="live"){toast("Buổi chưa bắt đầu. Bấm “Bắt đầu buổi” ở cuối trang Chuẩn bị.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san",keep:1});keepPos()}return}
     stepView=v==="prep"?"prep":null;sheetOpen=false;
-    if(route!=="app"||tab!=="san")go("app",{tab:"san"});else{render();try{scrollTo({top:0})}catch(e){}}return}
+    if(route!=="app"||tab!=="san")go("app",{tab:"san",keep:1});else render();keepPos();return}
   if(act==="attadd"){attAdd=!attAdd;render();return}
   if(act==="undoopen"){undoOpen=!undoOpen;render();return}
   if(act==="mute"){const m=!loaMuted();loaSetMute(m);if(m)stopSpeak();toast(m?"Đã tắt loa trên máy này":"Đã bật loa");render();return}
