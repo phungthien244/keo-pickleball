@@ -51,3 +51,18 @@ async function undoAll(only){
   if(regiai&&!(cfg().giai||{}).locked)await saveG({locked:true});
   return {n:back.length,k:keep.length};
 }
+
+/* ----- Trọng tài theo sân ----- */
+// Tên trọng tài được giao sân n (chỉ ban tổ chức có danh sách; trọng tài thấy tên mình)
+function refsOf(n){
+  n=Number(n);const L=[...(S.members||[]).filter(m=>m.role==="scorer"&&(m.courts||[]).map(Number).includes(n)).map(m=>m.name||m.email||"Trọng tài"),
+    ...(S.editors||[]).filter(e=>(e.courts||[]).map(Number).includes(n)).map(e=>e.name||"Máy PIN")];
+  if(!L.length&&REF&&MYCT.includes(n))L.push("Bạn");
+  return L;
+}
+function refTag(n){
+  const L=refsOf(n);if(!L.length)return canWrite&&(S.members||S.editors)?`<span class="reft none">Chưa có trọng tài</span>`:"";
+  return `<span class="reft">🧑‍⚖️ ${esc(L.join(", "))}</span>`;
+}
+// Trọng tài chỉ thấy các sân được giao
+const myCourt=m=>!REF||MYCT.includes(Number(m.court));

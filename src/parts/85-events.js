@@ -79,6 +79,7 @@ document.addEventListener("click",async e=>{
     if(v==="live"&&phaseOf(D)!=="live"){toast("Buổi chưa bắt đầu. Bấm “Bắt đầu buổi” ở cuối trang Chuẩn bị.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san",keep:1});keepPos()}return}
     stepView=v==="prep"?"prep":null;sheetOpen=false;
     if(route!=="app"||tab!=="san")go("app",{tab:"san",keep:1});else render();keepPos();return}
+  if(act==="gview"){gView=b.dataset.v==="luot"?"luot":"san";render();return}
   if(act==="attadd"){attAdd=!attAdd;render();return}
   if(act==="undoopen"){undoOpen=!undoOpen;render();return}
   if(act==="mute"){const m=!loaMuted();loaSetMute(m);if(m)stopSpeak();toast(m?"Đã tắt loa trên máy này":"Đã bật loa");render();return}

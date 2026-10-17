@@ -873,3 +873,11 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 .refct{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
 .refct button{min-width:40px;min-height:38px;padding:0 8px;border:1.5px solid var(--line-2);background:var(--surface);color:var(--muted);font-weight:800}
 .refct button.on{background:#1b7a3d;border-color:#1b7a3d;color:#fff}
+.reft{display:inline-flex;align-items:center;gap:4px;font-family:var(--body);font-weight:600;font-size:11px;letter-spacing:0;text-transform:none;background:#e6f6ec;color:#145c2e;padding:3px 8px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reft.none{background:#fff3c4;color:#7a6400}
+.court-h .reft{margin-left:auto}
+.rnd .rh .reft{margin:0 8px;flex:1;min-width:0;justify-content:flex-start}
+.gr[data-l]{position:relative;padding-left:40px}
+.gr[data-l]::before{content:attr(data-l);position:absolute;left:12px;top:50%;transform:translateY(-50%);font:800 10px var(--display);color:var(--muted);letter-spacing:.04em}
+.gnext{padding:8px 14px;border-top:1px solid var(--line);font:800 10px var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--blue);background:#f4f9fe}
+.shd .segs{margin-left:auto}.shd .segs button{min-height:34px;padding:0 10px;font-size:10px}

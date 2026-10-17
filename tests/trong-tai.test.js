@@ -28,7 +28,8 @@ test("trọng tài chỉ nhập điểm sân được giao, không sửa buổi,
   expect(V).not.toContain('data-act="cancel"');
   expect(V).toContain('data-act="savechk" data-id="m1"');
   expect(V).not.toContain('data-act="savechk" data-id="m2"');
-  expect(V).toMatch(/id="sa-m2"[^>]*disabled/);
+  expect(V).not.toContain('id="sa-m2"');
+  expect(e.T()).toContain("Sân của bạn");
   // không lưu được sân 2 kể cả bấm thẳng
   e.input("sa-m2", "11"); e.input("sb-m2", "5"); await e.click("save", { id: "m2" });
   expect(e.store.get("clubs/q7/matches/m2").status).toBe("playing");

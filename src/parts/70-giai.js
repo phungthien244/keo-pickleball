@@ -62,7 +62,9 @@ async function gFill(quiet){
   const busy=new Set(D.playing.filter(m=>m.giai).flatMap(m=>[m.pa,m.pb]));
   const lastDone=D.done.filter(m=>m.giai).slice(-Math.max(1,D.c.courts-1));
   const rest=new Set(lastDone.flatMap(m=>[m.pa,m.pb]));
-  const pick=[];for(const ct of free){const g=gPick(D,GD,busy,rest);if(!g)break;busy.add(g.x);busy.add(g.y);pick.push([ct,g])}
+  // Theo đúng lịch dự kiến đang hiện cho từng sân; không có thì chọn như cũ
+  const plan=gPlan(D,GD);
+  const pick=[];for(const ct of free){let g=(plan.get(ct)||[])[0];if(!g||busy.has(g.x)||busy.has(g.y))g=gPick(D,GD,busy,rest);if(!g)continue;busy.add(g.x);busy.add(g.y);pick.push([ct,g])}
   if(!pick.length)return 0;
   const lock=await db.doc("app/lock").acquire({holder,ttlMs:5000});
   if(!lock.acquired){if(!quiet)toast("Có người khác đang xếp trận, thử lại sau vài giây.");return 0}
@@ -106,13 +108,14 @@ function gSetup(D,G){
 }
 function gRun(D,GD){
   const c=D.c,left=GD.total-GD.resolved,est=Math.ceil(left/Math.max(1,c.courts))*GSLOT,pc=GD.total?Math.round(GD.resolved/GD.total*100):0;
-  const live=D.playing.filter(m=>m.giai);
+  const live=D.playing.filter(m=>m.giai),liveV=live.filter(myCourt);
   let h=`<div class="gprog"><div class="t"><span class="num">Lượt ${GD.curR}/${GD.rounds} · xong ${GD.resolved}/${GD.total} trận</span><span class="num">${left?`Còn ~${dur(est)}`:"Đã xong"}</span></div><div class="b"><i style="width:${pc}%"></i></div></div>`;
   if(GD.complete){const t=GD.table[0];h+=`<div class="champ"><div class="k"><span>ĐÃ ĐÁNH XONG VÒNG TRÒN · DẪN ĐẦU</span><span>${(()=>{const p=prizes(D,money(D))[0];return p?fmtK(p.k):""})()}</span></div><div class="p">${pairAv(D,t.p,"lg")}<span><span class="n">${pairNm(D,t.p)}</span><span class="s num" style="display:block">${t.w} thắng · ${t.l} thua · HS ${t.pf-t.pa>0?"+":""}${t.pf-t.pa}</span></span></div>${canWrite?`<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để lưu giải":"Kết thúc giải và lưu"}</button>`:""}</div>`}
   h+=`<div class="bar">${courtStep(c)}<span class="grow"></span>${canWrite&&!GD.complete&&live.length<c.courts&&gPick(D,GD,new Set(live.flatMap(m=>[m.pa,m.pb])),new Set())?`<button class="ball" data-act="gfill">Đưa trận kế vào sân trống</button>`:""}</div>`;
-  if(live.length)h+=`<div class="courts">${live.map(m=>gCourt(D,GD,m)).join("")}</div>`;
-  else if(!GD.complete)h+=`<div class="empty"><strong>Sân đang trống</strong>${canWrite?"Bấm “Đưa trận kế vào sân trống” để gọi trận tiếp theo theo lịch.":"Chờ người tổ chức gọi trận tiếp theo."}</div>`;
-  h+=`<div class="shd"><h2>Lịch thi đấu</h2></div>${gRounds(D,GD)}`;
+  if(liveV.length)h+=`<div class="courts">${liveV.map(m=>gCourt(D,GD,m)).join("")}</div>`;
+  else if(REF&&!GD.complete)h+=`<div class="empty"><strong>Sân của bạn đang trống</strong>Trận kế tiếp của sân ${MYCT.join(", ")||"được giao"} sẽ hiện ở đây.</div>`;
+  else if(!GD.complete&&!REF)h+=`<div class="empty"><strong>Sân đang trống</strong>${canWrite?"Bấm “Đưa trận kế vào sân trống” để gọi trận tiếp theo theo lịch.":"Chờ người tổ chức gọi trận tiếp theo."}</div>`;
+  h+=`<div class="shd"><h2>Lịch thi đấu</h2>${REF?"":`<span class="seg segs"><button data-act="gview" data-v="san" aria-pressed="${gView!=="luot"}">Theo sân</button><button data-act="gview" data-v="luot" aria-pressed="${gView==="luot"}">Theo lượt</button></span>`}</div>${REF||gView!=="luot"?gCourts(D,GD):gRounds(D,GD)}`;
   if(canWrite){
     h+=`<div class="panel"><h2>Quản lý giải</h2><p class="rule" style="margin-bottom:6px">Cặp bỏ về: các trận chưa đánh của họ tính thắng cho đối thủ nhưng không cộng điểm vào hiệu số, rating không đổi. Trận đã đánh giữ nguyên. Cặp mệt cần nghỉ thì bấm “Cho nghỉ”: app tạm không xếp trận cho cặp đó đến khi bấm “Cho vào lại”.</p>${(()=>{const lt=gLast(D),onC=new Set(live.flatMap(m=>[m.pa,m.pb])),rs=GD.G.rest||{};return GD.pairs.map(p=>{const o=!!GD.out[p.id],st=o?"Đã bỏ giải":onC.has(p.id)?"Đang trên sân":rs[p.id]?"BTC cho nghỉ, chưa xếp trận":lt.has(p.id)?`Đã nghỉ ${Math.max(0,Math.floor((Date.now()-lt.get(p.id))/60000))} phút`:"Chưa đánh trận nào";
     return `<div class="prow2 m"><span class="no num">${GD.T.get(p.id).no}</span>${pairAv(D,p,"sm")}<span class="nm">${pairNm(D,p)}<small>${st}</small></span><span class="bt">${!o&&!onC.has(p.id)?`<button class="ghost" data-act="grest" data-id="${p.id}">${rs[p.id]?"Cho vào lại":"Cho nghỉ"}</button>`:""}${o?`<button class="ghost" data-act="gin" data-id="${p.id}">Cho quay lại</button>`:armed("gout:"+p.id)?`<button class="danger" data-act="gout" data-id="${p.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="gout" data-id="${p.id}">Bỏ giải</button>`}</span></div>`}).join("")})()}
@@ -123,7 +126,7 @@ function gRun(D,GD){
 function gCourt(D,GD,m){
   const X=GD.T.get(m.pa),Y=GD.T.get(m.pb),ka=`sa-${m.id}`,kb=`sb-${m.id}`;
   const side=(t,k,lab)=>`<div class="team"><div class="names"><div class="tl">${pairAv(D,t.p,"md")}<div>${pairNm(D,t.p)}<small class="num">${t.w} thắng · ${t.l} thua · Rating TB ${r2(pairR(D,t.p))}</small></div></div></div><input class="score num" id="${k}" data-draft="${k}" type="number" inputmode="numeric" min="0" max="11" aria-label="${lab}" value="${esc(val(k,""))}" ${canScore(m)?"":"disabled"}></div>`;
-  return `<article class="court${isNew(m.id+"p")?" new":""}"><div class="court-h"><h3>Sân ${m.court}</h3><span class="num">Lượt ${m.round} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>
+  return `<article class="court${isNew(m.id+"p")?" new":""}"><div class="court-h"><h3>Sân ${m.court}</h3><span class="num">Lượt ${m.round} · Trận #${m.seq}</span>${refTag(m.court)}${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>
     ${side(X,ka,"Điểm đội 1")}${side(Y,kb,"Điểm đội 2")}
     <div class="court-f"><span class="meta" style="flex:1">${esc(ruleTxt(D.c))}</span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button>`:""}${canScore(m)?`<button class="primary" data-act="savechk" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>${saveConfirm(D,m)}${cancelConfirm(D,m)}
     ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}</article>`;
@@ -246,4 +249,45 @@ function autoGFill(){
     const n=D.done.filter(m=>m.giai).length;
     if(canWrite&&gDoneSeen!=null&&n>gDoneSeen){clearTimeout(gAutoT);gAutoT=setTimeout(()=>gFill(true).catch(()=>{}),1500)}
     gDoneSeen=n}catch(e){}
+}
+
+/* ----- Lịch theo sân: trận đã đánh, đang đánh và dự kiến kế tiếp của từng sân ----- */
+let gView="san";
+// Mô phỏng thứ tự gọi trận: sân nào xong trước nhận trận kế (cùng cách chọn với "Đưa trận kế vào sân")
+function gPlan(D,GD){
+  const n=Math.max(1,+D.c.courts||1),off=GD.G.rest||{},plan=new Map();
+  const wait=GD.games.filter(g=>g.st==="wait"&&!off[g.x]&&!off[g.y]);
+  const rem=new Map();for(const g of wait)for(const p of [g.x,g.y])rem.set(p,(rem.get(p)||0)+1);
+  const C=[];for(let i=1;i<=n;i++){const m=D.playing.find(x=>x.giai&&Number(x.court)===i);C.push({c:i,t:m?1:0,on:m?[m.pa,m.pb]:[]})}
+  const busy=new Set(C.flatMap(c=>c.on)),used=new Set();let last=new Set(D.done.filter(m=>m.giai).slice(-Math.max(1,n-1)).flatMap(m=>[m.pa,m.pb]));
+  for(let k=0;k<wait.length*(n+1)+n&&used.size<wait.length;k++){
+    C.sort((a,b)=>a.t-b.t||a.c-b.c);const ct=C[0];
+    for(const p of ct.on)busy.delete(p);const fin=new Set(ct.on);ct.on=[];
+    let best=null,bs=null;
+    wait.forEach((g,i)=>{if(used.has(g.key)||busy.has(g.x)||busy.has(g.y))return;
+      const s=[(last.has(g.x)||fin.has(g.x)?1:0)+(last.has(g.y)||fin.has(g.y)?1:0),-(rem.get(g.x)+rem.get(g.y)),i];
+      if(!bs||lexLt(s,bs)){bs=s;best=g}});
+    if(!best){ct.t+=1;if(C.every(c=>!c.on.length)&&!wait.some(g=>!used.has(g.key)&&!busy.has(g.x)&&!busy.has(g.y)))break;continue}
+    used.add(best.key);ct.on=[best.x,best.y];busy.add(best.x);busy.add(best.y);ct.t+=1;last=fin;
+    for(const p of [best.x,best.y])rem.set(p,rem.get(p)-1);
+    (plan.get(ct.c)||plan.set(ct.c,[]).get(ct.c)).push(best);
+  }
+  return plan;
+}
+function gCourts(D,GD){
+  const n=Math.max(1,+D.c.courts||1),plan=gPlan(D,GD);
+  const done=GD.games.filter(g=>g.st==="done"&&g.m).sort((a,b)=>(a.m.doneAt||0)-(b.m.doneAt||0));
+  let h=`<div class="rnds">`;
+  for(let i=1;i<=n;i++){
+    if(REF&&!MYCT.includes(i))continue;
+    const D1=done.filter(g=>Number(g.m.court)===i),L1=GD.games.filter(g=>g.st==="live"&&Number(g.m.court)===i),N1=plan.get(i)||[];
+    const row=(g,tag)=>gRow(D,GD,g).replace('<div class="gr','<div data-l="'+tag+'" class="gr');
+    h+=`<div class="rnd${L1.length?" live":N1.length?" next":""}"><div class="rh"><span>SÂN ${i}</span>${refTag(i)}<span>${D1.length} xong · ${N1.length} sắp tới</span></div>
+      ${D1.map(g=>row(g,"L"+g.r)).join("")}${L1.map(g=>row(g,"L"+g.r)).join("")}
+      ${N1.length?`<div class="gnext">Sắp tới · dự kiến</div>`+N1.map((g,k)=>row(g,(k+1)+"")).join(""):""}
+      ${!D1.length&&!L1.length&&!N1.length?`<div class="gr bye"><span class="meta">Chưa có trận.</span></div>`:""}</div>`;
+  }
+  const wo=GD.games.filter(g=>g.st==="wo");
+  if(wo.length&&!REF)h+=`<div class="rnd"><div class="rh"><span>BỎ CUỘC</span><span>${wo.length} trận</span></div>${wo.map(g=>gRow(D,GD,g)).join("")}</div>`;
+  return h+`</div><p class="rule">Thứ tự “sắp tới” là dự kiến: sân nào xong trước sẽ nhận trận kế, nên có thể đổi sân khi trận khác kết thúc sớm hơn.</p>`;
 }

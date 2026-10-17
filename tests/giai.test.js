@@ -16,6 +16,16 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   await e.click("gstart");
   const playing = () => e.docs("matches/", m => m.status === "playing");
   expect(playing().length).toBe(2);
+  // lịch theo sân: mỗi sân có trận đang đánh và các trận dự kiến, đủ hết số trận còn lại
+  expect(e.T()).toContain("SÂN 1");
+  expect(e.T()).toContain("SÂN 2");
+  expect(e.T()).toContain("Sắp tới · dự kiến");
+  {const nx=(e.V().match(/data-l="\d+"/g)||[]).length;const tot=(e.V().match(/data-l="/g)||[]).length;expect(nx).toBeGreaterThan(0);expect(tot).toBeGreaterThanOrEqual(nx+2)}
+  const vsSan = (e.V().match(/class="m vs"/g) || []).length;
+  await e.click("gview", { v: "luot" });
+  expect(e.T()).toContain("LƯỢT 1");
+  expect((e.V().match(/class="m vs"/g) || []).length).toBe(vsSan);
+  await e.click("gview", { v: "san" });
   const [id0] = playing()[0];
   e.input("sa-" + id0, "11"); e.input("sb-" + id0, "11"); await e.click("save", { id: id0 });
   expect(e.V()).toContain("không được hòa"); expect(e.V()).toContain("Chạm 11, không cần cách 2");

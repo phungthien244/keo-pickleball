@@ -21,7 +21,7 @@ function queueBox(D,org){
   return `<div><div class="lab"><span class="lbl">Hàng chờ (${Q.length}) · số nhỏ lên trước</span>${org?`<button class="lnk" data-act="sheet">+ Người đến muộn</button>`:""}</div>${Q.length?`<div class="qgrid">${col("Nam",Q.filter(p=>p.gender!=="F"))}${col("Nữ",Q.filter(p=>p.gender==="F"))}</div><small class="rule">Số bên phải là số trận đã đánh.</small>`:`<p class="rule">Không ai đang chờ.</p>`}</div>`;
 }
 function doneBox(D){
-  const hist=[...D.done].reverse();
+  const hist=[...D.done].filter(myCourt).reverse();
   return `<div class="panel"><div class="bar" style="margin-bottom:6px"><h2 class="grow">Trận đã xong</h2><span class="meta num">${hist.length} trận</span></div>`+
     (hist.length?`<div class="hist">${hist.map(m=>histRow(D,m)).join("")}</div>`:`<p class="rule">Kết quả sẽ hiện ở đây sau khi lưu tỉ số.</p>`)+`</div>`;
 }
@@ -38,7 +38,8 @@ function vSanView(D){
     return meBox(D,{pay:false})+box;
   }
   let h=refNote()+`<div class="liveln"><span class="dot"></span>${esc(sessTitle(c,D.sid))} · đang đánh · ${D.playing.length} sân · ${act.length} người</div>`+meBox(D);
-  h+=D.playing.length?`<div class="lab"><span class="lbl">Đang đánh</span></div><div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`:`<div class="empty"><strong>Sân đang trống</strong>Chờ ban tổ chức xếp trận. Trang tự cập nhật, không cần tải lại.</div>`;
+  const PL=D.playing.filter(myCourt);
+  h+=PL.length?`<div class="lab"><span class="lbl">${REF?"Sân của bạn":"Đang đánh"}</span></div><div class="courts">${PL.map(m=>courtCard(D,m)).join("")}</div>`:REF?`<div class="empty"><strong>Sân của bạn đang trống</strong>Chờ ban tổ chức xếp trận vào sân ${MYCT.join(", ")||"được giao"}.</div>`:`<div class="empty"><strong>Sân đang trống</strong>Chờ ban tổ chức xếp trận. Trang tự cập nhật, không cần tải lại.</div>`;
   return h+queueBox(D,false)+doneBox(D);
 }
 const gOf=(D,id)=>D.pmap.get(id)?.gender==="F"?"F":"M";
@@ -76,7 +77,7 @@ function keoPill(c,pA){
 function courtCard(D,m){
   const c=D.c,i=D.info.get(m.id),pA=i.pA, ka=`sa-${m.id}`,kb=`sb-${m.id}`;
   return `<article class="court${isNew(m.id+"p")?" new":""}">
-    <div class="court-h"><h3>Sân ${m.court}</h3><span class="num">${KIND[kindOf(D,m)]} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>
+    <div class="court-h"><h3>Sân ${m.court}</h3><span class="num">${KIND[kindOf(D,m)]} · Trận #${m.seq}</span>${refTag(m.court)}${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>
     <div class="team"><div class="names">${teamLine(D,m.a)}</div><input class="score num" id="${ka}" data-draft="${ka}" type="number" inputmode="numeric" min="0" max="99" aria-label="Điểm đội 1" value="${esc(val(ka,""))}" ${canScore(m)?"":"disabled"}></div>
     <div class="prob" title="Xác suất thắng dự kiến"><i style="width:${Math.round(pA*100)}%"></i></div>
     <div class="bar" style="justify-content:space-between;padding:6px 16px 0"><span class="lbl num" style="color:var(--navy)">${Math.round(pA*100)}% thắng</span><span class="lbl num">${Math.round((1-pA)*100)}% thắng</span></div>
