@@ -224,8 +224,8 @@ document.addEventListener("click",async e=>{
     catch(x){toast(x&&x.code==="permission-denied"?"Máy chủ chưa cho giao sân: cần cập nhật quyền dữ liệu (Firestore Rules).":"Chưa lưu được, thử lại.")}
     render()}
   else if(act==="srestore"){if(ROLE!=="owner"&&!legacy)return;if(!armOr("srestore:"+id))return;let r;await write(async()=>{r=await restoreSession(id)});if(r)toast(r)}
-  else if(act==="undoone"){let r;await write(async()=>{r=await undoAll(id)});if(r)toast(r.n?"Đã khôi phục trận":"Chưa khôi phục được: người chơi đang ở sân khác hoặc hết sân trống")}
-  else if(act==="undoall"){let r;await write(async()=>{r=await undoAll()});if(r)toast(r.k?`Đã khôi phục ${r.n} trận, ${r.k} trận chưa khôi phục được vì người chơi đang ở sân khác`:`Đã khôi phục ${r.n} trận`)}
+  else if(act==="undoone"){if(!armOr("undoone:"+id))return;let r;await write(async()=>{r=await undoAll(id)});if(r)toast(r.n?"Đã khôi phục trận":"Chưa khôi phục được: người chơi đang ở sân khác hoặc hết sân trống")}
+  else if(act==="undoall"){if(!armOr("undoall:x"))return;let r;await write(async()=>{r=await undoAll()});if(r)toast(r.k?`Đã khôi phục ${r.n} trận, ${r.k} trận chưa khôi phục được vì người chơi đang ở sân khác`:`Đã khôi phục ${r.n} trận`)}
   else if(act==="savechk"){const m=S.matches.find(x=>x.id===id);if(!m)return;const ra=val("sa-"+id,""),rb=val("sb-"+id,""),a=Number(ra),bb=Number(rb);
     const msg=ra===""||rb===""?"Nhập điểm hai đội.":validPts(a,bb,cfg());if(msg){errs[id]=msg;pendSave.delete(id);render();return}
     delete errs[id];pendSave.add(id);render()}

@@ -1,12 +1,14 @@
 /* ----- Hủy trận có xác nhận + thùng rác để hoàn tác ----- */
 const pendCancel=new Set();
 const TRASH_MAX=40;
-const trashItems=()=>((S.trash&&S.trash.items)||[]);
+const trashAll=()=>((S.trash&&S.trash.items)||[]);
+// Chỉ hiện và hoàn tác các trận của buổi đang diễn ra
+const trashItems=()=>{const sid=cfg().session||1;return trashAll().filter(x=>((x.d&&x.d.session)||1)===sid)};
 // Ghi trận vào thùng rác rồi xóa khỏi danh sách trận
 async function trashMatches(list,why){
   list=list.filter(Boolean);if(!list.length)return;
   const now=Date.now(),add=list.map(m=>{const {id,...d}=m;return {id,d,why,at:now,by:who()}});
-  const items=[...add,...trashItems().filter(x=>!add.some(a=>a.id===x.id))].slice(0,TRASH_MAX);
+  const items=[...add,...trashAll().filter(x=>!add.some(a=>a.id===x.id))].slice(0,TRASH_MAX);
   await db.doc("app/trash").set({items});S.trash={items};
   for(const m of list)await db.collection("matches").doc(m.id).delete();
 }
@@ -24,14 +26,16 @@ function undoBar(){
   if(!undoOpen)return h;
   const D=derive(),nm=id=>esc(D.pmap.get(id)?.name||"?");
   const L=[...T].sort((a,b)=>(b.at||0)-(a.at||0));
-  return h+`<div class="ulist">${L.map(it=>{const d=it.d||{};return `<div class="urow"><span class="ut"><b>${WHY[it.why]||"Xóa"} · Sân ${d.court||"?"}${d.session&&d.session!==D.sid?` · buổi #${d.session}`:""}</b><span>${(d.a||[]).map(nm).join(" &amp; ")} – ${(d.b||[]).map(nm).join(" &amp; ")}${d.status==="done"?` <span class="num">${d.sa}–${d.sb}</span>`:""}</span><small>${hm(it.at)}${it.by?" · "+esc(it.by):""}</small></span><button class="sm" data-act="undoone" data-id="${it.id}">Hoàn tác</button></div>`}).join("")}
-    ${n>1?`<button class="line wide" data-act="undoall">↶ Hoàn tác tất cả (${n})</button>`:""}</div>`;
+  return h+`<div class="ulist">${L.map(it=>{const d=it.d||{};return `<div class="urow"><span class="ut"><b>${WHY[it.why]||"Xóa"} · Sân ${d.court||"?"}</b><span>${(d.a||[]).map(nm).join(" &amp; ")} – ${(d.b||[]).map(nm).join(" &amp; ")}${d.status==="done"?` <span class="num">${d.sa}–${d.sb}</span>`:""}</span><small>${hm(it.at)}${it.by?" · "+esc(it.by):""}</small></span>${armed("undoone:"+it.id)?`<button class="sm primary" data-act="undoone" data-id="${it.id}">Bấm lần nữa</button>`:`<button class="sm" data-act="undoone" data-id="${it.id}">Hoàn tác</button>`}</div>`}).join("")}
+    ${n>1?`<button class="${armed("undoall:x")?"primary":"line"} wide" data-act="undoall">${armed("undoall:x")?"Bấm lần nữa để hoàn tác tất cả":`↶ Hoàn tác tất cả (${n})`}</button>`:""}</div>`;
 }
 // Khôi phục mọi trận trong thùng rác. Trận đang đánh mà người chơi đã lên sân khác thì giữ lại.
 async function undoAll(only){
   const D=derive(),busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),used=new Set(D.playing.map(m=>m.court));
   const keep=[],back=[];let regiai=false;
-  for(const it of trashItems()){
+  const cur=new Set(trashItems().map(x=>x.id));
+  for(const it of trashAll()){
+    if(!cur.has(it.id)){keep.push(it);continue}
     if(only&&it.id!==only){keep.push(it);continue}
     const d={...it.d};
     if(d.status==="playing"){

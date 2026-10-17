@@ -24,6 +24,8 @@ test("hủy trận phải xác nhận, hoàn tác khôi phục mọi trận đã
   await e.click("undoopen");
   expect(e.T()).toContain("Hủy trận · Sân");
   await e.click("undoone", { id });
+  expect(playing().length).toBe(n0 - 1);
+  await e.click("undoone", { id });
   expect(playing().length).toBe(n0);
   expect(e.store.get("matches/" + id)).toBeTruthy();
   expect(e.V()).not.toContain('data-act="undoopen"');

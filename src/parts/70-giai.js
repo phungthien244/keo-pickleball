@@ -81,8 +81,8 @@ const courtStep=c=>`<span class="lbl">Số sân</span><span class="stepper"><but
 function vGiaiSan(D){
   const G=D.c.giai||{pairs:[]};
   if(canWrite&&(phaseOf(D)==="prep"||stepView==="prep"))return steps3(1,D)+vPrep(D);
-  if(canWrite&&!G.locked)return steps3(2,D)+cfgChip(D)+undoBar()+gSetup(D,G);
-  if(canWrite)return steps3(2,D)+cfgChip(D)+undoBar()+gRun(D,gDerive(D));
+  if(canWrite&&!G.locked)return steps3(2,D)+cfgChip(D)+gSetup(D,G)+undoBar();
+  if(canWrite)return steps3(2,D)+cfgChip(D)+gRun(D,gDerive(D))+undoBar();
   return refNote()+(G.locked?gRun(D,gDerive(D)):gSetup(D,G));
 }
 function gSetup(D,G){
