@@ -62,7 +62,7 @@ test("lưu tỉ số: hiện Xác nhận và Đọc kết quả, đọc đúng s
   expect(e.T()).toContain("Xác nhận");
   expect(e.T()).toContain("Đọc kết quả");
   await e.click("readres", { id });
-  expect(said.pop().text).toMatch(/^Sân số 1 kết thúc\. Cặp .+ đã chiến thắng cặp .+, với tỉ số 11, 7\.$/);
+  expect(said.pop().text).toMatch(/^Sân số 1 kết thúc\. Cặp (anh|chị) [^,]+, (anh|chị) [^,]+ chiến thắng, tỉ số là 11, 7\.$/);
   await e.click("save", { id });
   expect(e.store.get("matches/" + id).status).toBe("done");
 });

@@ -58,7 +58,7 @@ const pendSave=new Set();
 function resultText(D,m,a,b){
   const team=ids=>ids.map(id=>{const p=D.pmap.get(id);return `${xung(p)} ${p?.name||""}`.trim()}).join(", ");
   const W=a>b?m.a:m.b,L=a>b?m.b:m.a;
-  return `Sân số ${m.court} kết thúc. Cặp ${team(W)} đã chiến thắng cặp ${team(L)}, với tỉ số ${Math.max(a,b)}, ${Math.min(a,b)}.`;
+  return `Sân số ${m.court} kết thúc. Cặp ${team(W)} chiến thắng, tỉ số là ${Math.max(a,b)}, ${Math.min(a,b)}.`;
 }
 function saveConfirm(D,m){
   if(!pendSave.has(m.id))return "";
