@@ -60,9 +60,10 @@ document.addEventListener("click",async e=>{
   if(act==="spkstop"){stopSpeak();return}
   if(act==="step"){const v=b.dataset.v,D=derive();
     // Giữ vị trí: thanh 3 bước nằm yên chỗ cũ, không nhảy lên đầu trang
-    const bar=document.querySelector&&document.querySelector(".bsteps"),y0=window.scrollY||0;
-    let barY=null;try{if(bar){const st=bar.style.position;bar.style.position="static";barY=bar.getBoundingClientRect().top+y0-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tabh"))||49);bar.style.position=st}}catch(e){}
-    const keepPos=()=>{if(barY==null)return;try{scrollTo({top:Math.max(0,Math.min(y0,barY))})}catch(e){}};
+    const y0=window.scrollY||0;
+    const natY=()=>{try{const bar=document.querySelector(".bsteps");if(!bar)return null;const st=bar.style.position;bar.style.position="static";const y=bar.getBoundingClientRect().top+(window.scrollY||0)-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tabh"))||49);bar.style.position=st;return Math.max(0,y)}catch(e){return null}};
+    const barY=natY();
+    const keepPos=()=>{if(barY==null)return;const nY=natY();try{scrollTo({top:y0>=barY&&nY!=null?nY:Math.min(y0,nY??y0)})}catch(e){}};
     if(v==="chot"){stepView=null;sheetOpen=false;go("chot",{keep:1});keepPos();return}
     if(v==="live"&&phaseOf(D)!=="live"){toast("Buổi chưa bắt đầu. Bấm “Bắt đầu buổi” ở cuối trang Chuẩn bị.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san",keep:1});keepPos()}return}
     stepView=v==="prep"?"prep":null;sheetOpen=false;
