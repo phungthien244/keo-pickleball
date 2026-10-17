@@ -684,3 +684,26 @@ button.tick.on .box{background:var(--blue);border-color:var(--blue);color:#fff}
 .clogo.big{width:64px;height:64px;font-size:28px}
 .logoed{display:flex;align-items:center;gap:14px}.logoed .t{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
 .lnkbtn{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border:1px solid var(--navy);color:var(--navy);font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+/* Bảng xếp hạng vòng tròn */
+.shd .meta{font-size:12px}
+.grl{background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column}
+.grk{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:start;padding:12px 14px;border-bottom:1px solid var(--line)}
+.grk:last-child{border-bottom:none}
+.grk .rk{font-family:var(--display);font-weight:900;font-size:22px;line-height:1;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--sunk);color:var(--muted)}
+.grk.m1 .rk{background:var(--yellow);color:var(--navy)}.grk.m2 .rk{background:#c9d3db;color:var(--navy)}.grk.m3 .rk{background:#d9905a;color:#fff}
+.grk.m1{background:#fffbe0}
+.grk.out{opacity:.7}
+.grk .t{display:flex;flex-direction:column;gap:5px;min-width:0}
+.grk .nm{display:flex;align-items:center;gap:8px;min-width:0}
+.grk .nm .avs .av+.av{margin-left:-8px}
+.grk .nm b{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grk .st{font-size:12px;color:var(--muted)}.grk .st b{color:var(--ink);font-family:var(--display);font-size:13px}
+.grk .st em{font-style:normal;color:var(--lose);font-weight:600}
+.grk .bar2{height:4px;background:var(--line)}.grk .bar2 i{display:block;height:100%;background:var(--blue)}
+.grk .form{display:flex;flex-wrap:wrap;gap:3px}
+.grk .form i{font-style:normal;min-width:22px;height:20px;padding:0 3px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:10px;color:#fff}
+.grk .form i.w{background:var(--win)}.grk .form i.l{background:var(--lose)}.grk .form i.wo{opacity:.6}
+.grk .pz{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
+.grk .pz small{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.grk .pz b{font-family:var(--display);font-weight:900;font-size:14px;color:var(--navy);white-space:nowrap}
+.form.f3{grid-template-columns:repeat(3,minmax(0,1fr))}

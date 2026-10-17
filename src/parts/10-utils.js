@@ -1,7 +1,7 @@
 const noAcc=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9 ]/g,"").replace(/\s+/g," ").trim().toUpperCase();
-const payNote=(sid,name)=>`RR B${sid} ${noAcc(name)}`.slice(0,25).trim();
+const payNote=(sid,name)=>`${noAcc(CID)} B${sid} ${noAcc(name)}`.slice(0,25).trim();
 const qrUrl=(amt,note)=>`https://img.vietqr.io/image/${BANK.bin}-${BANK.acc}-compact2.png?amount=${amt}&addInfo=${encodeURIComponent(note)}&accountName=${encodeURIComponent(BANK.holder)}`;
-const appUrl=(app,amt,note,sid)=>`https://dl.vietqr.io/pay?app=${app}&ba=${BANK.acc}@${BANK.code}&am=${amt}&tn=${encodeURIComponent(note)}&bn=${encodeURIComponent(BANK.holder)}&url=${encodeURIComponent("https://rr.pikeco.app/?buoi="+sid)}`;
+const appUrl=(app,amt,note,sid)=>`https://dl.vietqr.io/pay?app=${app}&ba=${BANK.acc}@${BANK.code}&am=${amt}&tn=${encodeURIComponent(note)}&bn=${encodeURIComponent(BANK.holder)}&url=${encodeURIComponent(shareUrl(sid))}`;
 let payOpen=null;
 function showSheet(){
   let el=document.getElementById("paysheet");

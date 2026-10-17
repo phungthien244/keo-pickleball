@@ -63,10 +63,18 @@ function moneyBlock(D){
 function prizeBlock(D){
   const c=D.c,gt=c.gt||"khong",G=isG(c);
   if(gt==="khong")return `<small class="rule">Buổi này không trao giải. Tích “Giải thưởng” để chọn cách lập quỹ giải.</small>`;
-  return `<span class="seg segw">${Object.entries(GT).filter(([v])=>v!=="khong").map(([v,l])=>sgB("gt",v,gt,l)).join("")}</span>
-   ${gt!=="khong"?`<div class="form">${cfIn("gtv",gt==="trich"?"Trích bao nhiêu % phần dư":gt==="codinh"?"Quỹ CLB bỏ ra (k)":"Mỗi người góp thêm (k)",c.gtv||(gt==="trich"?30:gt==="codinh"?200:20))}</div>`:""}
-   ${gt!=="khong"&&G?`<span class="seg segw">${[["100","Chỉ vô địch"],["60,40","60 / 40"],["50,30,20","50 / 30 / 20"]].map(([v,l])=>sgB("chia",v,c.chia||"50,30,20",l)).join("")}</span>`:""}
-   <small class="rule">${gt==="khong"?"Buổi này không trao giải.":G?"Giải trao cho các cặp đứng đầu bảng xếp hạng cuối giải.":"Chia đều cho Số 1 nam và Số 1 nữ của buổi, chỉ xét người đánh ít nhất 70% số trận trung bình."}</small>`;
+  const opts=G?["hang","trich","gop"]:["trich","codinh","gop"];
+  let h=`<span class="seg segw">${opts.map(v=>sgB("gt",v,gt,GT[v])).join("")}</span>`;
+  if(G&&gt==="hang"){const k=hangOf(c);
+    h+=`<div class="form f3">${cfIn("hang1","Giải nhất (k)",k[0])}${cfIn("hang2","Giải nhì (k)",k[1])}${cfIn("hang3","Giải ba (k)",k[2])}</div>
+    <small class="rule">Quỹ CLB trả tổng ${fmtK(k[0]+k[1]+k[2])}. Để 0 nếu không trao hạng đó.</small>`;
+  }else{
+    h+=`<div class="form">${cfIn("gtv",gt==="trich"?"Trích bao nhiêu % phần dư":gt==="codinh"?"Quỹ CLB bỏ ra (k)":"Mỗi người góp thêm (k)",c.gtv||(gt==="trich"?30:gt==="codinh"?200:20))}</div>`;
+    if(G){const p=chiaOf(c),t=p[0]+p[1]+p[2];
+      h+=`<span class="lbl">Chia quỹ giải (%)</span><div class="form f3">${cfIn("chia1","Nhất %",p[0])}${cfIn("chia2","Nhì %",p[1])}${cfIn("chia3","Ba %",p[2])}</div>
+      <small class="rule"${t!==100?' style="color:var(--lose)"':""}>Tổng ${t}%${t!==100?" · nên đúng 100%":""}.</small>`}
+  }
+  return h+`<small class="rule">${G?"Trao cho 3 cặp đứng đầu bảng xếp hạng cuối giải.":"Chia đều cho Số 1 nam và Số 1 nữ của buổi, chỉ xét người đánh ít nhất 70% số trận trung bình."}</small>`;
 }
 const flexNote=`<div class="flexnote"><b>Không khoá cứng.</b> Mọi mục trên vẫn sửa được khi đang đánh (nút Sửa ở tab Sân) và sau khi chốt (mở lại buổi trong Lịch sử).</div>`;
 
@@ -211,7 +219,7 @@ async function chotBuoi(){
     await db.doc("app/hist-"+D.sid).set({sid:D.sid,title:D.c.title,startedAt:isFinite(firstAt)?firstAt:Date.now(),endedAt:Date.now(),matchCount:D.done.length,
       rows:standings(D).filter(r=>r.s.g).map(r=>({id:r.p.id,name:r.p.name,gender:r.p.gender||"M",w:r.s.w,l:r.s.l,pf:r.s.pf,pa:r.s.pa,rating:Math.round(r.s.rating*100)/100,d:Math.round(r.s.d*1000)/1000,...payRow(D,M,r.p.id)})),
       money:moneySnap(D,M),fee:{fee:D.c.fee,keo:D.c.keo,hi:D.c.hi,lo:D.c.lo,cap:D.c.cap},
-      paid:{...(pd.paid||{})},adj:{...(pd.adj||{}),...extra},track:true,closedAt:Date.now(),closedBy:who(),sname:D.c.sname||""});
+      paid:{...(pd.paid||{})},adj:{...(pd.adj||{}),...extra},track:true,closedAt:Date.now(),closedBy:who(),sname:D.c.sname||"",rule:ruleTxt(D.c)});
     for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
     await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},phase:"prep",sname:""});
   },"Đã chốt buổi, đây là trang tổng kết để chia sẻ");
@@ -240,8 +248,8 @@ async function sessionAct(act,id,b,e){
   if(act==="ptmax"){const c=cfg(),on=b.dataset.v==="1";write(()=>saveCfg({ptMax:on?Math.max(c.target+2,+c.ptMax||c.target+4):0}));return true}
   if(act==="ptmaxd"){const c=cfg(),n=Math.min(40,Math.max(c.target+1,(+c.ptMax||c.target+4)+Number(b.dataset.d)));write(()=>saveCfg({ptMax:n}));return true}
   if(act==="cphi"){const on=cfg().cphi===false;write(()=>saveCfg(on?{cphi:true,thu:cfg().thu==="khong"?"keo":cfg().thu}:{cphi:false}),on?"Buổi này có thu tiền":"Buổi này không thu tiền");return true}
-  if(act==="gton"){const c=cfg(),on=(c.gt||"khong")==="khong";const g=on?(c.gtPrev&&c.gtPrev!=="khong"?c.gtPrev:"trich"):"khong";
-    write(()=>saveCfg(on?{gt:g,gtv:c.gtv||(g==="trich"?30:g==="codinh"?200:20)}:{gt:"khong",gtPrev:c.gt}),on?"Có giải thưởng":"Không trao giải");return true}
+  if(act==="gton"){const c=cfg(),on=(c.gt||"khong")==="khong";const g=on?(c.gtPrev&&c.gtPrev!=="khong"?c.gtPrev:isG(c)?"hang":"trich"):"khong";
+    write(()=>saveCfg(on?{gt:g,gtv:c.gtv||(g==="trich"?30:g==="codinh"?200:20),...(g==="hang"&&c.hang1==null?{hang1:200,hang2:100,hang3:50}:{})}:{gt:"khong",gtPrev:c.gt}),on?"Có giải thưởng":"Không trao giải");return true}
   if(act==="target"){const c=cfg(),n=Math.min(21,Math.max(5,c.target+Number(b.dataset.d))),p={target:n};if(+c.ptMax&&c.ptMax<=n)p.ptMax=n+2;write(()=>saveCfg(p));return true}
   if(act==="att"){const p=S.players.find(x=>x.id===id);if(!p)return true;const on=p.active!==false;
     if(on&&derive().playing.some(m=>[...m.a,...m.b].includes(id))){toast("Người này đang trên sân, lưu tỉ số trước.");return true}

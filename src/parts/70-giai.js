@@ -157,9 +157,10 @@ function vGiaiBxh(D,GD){
   if(!GD||!GD.pairs.length)return `<div class="empty"><strong>Chưa có cặp nào</strong>Vào tab Sân để ghép cặp và tạo lịch thi đấu.</div>`;
   const codes=gCodes(D,GD),res=new Map(GD.games.map(g=>[g.key,g]));
   let h=`<p class="rule">Xếp theo số trận thắng → đối đầu trực tiếp → hiệu số điểm → tổng điểm ghi. Hết vòng tròn, 3 cặp đứng đầu nhận giải.</p>
-  <div class="dark"><div class="bar"><span class="lbl grow" style="color:var(--sky)">Sau ${GD.resolved}/${GD.total} trận</span></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Cặp</th><th>Đã</th><th>T–B</th><th>HS</th></tr></thead><tbody>
-  ${GD.table.map((t,i)=>{const df=t.pf-t.pa;return `<tr class="${!t.out&&i<3?"g"+(i+1):""}"><td class="rank">${t.out?"–":i+1}</td><td><span class="pn">${pairAv(D,t.p,"sm")}<span><b>${pairNm(D,t.p)}</b>${t.out?` <span class="meta">BỎ GIẢI</span>`:""}</span></span></td><td>${t.gp}</td><td><b>${t.w}–${t.l}</b></td><td class="${df>0?"up":df<0?"down":""}">${df>0?"+":""}${df}</td></tr>`}).join("")}
-  </tbody></table></div><div class="bar" style="gap:8px 16px">${["Hạng 1","Hạng 2","Hạng 3"].map((l,i)=>`<span class="meta" style="display:inline-flex;align-items:center;gap:6px;color:var(--sky)"><i class="md${i+1}"></i>${l}${(()=>{const p=prizes(D,money(D))[i];return p?` · ${fmtK(p.k)}`:""})()}</span>`).join("")}</div></div>`;
+`;
+  {const nmOf=id=>D.pmap.get(id)?.name||"?",L=GD.table.map(t=>({id:t.p.id,a:t.p.a,b:t.p.b,na:nmOf(t.p.a),nb:nmOf(t.p.b),w:t.w,l:t.l,pf:t.pf,pa:t.pa,out:t.out})),
+    gm=GD.games.filter(g=>g.st==="done"||(g.st==="wo"&&g.wo)).map(g=>({x:g.x,y:g.y,sx:g.sx,sy:g.sy,wo:g.wo||null,r:g.r})),pz=prizes(D,money(D));
+    h+=`<div class="shd"><h2>Sau ${GD.resolved}/${GD.total} trận</h2><span class="meta">Ô xanh thắng · đỏ thua</span></div>`+gRank(L,gm,[0,1,2].map(i=>pz[i]?pz[i].k:0),(id,n)=>D.pmap.get(id)||{name:n});}
   h+=`<div class="shd"><h2>Bảng đối đầu</h2></div><p class="rule">Đọc theo hàng: điểm của cặp ở hàng đó đứng trước. Xanh là thắng, đỏ là thua, chấm là chưa đánh.</p>
   <div class="h2h"><table><thead><tr><th></th>${GD.table.map(t=>`<th>${esc(codes.get(t.p.id))}</th>`).join("")}</tr></thead><tbody>${GD.table.map(r=>`<tr><td>${esc(codes.get(r.p.id))}</td>${GD.table.map(cc=>{if(r===cc)return `<td class="x"></td>`;const g=res.get(gk(r.p.id,cc.p.id));
     if(!g||g.st==="wait"||g.st==="live")return `<td class="n">·</td>`;
@@ -167,6 +168,19 @@ function vGiaiBxh(D,GD){
     const me=g.x===r.p.id?g.sx:g.sy,op=g.x===r.p.id?g.sy:g.sx;return `<td class="${me>op?"w":"l"}">${me}-${op}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>
   <p class="rule">${GD.table.map(t=>`<b>${esc(codes.get(t.p.id))}</b>: ${pairNm(D,t.p)}`).join(" · ")}</p>`;
   return h;
+}
+/* Bảng xếp hạng vòng tròn: hạng, cặp, thành tích, chuỗi kết quả từng lượt, tiền thưởng */
+function gRank(L,games,pz,P){
+  const md=["Nhất","Nhì","Ba"];
+  return `<div class="grl">${L.map((t,i)=>{const rk=t.out?0:i+1,d=t.pf-t.pa,gp=t.w+t.l,pc=gp?Math.round(t.w/gp*100):0;
+    const form=games.filter(g=>g.x===t.id||g.y===t.id).sort((a,b)=>(a.r||0)-(b.r||0)).map(g=>{const me=g.x===t.id,op=me?g.y:g.x,o=L.find(z=>z.id===op);
+      if(g.wo){const w=g.wo===t.id;return `<i class="${w?"w":"l"} wo" title="${w?"Thắng":"Thua"} vì bỏ giải · ${esc(o?o.na+" & "+o.nb:"")}">${w?"T":"B"}</i>`}
+      const a=me?g.sx:g.sy,b=me?g.sy:g.sx;return `<i class="${a>b?"w":"l"}" title="${a}–${b} · ${esc(o?o.na+" & "+o.nb:"")}">${a}</i>`}).join("");
+    return `<div class="grk${rk&&rk<4?" m"+rk:""}${t.out?" out":""}"><span class="rk num">${rk||"–"}</span>
+      <span class="t"><span class="nm"><span class="avs">${av(P(t.a,t.na),"sm")}${av(P(t.b,t.nb),"sm")}</span><b>${esc(t.na)} &amp; ${esc(t.nb)}</b></span>
+      <span class="st num"><b>${t.w}–${t.l}</b> · HS ${d>0?"+":""}${d} · ghi ${t.pf}${t.out?" · <em>bỏ giải</em>":""}</span>
+      <span class="bar2"><i style="width:${pc}%"></i></span>${form?`<span class="form">${form}</span>`:""}</span>
+      ${rk&&rk<4?`<span class="pz"><small>${md[rk-1]}</small>${pz[rk-1]?`<b class="num">${pzTxt(pz[rk-1])}</b>`:""}</span>`:"<span></span>"}</div>`}).join("")}</div>`;
 }
 async function endGiai(){
   const D=derive(),GD=gDerive(D);if(!GD)return;
@@ -176,7 +190,7 @@ async function endGiai(){
     const nmOf=id=>D.pmap.get(id)?.name||"(đã xóa)",M=money(D);
     await db.doc("app/hist-"+D.sid).set({sid:D.sid,type:"giai",title:D.c.title,startedAt:isFinite(firstAt)?firstAt:(GD.G.startedAt||Date.now()),endedAt:Date.now(),matchCount:ms.length,
       rows:standings(D).filter(r=>r.s.g).map(r=>({id:r.p.id,name:r.p.name,gender:r.p.gender||"M",w:r.s.w,l:r.s.l,pf:r.s.pf,pa:r.s.pa,rating:Math.round(r.s.rating*100)/100,d:Math.round(r.s.d*1000)/1000,...payRow(D,M,r.p.id)})),
-      money:moneySnap(D,M),paid:{...(payDoc(D.sid).paid||{})},track:true,closedAt:Date.now(),closedBy:who(),sname:D.c.sname||"",
+      money:moneySnap(D,M),paid:{...(payDoc(D.sid).paid||{})},track:true,closedAt:Date.now(),closedBy:who(),sname:D.c.sname||"",rule:ruleTxt(D.c),
       giai:{prizes:prizes(D,M).map(x=>x.k),complete:GD.complete,
         table:GD.table.map(t=>({id:t.p.id,a:t.p.a,b:t.p.b,na:nmOf(t.p.a),nb:nmOf(t.p.b),gp:t.gp,w:t.w,l:t.l,pf:t.pf,pa:t.pa,wo:t.wo,out:t.out})),
         games:GD.games.filter(g=>g.st==="done"||(g.st==="wo"&&g.wo)).map(g=>({r:g.r,x:g.x,y:g.y,sx:g.sx,sy:g.sy,wo:g.wo||null,court:g.m?.court||null,seq:g.m?.seq||null,at:g.m?.doneAt||null}))}});
@@ -196,8 +210,8 @@ function vGiaiSum(D,x,back){
     <div class="stats"><div><b class="num">${T.length}</b><small>CẶP</small></div><div><b class="num">${games.filter(g=>!g.wo).length}</b><small>TRẬN</small></div><div><b class="num">${pts||"–"}</b><small>ĐIỂM GHI</small></div></div>
     <div class="hsplit">${c1?`<div class="champ"><div class="k"><span>VÔ ĐỊCH</span><span>${pzTxt(pz[0])}</span></div><div class="p">${tAv(c1,"xl")}<span><span class="n">${tNm(c1)}</span><span class="s num" style="display:block;margin-top:6px">${c1.w} thắng · ${c1.l} thua · HS ${hs(c1)}</span></span></div></div>`:""}
     ${c2?`<div class="podium">${[c2,c3].map((t,i)=>t?`<div class="${i?"b3":"b2"}"><span class="k">HẠNG ${i+2}</span>${tAv(t,"md")}<span class="n">${tNm(t)}</span><span class="s num">${t.w} thắng · ${t.l} thua · HS ${hs(t)}</span>${pz[i+1]?`<span class="pz num">${pzTxt(pz[i+1])}</span>`:""}</div>`:"").join("")}</div>`:""}</div></div>`;
-  h+=`<div class="shd"><h2>Bảng xếp hạng cuối</h2></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Cặp</th><th>T–B</th><th>HS</th></tr></thead><tbody>${T.map((t,i)=>{const d=t.pf-t.pa;return `<tr class="${!t.out&&i<3?"g"+(i+1):""}"><td class="rank">${t.out?"–":i+1}</td><td><span class="pn">${tAv(t,"sm")}<span><b>${tNm(t)}</b>${t.out?` <span class="meta">BỎ GIẢI</span>`:""}</span></span></td><td><b>${t.w}–${t.l}</b></td><td class="${d>0?"up":d<0?"down":""}">${d>0?"+":""}${d}</td></tr>`}).join("")}</tbody></table></div>
-  <p class="rule">Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Trận cặp bỏ giải chưa đánh tính thắng cho đối thủ, không cộng điểm.</p>`;
+  h+=`<div class="shd"><h2>Bảng xếp hạng</h2><span class="meta">Ô xanh thắng · đỏ thua · số là điểm ghi</span></div>`+gRank(T.map(t=>({...t})),games.map(g=>({...g})),pz,PP);
+  h+=`<p class="rule">Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Trận cặp bỏ giải chưa đánh tính thắng cho đối thủ, không cộng điểm.</p>`;
   if(games.length)h+=`<div class="shd"><h2>Kết quả các trận</h2></div><div class="mgrid">${[...games].sort((a,b)=>a.r-b.r||(a.seq||0)-(b.seq||0)).map(g=>{const X=tb.get(g.x),Y=tb.get(g.y);if(!X||!Y)return "";
     const wx=g.wo?g.wo===g.x:g.sx>g.sy,row=(t,sc,w)=>`<div class="tr${w?" w":""}"><span class="who">${tAv(t,"sm")}<span>${tNm(t)}</span></span><span class="sc num">${sc}</span></div>`;
     return `<article class="mcard"><div class="mh"><b>LƯỢT ${g.r}${g.seq?` · TRẬN #${g.seq}`:""}</b><span>${g.wo?"BỎ GIẢI":g.court?`SÂN ${g.court}`:""}${g.at?` · ${new Date(g.at).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"})}`:""}</span></div>${row(X,g.wo?(wx?"T":"B"):g.sx,wx)}${row(Y,g.wo?(wx?"B":"T"):g.sy,!wx)}</article>`}).join("")}</div>`;
@@ -208,9 +222,10 @@ function vGiaiSum(D,x,back){
   return h;
 }
 function giaiShare(D,x){
-  const G=x.snap.giai||{},T=(G.table||[]).filter(t=>!t.out),pz=G.prizes||[];
-  const L=[`TỔNG KẾT GIẢI CẶP CỐ ĐỊNH · BUỔI #${x.sid} · ${dmy(x.at)}`,`${(G.table||[]).length} cặp · ${(G.games||[]).filter(g=>!g.wo).length} trận · vòng tròn chạm 11`];
-  T.slice(0,3).forEach((t,i)=>L.push(`${["Vô địch","Hạng 2","Hạng 3"][i]}: ${t.na} & ${t.nb} (${t.w}–${t.l})${pz[i]?` · ${pzTxt(pz[i])}`:""}`));
-  L.push("Xem bảng xếp hạng, kết quả từng trận và rating sau giải:");
+  const s=x.snap,G=s.giai||{},T=(G.table||[]).filter(t=>!t.out),pz=G.prizes||[],md=["🥇","🥈","🥉"];
+  const L=[`🏓 ${clubNm(D).toUpperCase()} · ${s.sname||"GIẢI CẶP CỐ ĐỊNH"} · BUỔI #${x.sid} · ${dmy(x.at)}`,`Vòng tròn · ${s.rule||"chạm 11"} · ${(G.table||[]).length} cặp · ${(G.games||[]).filter(g=>!g.wo).length} trận`,""];
+  T.slice(0,3).forEach((t,i)=>L.push(`${md[i]} ${["Nhất","Nhì","Ba"][i]}: ${t.na} & ${t.nb} (${t.w}–${t.l}, HS ${t.pf-t.pa>0?"+":""}${t.pf-t.pa})${pz[i]?` · ${pzTxt(pz[i])}`:""}`));
+  if(T.length>3)L.push("Các cặp còn lại: "+T.slice(3).map((t,i)=>`${i+4}. ${t.na} & ${t.nb}`).join(" · "));
+  L.push("","Xem bảng xếp hạng, kết quả từng trận và rating sau giải:");
   return L.join("\n");
 }

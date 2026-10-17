@@ -1,5 +1,7 @@
 const THU={keo:"Kèo thua góp",deu:"Chia đều chi phí",phi:"Lệ phí cố định",khong:"Quỹ CLB trả"};
-const GT={khong:"Không có giải",trich:"Trích % phần dư",codinh:"Số tiền cố định",gop:"Góp thêm vào giải"};
+const GT={khong:"Không có giải",trich:"Trích % phần dư",codinh:"Số tiền cố định",gop:"Góp thêm vào giải",hang:"Tiền từng hạng"};
+const hangOf=c=>[+c.hang1||0,+c.hang2||0,+c.hang3||0];
+const chiaOf=c=>{const a=c.chia1!=null?[+c.chia1||0,+c.chia2||0,+c.chia3||0]:String(c.chia||"50,30,20").split(",").map(Number);while(a.length<3)a.push(0);return a.slice(0,3)};
 function money(D,extra){
   const c=D.c,off=c.cphi===false,thu=off?"khong":(c.thu||"keo"),gt=c.gt||"khong",cs=off?{}:(c.costs||{});
   const cost=(+cs.court||0)+(+cs.water||0)+(+cs.ball||0)+(+cs.other||0);
@@ -12,8 +14,8 @@ function money(D,extra){
   const buTot=[...bu.values()].reduce((a,b)=>a+b,0);
   if(gt==="gop")for(const p of att)gop.set(p.id,+c.gtv||0);
   const gopTot=[...gop.values()].reduce((a,b)=>a+b,0),surplus=fund+buTot-cost;
-  const pot=gt==="trich"?Math.floor(Math.max(0,gap)*(+c.gtv||0)/100):gt==="codinh"?(+c.gtv||0):gt==="gop"?gopTot:0;
-  const club=surplus-(gt==="trich"||gt==="codinh"?pot:0);
+  const pot=gt==="trich"?Math.floor(Math.max(0,gap)*(+c.gtv||0)/100):gt==="codinh"?(+c.gtv||0):gt==="gop"?gopTot:gt==="hang"?hangOf(c).reduce((a,b)=>a+b,0):0;
+  const club=surplus-(gt==="trich"||gt==="codinh"||gt==="hang"?pot:0);
   const baseOf=id=>base.get(id)||0,shareOf=id=>bu.get(id)||0,gopOf=id=>gop.get(id)||0,autoOf=id=>baseOf(id)+shareOf(id)+gopOf(id);
   // Số riêng ban tổ chức đặt cho từng người (khách, đến muộn, miễn): phần chênh đi thẳng vào quỹ CLB
   const PD=payDoc(D.sid),adj={...(PD.adj||{}),...(extra||{})},hasAdj=id=>adj[id]!=null&&adj[id]!=="";
@@ -22,8 +24,8 @@ function money(D,extra){
 }
 function prizes(D,M){
   if(!M.pot)return [];
-  if(isG(D.c)){const GD=gDerive(D);if(!GD)return [];const parts=String(D.c.chia||"50,30,20").split(",").map(Number),T=GD.table.filter(t=>!t.out);
-    return parts.map((p,i)=>T[i]?{label:["Vô địch","Hạng 2","Hạng 3"][i],ids:[T[i].p.a,T[i].p.b],k:Math.round(M.pot*p/100)}:null).filter(Boolean)}
+  if(isG(D.c)){const GD=gDerive(D);if(!GD)return [];const T=GD.table.filter(t=>!t.out),ks=M.gt==="hang"?hangOf(D.c):chiaOf(D.c).map(p=>Math.round(M.pot*p/100));
+    return ks.map((k,i)=>k>0&&T[i]?{label:["Giải nhất","Giải nhì","Giải ba"][i],ids:[T[i].p.a,T[i].p.b],k}:null).filter(Boolean)}
   const st=standings(D).filter(r=>r.s.g),avg=st.reduce((a,r)=>a+r.s.g,0)/(st.length||1),ok=st.filter(r=>r.s.g>=0.7*avg);
   const m=ok.find(r=>r.p.gender!=="F"),f=ok.find(r=>r.p.gender==="F"),w=[m&&{label:"Số 1 nam",ids:[m.p.id]},f&&{label:"Số 1 nữ",ids:[f.p.id]}].filter(Boolean);
   w.forEach(x=>x.k=Math.round(M.pot/w.length));return w;
@@ -32,7 +34,7 @@ const hClub=h=>h&&h.money?(h.money.club!=null?h.money.club:(h.rows||[]).reduce((
 function clubFund(before){return S.hist.filter(h=>before==null||h.sid<before).reduce((a,h)=>a+hClub(h),0)}
 function moneySnap(D,M){
   const pz=prizes(D,M);
-  return {thu:M.thu,gt:M.gt,gtv:+D.c.gtv||0,chia:D.c.chia||"",phi:+D.c.phi||0,fund:M.fund,cost:M.cost,gap:M.gap,buTot:M.buTot,gopTot:M.gopTot,pot:M.pot,club:M.club,collected:M.collected,share:M.share,perGame:M.perGame,costs:D.c.cphi===false?{}:{...D.c.costs},
+  return {thu:M.thu,gt:M.gt,gtv:+D.c.gtv||0,chia:chiaOf(D.c).join(","),hang:hangOf(D.c),phi:+D.c.phi||0,fund:M.fund,cost:M.cost,gap:M.gap,buTot:M.buTot,gopTot:M.gopTot,pot:M.pot,club:M.club,collected:M.collected,share:M.share,perGame:M.perGame,costs:D.c.cphi===false?{}:{...D.c.costs},
     prizes:pz.map(x=>({label:x.label,ids:x.ids,names:x.ids.map(id=>D.pmap.get(id)?.name||"?"),k:x.k}))};
 }
 const payRow=(D,M,id)=>{const s=D.st.get(id);return {charged:s.charged,capped:!!s.capped,base:M.baseOf(id),bu:M.shareOf(id),gop:M.gopOf(id),pay:M.payOf(id)}};

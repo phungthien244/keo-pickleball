@@ -66,10 +66,7 @@ document.addEventListener("click",async e=>{
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy tin nhắn kèm link, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
   if(act==="sess"){const k="s-"+id;editing.has(k)?editing.delete(k):editing.add(k);render();return}
   if(act==="copysess"){const D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id));if(!x)return;
-    const m=x.snap?.money,L=[`TỔNG KẾT BUỔI #${x.sid} – ${dmy(x.at)}`];
-    if(m)L.push(`Quỹ kèo: ${fmtK(m.fund)} | Chi: ${fmtK(m.cost)} | ${m.gap>=0?"Dư":"Thiếu"}: ${fmtK(Math.abs(m.gap))}`);
-    L.push("","BẢNG XẾP HẠNG");x.rows.forEach((r,i)=>L.push(`${i+1}. ${r.name} — ${r.w}T-${r.l}B, HS ${r.pf-r.pa>0?"+":""}${r.pf-r.pa}${x.snap?`, phải đóng ${fmtK(r.pay)}`:""}`));
-    const txt=L.join("\n");try{await navigator.clipboard.writeText(txt);toast("Đã copy tổng kết buổi.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
+    const txt=(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x))+"\n"+shareUrl(x.sid);try{await navigator.clipboard.writeText(txt);toast("Đã copy tin nhắn, dán vào nhóm Zalo nhé.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
   if(await platformAct(act,id,b))return;
   if(!canWrite)return;
   if(act==="migrate"){if(!legacy||!isGoogle(authUser)||!S.rootEditor){toast("Cần đăng nhập Google và nhập PIN trước.");return}if(!armOr("migrate:x"))return;try{await migrate()}catch(x){S.migMsg="Chuyển chưa xong ("+((x&&x.code)||"lỗi")+"). Kiểm tra luật Firestore mới đã xuất bản chưa rồi thử lại.";render()}return}
@@ -89,7 +86,7 @@ document.addEventListener("click",async e=>{
   if(act==="invshare"&&S.invLink){const t=`Mời bạn vào ban tổ chức ${CLUB?.name||""} (${ROLE_LB[S.invLink.role]}). Mở link bằng Chrome/Safari rồi đăng nhập Google:`;if(navigator.share){try{await navigator.share({title:"Lời mời",text:t,url:S.invLink.url})}catch(x){}}else{try{await navigator.clipboard.writeText(t+"\n"+S.invLink.url);toast("Đã copy lời mời")}catch(x){toast(S.invLink.url)}}return}
   if(await sessionAct(act,id,b,e))return;
   if(act==="cset"&&b.dataset.k!=="fmt"){const k=b.dataset.k,v=b.dataset.v;
-    if(cfg()[k]===v)return;const patch={[k]:v};if(k==="gt")patch.gtv=v==="trich"?30:v==="codinh"?200:v==="gop"?20:0;if(k==="thu"&&v==="phi"&&!cfg().phi)patch.phi=50;
+    if(cfg()[k]===v)return;const patch={[k]:v};if(k==="gt"){patch.gtv=v==="trich"?30:v==="codinh"?200:v==="gop"?20:0;if(v==="hang"&&cfg().hang1==null)Object.assign(patch,{hang1:200,hang2:100,hang3:50})}if(k==="thu"&&v==="phi"&&!cfg().phi)patch.phi=50;
     ["cf-gtv","cf-phi"].forEach(x=>delete drafts[x]);write(()=>saveCfg(patch));return}
   if(act==="fmt"||(act==="cset"&&b.dataset.k==="fmt")){const v=b.dataset.v==="giai"?"giai":"xoay";if(derive().SM.length){toast("Buổi đã có trận, không đổi thể thức được.");return}
     if(cfg().fmt===v||(v==="xoay"&&!cfg().fmt))return;

@@ -42,17 +42,21 @@ function vHome(D){
   h+=`<details class="why"><summary>Rating là gì?</summary><p>Rating là điểm trình độ, cách tính giống DUPR. Mỗi trận app đoán trước tỉ số dựa trên rating hai đội. Đánh tốt hơn dự đoán thì rating tăng, kể cả khi thua; kém hơn dự đoán thì giảm, kể cả khi thắng. Rating chốt khi kết thúc mỗi buổi.</p></details>`;
   return h;
 }
+// Tin nhắn chia sẻ lên nhóm Zalo (link trang tổng kết được nối thêm ở cuối)
+const clubNm=D=>String(CLUB?.name||D.c.title||"CLB").trim();
+const fmtLine=(snap,fallback)=>[snap?.type==="giai"?"Giải cặp cố định":"Xoay cặp",snap?.rule||fallback].filter(Boolean).join(" · ");
 function shareText(D,x){
-  const r=x.rows,m=r[0],M=x.snap?.money,n=x.ms.length||x.snap?.matchCount||0;
-  const L=[`TỔNG KẾT BUỔI #${x.sid} · ${dmy(x.at)}`,`${D.c.title} · ${n} trận · ${r.length} người`];
-  if(m)L.push(`MVP: ${m.name} ${m.w}–${m.l} (HS ${m.pf-m.pa>0?"+":""}${m.pf-m.pa})`);
-  if(r.length>1)L.push("Top 3: "+r.slice(0,3).map((z,i)=>`${i+1}. ${z.name}`).join(" · "));
-  if(M){const cl=M.club!=null?M.club:M.gap;L.push(`Quỹ: thu ${fmtK(M.collected!=null?M.collected:M.fund)} · chi ${fmtK(M.cost)} · ${cl>=0?"vào quỹ CLB":"quỹ CLB bù"} ${fmtK(Math.abs(cl))}`);if(M.prizes&&M.prizes.length)L.push("Giải: "+M.prizes.map(z=>`${z.label} ${(z.names||[]).join(" & ")} ${fmtK(z.k)}`).join(" · "))}
-  if(BANK)L.push(`Chuyển khoản: ${BANK.name} ${BANK.acc} (${BANK.holder})`);
-  L.push("Xem số tiền mỗi người phải đóng và bấm Chuyển khoản để có mã QR:");
+  const r=x.rows,s=x.snap||{},M=s.money,n=x.ms.length||s.matchCount||0,m=r[0];
+  const L=[`🏓 ${clubNm(D).toUpperCase()} · ${s.sname?s.sname+" · ":""}BUỔI #${x.sid} · ${dmy(x.at)}`,`${fmtLine(s)} · ${n} trận · ${r.length} người`,""];
+  if(m)L.push(`⭐ Người chơi của buổi: ${m.name} (${m.w}–${m.l}, HS ${m.pf-m.pa>0?"+":""}${m.pf-m.pa})`);
+  if(r.length>1)L.push("🏆 Top 3: "+r.slice(0,3).map((z,i)=>`${i+1}. ${z.name}`).join(" · "));
+  if(M&&M.prizes&&M.prizes.length)L.push("🎁 Giải: "+M.prizes.map(z=>`${z.label} ${(z.names||[]).join(" & ")} ${fmtK(z.k)}`).join(" · "));
+  const pay=r.filter(z=>(+z.pay||0)>0);
+  if(M&&pay.length){L.push("",`💰 Tiền buổi (${(THU[M.thu||"keo"]||"").toLowerCase()}):`);pay.sort((a,b)=>b.pay-a.pay).forEach(z=>L.push(`• ${z.name}: ${fmtK(z.pay)}${s.paid&&s.paid[z.id]?" ✓":""}`));
+    if(BANK)L.push(`Chuyển khoản ${BANK.name} ${BANK.acc} · ${BANK.holder}`)}
+  L.push("","Xem kết quả từng trận, rating và mã QR chuyển tiền:");
   return L.join("\n");
-}
-function vBuoi(D,sid){
+}function vBuoi(D,sid){
   const x=sessList(D).find(z=>z.sid===sid);
   const back=`<a class="back" href="${pathOf("home")}" data-go="home">‹ Rating CLB</a>`;
   if(!x&&!S.hReady)return back+`<div class="empty"><strong>Đang tải buổi #${sid}…</strong></div>`;
@@ -95,12 +99,13 @@ function vLs(D){
   }).join("");
 }
 function summaryText(D){
-  const c=D.c,M=money(D),d=new Date();
-  const L=[`TỔNG KẾT ${c.title.toUpperCase()} – ${d.getDate()}/${d.getMonth()+1}`,
-    `Quỹ kèo: ${fmtK(M.fund)} | Chi: ${fmtK(M.cost)} | ${M.gap>=0?"Dư":"Thiếu"}: ${fmtK(Math.abs(M.gap))}${M.perGame?` (bù ${fmtK(M.perGame)}/trận đã đánh)`:""}`,"","BẢNG XẾP HẠNG"];
-  standings(D).filter(r=>r.s.g).forEach((r,i)=>L.push(`${i+1}. ${r.p.name} — ${r.s.w}T-${r.s.l}B, HS ${r.s.pf-r.s.pa>0?"+":""}${r.s.pf-r.s.pa}, rating ${r2(r.s.rating)} (${sgn(r.s.d)})`));
-  L.push("","PHẢI ĐÓNG");
-  M.att.forEach(p=>{const s=D.st.get(p.id);L.push(`${p.name} (${s.g} trận): ${fmtK(s.charged+M.shareOf(p.id))}${s.capped?" (đã chạm trần)":""}`)});
+  const c=D.c,M=money(D),d=new Date(),R=recv(D,M);
+  const L=[`🏓 ${clubNm(D).toUpperCase()} · ${sessTitle(c,D.sid).toUpperCase()} · ${d.getDate()}/${d.getMonth()+1}`,`${fmtTxt(c)} · ${ruleTxt(c)} · ${D.done.length} trận`,""];
+  const st=standings(D).filter(r=>r.s.g);
+  if(st.length){L.push("🏆 Xếp hạng tới giờ:");st.slice(0,10).forEach((r,i)=>L.push(`${i+1}. ${r.p.name} — ${r.s.w}T-${r.s.l}B, HS ${r.s.pf-r.s.pa>0?"+":""}${r.s.pf-r.s.pa}`))}
+  if(M.att.length&&R.tot){L.push("",`💰 Tiền buổi (${(THU[M.thu]||"").toLowerCase()}) · đã nhận ${R.np}/${R.n}:`);
+    [...M.att].filter(p=>M.payOf(p.id)>0).sort((a,b)=>M.payOf(b.id)-M.payOf(a.id)).forEach(p=>L.push(`• ${p.name}: ${fmtK(M.payOf(p.id))}${R.paid[p.id]?" ✓":""}`));
+    if(BANK)L.push(`Chuyển khoản ${BANK.name} ${BANK.acc} · ${BANK.holder}`)}
+  L.push("","Xem trực tiếp và mã QR chuyển tiền:",absUrl(pathOf("app",{tab:"tien"})));
   return L.join("\n");
 }
-

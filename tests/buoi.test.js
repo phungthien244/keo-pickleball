@@ -131,3 +131,18 @@ test("đổi thể thức trong bảng Sửa không đẩy về bước Chuẩn 
   expect(e.T()).toContain("đang đánh");
   expect(e.T()).not.toContain("· chuẩn bị");
 });
+
+test("giải vòng tròn: giải thưởng nhất nhì ba tuỳ chỉnh", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ"); await e.click("add");
+  await e.tab("san");
+  await e.click("cset", { k: "fmt", v: "giai" });
+  await e.click("gton");
+  expect(e.store.get("app/config").gt).toBe("hang");
+  await e.cfg("hang1", 500); await e.cfg("hang3", 0);
+  expect(e.T()).toContain("Quỹ CLB trả tổng 600k");
+  await e.click("cset", { k: "gt", v: "trich" });
+  await e.cfg("chia1", 70); await e.cfg("chia2", 30); await e.cfg("chia3", 0);
+  expect(e.T()).toContain("Tổng 100%");
+});
