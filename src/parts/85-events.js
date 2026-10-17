@@ -43,7 +43,9 @@ document.addEventListener("click",async e=>{
       // Máy này đã vào bằng PIN trước đó thì không cần ghi lại
       if(!(await isEditor(u.uid))){
         const pn=pick("pinname").slice(0,30);
-        await FB.setDoc(FB.doc(FB.fs,PFX+"editors/"+u.uid),pn&&!legacy?{pin,at:Date.now(),name:pn}:{pin,at:Date.now()});
+        const ref=FB.doc(FB.fs,PFX+"editors/"+u.uid);
+        if(pn&&!legacy){try{await FB.setDoc(ref,{pin,at:Date.now(),name:pn})}catch(x){if(!(x&&x.code==="permission-denied"))throw x;await FB.setDoc(ref,{pin,at:Date.now()})}}
+        else await FB.setDoc(ref,{pin,at:Date.now()});
       }
       await refreshRole();if(legacy)canWrite=true;delete drafts.pin;toast("Đã mở quyền nhập tỉ số trên máy này.");if(route==="clogin"){go("app",{tab:"san"});return}
     }catch(x){
@@ -218,7 +220,9 @@ document.addEventListener("click",async e=>{
   else if(act==="refct"){const [t,uid]=String(b.dataset.k).split(":"),c=Number(b.dataset.c);
     const L=t==="m"?(S.members||[]):(S.editors||[]),r=L.find(x=>x.id===uid);if(!r)return;
     const cur=(r.courts||[]).map(Number),next=cur.includes(c)?cur.filter(x=>x!==c):[...cur,c].sort((x,y)=>x-y);
-    write(()=>FB.updateDoc(FB.doc(FB.fs,PFX+(t==="m"?"members/":"editors/")+uid),{courts:next}),next.includes(c)?`Đã giao sân ${c}`:`Đã bỏ sân ${c}`)}
+    try{await FB.updateDoc(FB.doc(FB.fs,PFX+(t==="m"?"members/":"editors/")+uid),{courts:next});toast(next.includes(c)?`Đã giao sân ${c}`:`Đã bỏ sân ${c}`)}
+    catch(x){toast(x&&x.code==="permission-denied"?"Máy chủ chưa cho giao sân: cần cập nhật quyền dữ liệu (Firestore Rules).":"Chưa lưu được, thử lại.")}
+    render()}
   else if(act==="srestore"){if(ROLE!=="owner"&&!legacy)return;if(!armOr("srestore:"+id))return;let r;await write(async()=>{r=await restoreSession(id)});if(r)toast(r)}
   else if(act==="undoone"){let r;await write(async()=>{r=await undoAll(id)});if(r)toast(r.n?"Đã khôi phục trận":"Chưa khôi phục được: người chơi đang ở sân khác hoặc hết sân trống")}
   else if(act==="undoall"){let r;await write(async()=>{r=await undoAll()});if(r)toast(r.k?`Đã khôi phục ${r.n} trận, ${r.k} trận chưa khôi phục được vì người chơi đang ở sân khác`:`Đã khôi phục ${r.n} trận`)}
