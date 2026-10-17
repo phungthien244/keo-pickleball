@@ -61,9 +61,9 @@ function go(r,opt={}){
   route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="vdv")routePid=String(opt.pid||"");if(r==="app"&&opt.tab)tab=opt.tab;
   try{history.pushState(null,"",pathOf(r))}catch(e){}
   if(!opt.keep)try{scrollTo({top:0})}catch(e){}
-  render()}
+  render();if(typeof repaint==="function")repaint()}
 addEventListener("popstate",()=>{const r=readPath(location.pathname);
   if(r.mode!==MODE||(r.mode==="club"&&r.cid!==CID)){location.reload();return}
-  autoRoute=false;applyPath(r);render()});
+  autoRoute=false;applyPath(r);render();if(typeof repaint==="function")repaint()});
 const DEF_BANK={bin:"970422",code:"mb",name:"MB Bank",acc:"17263544538888",holder:"PHAM TIEN DUNG"};let BANK=DEF_BANK;
 const BANK_APPS=[["mb","MB Bank"],["vcb","Vietcombank"],["tcb","Techcombank"],["bidv","BIDV"],["icb","VietinBank"],["acb","ACB"],["tpb","TPBank"],["vpb","VPBank"],["vba","Agribank"],["shb","SHB"],["ocb","OCB"],["cake","Cake"]];

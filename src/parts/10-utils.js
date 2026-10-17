@@ -104,4 +104,7 @@ function meBox(D,opt={}){
 }
 
 // Ép trình duyệt vẽ lại sau khi thay trang và cuộn bằng code (iPhone đôi khi còn sót hình cũ tới khi cuộn tay)
-function repaint(){try{const v=document.getElementById("view");if(!v||!v.classList)return;v.classList.add("rp");requestAnimationFrame(()=>requestAnimationFrame(()=>v.classList.remove("rp")))}catch(e){}}
+function repaint(){try{const v=document.getElementById("view");if(!v||!v.classList)return;v.classList.add("rp");
+  const off=()=>v.classList.remove("rp");requestAnimationFrame(()=>requestAnimationFrame(()=>{off();
+    // vẫn còn hình sót: nhích cuộn 1px rồi trả lại để trình duyệt vẽ lại toàn trang
+    const y=window.scrollY||0;try{scrollTo(0,y+1);scrollTo(0,y)}catch(e){}}))}catch(e){}}
