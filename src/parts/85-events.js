@@ -32,16 +32,23 @@ document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-act]");if(!b)return;
   const act=b.dataset.act,id=b.dataset.id;
   if(act==="login"){
-    const pin=String(drafts.pin||"").trim();if(!pin){errs.pin="Nhập PIN trước.";render();return}
+    // Đọc thẳng ô đang nhập (bàn phím điện thoại có khi không báo sự kiện gõ), ưu tiên ô cùng khung với nút bấm
+    const box=(b.closest&&b.closest("section,.cb,.pinrow,.bar,form"))||document;
+    const pick=k=>{const L=[...((box.querySelectorAll&&box.querySelectorAll(`[data-draft="${k}"]`))||[]),...((document.querySelectorAll&&document.querySelectorAll(`[data-draft="${k}"]`))||[])];
+      const el=L.find(x=>String(x.value||"").trim());return String((el&&el.value)||drafts[k]||"").trim()};
+    const pin=pick("pin");if(!pin){errs.pin="Nhập PIN trước.";render();return}
     delete errs.pin;
     try{
-      const u=authUser||(await FB.signInAnonymously(FB.auth)).user;
-      const pn=String(drafts.pinname||"").trim().slice(0,30);
-      await FB.setDoc(FB.doc(FB.fs,PFX+"editors/"+u.uid),pn&&!legacy?{pin,at:Date.now(),name:pn}:{pin,at:Date.now()});
-      if(!authUser)authUser=u;await refreshRole();if(legacy)canWrite=true;delete drafts.pin;toast("Đã mở quyền nhập tỉ số trên máy này.");if(route==="clogin"){go("app",{tab:"san"});return}
+      const u=authUser||(await FB.signInAnonymously(FB.auth)).user;if(!authUser)authUser=u;
+      // Máy này đã vào bằng PIN trước đó thì không cần ghi lại
+      if(!(await isEditor(u.uid))){
+        const pn=pick("pinname").slice(0,30);
+        await FB.setDoc(FB.doc(FB.fs,PFX+"editors/"+u.uid),pn&&!legacy?{pin,at:Date.now(),name:pn}:{pin,at:Date.now()});
+      }
+      await refreshRole();if(legacy)canWrite=true;delete drafts.pin;toast("Đã mở quyền nhập tỉ số trên máy này.");if(route==="clogin"){go("app",{tab:"san"});return}
     }catch(x){
       if(authUser&&await isEditor(authUser.uid)){await refreshRole();if(legacy)canWrite=true;delete drafts.pin}
-      else errs.pin=x&&x.code==="permission-denied"?"Sai PIN.":"Không kết nối được, thử lại.";
+      else errs.pin=x&&x.code==="permission-denied"?`Sai PIN.${CLUB&&CLUB.pinAt?` PIN được đổi lần cuối lúc ${dhm(CLUB.pinAt)}, hỏi chủ CLB PIN mới.`:""}`:"Không kết nối được, thử lại.";
     }
     render();return}
   if(act==="meclr"){setMe(null);return}
