@@ -55,6 +55,7 @@ document.addEventListener("click",async e=>{
   if(act==="pshare"){const D=derive(),u=absUrl(pathOf("vdv",{pid:id})),txt=profileShare(D,id);
     if(navigator.share){try{await navigator.share({title:"Hồ sơ vận động viên",text:txt+"\n",url:u})}catch(x){}return}
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
+  if(act==="speak"){const D=derive(),m=D.SM.find(x=>x.id===id);if(m)speak(callText(D,m));return}
   if(act==="qv"){qView=b.dataset.v==="so"?"so":"buoi";render();return}
   if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;showSheet();return}
   if(act==="pay"){payOpen={sid:Number(b.dataset.sid),name:b.dataset.n,k:Number(b.dataset.k)};showSheet();return}

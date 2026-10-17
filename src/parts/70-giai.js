@@ -122,7 +122,7 @@ function gRun(D,GD){
 function gCourt(D,GD,m){
   const X=GD.T.get(m.pa),Y=GD.T.get(m.pb),ka=`sa-${m.id}`,kb=`sb-${m.id}`;
   const side=(t,k,lab)=>`<div class="team"><div class="names"><div class="tl">${pairAv(D,t.p,"md")}<div>${pairNm(D,t.p)}<small class="num">${t.w} thắng · ${t.l} thua · Rating TB ${r2(pairR(D,t.p))}</small></div></div></div><input class="score num" id="${k}" data-draft="${k}" type="number" inputmode="numeric" min="0" max="11" aria-label="${lab}" value="${esc(val(k,""))}" ${canWrite?"":"disabled"}></div>`;
-  return `<article class="court${isNew(m.id+"p")?" new":""}"><div class="court-h"><h3>Sân ${m.court}</h3><span class="num">Lượt ${m.round} · Trận #${m.seq}</span></div>
+  return `<article class="court${isNew(m.id+"p")?" new":""}"><div class="court-h"><h3>Sân ${m.court}</h3><span class="num">Lượt ${m.round} · Trận #${m.seq}</span>${canWrite?`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`:""}</div>
     ${side(X,ka,"Điểm đội 1")}${side(Y,kb,"Điểm đội 2")}
     <div class="court-f"><span class="meta" style="flex:1">${esc(ruleTxt(D.c))}</span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button><button class="primary" data-act="save" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>
     ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}</article>`;

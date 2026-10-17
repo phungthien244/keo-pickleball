@@ -805,3 +805,10 @@ button.tick.on .box{background:var(--blue);border-color:var(--blue);color:#fff}
 .hpod .p1 .av.lg{box-shadow:0 0 0 3px var(--navy)}
 .hpod .p2 .av.md{--s:44px;box-shadow:0 0 0 3px #c9d3db}
 .hpod .p3 .av.md{--s:44px;box-shadow:0 0 0 3px #d9905a}
+.court-h .spk{margin-left:auto;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 10px;background:var(--yellow);color:var(--navy);border:none;font-size:10px;letter-spacing:.08em}
+.court-h .spk+*{margin-left:0}
+.court-h span.num{margin-left:auto}
+.court-h .spk{margin-left:8px}
+.court-h h3{white-space:nowrap}
+.court-h span.num{flex:1;min-width:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.court-h .spk{white-space:nowrap;flex:none;padding:0 12px}
