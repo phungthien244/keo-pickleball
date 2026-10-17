@@ -829,3 +829,8 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 .cfm .r{font-size:15px}.cfm .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cfm .two button{min-height:48px}
 .cfm .line{border:1.5px solid var(--navy);color:var(--navy);background:var(--surface)}
 .cfm .ghost{align-self:center}
+.cfm.cx{background:#fdeceb;border-top-color:var(--lose)}
+.cfm.cx .two .danger{min-height:48px}
+.undo{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--yellow);padding:8px 10px 8px 14px;font-size:14px}
+.undo span{flex:1}
+.undo .line{border:1.5px solid var(--navy);color:var(--navy);background:var(--surface);min-height:40px;padding:0 14px;font-weight:700}

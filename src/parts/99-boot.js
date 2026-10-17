@@ -46,7 +46,7 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
     unsubB=db.collection("batches").where("session",sid).onSnapshot(q=>{S.batches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail)};
   db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;subSession(cfg().session||1);live(s.metadata)},fail);
   db.collection("app").onSnapshot(q=>{const A=q.docs.map(d=>({id:d.id,...d.data()}));
-    S.hist=A.filter(d=>d.id.startsWith("hist-"));S.pays=Object.fromEntries(A.filter(d=>d.id.startsWith("pay-")).map(d=>[d.id,d]));S.led=A.filter(d=>d.id.startsWith("led-"));
+    S.hist=A.filter(d=>d.id.startsWith("hist-"));S.pays=Object.fromEntries(A.filter(d=>d.id.startsWith("pay-")).map(d=>[d.id,d]));S.led=A.filter(d=>d.id.startsWith("led-"));S.trash=A.find(d=>d.id==="trash")||null;
     S.hReady=true;render()},fail);
   db.collection("players").onSnapshot(q=>{S.players=q.docs.map(d=>({id:d.id,...d.data()}));S.pReady=true;live(q.metadata)},fail);
 })();

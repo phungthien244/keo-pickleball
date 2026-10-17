@@ -125,7 +125,7 @@ document.addEventListener("click",async e=>{
   if(act==="gin"){const o={...(cfg().giai?.out||{})};delete o[id];write(()=>saveG({out:o}),"Cặp đã quay lại giải");return}
   if(act==="gcancel"){const D=derive();if(D.done.some(m=>m.giai)){toast("Đã có trận xong, không hủy lịch được.");return}
     if(!armOr("gcancel:x"))return;
-    await write(async()=>{for(const m of D.playing.filter(m=>m.giai))await db.collection("matches").doc(m.id).delete();await saveG({locked:false})},"Đã hủy lịch, có thể ghép lại cặp");return}
+    await write(async()=>{await trashMatches(D.playing.filter(m=>m.giai),"gcancel");await saveG({locked:false})},"Đã hủy lịch, có thể ghép lại cặp");return}
   if(act==="gend"){if(!armOr("gend:x"))return;await endGiai();return}
   if(act==="gmode"){const v=b.dataset.v==="same"?"same":"mix";if(cfg().gmode!==v)write(()=>saveCfg({gmode:v}),v==="same"?"Đã chuyển sang ưu tiên cùng giới":"Đã chuyển sang ưu tiên khác giới");return}
   if(act==="phdel"){write(()=>db.collection("players").doc(id).update({photo:""}),"Đã xóa ảnh");return}
@@ -168,7 +168,7 @@ document.addEventListener("click",async e=>{
     await write(()=>db.collection("players").doc(id).update({name:nmv,duprId:du,rating0:rt,gender:gd}).then(()=>{S.everWrote=true;editing.delete("p-"+id);["nm-","du-","rt-","gd-"].forEach(k=>delete drafts[k+id])}),"Đã lưu")}
   else if(act==="pdel"){if(derive().playing.some(m=>[...m.a,...m.b].includes(id))){toast("Người này đang trên sân, lưu hoặc hủy trận trước.");return}
     if(!armOr("pdel:"+id))return;write(()=>db.collection("players").doc(id).delete(),"Đã xóa người chơi")}
-  else if(act==="mdel"){if(!armOr("mdel:"+id))return;write(()=>db.collection("matches").doc(id).delete(),"Đã xóa trận")}
+  else if(act==="mdel"){if(!armOr("mdel:"+id))return;const m=findMatch(id);write(()=>m?trashMatches([m],"del"):db.collection("matches").doc(id).delete(),"Đã xóa trận · có thể hoàn tác")}
   else if(act==="sdel"){if(!armOr("sdel:"+id))return;const sid=Number(id);
     await write(async()=>{for(const d of (await db.collection("matches").where("session",sid).get()).docs)await db.collection("matches").doc(d.id).delete();
       for(const d of (await db.collection("batches").where("session",sid).get()).docs)await db.collection("batches").doc(d.id).delete();delete S.pm[sid];
@@ -179,7 +179,10 @@ document.addEventListener("click",async e=>{
       editing.delete("s-"+sid)},`Đã xóa buổi #${sid}, rating đã trừ lại`)}
   else if(act==="toggle"){const p=S.players.find(p=>p.id===id);write(()=>db.collection("players").doc(id).update({active:p.active===false}))}
   else if(act==="del")write(()=>db.collection("players").doc(id).delete(),"Đã xóa");
-  else if(act==="cancel")write(()=>db.collection("matches").doc(id).delete(),"Đã hủy trận");
+  else if(act==="cancel"){pendSave.delete(id);pendCancel.add(id);render()}
+  else if(act==="cancelx"){pendCancel.delete(id);render()}
+  else if(act==="cancelok"){pendCancel.delete(id);const m=S.matches.find(x=>x.id===id);if(!m)return;write(()=>trashMatches([m],"cancel"),"Đã hủy trận · bấm Hoàn tác nếu nhầm")}
+  else if(act==="undoall"){let r;await write(async()=>{r=await undoAll()});if(r)toast(r.k?`Đã khôi phục ${r.n} trận, ${r.k} trận chưa khôi phục được vì người chơi đang ở sân khác`:`Đã khôi phục ${r.n} trận`)}
   else if(act==="savechk"){const m=S.matches.find(x=>x.id===id);if(!m)return;const ra=val("sa-"+id,""),rb=val("sb-"+id,""),a=Number(ra),bb=Number(rb);
     const msg=ra===""||rb===""?"Nhập điểm hai đội.":validPts(a,bb,cfg());if(msg){errs[id]=msg;pendSave.delete(id);render();return}
     delete errs[id];pendSave.add(id);render()}
