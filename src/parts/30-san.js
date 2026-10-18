@@ -104,6 +104,6 @@ function histRow(D,m){
 /* ----- Chia sẻ buổi đang đánh vào nhóm ----- */
 const liveShareBtn=()=>`<button class="lshare" data-act="lshare" aria-label="Chia sẻ buổi đang đánh">📤 Chia sẻ</button>`;
 function liveShareText(D){
-  const c=D.c,act=D.players.filter(p=>p.active!==false).length,club=(CLUB&&CLUB.name)||c.title||"CLB";
-  return `📣 ${club}: ${shareName(c.sname,"Buổi đánh hôm nay")} đang diễn ra!\n${D.playing.length} sân · ${act} người. Mời cả nhà vào xem trực tiếp:\n• Lượt trận đang đánh và ai sắp tới lượt\n• Tỉ số, kết quả từng trận cập nhật ngay\n• Bảng xếp hạng buổi hôm nay`;
+  const c=D.c,act=D.players.filter(p=>p.active!==false).length,club=String((CLUB&&CLUB.name)||c.title||"CLB").toUpperCase();
+  return `🔴 𝗟𝗜𝗩𝗘 | ${club}\n🏓 ${shareName(c.sname,"Buổi đánh hôm nay")} đang diễn ra trực tiếp\n${D.playing.length} sân · ${act} VĐV${D.done.length?` · đã xong ${D.done.length} trận`:""}\n\nMời cả nhà vào theo dõi trực tiếp:\n▸ Lượt trận đang đánh và ai sắp tới lượt\n▸ Tỉ số, kết quả từng trận\n▸ Bảng xếp hạng hôm nay`;
 }
