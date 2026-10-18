@@ -73,7 +73,7 @@ function vBuoi(D,sid){
   const close=ms.length>1?[...ms].sort((a,b)=>Math.abs(a.sa-a.sb)-Math.abs(b.sa-b.sb)||Math.max(b.sa,b.sb)-Math.max(a.sa,a.sb))[0]:null;
   const tn=ids=>ids.map(id=>nm(D,id)).join(" &amp; ");
   const hl=(k,m)=>{if(!m)return "";const aw=m.sa>m.sb;return `<div class="mini" style="flex-direction:column;align-items:flex-start"><div class="t"><span class="k">${k}</span><span class="v y num">${Math.max(m.sa,m.sb)}–${Math.min(m.sa,m.sb)}</span><span class="v s">${aw?tn(m.a):tn(m.b)} thắng ${aw?tn(m.b):tn(m.a)} · trận #${m.seq}</span></div></div>`};
-  let h=back+`<div class="hero"><div class="phead"><span class="eyebrow">${x.snap?.sname?esc(x.snap.sname)+" · ":""}Tổng kết · ${dmy(x.at)}</span><h1 class="num">Buổi #${sid}</h1></div>
+  let h=back+`<div class="hero"><div class="phead"><span class="eyebrow">${x.snap?.sname?esc(x.snap.sname)+" · ":""}${dmy(x.at)}</span><h1>Tổng kết</h1></div>
     <div class="stats"><div><b class="num">${ms.length||snap?.matchCount||0}</b><small>TRẬN</small></div><div><b class="num">${rows.length}</b><small>NGƯỜI CHƠI</small></div><div><b class="num">${pts||"–"}</b><small>ĐIỂM GHI</small></div></div>
     <div class="hsplit">${mv?`<div class="mvp"><div class="t"><span class="k">NGƯỜI CHƠI CỦA BUỔI</span><span class="n">${esc(mv.name)}</span><span class="s num">${mv.w}–${mv.l} · HS ${mv.pf-mv.pa>0?"+":""}${mv.pf-mv.pa}${mv.d!=null?` · RATING ${dTxt(mv.d)}`:""}</span></div>${av(P(mv),"xl")}</div>`:""}
     ${big||close?`<div class="duo">${hl("Thắng đậm nhất",big)}${close&&close!==big?hl("Trận sát nhất",close):""}</div>`:""}</div></div>`;

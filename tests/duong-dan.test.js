@@ -19,7 +19,7 @@ test("link cũ ?buoi=1 trên rr.pikeco.app mở tổng kết buổi của AEP", 
   const e = setup({ search: "?buoi=1", data: club("aep", { "clubs/aep/app/hist-1": { sid: 1, title: "AEP", startedAt: 1, endedAt: 2, matchCount: 0, rows: [], money: { gap: 0, cost: 0 } } }) });
   await e.boot();
   expect(e.replaced).toBe("/aep/buoi/1");
-  expect(e.T()).toContain("Buổi #1");
+  expect(e.T()).toContain("Tổng kết");
 });
 
 test("trang gốc pikeco.app là trang giới thiệu, không tải dữ liệu CLB", async () => {
