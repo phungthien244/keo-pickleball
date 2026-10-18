@@ -50,9 +50,8 @@ test("đang có buổi đánh: người xem không vào được Quỹ và Lịc
   await e.tab("ls");
   expect(e.T()).toContain("đang đánh");
   await e.click("lshare"); await e.until(() => shared);
-  expect(shared).toContain("𝗟𝗜𝗩𝗘 | Q7");
-  expect(shared).toContain("đang diễn ra trực tiếp");
-  expect(shared).toContain("Mời cả nhà vào theo dõi trực tiếp");
+  expect(shared).toMatch(/^📣 Q7: .+ đang diễn ra! 🔴 𝗟𝗜𝗩𝗘\n1 sân · \d+ người\. Mời cả nhà vào xem trực tiếp:/);
+  expect(shared).toContain("👉 Bấm link (không cần đăng nhập):");
   expect(shared).not.toContain("Buổi #");
   expect(shared).toContain("/q7/san");
 });
