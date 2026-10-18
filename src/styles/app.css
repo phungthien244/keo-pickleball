@@ -957,3 +957,4 @@ button.mebox.mtog{padding:14px 16px;min-height:0}
 .gnowbtn{min-height:46px;border:1.5px dashed var(--blue);color:var(--blue);background:var(--surface);font-weight:800}
 .gnow .gcts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 .gnow .gcts .primary{min-height:44px;color:#fff}
+.gnow>.primary{margin-bottom:10px}.gnow .gsel{margin-bottom:8px}
