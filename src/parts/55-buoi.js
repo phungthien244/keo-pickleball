@@ -64,6 +64,15 @@ function fmtBlock(D){
   <small class="rule">${esc(ruleTxt(c))}.${w2&&mx?` Hoà ${mx-1}–${mx-1} thì ai được ${mx} trước là thắng.`:""}</small>
   ${G?"":`<div class="fld"><span class="lbl">Ưu tiên ghép</span><span class="seg segf"><button data-act="gmode" data-v="mix" aria-pressed="${c.gmode!=="same"}">Khác giới</button><button data-act="gmode" data-v="same" aria-pressed="${c.gmode==="same"}">Cùng giới</button></span></div>`}`;
 }
+// Trọng tài cho buổi: bật thì giao sân ngay tại đây, mời thêm trọng tài không cần vào Cài đặt CLB
+function refBlock(D){
+  if(D.c.refOn!==true)return `<small class="rule">Buổi này ban tổ chức tự nhập tỉ số. Tích “Trọng tài” để giao sân cho trọng tài nhập điểm.</small>`;
+  if(legacy||!isAdm())return `<small class="rule">Chỉ chủ CLB và quản lý đăng nhập Google mới giao sân cho trọng tài được.</small>`;
+  const link=absUrl("/"+CID+"/dang-nhap").replace(/^https?:\/\//,"");
+  return refRows()+`<div class="two" style="margin-top:8px"><button class="line" data-act="inv" data-v="scorer">+ Mời trọng tài (Google)</button><button class="line" data-act="cp" data-v="${esc(absUrl("/"+CID+"/dang-nhap"))}">Copy link vào bằng PIN</button></div>
+    ${S.invLink&&S.invLink.role==="scorer"?`<div class="sharebox"><span class="lbl">Link mời trọng tài · hết hạn sau 7 ngày</span><span class="url">${esc(S.invLink.url.replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="invshare">Gửi qua Zalo</button><button data-act="cp" data-v="${esc(S.invLink.url)}">Copy link</button></div></div>`:""}
+    <small class="rule">Trọng tài vào ${esc(link)}, nhập tên và PIN${CLUB&&CLUB.pinAt?"":" (chưa đặt PIN: đặt trong Cài đặt CLB)"}, hoặc mở link mời rồi đăng nhập Google. Vào xong tên hiện ở danh sách trên, chạm S1, S2… để giao sân.</small>`;
+}
 const tick=(act,on,label)=>`<button class="tick${on?" on":""}" data-act="${act}" aria-pressed="${on}"><span class="box" aria-hidden="true">${on?"✓":""}</span>${label}</button>`;
 function moneyBlock(D){
   const c=D.c,thu=c.thu||"keo",M=money(D),n=D.players.filter(p=>p.active!==false).length;
@@ -107,6 +116,7 @@ function vPrep(D){
   h+=card("Sân và luật điểm",fmtBlock(D));
   h+=card(tick("cphi",c.cphi!==false,"Chi phí"),moneyBlock(D));
   h+=card(tick("gton",(c.gt||"khong")!=="khong","Giải thưởng"),prizeBlock(D));
+  h+=card(tick("refon",c.refOn===true,"Trọng tài"),refBlock(D));
   h+=card("Lời MC đọc thể thức",mcBlock(D));
   h+=flexNote;
   if(phaseOf(D)==="live")return h+`<button class="ball wide" data-act="step" data-v="live">Về trang Đang đánh →</button>`;
@@ -127,6 +137,7 @@ function sheetInner(D){
     <span class="lbl">Sân và luật điểm</span>${fmtBlock(D)}
     ${tick("cphi",D.c.cphi!==false,"Chi phí")}${moneyBlock(D)}
     ${tick("gton",(D.c.gt||"khong")!=="khong","Giải thưởng")}${prizeBlock(D)}
+    ${tick("refon",D.c.refOn===true,"Trọng tài")}${refBlock(D)}
     <span class="lbl">Lời MC đọc thể thức</span>${mcBlock(D)}
     <div class="infonote">Áp dụng từ trận kế tiếp. Trận đang đánh và kết quả đã lưu giữ nguyên. Người cho nghỉ vẫn giữ thành tích đã đánh.</div>
     <button class="primary" data-act="sheetx">Xong</button>`;
@@ -270,6 +281,7 @@ async function sessionAct(act,id,b,e){
   if(act==="win2"){const on=b.dataset.v==="1";write(()=>saveCfg({win2:on}),on?"Thắng phải cách 2":"Chạm là thắng");return true}
   if(act==="ptmax"){const c=cfg(),on=b.dataset.v==="1";write(()=>saveCfg({ptMax:on?Math.max(c.target+2,+c.ptMax||c.target+4):0}));return true}
   if(act==="ptmaxd"){const c=cfg(),n=Math.min(40,Math.max(c.target+1,(+c.ptMax||c.target+4)+Number(b.dataset.d)));write(()=>saveCfg({ptMax:n}));return true}
+  if(act==="refon"){const on=cfg().refOn!==true;write(()=>saveCfg({refOn:on}),on?"Buổi này có trọng tài":"Buổi này không dùng trọng tài");return true}
   if(act==="cphi"){const on=cfg().cphi===false;write(()=>saveCfg(on?{cphi:true,thu:cfg().thu==="khong"?"keo":cfg().thu}:{cphi:false}),on?"Buổi này có thu tiền":"Buổi này không thu tiền");return true}
   if(act==="gton"){const c=cfg(),on=(c.gt||"khong")==="khong";const g=on?(c.gtPrev&&c.gtPrev!=="khong"?c.gtPrev:isG(c)?"hang":"trich"):"khong";
     write(()=>saveCfg(on?{gt:g,gtv:c.gtv||(g==="trich"?30:g==="codinh"?200:20),...(g==="hang"&&c.hang1==null?{hang1:200,hang2:100,hang3:50}:{})}:{gt:"khong",gtPrev:c.gt}),on?"Có giải thưởng":"Không trao giải");return true}

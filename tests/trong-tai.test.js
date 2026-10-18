@@ -40,3 +40,30 @@ test("trọng tài chỉ nhập điểm sân được giao, không sửa buổi,
   await e.click("att", { id: "p1" });
   expect(e.store.get("clubs/q7/players/p1").active).toBe(true);
 });
+
+test("Chuẩn bị: mục Trọng tài mặc định tắt, bật lên giao sân ngay tại chỗ", async () => {
+  const e = setup({
+    host: "pikeco.app", path: "/q7/san", user: { uid: "own", isAnonymous: false, email: "o@x.vn", displayName: "Chủ" },
+    data: {
+      "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1 },
+      "clubs/q7/members/own": { role: "owner", name: "Chủ" },
+      "clubs/q7/members/sc1": { role: "scorer", name: "Hùng" },
+      "clubs/q7/editors/pin1": { pin: "x", at: 1, name: "Lan" },
+      "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1 },
+      "clubs/q7/players/p1": { name: "An", rating0: 3, gender: "M", active: true, createdAt: 1 }
+    }
+  });
+  await e.boot(); await e.until(() => e.T().includes("Trọng tài"));
+  expect(e.T()).toContain("Buổi này ban tổ chức tự nhập tỉ số");
+  expect(e.V()).not.toContain('data-act="refct"');
+  await e.click("refon");
+  expect(e.store.get("clubs/q7/app/config").refOn).toBe(true);
+  await e.until(() => e.V().includes('data-act="refct"'));
+  expect(e.T()).toContain("Hùng");
+  expect(e.T()).toContain("Lan");
+  expect(e.V()).toContain('data-act="inv" data-v="scorer"');
+  await e.click("refct", { k: "m:sc1", c: "2" });
+  await e.until(() => (e.store.get("clubs/q7/members/sc1").courts || []).includes(2));
+  await e.click("refct", { k: "e:pin1", c: "1" });
+  await e.until(() => (e.store.get("clubs/q7/editors/pin1").courts || []).includes(1));
+});

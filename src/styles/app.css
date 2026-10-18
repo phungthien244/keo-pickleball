@@ -929,3 +929,4 @@ button.mebox.mtog{padding:14px 16px;min-height:0}
 .mtog .mh b{font-family:var(--display);font-weight:900;font-size:15px;text-transform:uppercase}
 .mtog .mh small{font-size:13px;color:var(--muted);font-weight:400}
 .mtog .chev{font-style:normal;font-size:18px;color:var(--blue);flex:none}
+.refline .lnk{margin-left:auto;background:none;border:0;color:var(--blue);font-weight:700;font-size:12px;min-height:28px;padding:0;text-transform:none;letter-spacing:0;font-family:var(--body)}

@@ -133,11 +133,13 @@ function vClubLogin(D){
 }
 
 /* ----- Giao sân cho trọng tài ----- */
-function refCard(){
+function refRows(){
   const n=Math.max(1,+cfg().courts||2),R=[...(S.members||[]).filter(m=>m.role==="scorer").map(m=>({k:"m:"+m.id,nm:m.name||m.email||"Trọng tài",sub:"Tài khoản Google",ct:m.courts||[]})),
     ...(S.editors||[]).map(e=>({k:"e:"+e.id,nm:e.name||"Máy chưa đặt tên",sub:`Vào bằng PIN${e.at?" · "+dmy(e.at):""}`,ct:e.courts||[]}))];
-  return `<section class="card2"><h2>Giao sân cho trọng tài</h2><div class="cb"><p class="rule">Trọng tài chỉ nhập được tỉ số ở sân được tick. Không sửa buổi, không xếp trận, không điểm danh, không xóa được gì.</p>
-    ${R.length?R.map(r=>`<div class="refrow"><span class="t"><b>${esc(r.nm)}</b><small>${esc(r.sub)}</small></span><span class="refct">${Array.from({length:n},(_,i)=>i+1).map(c=>{const on=r.ct.map(Number).includes(c);return `<button class="${on?"on":""}" data-act="refct" data-k="${r.k}" data-c="${c}" aria-pressed="${on}" style="--cc:${cColor(c)}">S${esc(cName(c))}</button>`}).join("")}</span></div>`).join(""):`<p class="rule">Chưa có trọng tài. Mời trọng tài ở trên hoặc cho trọng tài vào bằng PIN.</p>`}</div></section>`;
+  return R.length?R.map(r=>`<div class="refrow"><span class="t"><b>${esc(r.nm)}</b><small>${esc(r.sub)}</small></span><span class="refct">${Array.from({length:n},(_,i)=>i+1).map(c=>{const on=r.ct.map(Number).includes(c);return `<button class="${on?"on":""}" data-act="refct" data-k="${r.k}" data-c="${c}" aria-pressed="${on}" style="--cc:${cColor(c)}">S${esc(cName(c))}</button>`}).join("")}</span></div>`).join(""):`<p class="rule">Chưa có trọng tài nào vào. Mời bằng link Google hoặc gửi link vào bằng PIN bên dưới.</p>`;
+}
+function refCard(){
+  return `<section class="card2"><h2>Giao sân cho trọng tài</h2><div class="cb"><p class="rule">Trọng tài chỉ nhập được tỉ số ở sân được tick. Không sửa buổi, không xếp trận, không điểm danh, không xóa được gì. Giao sân nhanh hơn ở mục Trọng tài trong trang Chuẩn bị của buổi.</p>${refRows()}</div></section>`;
 }
 /* ----- Buổi đã xóa: chủ CLB khôi phục ----- */
 let delList=null;
