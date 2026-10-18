@@ -104,8 +104,8 @@ document.addEventListener("click",async e=>{
   if(act==="cp"){try{await navigator.clipboard.writeText(b.dataset.v);toast("Đã copy: "+b.dataset.v)}catch(x){toast(b.dataset.v)}return}
   if(act==="paid"){if(!canWrite)return;const sid=Number(id),h=S.hist.find(z=>z.sid===sid);if(!h)return;const pd={...(h.paid||{})};pd[b.dataset.p]=!pd[b.dataset.p];
     write(()=>db.doc("app/hist-"+sid).update({paid:pd}),pd[b.dataset.p]?"Đã đánh dấu đã nhận tiền":"Đã bỏ đánh dấu");return}
-  if(act==="share"||act==="copylink"){const u=shareUrl(id),D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id)),txt=x?(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x)):`Tổng kết buổi #${id}`;
-    if(act==="share"&&navigator.share){try{await navigator.share({title:`Tổng kết buổi #${id}`,text:txt+"\n",url:u})}catch(x){}return}
+  if(act==="share"||act==="copylink"){const u=shareUrl(id),D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id)),txt=x?(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x)):"Tổng kết buổi đánh";
+    if(act==="share"&&navigator.share){try{await navigator.share({title:"Tổng kết buổi đánh",text:txt+"\n",url:u})}catch(x){}return}
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy tin nhắn kèm link, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
   if(act==="sess"){const k="s-"+id;editing.has(k)?editing.delete(k):editing.add(k);render();return}
   if(act==="copysess"){const D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id));if(!x)return;
@@ -143,7 +143,7 @@ document.addEventListener("click",async e=>{
     ["cf-gtv","cf-phi"].forEach(x=>delete drafts[x]);write(()=>saveCfg(patch));return}
   if(act==="fmt"||(act==="cset"&&b.dataset.k==="fmt")){const v=b.dataset.v==="giai"?"giai":"xoay";if(derive().SM.length){toast("Buổi đã có trận, không đổi thể thức được.");return}
     if(cfg().fmt===v||(v==="xoay"&&!cfg().fmt))return;
-    const keep=sheetOpen||phaseOf(derive())==="live";write(()=>saveCfg({fmt:v,giai:cfg().giai||{pairs:[],prizes:[0,0,0],out:{},locked:false},...(keep?{phase:"live"}:{})}),v==="giai"?"Đã chọn thể thức Cặp cố định":"Đã chọn thể thức Xoay cặp");return}
+    const keep=sheetOpen||phaseOf(derive())==="live";write(()=>saveCfg({fmt:v,giai:cfg().giai||{pairs:[],prizes:[0,0,0],out:{},locked:false},...(keep?{phase:"live"}:{})}),v==="giai"?"Đã chọn thể thức Cặp cố định xoay vòng":"Đã chọn thể thức Xoay cặp");return}
   if(act==="gadd"){const a=String(drafts.gp1||""),bb=String(drafts.gp2||""),P=cfg().giai?.pairs||[];
     if(!a||!bb){errs.gadd="Chọn đủ 2 người.";render();return}
     if(a===bb){errs.gadd="Hai người phải khác nhau.";render();return}

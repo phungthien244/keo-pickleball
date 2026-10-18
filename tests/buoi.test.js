@@ -100,7 +100,8 @@ test("luật điểm: chạm, cách 2, điểm trần; tên buổi; tắt chi ph
   await e.tab("san");
   e.H.change({ target: { dataset: { save: "cfg", key: "sname" }, value: "Kèo tối thứ 5" } }); await e.tick();
   expect(e.store.get("app/config").sname).toBe("Kèo tối thứ 5");
-  expect(e.T()).toContain("Kèo tối thứ 5 · Buổi #1");
+  expect(e.T()).toContain("Kèo tối thứ 5 · chuẩn bị");
+  expect(e.T()).not.toContain("Kèo tối thứ 5 · Buổi #1");
   await e.click("ptmax", { v: "1" });
   expect(e.store.get("app/config").ptMax).toBe(15);
   await e.click("cphi");

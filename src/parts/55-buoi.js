@@ -7,7 +7,7 @@
 let sheetOpen=false,qView="buoi",ledForm=null,chotMien=false;
 const payDoc=sid=>(S.pays&&S.pays["pay-"+sid])||{};
 const phaseOf=D=>(D.SM.length||D.c.phase==="live"||(isG(D.c)&&D.c.giai&&D.c.giai.locked))?"live":"prep";
-const fmtTxt=c=>isG(c)?"Cặp cố định":"Xoay cặp";
+const fmtTxt=c=>isG(c)?"Cặp cố định xoay vòng":"Xoay cặp";
 const who=()=>authUser&&!authUser.isAnonymous?(authUser.displayName||"Ban tổ chức"):"Trọng tài";
 const hm=t=>t?new Date(t).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}):"";
 const dhm=t=>t?`${hm(t)} ${dmy(t)}`:"";
@@ -39,7 +39,7 @@ function attChips(D){
 function buoiBlock(D){
   const c=D.c,G=isG(c),lockF=D.SM.length>0;
   return `<label class="fld"><span class="lbl">Tên buổi / tên giải · không bắt buộc</span><input id="cf-sname" data-draft="cf-sname" data-save="cfg" data-key="sname" maxlength="60" placeholder="Ví dụ: Kèo tối thứ 5" value="${esc(val("cf-sname",c.sname||""))}"></label>
-  <div class="fld"><span class="lbl">Thể thức</span><span class="seg segf">${sgB("fmt","xoay",G?"giai":"xoay","Xoay cặp",lockF)}${sgB("fmt","giai",G?"giai":"xoay","Giải cặp cố định",lockF)}</span>${lockF?`<small class="rule">Đã có trận nên giữ nguyên thể thức.</small>`:""}</div>`;
+  <div class="fld"><span class="lbl">Thể thức</span><span class="seg segf">${sgB("fmt","xoay",G?"giai":"xoay","Xoay cặp",lockF)}${sgB("fmt","giai",G?"giai":"xoay","Cặp cố định xoay vòng",lockF)}</span>${lockF?`<small class="rule">Đã có trận nên giữ nguyên thể thức.</small>`:""}</div>`;
 }
 // Tên sân (để loa đọc đúng) và màu thẻ sân. Ví dụ thuê sân 2, 3, 4 thì đặt tên 2, 3, 4.
 let cnOpen=false;
@@ -118,7 +118,7 @@ function vPrep(D){
 /* ----- ② Đang đánh: dải tóm tắt + bảng Sửa ----- */
 function cfgChip(D){
   const c=D.c,thu=c.thu||"keo",n=D.players.filter(p=>p.active!==false).length;
-  return `<div class="cfgchip"><span class="t"><b>${esc(sessTitle(c,D.sid))} · đang đánh</b><span>${fmtTxt(c)} · ${c.courts} sân · chạm ${c.target}${winBy2(c)?` cách 2${ptMax(c)?`, trần ${ptMax(c)}`:""}`:""} · ${c.cphi===false?"không thu tiền":esc(THU[thu])+(thu==="phi"?` ${fmtK(+c.phi||0)}`:"")} · ${n} người</span></span>${spkBtn("rules",`<button class="mcb" data-act="speakrules" aria-label="Đọc thể thức thi đấu">📣 Thể thức</button>`)}<button data-act="sheet">Sửa</button></div><div class="lsrow">${liveShareBtn()}<span class="rule">Gửi link xem trực tiếp vào nhóm Zalo</span></div>${muteFab()}`;
+  return `<div class="cfgchip"><span class="t"><b>${esc(sessTitle(c,D.sid))} · đang đánh</b><span>${fmtTxt(c)} · ${c.courts} sân · chạm ${c.target}${winBy2(c)?` cách 2${ptMax(c)?`, trần ${ptMax(c)}`:""}`:""} · ${c.cphi===false?"không thu tiền":esc(THU[thu])+(thu==="phi"?` ${fmtK(+c.phi||0)}`:"")} · ${n} người</span></span>${spkBtn("rules",`<button class="mcb" data-act="speakrules" aria-label="Đọc thể thức thi đấu">📣 Thể thức</button>`)}<button data-act="sheet">Sửa</button></div><div class="lsrow">${liveShareBtn()}</div>${muteFab()}`;
 }
 function sheetInner(D){
   return `<div class="sh"><h2>Sửa ${esc(sessTitle(D.c,D.sid))}</h2><button class="x" data-act="sheetx" aria-label="Đóng">✕ Đóng</button></div>
@@ -341,7 +341,7 @@ function mcDefault(D){
   const club=String(CLUB?.name||c.title||"câu lạc bộ").trim();
   const L=[`Xin chào các vận động viên và khán giả, chào mừng đến với ${c.sname||`buổi thi đấu số ${D.sid}`} của ${club}.`,
     "Ban tổ chức xin phổ biến thể thức thi đấu như sau.",
-    G?`Hôm nay chúng ta thi đấu giải cặp cố định theo thể thức vòng tròn, mỗi cặp sẽ gặp tất cả các cặp còn lại một lần, trên ${c.courts} sân.`
+    G?`Hôm nay chúng ta thi đấu cặp cố định xoay vòng, mỗi cặp sẽ gặp tất cả các cặp còn lại một lần, trên ${c.courts} sân.`
      :`Hôm nay chúng ta thi đấu đánh đôi xoay cặp trên ${c.courts} sân. Sau mỗi trận, hệ thống sẽ ghép cặp mới theo trình độ, ai chờ lâu sẽ được vào sân trước.`,
     `Mỗi trận đánh chạm ${t} điểm${w2?`, đội thắng phải cách biệt 2 điểm${mx?`, tối đa ${mx} điểm`:""}`:", không cần cách biệt 2 điểm"}.`,
     `Khi một đội đạt ${half} điểm, hai đội đổi sân.`,

@@ -39,7 +39,9 @@ function armOr(k){if(armed(k)){ARM.k="";return true}ARM.k=k;ARM.t=Date.now()+400
 const delBtn=(act,id,label)=>armed(act+":"+id)?`<button class="danger" data-act="${act}" data-id="${id}">Bấm lần nữa để xóa</button>`:`<button class="ghost danger" data-act="${act}" data-id="${id}">${label}</button>`;
 const logoOk=c=>c&&typeof c.logo==="string"&&/^data:image\//.test(c.logo);
 const logoHtml=(c,name)=>logoOk(c)?`<img src="${c.logo}" alt="">`:esc(String(name||"P").trim().charAt(0).toUpperCase()||"P");
-const sessTitle=(c,sid)=>c.sname?`${c.sname} · Buổi #${sid}`:`Buổi #${sid}`;
+const sessTitle=(c,sid)=>c.sname?String(c.sname):`Buổi #${sid}`;
+// Tên dùng trong tin nhắn chia sẻ: không kèm số buổi
+const shareName=(sname,fallback)=>String(sname||"").trim()||fallback;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtK=n=>(Math.round(n*10)/10).toLocaleString("vi-VN")+"k";
 const r2=n=>(Math.round(n*100)/100).toFixed(2);

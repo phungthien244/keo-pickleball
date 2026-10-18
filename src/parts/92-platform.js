@@ -29,7 +29,7 @@ const pfoot=()=>`<footer class="pfoot2"><b>PIKECO.APP</b><span>Quản lý CLB pi
 function vStart(){
   loadClubs();
   const list=publicClubs();
-  const F=[["Xoay cặp theo trình","Tự ghép đôi cân trình, ai chờ lâu đánh trước, có nghỉ giữa trận."],["Giải cặp cố định","Vòng tròn đến 10 cặp, lịch tự xếp, bảng xếp hạng và đối đầu."],["Rating kiểu DUPR","So điểm thực tế với dự kiến, chốt rating sau mỗi buổi."],["Quỹ và giải thưởng","Kèo, chia đều hoặc lệ phí; trích quỹ trao giải; chuyển khoản QR."]];
+  const F=[["Xoay cặp theo trình","Tự ghép đôi cân trình, ai chờ lâu đánh trước, có nghỉ giữa trận."],["Cặp cố định xoay vòng","Vòng tròn đến 10 cặp, lịch tự xếp, bảng xếp hạng và đối đầu."],["Rating kiểu DUPR","So điểm thực tế với dự kiến, chốt rating sau mỗi buổi."],["Quỹ và giải thưởng","Kèo, chia đều hoặc lệ phí; trích quỹ trao giải; chuyển khoản QR."]];
   let h=`<div class="hero"><span class="eyebrow y">Miễn phí cho CLB</span><h1>Quản lý CLB<br>pickleball<br><span style="color:var(--yellow)">trực tiếp</span></h1>
     <p class="lead">Xếp sân, nhập tỉ số ngay tại sân, rating sau mỗi buổi, quỹ và giải thưởng. Một đường link cho cả CLB.</p>
     <div class="ctas"><a class="cta y" href="/tao-clb" data-go="tao">Tạo CLB của bạn</a><a class="cta o" href="/clb" data-go="clb">Tìm CLB của bạn</a></div></div>`;

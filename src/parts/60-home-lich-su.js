@@ -46,10 +46,10 @@ function vHome(D){
 }
 // Tin nhắn chia sẻ lên nhóm Zalo (link trang tổng kết được nối thêm ở cuối)
 const clubNm=D=>String(CLUB?.name||D.c.title||"CLB").trim();
-const fmtLine=(snap,fallback)=>[snap?.type==="giai"?"Giải cặp cố định":"Xoay cặp",snap?.rule||fallback].filter(Boolean).join(" · ");
+const fmtLine=(snap,fallback)=>[snap?.type==="giai"?"Cặp cố định xoay vòng":"Xoay cặp",snap?.rule||fallback].filter(Boolean).join(" · ");
 function shareText(D,x){
   const r=x.rows,s=x.snap||{},M=s.money,n=x.ms.length||s.matchCount||0,m=r[0];
-  const L=[`TỔNG KẾT ${s.sname?s.sname.toUpperCase()+" · ":""}BUỔI #${x.sid} · ${dmy(x.at)}`,`${clubNm(D)} · ${fmtLine(s)} · ${n} trận · ${r.length} người`];
+  const L=[`TỔNG KẾT ${s.sname?s.sname.toUpperCase():"BUỔI ĐÁNH"} · ${dmy(x.at)}`,`${clubNm(D)} · ${fmtLine(s)} · ${n} trận · ${r.length} người`];
   if(m)L.push(`MVP: ${m.name} ${m.w}–${m.l} (HS ${m.pf-m.pa>0?"+":""}${m.pf-m.pa})`);
   if(r.length>1)L.push("Top 3: "+r.slice(0,3).map((z,i)=>`${i+1}. ${z.name}`).join(" · "));
   if(M&&(M.cost||M.collected||M.fund)){const cl=M.club!=null?M.club:M.gap;L.push(`Quỹ: thu ${fmtK(M.collected!=null?M.collected:M.fund)} · chi ${fmtK(M.cost)} · ${cl>=0?"vào quỹ CLB":"quỹ CLB bù"} ${fmtK(Math.abs(cl))}`)}
@@ -92,7 +92,7 @@ function vLs(D){
   if(!L.length)return `<div class="empty"><strong>Chưa có buổi nào kết thúc</strong>Khi ban tổ chức chốt buổi ở tab Sân, buổi đó sẽ được lưu ở đây cùng bảng xếp hạng, các trận và bảng tiền.</div>`;
   return `<p class="rule">${L.length} buổi đã xong. Bấm vào một buổi để xem chi tiết.</p>`+L.map(x=>{
     const open=editing.has("s-"+x.sid),top=x.snap?.type==="giai"?(x.snap.giai?.table||[]).filter(t=>!t.out).slice(0,1).map(t=>esc(t.na+" & "+t.nb)+" vô địch").join(""):x.rows.slice(0,3).map(r=>esc(r.name)).join(", "),m=x.snap?.money;
-    let h=`<div class="panel"><a class="sessh" href="${pathOf("buoi",{sid:x.sid})}" data-go="buoi" data-id="${x.sid}"><span class="code num">#${x.sid}</span><span class="mname"><b>${esc(x.snap?.sname||x.snap?.title||D.c.title)} · ${dmy(x.at)}</b><span class="meta num" style="display:block">${x.rows.length} người · ${x.ms.length||x.snap?.matchCount||0} trận${top?` · Top: ${top}`:""}</span></span>${x.snap?.type==="giai"?`<span class="pill keo">Giải cặp cố định</span>`:m&&m.on!==false?`<span class="pill ${hClub(x.snap)>=0?"win":"lose"} num">${hClub(x.snap)>=0?"Quỹ +":"Quỹ −"}${fmtK(Math.abs(hClub(x.snap)))}</span>`:m?"":`<span class="pill">Chưa có bảng tiền</span>`}<span class="chev" aria-hidden="true" style="color:var(--blue);font-size:22px;font-weight:700">›</span></a>`;
+    let h=`<div class="panel"><a class="sessh" href="${pathOf("buoi",{sid:x.sid})}" data-go="buoi" data-id="${x.sid}"><span class="code num">#${x.sid}</span><span class="mname"><b>${esc(x.snap?.sname||x.snap?.title||D.c.title)} · ${dmy(x.at)}</b><span class="meta num" style="display:block">${x.rows.length} người · ${x.ms.length||x.snap?.matchCount||0} trận${top?` · Top: ${top}`:""}</span></span>${x.snap?.type==="giai"?`<span class="pill keo">Cặp cố định xoay vòng</span>`:m&&m.on!==false?`<span class="pill ${hClub(x.snap)>=0?"win":"lose"} num">${hClub(x.snap)>=0?"Quỹ +":"Quỹ −"}${fmtK(Math.abs(hClub(x.snap)))}</span>`:m?"":`<span class="pill">Chưa có bảng tiền</span>`}<span class="chev" aria-hidden="true" style="color:var(--blue);font-size:22px;font-weight:700">›</span></a>`;
     if(open){
       h+=`<h3 class="subh">Xếp hạng</h3><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>HS</th>${x.snap?"<th>Rating</th><th>Δ</th><th>Phải đóng</th>":""}</tr></thead><tbody>${x.rows.map((r,i)=>{const df=r.pf-r.pa;return `<tr class="${i===0?"top1":""}"><td class="rank">${i+1}</td><td><b>${esc(r.name)}</b></td><td>${r.w}–${r.l}</td><td class="${df>0?"up":df<0?"down":""}">${df>0?"+":""}${df}</td>${x.snap?`<td>${r2(r.rating)}</td><td class="${r.d>0.004?"up":r.d<-0.004?"down":""}">${sgn(r.d)}</td><td>${fmtK(r.pay)}</td>`:""}</tr>`}).join("")}</tbody></table></div>`;
       if(m&&m.on!==false)h+=`<div class="kpis" style="margin-top:12px"><div class="kpi"><div class="lbl">Quỹ thu</div><div class="v num">${fmtK(m.fund)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(m.cost)}</div><div class="meta num">Sân ${fmtK(m.costs.court||0)} · Nước ${fmtK(m.costs.water||0)}${m.costs.ball?` · Bóng ${fmtK(m.costs.ball)}`:""}${m.costs.other?` · Khác ${fmtK(m.costs.other)}`:""}</div></div><div class="kpi hl"><div class="lbl">${m.gap>=0?"Dư":"Thiếu"}</div><div class="v num">${fmtK(Math.abs(m.gap))}</div></div></div>`;
@@ -104,7 +104,7 @@ function vLs(D){
 }
 function summaryText(D){
   const c=D.c,M=money(D),d=new Date(),R=recv(D,M),st=standings(D).filter(r=>r.s.g);
-  const L=[`TỔNG KẾT ${sessTitle(c,D.sid).toUpperCase()} · ${d.getDate()}/${d.getMonth()+1}`,`${clubNm(D)} · ${fmtTxt(c)} · ${ruleTxt(c)} · ${D.done.length} trận`];
+  const L=[`TỔNG KẾT ${shareName(c.sname,"BUỔI ĐÁNH").toUpperCase()} · ${d.getDate()}/${d.getMonth()+1}`,`${clubNm(D)} · ${fmtTxt(c)} · ${ruleTxt(c)} · ${D.done.length} trận`];
   if(st.length)L.push("Top 3: "+st.slice(0,3).map((r,i)=>`${i+1}. ${r.p.name} ${r.s.w}–${r.s.l}`).join(" · "));
   if(R.tot){L.push(`Phải thu ${fmtK(R.tot)} · đã nhận ${R.np}/${R.n}`);if(BANK)L.push(`Chuyển khoản: ${BANK.name} ${BANK.acc} (${BANK.holder})`);L.push("Xem số tiền của bạn và mã QR:")}
   else L.push("Xem trực tiếp:");

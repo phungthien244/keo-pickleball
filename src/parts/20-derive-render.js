@@ -67,8 +67,8 @@ let lastAnim="",seenReady=false,bxF="all";const seen=new Set();
 const isNew=k=>seenReady&&!seen.has(k);
 const today=()=>{const d=new Date();return `${d.getDate()}/${d.getMonth()+1}`};
 function pageHead(D){
-  const H={san:[sessTitle(D.c,D.sid)+" · "+today(),"Sân đấu"],bxh:["Buổi #"+D.sid+" · hôm nay","Xếp hạng"],nguoi:[(CLUB?.name||D.c.title),"Thành viên"],tien:["Buổi #"+D.sid+" · "+today(),"Quỹ"],ls:["Các buổi đã đánh","Lịch sử"]}[tab]||["",""];
-  if(isG(D.c)){if(tab==="san"||tab==="tien")H[1]="Giải cặp cố định";if(tab==="bxh"){H[0]="Giải cặp cố định · buổi #"+D.sid;H[1]="Xếp hạng cặp"}}
+  const H={san:[sessTitle(D.c,D.sid)+" · "+today(),"Sân đấu"],bxh:[sessTitle(D.c,D.sid)+" · hôm nay","Xếp hạng"],nguoi:[(CLUB?.name||D.c.title),"Thành viên"],tien:[sessTitle(D.c,D.sid)+" · "+today(),"Quỹ"],ls:["Các buổi đã đánh","Lịch sử"]}[tab]||["",""];
+  if(isG(D.c)){if(tab==="san"||tab==="tien")H[1]="Cặp cố định xoay vòng";if(tab==="bxh"){H[0]=D.c.sname?sessTitle(D.c,D.sid):"Cặp cố định xoay vòng";H[1]="Xếp hạng cặp"}}
   return `<div class="phead"><span class="eyebrow">${esc(H[0])}</span><h2 class="ptitle">${esc(H[1])}</h2></div>`;
 }
 let tkItems=[],tkI=0,tkKey="";
