@@ -36,3 +36,25 @@ test("xoay cặp: trận định sẵn vào sân trước theo thứ tự, sau �
   expect(P2.some(m => m.preset === p3)).toBe(true);
   expect(P2.filter(m => !m.preset).length).toBe(1);
 });
+
+test("cặp cố định xoay vòng: trận định sẵn được gọi vào sân trước theo thứ tự", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ\nG\nH | nữ\nI\nK | nữ"); await e.click("add");
+  await e.tab("san");
+  await e.click("cset", { k: "fmt", v: "giai" });
+  const id = n => e.pid(n);
+  for (const [x, y] of [["A", "C"], ["B", "D"], ["E", "F"], ["G", "H"], ["I", "K"]]) { await e.click("gpick", { id: id(x) }); await e.click("gpick", { id: id(y) }); await e.click("gadd"); }
+  const P = e.store.get("app/config").giai.pairs;
+  expect(P.length).toBe(5);
+  await e.click("gpreon");
+  // trận 1: cặp 5 vs cặp 4, trận 2: cặp 1 vs cặp 3
+  await e.click("gprepick", { id: P[4].id }); await e.click("gprepick", { id: P[3].id }); await e.click("gpreadd");
+  await e.click("gprepick", { id: P[0].id }); await e.click("gprepick", { id: P[2].id }); await e.click("gpreadd");
+  expect(e.store.get("app/config").giai.presets.length).toBe(2);
+  await e.click("gstart");
+  const live = e.docs("matches/", m => m.status === "playing").map(([, m]) => m).sort((a, b) => a.court - b.court);
+  expect(live.length).toBe(2);
+  expect([live[0].pa, live[0].pb].sort()).toEqual([P[4].id, P[3].id].sort());
+  expect([live[1].pa, live[1].pb].sort()).toEqual([P[0].id, P[2].id].sort());
+});

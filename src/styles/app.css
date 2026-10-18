@@ -950,3 +950,4 @@ button.mebox.mtog{padding:14px 16px;min-height:0}
 .prer .pt{display:flex;align-items:center;gap:6px;min-width:0}.prer .pt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prer .pb{display:flex;gap:2px}.prer .pb button{min-height:34px;min-width:34px;padding:0}
 .prer.done{opacity:.55}.prer small{font-size:11px;color:var(--muted)}
+.pairg{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}

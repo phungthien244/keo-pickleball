@@ -154,6 +154,14 @@ document.addEventListener("click",async e=>{
     if(P.length>=GMAX){errs.gadd=`Tối đa ${GMAX} cặp.`;render();return}
     if(P.some(p=>[p.a,p.b].includes(a)||[p.a,p.b].includes(bb))){errs.gadd="Người này đã có cặp.";render();return}
     delete errs.gadd;write(()=>saveG({pairs:[...P,{id:"c"+Date.now().toString(36),a,b:bb}]}).then(()=>{delete drafts.gp1;delete drafts.gp2}),"Đã thêm cặp");return}
+  if(act==="gpreon"){const on=G0().preOn!==true;write(()=>saveG({preOn:on}),on?"Bật xếp sẵn trận đầu":"Tắt xếp sẵn, app tự gọi trận");return}
+  if(act==="gprepick"){const k=gpreSel.indexOf(id);if(k>=0)gpreSel.splice(k,1);else{if(gpreSel.length>=2)gpreSel.shift();gpreSel.push(id)}delete errs.gpre;render();return}
+  if(act==="gpreadd"){if(gpreSel.length<2){errs.gpre="Chọn đủ 2 cặp.";render();return}
+    const L=G0().presets||[],[x,y]=gpreSel;if(L.some(p=>gk(p.x,p.y)===gk(x,y))){errs.gpre="Trận này đã có trong danh sách.";render();return}
+    if(G0().locked){const GD=gDerive(derive()),g=GD&&GD.games.find(q=>q.key===gk(x,y));if(g&&g.st!=="wait"){errs.gpre="Hai cặp này đã đánh hoặc đang đánh với nhau.";render();return}}
+    gpreSel=[];delete errs.gpre;write(()=>saveG({presets:[...L,{id:"gp"+Date.now().toString(36),x,y}]}),`Đã thêm trận định sẵn #${L.length+1}`);return}
+  if(act==="gpremv"){const L=[...(G0().presets||[])],i=L.findIndex(p=>p.id===id),j=i+Number(b.dataset.d);if(i<0||j<0||j>=L.length)return;[L[i],L[j]]=[L[j],L[i]];write(()=>saveG({presets:L}));return}
+  if(act==="gpredel"){write(()=>saveG({presets:(G0().presets||[]).filter(p=>p.id!==id)}),"Đã bỏ trận định sẵn");return}
   if(act==="gdel"){write(()=>saveG({pairs:(cfg().giai?.pairs||[]).filter(p=>p.id!==id)}),"Đã bỏ cặp");return}
   if(act==="gstart"){const P=cfg().giai?.pairs||[];if(P.length<3){errs.giai="Cần ít nhất 3 cặp.";render();return}delete errs.giai;
     await write(()=>saveCfg({phase:"live",giai:{...(cfg().giai||{}),locked:true,startedAt:Date.now(),out:{}}}),"Đã tạo lịch thi đấu");await gFill();return}
