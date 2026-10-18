@@ -117,6 +117,7 @@ function gRun(D,GD){
   if(GD.complete){const t=GD.table[0];h+=`<div class="champ"><div class="k"><span>ĐÃ ĐÁNH XONG VÒNG TRÒN · DẪN ĐẦU</span><span>${(()=>{const p=prizes(D,money(D))[0];return p?fmtK(p.k):""})()}</span></div><div class="p">${pairAv(D,t.p,"lg")}<span><span class="n">${pairNm(D,t.p)}</span><span class="s num" style="display:block">${t.w} thắng · ${t.l} thua · HS ${t.pf-t.pa>0?"+":""}${t.pf-t.pa}</span></span></div>${canWrite?`<div class="champb">${champBtn("champ:live")}<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để lưu giải":"Kết thúc giải và lưu"}</button></div>`:""}</div>`}
   h+=`<div class="bar">${courtStep(c)}<span class="grow"></span>${canWrite&&!GD.complete&&live.length<c.courts&&gPick(D,GD,new Set(live.flatMap(m=>[m.pa,m.pb])),new Set())?`<button class="ball" data-act="gfill">Đưa trận kế vào sân trống</button>`:""}</div>`;
   if(liveV.length)h+=`<div class="courts">${liveV.map(m=>gCourt(D,GD,m)).join("")}</div>`;
+  if(canWrite&&!GD.complete)h+=gPickNow(D,GD,live);
   else if(REF&&!GD.complete)h+=`<div class="empty"><strong>Sân của bạn đang trống</strong>Trận kế tiếp của sân ${MYCT.join(", ")||"được giao"} sẽ hiện ở đây.</div>`;
   else if(!GD.complete&&!REF)h+=`<div class="empty"><strong>Sân đang trống</strong>${canWrite?"Bấm “Đưa trận kế vào sân trống” để gọi trận tiếp theo theo lịch.":"Chờ người tổ chức gọi trận tiếp theo."}</div>`;
   h+=`<div class="shd"><h2>Lịch thi đấu</h2>${REF?"":`<span class="seg segs"><button data-act="gview" data-v="san" aria-pressed="${gView!=="luot"}">Theo sân</button><button data-act="gview" data-v="luot" aria-pressed="${gView==="luot"}">Theo lượt</button></span>`}</div>${REF||gView!=="luot"?gCourts(D,GD):gRounds(D,GD)}`;
@@ -340,3 +341,30 @@ function champLive(D,GD){
   return champText(D.c.sname||"Giải đấu hôm nay",rows);
 }
 const champBtn=key=>spkBtn(key,`<button class="champspk" data-act="champsay" data-k="${key}">🏆 Công bố kết quả</button>`);
+
+/* ----- Chọn cặp đấu ngay trong lúc đánh ----- */
+let gNowOpen=false,gNowSel=[];
+function gPickNow(D,GD,live){
+  if(!gNowOpen)return `<button class="line wide gnowbtn" data-act="gnowopen">＋ Chọn cặp đấu tiếp theo</button>`;
+  const busy=new Set(live.flatMap(m=>[m.pa,m.pb])),off=GD.G.rest||{};
+  const left=p=>GD.games.some(g=>g.st==="wait"&&(g.x===p.id||g.y===p.id));
+  const P=GD.pairs.filter(p=>!GD.out[p.id]&&left(p));
+  gNowSel=gNowSel.filter(id=>P.some(p=>p.id===id));
+  const used=new Set(live.map(m=>Number(m.court))),free=[];for(let i=1;i<=D.c.courts;i++)if(!used.has(i))free.push(i);
+  const [x,y]=gNowSel,g=x&&y?GD.games.find(q=>q.key===gk(x,y)):null;
+  let msg="";if(g&&g.st!=="wait")msg="Hai cặp này đã đánh với nhau rồi.";else if(x&&y&&(busy.has(x)||busy.has(y)))msg="Có cặp đang trên sân: trận sẽ vào sân ngay khi cặp đó đánh xong.";
+  const slot=i=>gNowSel[i]?`<span class="gs on">${pairAv(D,GD.pm.get(gNowSel[i]),"xs")}${pairNm(D,GD.pm.get(gNowSel[i]))}</span>`:`<span class="gs">Cặp ${i+1}</span>`;
+  const ok=g&&g.st==="wait",now=ok&&free.length&&!busy.has(x)&&!busy.has(y);
+  return `<div class="panel gnow"><div class="bar"><h2 class="grow">Chọn cặp đấu tiếp theo</h2><button class="ghost" data-act="gnowopen">Đóng</button></div>
+    <div class="gsel">${slot(0)}<b>vs</b>${slot(1)}</div>${msg?`<p class="rule"${g&&g.st!=="wait"?' style="color:var(--lose)"':""}>${msg}</p>`:""}
+    ${now?`<div class="gcts"><span class="lbl">Vào sân</span>${free.map(ct=>`<button class="primary" data-act="gnow" data-c="${ct}" style="background:${cColor(ct)};border-color:${cColor(ct)}">Sân ${esc(cName(ct))}</button>`).join("")}</div>`:ok?`<button class="primary" data-act="gnext">Đánh trận kế tiếp</button>`:""}
+    <div class="ppg pairg">${P.map(p=>`<button class="ppt${gNowSel.includes(p.id)?" on":""}" data-act="gnowpick" data-id="${p.id}" aria-pressed="${gNowSel.includes(p.id)}">${pairAv(D,p,"sm")}<span class="pn">${pairNm(D,p)}</span><small>${busy.has(p.id)?"đang đánh":off[p.id]?"đang nghỉ":`${GD.games.filter(q=>q.st==="wait"&&(q.x===p.id||q.y===p.id)).length} trận còn lại`}</small></button>`).join("")}</div>
+    <small class="rule">Chọn 2 cặp chưa gặp nhau. Có sân trống thì đưa vào sân ngay; không thì trận này được gọi đầu tiên khi có sân trống.</small></div>`;
+}
+async function gPlace(ct,x,y){
+  const D=derive(),GD=gDerive(D);if(!GD)return;const g=GD.games.find(q=>q.key===gk(x,y));if(!g||g.st!=="wait")return;
+  const lock=await db.doc("app/lock").acquire({holder,ttlMs:5000});
+  if(!lock.acquired){toast("Có người khác đang xếp trận, thử lại sau vài giây.");return}
+  const seq=D.SM.reduce((m,q)=>Math.max(m,q.seq||0),0)+1,X=GD.pm.get(g.x),Y=GD.pm.get(g.y);
+  await write(()=>db.collection("matches").doc().set({session:D.sid,seq,court:ct,cn:cName(ct),giai:true,pa:g.x,pb:g.y,round:g.r,a:[X.a,X.b],b:[Y.a,Y.b],sa:null,sb:null,status:"playing",createdAt:Date.now()}).then(()=>{S.everWrote=true}),`Đã đưa trận vào sân ${cName(ct)}`);
+}

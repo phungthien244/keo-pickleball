@@ -160,6 +160,11 @@ document.addEventListener("click",async e=>{
     if(P.length>=GMAX){errs.gadd=`Tối đa ${GMAX} cặp.`;render();return}
     if(P.some(p=>[p.a,p.b].includes(a)||[p.a,p.b].includes(bb))){errs.gadd="Người này đã có cặp.";render();return}
     delete errs.gadd;write(()=>saveG({pairs:[...P,{id:"c"+Date.now().toString(36),a,b:bb}]}).then(()=>{delete drafts.gp1;delete drafts.gp2}),"Đã thêm cặp");return}
+  if(act==="gnowopen"){gNowOpen=!gNowOpen;gNowSel=[];render();return}
+  if(act==="gnowpick"){const k=gNowSel.indexOf(id);if(k>=0)gNowSel.splice(k,1);else{if(gNowSel.length>=2)gNowSel.shift();gNowSel.push(id)}render();return}
+  if(act==="gnow"){const [x,y]=gNowSel;if(!x||!y)return;await gPlace(Number(b.dataset.c),x,y);gNowSel=[];gNowOpen=false;render();return}
+  if(act==="gnext"){const [x,y]=gNowSel;if(!x||!y)return;const G=G0(),L=(G.presets||[]).filter(p=>gk(p.x,p.y)!==gk(x,y));
+    await write(()=>saveG({preOn:true,presets:[{id:"gp"+Date.now().toString(36),x,y},...L]}),"Trận này sẽ vào sân đầu tiên khi có sân trống");gNowSel=[];gNowOpen=false;render();return}
   if(act==="gpreon"){const on=G0().preOn!==true;write(()=>saveG({preOn:on}),on?"Bật xếp sẵn trận đầu":"Tắt xếp sẵn, app tự gọi trận");return}
   if(act==="gprepick"){const k=gpreSel.indexOf(id);if(k>=0)gpreSel.splice(k,1);else{if(gpreSel.length>=2)gpreSel.shift();gpreSel.push(id)}delete errs.gpre;render();return}
   if(act==="gpreadd"){if(gpreSel.length<2){errs.gpre="Chọn đủ 2 cặp.";render();return}

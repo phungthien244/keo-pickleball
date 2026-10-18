@@ -954,3 +954,6 @@ button.mebox.mtog{padding:14px 16px;min-height:0}
 .champb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
 .champspk{min-height:46px;padding:0 16px;background:var(--yellow);color:var(--navy);border:0;font:900 12px var(--display);letter-spacing:.08em;text-transform:uppercase}
 .champb .spkstop{min-height:46px}
+.gnowbtn{min-height:46px;border:1.5px dashed var(--blue);color:var(--blue);background:var(--surface);font-weight:800}
+.gnow .gcts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.gnow .gcts .primary{min-height:44px;color:#fff}
