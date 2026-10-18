@@ -19,6 +19,8 @@ test("người xem chọn tên mình: thấy đang đánh sân nào, hàng chờ
   globalThis.localStorage = { getItem: k => mem[k] ?? null, setItem: (k, v) => (mem[k] = v), removeItem: k => delete mem[k] };
   await e.boot();
   expect(e.T()).toContain("Bạn là ai?");
+  expect(e.V()).not.toContain('data-act="mepick"');
+  await e.click("meopen");
   expect(e.V()).toContain('data-act="mepick"');
   expect(e.V()).not.toContain("<select data-me");
   expect(e.V()).not.toContain('data-act="courts"');
@@ -27,7 +29,7 @@ test("người xem chọn tên mình: thấy đang đánh sân nào, hàng chờ
   expect(mem["pb-me-q7"]).toBe("p1");
   expect(e.T()).toContain("Đang đánh sân 1");
   expect(e.T()).toContain("Xin chào");
-  await e.click("meclr"); await e.click("mepick", { id: "p1" });
+  await e.click("meclr"); await e.click("meopen"); await e.click("mepick", { id: "p1" });
   expect(mem["pb-me-q7"]).toBe("p1");
   e.H.change({ target: { dataset: { me: "1" }, value: "p5" } }); await e.tick();
   expect(e.T()).toContain("Thứ 1 trong hàng chờ");

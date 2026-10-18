@@ -93,7 +93,8 @@ function meBox(D,opt={}){
     const here=D.players.filter(x=>x.active!==false).sort(byN),away=D.players.filter(x=>x.active===false).sort(byN);
     const q=String(val("me-q","")).trim();
     const list=q||meAll||!here.length?[...here,...away]:here;
-    return `<div class="mebox ask"><div class="mh"><b>Bạn là ai?</b><small>Chạm vào tên của bạn để xem trận, hạng và chi phí của bạn.</small></div>
+    if(!meOpen)return `<button class="mebox ask mtog" data-act="meopen" aria-expanded="false"><span class="mh"><b>Bạn là ai?</b><small>Chạm để chọn tên của bạn, xem trận, hạng và chi phí của bạn.</small></span><i class="chev" aria-hidden="true">▾</i></button>`;
+    return `<div class="mebox ask"><button class="mtog in" data-act="meopen" aria-expanded="true"><span class="mh"><b>Bạn là ai?</b><small>Chạm vào tên của bạn.</small></span><i class="chev" aria-hidden="true">▴</i></button>
       ${pplPick(D,list,{act:"mepick",key:"me"})}
       ${!q&&!meAll&&here.length&&away.length?`<button class="lnk more" data-act="meall">Xem tất cả thành viên (${D.players.length})</button>`:""}</div>`}
   const s=D.st.get(p.id),all=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating),rank=all.findIndex(x=>x.id===p.id)+1;
@@ -132,4 +133,4 @@ function pplPick(D,list,o){
   const search=list.length>8?`<label class="ppq"><span class="sr">Tìm tên</span><input id="${o.key}-q" data-draft="${o.key}-q" data-live="1" type="search" placeholder="Tìm tên…" value="${esc(val(o.key+"-q",""))}" autocomplete="off"></label>`:"";
   return search+`<div class="ppg">${L.map(p=>`<button class="ppt${sel.has(p.id)?" on":""}" data-act="${o.act}" data-id="${p.id}" aria-pressed="${sel.has(p.id)}">${av(p,"md")}<span class="pn">${esc(p.name)}</span>${o.meta?`<small>${o.meta(p)}</small>`:""}</button>`).join("")||`<p class="rule">Không có tên phù hợp.</p>`}</div>`;
 }
-let meAll=false;
+let meAll=false,meOpen=false;

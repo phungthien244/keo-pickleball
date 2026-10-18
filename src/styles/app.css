@@ -922,3 +922,10 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 .gsel .gs{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 10px;border:1.5px dashed var(--line-2);color:var(--muted);font-size:13px}
 .gsel .gs.on{border-style:solid;border-color:var(--blue);color:var(--ink);font-weight:700;background:#e8f3fc}
 .gsel b{color:var(--muted)}.gsel .primary{margin-left:auto}
+.mtog{display:flex;align-items:center;gap:10px;width:100%;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);color:var(--ink);cursor:pointer}
+button.mebox.mtog{padding:14px 16px;min-height:0}
+.mtog.in{background:none;border:0;padding:0;min-height:0}
+.mtog .mh{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mtog .mh b{font-family:var(--display);font-weight:900;font-size:15px;text-transform:uppercase}
+.mtog .mh small{font-size:13px;color:var(--muted);font-weight:400}
+.mtog .chev{font-style:normal;font-size:18px;color:var(--blue);flex:none}
