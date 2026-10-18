@@ -89,8 +89,13 @@ function waitQueue(D){
 function meBox(D,opt={}){
   const p=meP(D);
   if(!p){if(!D.players.length)return "";
-    const L=[...D.players].sort((a,b)=>String(a.name).localeCompare(String(b.name),"vi"));
-    return `<div class="mebox ask"><span class="t"><b>Bạn là ai?</b><small>Chọn tên một lần để xem trận, hạng và tiền của bạn.</small></span><label><span class="sr">Chọn tên của bạn</span><select data-me="1"><option value="">Chọn tên…</option>${L.map(o=>`<option value="${o.id}">${esc(o.name)}</option>`).join("")}</select></label></div>`}
+    const byN=(a,b)=>String(a.name).localeCompare(String(b.name),"vi");
+    const here=D.players.filter(x=>x.active!==false).sort(byN),away=D.players.filter(x=>x.active===false).sort(byN);
+    const q=String(val("me-q","")).trim();
+    const list=q||meAll||!here.length?[...here,...away]:here;
+    return `<div class="mebox ask"><div class="mh"><b>Bạn là ai?</b><small>Chạm vào tên của bạn để xem trận, hạng và chi phí của bạn.</small></div>
+      ${pplPick(D,list,{act:"mepick",key:"me",meta:x=>x.active===false?"":"có mặt"})}
+      ${!q&&!meAll&&here.length&&away.length?`<button class="lnk more" data-act="meall">Xem tất cả thành viên (${D.players.length})</button>`:""}</div>`}
   const s=D.st.get(p.id),all=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating),rank=all.findIndex(x=>x.id===p.id)+1;
   const pm=D.playing.find(m=>[...m.a,...m.b].includes(p.id));
   let st;
@@ -99,9 +104,9 @@ function meBox(D,opt={}){
   else if(isG(D.c))st="Chờ lượt theo lịch giải";
   else{const q=waitQueue(D).findIndex(x=>x.id===p.id);st=q>=0?`Thứ ${q+1} trong hàng chờ`:"Đang chờ"}
   const today=s.g?`${s.w} thắng ${s.l} thua hôm nay`:"Chưa đánh trận nào hôm nay";
-  let h=`<div class="mebox">${av(p,"md")}<span class="t"><small>Của bạn</small><b>${esc(p.name)}</b><span>${st} · ${today}</span></span><span class="r"><b class="num">${r2(s.rating)}</b><small>hạng ${rank}/${all.length}</small></span><button class="lnk" data-act="meclr">Đổi</button></div>`;
+  let h=`<div class="mebox">${av(p,"md")}<span class="t"><small>Xin chào 👋</small><b>${esc(p.name)}</b><span class="st"><i class="${pm?"on":""}">${esc(st)}</i><i>${today}</i></span></span><span class="r"><b class="num">${r2(s.rating)}</b><small>hạng ${rank}/${all.length}</small></span><button class="lnk" data-act="meclr">Đổi</button></div>`;
   if(opt.pay!==false){const M=money(D);if(M.att.some(x=>x.id===p.id)){const k=payRow(D,M,p.id).pay;
-    if(k>0)h+=`<div class="mepay"><span>Hôm nay bạn đóng <b class="num">${fmtK(k)}</b><small>tạm tính tới giờ</small></span>${BANK?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${k}">Chuyển tiền</button>`:""}</div>`}}
+    if(k>0)h+=`<div class="mepay"><span>Chi phí của bạn hôm nay <b class="num">${fmtK(k)}</b><small>tạm tính tới giờ</small></span>${BANK?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${k}">Chuyển tiền</button>`:""}</div>`}}
   return h;
 }
 
@@ -118,3 +123,13 @@ const mName=m=>m?(m.status!=="done"||!m.cn?cName(m.court):m.cn):"?";
 const cColor=n=>{const v=((cfg().ccolors)||[])[Number(n)-1];return /^#[0-9a-f]{6}$/i.test(v||"")?v:CCOL[(Number(n)-1)%CCOL.length][0]};
 // Đọc loa: "sân số 2" nếu là số, còn lại đọc nguyên tên ("sân VIP")
 const cSpeak=n=>{const v=cName(n);return /^\d+$/.test(v)?`sân số ${v}`:`sân ${v}`};
+
+/* ----- Chọn người bằng lưới ảnh (thay cho danh sách xổ xuống) ----- */
+// list: người để chọn; o.act: hành động khi bấm; o.sel: các id đang chọn; o.key: khoá ô tìm; o.meta(p): dòng nhỏ dưới tên
+function pplPick(D,list,o){
+  const q=String(val(o.key+"-q","")).trim().toLowerCase(),sel=new Set(o.sel||[]);
+  const L=q?list.filter(p=>String(p.name).toLowerCase().includes(q)):list;
+  const search=list.length>8?`<label class="ppq"><span class="sr">Tìm tên</span><input id="${o.key}-q" data-draft="${o.key}-q" data-live="1" type="search" placeholder="Tìm tên…" value="${esc(val(o.key+"-q",""))}" autocomplete="off"></label>`:"";
+  return search+`<div class="ppg">${L.map(p=>`<button class="ppt${sel.has(p.id)?" on":""}" data-act="${o.act}" data-id="${p.id}" aria-pressed="${sel.has(p.id)}">${av(p,"md")}<span class="pn">${esc(p.name)}</span>${o.meta?`<small>${o.meta(p)}</small>`:""}</button>`).join("")||`<p class="rule">Không có tên phù hợp.</p>`}</div>`;
+}
+let meAll=false;

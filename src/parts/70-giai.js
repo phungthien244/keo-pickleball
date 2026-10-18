@@ -98,8 +98,10 @@ function gSetup(D,G){
   h+=n?P.map((p,i)=>`<div class="prow2"><span class="no num">${i+1}</span>${pairAv(D,p,"md")}<span class="nm">${pairNm(D,p)}<small class="num">Rating TB ${r2(pairR(D,p))}</small></span>${canWrite?`<button class="ghost danger" data-act="gdel" data-id="${p.id}" aria-label="Bỏ cặp ${esc(pairTx(D,p))}">✕</button>`:""}</div>`).join(""):`<p class="rule">Chưa có cặp nào. Mỗi cặp là 2 người tự chọn nhau, đánh chung từ đầu đến cuối giải.</p>`;
   if(canWrite&&n<GMAX){
     if(free.length<2)h+=`<p class="rule" style="margin-top:10px">Cần thêm người có mặt hôm nay ở tab Người chơi để ghép cặp mới.</p>`;
-    else{const opt=k=>`<option value="">Chọn người</option>`+free.map(p=>`<option value="${p.id}" ${val(k,"")===p.id?"selected":""}>${esc(p.name)} · ${r2(D.st.get(p.id).rating)}</option>`).join("");
-      h+=`<div class="gadd"><span class="lbl">Thêm cặp mới · còn ${GMAX-n} chỗ</span><div class="form"><label><span class="lbl">Người 1</span><select id="gp1" data-draft="gp1">${opt("gp1")}</select></label><label><span class="lbl">Người 2</span><select id="gp2" data-draft="gp2">${opt("gp2")}</select></label></div><div class="bar"><span class="grow"></span><button class="primary" data-act="gadd">Thêm cặp</button></div></div>`}}
+    else{const S2=[drafts.gp1,drafts.gp2].filter(Boolean),nmOf=id=>esc(D.pmap.get(id)?.name||"?");
+      h+=`<div class="gadd"><span class="lbl">Thêm cặp mới · còn ${GMAX-n} chỗ · chạm chọn 2 người</span>
+        <div class="gsel">${[0,1].map(i=>S2[i]?`<span class="gs on">${av(D.pmap.get(S2[i]),"sm")}${nmOf(S2[i])}</span>`:`<span class="gs">Người ${i+1}</span>`).join(`<b>&amp;</b>`)}<button class="primary" data-act="gadd" ${S2.length<2?"disabled":""}>Thêm cặp</button></div>
+        ${pplPick(D,free,{act:"gpick",key:"gp",sel:S2,meta:x=>r2(D.st.get(x.id).rating)})}</div>`}}
   if(errs.gadd)h+=`<p class="err">${esc(errs.gadd)}</p>`;
   h+=`</div><p class="rule">Hạng 1, 2, 3 lấy từ bảng xếp hạng cuối cùng sau khi đánh hết vòng tròn. Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Tiền thưởng chỉnh ở khung Giải thưởng phía trên.</p>`;
   if(canWrite)h+=`<div class="bar"><button class="ball" data-act="gstart" ${n<3?"disabled":""}>Tạo lịch thi đấu · ${tot} trận</button></div>${errs.giai?`<p class="err">${esc(errs.giai)}</p>`:""}<p class="rule">Tiền buổi và giải thưởng tính theo khung Thiết lập buổi. Rating cá nhân vẫn cập nhật theo từng trận như khi đánh xoay cặp. Sau khi tạo lịch, danh sách cặp được khoá.</p>`;

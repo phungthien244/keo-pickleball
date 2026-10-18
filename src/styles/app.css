@@ -578,7 +578,7 @@ section>.card2+.card2{margin-top:-2px}
 .mebox .lnk{background:none;border:none;color:var(--blue);font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;min-height:44px;padding:0 4px;cursor:pointer}
 .mebox.ask{grid-template-columns:minmax(0,1fr);gap:10px}
 .mebox.ask b{font-family:var(--display);font-weight:900;font-size:15px;text-transform:uppercase}
-.mebox.ask select{width:100%;min-height:46px}
+
 .mepay{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--navy);color:#fff;padding:12px 16px;margin-top:-10px}
 .mepay span{display:flex;flex-direction:column;font-size:14px}
 .mepay b{font-family:var(--display);font-weight:900;font-size:22px;color:var(--yellow)}
@@ -903,3 +903,22 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 .cnsw .sw{width:26px;height:26px;min-height:0;padding:0;border:2px solid var(--surface);background:var(--sw);box-shadow:0 0 0 1px var(--line-2)}
 .cnsw .sw.on{box-shadow:0 0 0 2px var(--ink)}
 .refct button.on{background:var(--cc,#1b7a3d);border-color:var(--cc,#1b7a3d)}
+/* Chọn người bằng lưới ảnh */
+.ppq{display:block}.ppq input{width:100%;min-height:44px;padding:0 12px;border:1px solid var(--line-2);background:var(--surface);font-size:15px}
+.ppg{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}
+.ppt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px 8px;min-height:0;background:var(--surface);border:1.5px solid var(--line);color:var(--ink);text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:600;font-size:13px;line-height:1.2;text-align:center;position:relative}
+.ppt .pn{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ppt small{font-size:10px;color:var(--muted);font-weight:500}
+.ppt.on{border-color:var(--blue);background:#e8f3fc;box-shadow:inset 0 0 0 1px var(--blue)}
+.ppt.on::after{content:"✓";position:absolute;top:4px;right:6px;color:var(--blue);font-weight:900}
+.mebox.ask .mh{display:flex;flex-direction:column;gap:2px}
+.mebox.ask .more{justify-self:start;min-height:36px}
+/* Thẻ Xin chào */
+.mebox .t small{color:var(--blue)}
+.mebox .t .st{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.mebox .t .st i{font-style:normal;font-size:12px;padding:2px 8px;background:var(--sunk);color:var(--ink);white-space:nowrap}
+.mebox .t .st i.on{background:#e6f6ec;color:#145c2e;font-weight:700}
+.gsel{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
+.gsel .gs{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 10px;border:1.5px dashed var(--line-2);color:var(--muted);font-size:13px}
+.gsel .gs.on{border-style:solid;border-color:var(--blue);color:var(--ink);font-weight:700;background:#e8f3fc}
+.gsel b{color:var(--muted)}.gsel .primary{margin-left:auto}

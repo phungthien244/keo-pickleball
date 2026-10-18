@@ -1,5 +1,5 @@
 /* ---------- events ---------- */
-document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q"||k==="hq"||k==="cq")render()}});
+document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q"||k==="hq"||k==="cq"||e.target.dataset.live)render()}});
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.dataset&&t.dataset.me){setMe(t.value);return}
@@ -56,6 +56,9 @@ document.addEventListener("click",async e=>{
     }
     render();return}
   if(act==="meclr"){setMe(null);return}
+  if(act==="mepick"){delete drafts["me-q"];meAll=false;setMe(id);return}
+  if(act==="meall"){meAll=true;render();return}
+  if(act==="gpick"){const L=[drafts.gp1,drafts.gp2].filter(Boolean);const k=L.indexOf(id);if(k>=0)L.splice(k,1);else{if(L.length>=2)L.shift();L.push(id)}drafts.gp1=L[0]||"";drafts.gp2=L[1]||"";delete errs.gadd;render();return}
   if(act==="logout"){try{await FB.signOut(FB.auth)}catch(x){}canWrite=false;ROLE=null;S.rootEditor=false;watchAdmin();render();return}
   if(act==="glogin"){if(inApp()){toast("Mở trang bằng Chrome hoặc Safari để đăng nhập Google.");return}
     const pr=new FB.GoogleAuthProvider();try{await FB.signInWithPopup(FB.auth,pr)}catch(x){const c=(x&&x.code)||"";if(/popup-blocked|operation-not-supported|web-storage/.test(c)){try{try{sessionStorage.setItem("pb-rd","1")}catch(z){}await FB.signInWithRedirect(FB.auth,pr)}catch(y){toast("Chưa đăng nhập được, thử lại.")}}else if(!/popup-closed|cancelled-popup/.test(c))toast("Chưa đăng nhập được: "+c)}return}
