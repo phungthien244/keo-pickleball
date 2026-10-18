@@ -77,6 +77,12 @@ document.addEventListener("click",async e=>{
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
   if(act==="vtry"){speak(VOICE_SAMPLE,b.dataset.v,"v:"+b.dataset.v,true);return}
   if(act==="spkstop"){stopSpeak();return}
+  if(act==="champsay"){const k=b.dataset.k,D=derive();let txt="";
+    if(k==="champ:live"){const GD=gDerive(D);if(GD)txt=champLive(D,GD)}
+    else{const sid=k.slice(6),x=sessList(D).find(z=>String(z.sid)===sid),s=x&&x.snap,T=(s&&s.giai&&s.giai.table||[]).filter(t=>!t.out).slice(0,3);
+      const pp=(id,n)=>{const p=D.pmap.get(id);return {name:n||p?.name||"?",gender:p?.gender||"M"}};
+      if(T.length)txt=champText(s.sname||"Giải đấu",T.map(t=>({ppl:[pp(t.a,t.na),pp(t.b,t.nb)],w:t.w,l:t.l,pf:t.pf,pa:t.pa})))}
+    if(txt)speak(txt,"",k);return}
   if(act==="step"){const v=b.dataset.v,D=derive();
     // Giữ vị trí: thanh 3 bước nằm yên chỗ cũ, không nhảy lên đầu trang
     const y0=window.scrollY||0;

@@ -47,6 +47,18 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   const seen = new Set();
   for (const [, m] of e.docs("matches/", m => m.giai && m.status === "done")) { const key = [m.pa, m.pb].sort().join("~"); expect(seen.has(key)).toBe(false); seen.add(key); }
 
+  // công bố kết quả bằng loa
+  const said = [];
+  globalThis.window.speechSynthesis = { getVoices: () => [{ name: "Linh", lang: "vi-VN" }], cancel() {}, speak: u => said.push(u) };
+  globalThis.SpeechSynthesisUtterance = function (t) { this.text = t; };
+  globalThis.speechSynthesis = globalThis.window.speechSynthesis;
+  expect(e.V()).toContain('data-act="champsay"');
+  await e.click("champsay", { k: "champ:live" });
+  const ann = said.pop().text;
+  expect(ann).toMatch(/^Kính thưa các vận động viên\. .+ đã kết thúc\. Giải ba thuộc về cặp (anh|chị) /);
+  expect(ann).toMatch(/Giải nhì thuộc về cặp .+, với \d+ trận thắng, \d+ trận thua/);
+  expect(ann).toMatch(/Và vô địch là cặp .+!/);
+  expect(ann).toContain("Xin chúc mừng các cặp đấu.");
   await e.click("gend"); await e.click("gend"); await e.until(() => e.store.has("app/hist-1"));
   const cfg = e.store.get("app/config");
   expect(cfg.session).toBe(2);
@@ -56,6 +68,7 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   const sv = e.V();
   expect((sv.match(/class="av /g) || []).length).toBeGreaterThanOrEqual(10);
   expect(sv).toContain('class="gpod"');
+  expect(sv).toContain('data-act="champsay"');
   await e.tab("home");
   expect(e.V()).toContain("vô địch");
 });

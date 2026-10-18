@@ -114,7 +114,7 @@ function gRun(D,GD){
   const c=D.c,left=GD.total-GD.resolved,est=Math.ceil(left/Math.max(1,c.courts))*GSLOT,pc=GD.total?Math.round(GD.resolved/GD.total*100):0;
   const live=D.playing.filter(m=>m.giai),liveV=live.filter(myCourt);
   let h=`<div class="gprog"><div class="t"><span class="num">Lượt ${GD.curR}/${GD.rounds} · xong ${GD.resolved}/${GD.total} trận</span><span class="num">${left?`Còn ~${dur(est)}`:"Đã xong"}</span></div><div class="b"><i style="width:${pc}%"></i></div></div>`;
-  if(GD.complete){const t=GD.table[0];h+=`<div class="champ"><div class="k"><span>ĐÃ ĐÁNH XONG VÒNG TRÒN · DẪN ĐẦU</span><span>${(()=>{const p=prizes(D,money(D))[0];return p?fmtK(p.k):""})()}</span></div><div class="p">${pairAv(D,t.p,"lg")}<span><span class="n">${pairNm(D,t.p)}</span><span class="s num" style="display:block">${t.w} thắng · ${t.l} thua · HS ${t.pf-t.pa>0?"+":""}${t.pf-t.pa}</span></span></div>${canWrite?`<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để lưu giải":"Kết thúc giải và lưu"}</button>`:""}</div>`}
+  if(GD.complete){const t=GD.table[0];h+=`<div class="champ"><div class="k"><span>ĐÃ ĐÁNH XONG VÒNG TRÒN · DẪN ĐẦU</span><span>${(()=>{const p=prizes(D,money(D))[0];return p?fmtK(p.k):""})()}</span></div><div class="p">${pairAv(D,t.p,"lg")}<span><span class="n">${pairNm(D,t.p)}</span><span class="s num" style="display:block">${t.w} thắng · ${t.l} thua · HS ${t.pf-t.pa>0?"+":""}${t.pf-t.pa}</span></span></div>${canWrite?`<div class="champb">${champBtn("champ:live")}<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để lưu giải":"Kết thúc giải và lưu"}</button></div>`:""}</div>`}
   h+=`<div class="bar">${courtStep(c)}<span class="grow"></span>${canWrite&&!GD.complete&&live.length<c.courts&&gPick(D,GD,new Set(live.flatMap(m=>[m.pa,m.pb])),new Set())?`<button class="ball" data-act="gfill">Đưa trận kế vào sân trống</button>`:""}</div>`;
   if(liveV.length)h+=`<div class="courts">${liveV.map(m=>gCourt(D,GD,m)).join("")}</div>`;
   else if(REF&&!GD.complete)h+=`<div class="empty"><strong>Sân của bạn đang trống</strong>Trận kế tiếp của sân ${MYCT.join(", ")||"được giao"} sẽ hiện ở đây.</div>`;
@@ -216,6 +216,7 @@ function vGiaiSum(D,x,back){
   const games=G.games||[],pts=games.reduce((a,g)=>a+(+g.sx||0)+(+g.sy||0),0),ranked=T.filter(t=>!t.out);
   const c1=ranked[0],c2=ranked[1],c3=ranked[2];
   let h=back+`<div class="hero"><div class="phead"><span class="eyebrow">${s.sname?esc(s.sname):"Cặp cố định xoay vòng"} · ${dmy(x.at)}</span><h1>Tổng kết</h1><p class="hmeta">${T.length} cặp đánh vòng tròn, mỗi cặp gặp tất cả các cặp còn lại một lần. ${esc(s.rule||"Chạm 11, không cần cách 2")}.${G.complete===false?" Giải kết thúc sớm.":""}</p></div>
+    ${canWrite&&c1?`<div class="champb">${champBtn("champ:"+x.sid)}</div>`:""}
     <div class="stats"><div><b class="num">${T.length}</b><small>CẶP</small></div><div><b class="num">${games.filter(g=>!g.wo).length}</b><small>TRẬN</small></div><div><b class="num">${pts||"–"}</b><small>ĐIỂM GHI</small></div></div>
     ${c1?`<div class="gpod">${[c1,c2,c3].map((t,i)=>t?`<div class="pc p${i+1}"><span class="md">${["Nhất","Nhì","Ba"][i]}</span>${tAv(t,i?"md":"lg")}<span class="tx"><span class="n">${tNm(t)}</span><span class="s num">${t.w} thắng · ${t.l} thua · HS ${hs(t)}</span></span>${pz[i]?`<span class="pz num">${pzTxt(pz[i])}</span>`:""}</div>`:"").join("")}</div>`:""}</div>`;
   h+=`<div class="shd"><h2>Bảng xếp hạng</h2><span class="meta">Ô xanh thắng · đỏ thua · số là điểm ghi</span></div>`+gRank(T.map(t=>({...t})),games.map(g=>({...g})),pz,PP);
@@ -318,3 +319,24 @@ function gPresetBlock(D,G){
     <small class="rule">Các trận này được gọi vào sân trước theo đúng thứ tự (trận nào có cặp đang bận thì chờ). Hết danh sách thì app tự gọi như cũ.</small></div>`;
   return h;
 }
+
+/* ----- Công bố kết quả bằng loa (cặp cố định xoay vòng) ----- */
+// rows: 3 cặp đứng đầu, mỗi cặp {ppl:[{name,gender}], w, l, pf, pa}
+function champText(title,rows){
+  const team=t=>t.ppl.map(p=>`${p.gender==="F"?"chị":"anh"} ${p.name}`).join(", ");
+  const rec=(t,i)=>{const same=rows.some((o,j)=>j!==i&&o&&o.w===t.w);const hs=t.pf-t.pa;
+    const base=t.l===0&&t.w>0?`toàn thắng ${t.w} trận`:`${t.w} trận thắng, ${t.l} trận thua`;
+    return same?`${base}, hiệu số ${hs>=0?"cộng":"trừ"} ${Math.abs(hs)}`:base};
+  const [c1,c2,c3]=rows;let L=[`Kính thưa các vận động viên. ${title} đã kết thúc.`];
+  if(c3)L.push(`Giải ba thuộc về cặp ${team(c3)}, với ${rec(c3,2)}.`);
+  if(c2)L.push(`Giải nhì thuộc về cặp ${team(c2)}, với ${rec(c2,1)}.`);
+  if(c1)L.push(`Và vô địch là cặp ${team(c1)}, ${c1.l===0&&c1.w>0?rec(c1,0):"với "+rec(c1,0)}!`);
+  L.push("Xin chúc mừng các cặp đấu.");
+  return L.join(" ");
+}
+function champLive(D,GD){
+  const pp=id=>{const p=D.pmap.get(id);return {name:p?.name||"?",gender:p?.gender||"M"}};
+  const rows=GD.table.filter(t=>!t.out).slice(0,3).map(t=>({ppl:[pp(t.p.a),pp(t.p.b)],w:t.w,l:t.l,pf:t.pf,pa:t.pa}));
+  return champText(D.c.sname||"Giải đấu hôm nay",rows);
+}
+const champBtn=key=>spkBtn(key,`<button class="champspk" data-act="champsay" data-k="${key}">🏆 Công bố kết quả</button>`);
