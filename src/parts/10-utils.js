@@ -94,7 +94,7 @@ function meBox(D,opt={}){
     const q=String(val("me-q","")).trim();
     const list=q||meAll||!here.length?[...here,...away]:here;
     return `<div class="mebox ask"><div class="mh"><b>Bạn là ai?</b><small>Chạm vào tên của bạn để xem trận, hạng và chi phí của bạn.</small></div>
-      ${pplPick(D,list,{act:"mepick",key:"me",meta:x=>x.active===false?"":"có mặt"})}
+      ${pplPick(D,list,{act:"mepick",key:"me"})}
       ${!q&&!meAll&&here.length&&away.length?`<button class="lnk more" data-act="meall">Xem tất cả thành viên (${D.players.length})</button>`:""}</div>`}
   const s=D.st.get(p.id),all=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating),rank=all.findIndex(x=>x.id===p.id)+1;
   const pm=D.playing.find(m=>[...m.a,...m.b].includes(p.id));
