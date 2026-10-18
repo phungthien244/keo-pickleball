@@ -105,6 +105,5 @@ function histRow(D,m){
 const liveShareBtn=()=>`<button class="lshare" data-act="lshare" aria-label="Chia sẻ buổi đang đánh">📤 Chia sẻ</button>`;
 function liveShareText(D){
   const c=D.c,act=D.players.filter(p=>p.active!==false).length,club=(CLUB&&CLUB.name)||c.title||"CLB";
-  const L=D.playing.slice().sort((a,b)=>a.court-b.court).map(m=>`Sân ${esc(mName(m))}: ${(m.a||[]).map(id=>D.pmap.get(id)?.name||"?").join(" & ")} vs ${(m.b||[]).map(id=>D.pmap.get(id)?.name||"?").join(" & ")}`);
-  return `🔴 ĐANG ĐÁNH TRỰC TIẾP · ${club}\n${sessTitle(c,D.sid)} · ${D.playing.length} sân · ${act} người${D.done.length?` · đã xong ${D.done.length} trận`:""}${L.length?"\n"+L.join("\n"):""}\nXem tỉ số, hàng chờ và bảng xếp hạng trực tiếp:`;
+  return `📣 ${club}: ${sessTitle(c,D.sid)} đang diễn ra!\n${D.playing.length} sân · ${act} người. Mời cả nhà vào xem trực tiếp:\n• Lượt trận đang đánh và ai sắp tới lượt\n• Tỉ số, kết quả từng trận cập nhật ngay\n• Bảng xếp hạng buổi hôm nay\n👉 Bấm link (không cần đăng nhập):`;
 }

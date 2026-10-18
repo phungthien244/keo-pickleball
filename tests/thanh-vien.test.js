@@ -50,7 +50,7 @@ test("đang có buổi đánh: người xem không vào được Quỹ và Lịc
   await e.tab("ls");
   expect(e.T()).toContain("đang đánh");
   await e.click("lshare"); await e.until(() => shared);
-  expect(shared).toContain("ĐANG ĐÁNH TRỰC TIẾP");
-  expect(shared).toContain("Sân 1: An & Chi vs Bình & Dung");
+  expect(shared).toContain("đang diễn ra");
+  expect(shared).toContain("Mời cả nhà vào xem trực tiếp");
   expect(shared).toContain("/q7/san");
 });
