@@ -17,15 +17,22 @@ async function saveCfg(patch){
 const key=(x,y)=>x<y?x+"|"+y:y+"|"+x;
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
+// Trận định sẵn chưa đánh (theo thứ tự đã xếp)
+const presetQueue=D=>D.c.preOn===true?(D.c.presets||[]).filter(p=>!D.SM.some(m=>m.preset===p.id)):[];
 async function generate(){
   const D=derive(),c=D.c;
   const used=new Set(D.playing.map(m=>m.court));
   const freeCourts=[];for(let i=1;i<=c.courts;i++)if(!used.has(i))freeCourts.push(i);
   const busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
-  const avail=D.players.filter(p=>p.active!==false&&!busy.has(p.id)).map(p=>p.id);
-  const n=Math.min(freeCourts.length,Math.floor(avail.length/4));
+  const avail0=D.players.filter(p=>p.active!==false&&!busy.has(p.id)).map(p=>p.id);
   if(!freeCourts.length){errs.gen="Tất cả sân đang có trận. Lưu tỉ số hoặc thêm sân trước.";return render()}
-  if(n<1){errs.gen=`Cần ít nhất 4 người đang rảnh, hiện có ${avail.length}.`;return render()}
+  // Trận định sẵn: lấy theo thứ tự, trận nào đủ 4 người đang rảnh thì vào sân trước, còn lại xếp tự động như cũ
+  const preQ=presetQueue(D),pick=[],taken=new Set();
+  for(const pr of preQ){if(pick.length>=freeCourts.length)break;const ids=[...pr.a,...pr.b];
+    if(ids.every(id=>avail0.includes(id)&&!taken.has(id))){pick.push(pr);ids.forEach(id=>taken.add(id))}}
+  const avail=avail0.filter(id=>!taken.has(id));
+  const n=Math.min(freeCourts.length-pick.length,Math.floor(avail.length/4));
+  if(n+pick.length<1){errs.gen=`Cần ít nhất 4 người đang rảnh, hiện có ${avail0.length}.`;return render()}
   delete errs.gen;
   const lock=await db.doc("app/lock").acquire({holder,ttlMs:5000});
   if(!lock.acquired){toast("Có người khác đang xếp trận, thử lại sau vài giây.");return}
@@ -47,8 +54,8 @@ async function generate(){
   const genderCost=(A,B)=>{const k=[tType(D,A),tType(D,B)].sort().join("|");return k in GP?GP[k]:Infinity};
   const cost=(A,B)=>{const g=genderCost(A,B);if(g===Infinity)return Infinity;const p1=pc.get(key(A[0],A[1]))||0,p2=pc.get(key(B[0],B[1]))||0;let o=0;for(const x of A)for(const y of B)o+=oc.get(key(x,y))||0;
     return g+10*(p1*p1+p2*p2)+3*o+12*Math.abs((R(A[0])+R(A[1]))/2-(R(B[0])+R(B[1]))/2)};
-  let best=null,bc=Infinity;
-  for(let it=0;it<3000;it++){
+  let best=n>0?null:[],bc=Infinity;
+  for(let it=0;it<(n>0?3000:0);it++){
     const p=shuffle(chosen.slice());let tot=0;const ms=[];
     for(let i=0;i<n;i++){const q=p.slice(i*4,i*4+4);
       const opts=[[[q[0],q[1]],[q[2],q[3]]],[[q[0],q[2]],[q[1],q[3]]],[[q[0],q[3]],[q[1],q[2]]]];
@@ -59,10 +66,12 @@ async function generate(){
   let seq=D.SM.reduce((m,x)=>Math.max(m,x.seq||0),0);
   const batch=D.SB.reduce((m,x)=>Math.max(m,x.n||0),0)+1, now=Date.now(), session=D.sid;
   await write(async()=>{
-    for(let i=0;i<best.length;i++){seq++;await db.collection("matches").doc().set({session,seq,batch,court:freeCourts[i],cn:cName(freeCourts[i]),a:best[i][0],b:best[i][1],kind:kindOf(D,{a:best[i][0],b:best[i][1]}),sa:null,sb:null,status:"playing",createdAt:now})}
+    let ci=0;
+    for(const pr of pick){seq++;const ct=freeCourts[ci++];await db.collection("matches").doc().set({session,seq,batch,court:ct,cn:cName(ct),preset:pr.id,a:pr.a,b:pr.b,kind:kindOf(D,{a:pr.a,b:pr.b}),sa:null,sb:null,status:"playing",createdAt:now})}
+    for(let i=0;i<best.length;i++){seq++;const ct=freeCourts[ci++];await db.collection("matches").doc().set({session,seq,batch,court:ct,cn:cName(ct),a:best[i][0],b:best[i][1],kind:kindOf(D,{a:best[i][0],b:best[i][1]}),sa:null,sb:null,status:"playing",createdAt:now})}
     await db.collection("batches").doc("s"+session+"b"+batch).set({session,n:batch,sitting,createdAt:now});
     S.everWrote=true;
-  },`Đã xếp ${best.length} trận`);
+  },`Đã xếp ${best.length+pick.length} trận${pick.length?` (${pick.length} trận định sẵn)`:""}`);
 }
 
 function nextCode(){return S.players.reduce((m,p)=>{const n=parseInt(String(p.code||"").replace(/\D/g,""),10);return Number.isFinite(n)?Math.max(m,n):m},0)+1}

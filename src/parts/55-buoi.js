@@ -64,6 +64,22 @@ function fmtBlock(D){
   <small class="rule">${esc(ruleTxt(c))}.${w2&&mx?` Hoà ${mx-1}–${mx-1} thì ai được ${mx} trước là thắng.`:""}</small>
   ${G?"":`<div class="fld"><span class="lbl">Ưu tiên ghép</span><span class="seg segf"><button data-act="gmode" data-v="mix" aria-pressed="${c.gmode!=="same"}">Khác giới</button><button data-act="gmode" data-v="same" aria-pressed="${c.gmode==="same"}">Cùng giới</button></span></div>`}`;
 }
+// Trận định sẵn (xoay cặp): ban tổ chức chọn sẵn vài trận đầu, sau đó app tự xếp như cũ
+let preSel=[];
+function presetBlock(D){
+  const c=D.c;
+  if(c.preOn!==true)return `<small class="rule">App tự ghép tất cả các trận. Tích để chọn sẵn vài trận đầu (ví dụ 5 trận), sau đó app tự xếp tiếp như cũ.</small>`;
+  const P=c.presets||[],used=new Set(D.SM.map(m=>m.preset).filter(Boolean)),nm=id=>esc(D.pmap.get(id)?.name||"?");
+  const team=ids=>`<span class="pt">${ids.map(id=>av(D.pmap.get(id),"xs",1)).join("")}<span>${ids.map(nm).join(" &amp; ")}</span></span>`;
+  let h=P.length?`<div class="prel">${P.map((p,i)=>{const u=used.has(p.id);return `<div class="prer${u?" done":""}"><b class="no num">${i+1}</b><span class="pm">${team(p.a)}<em>vs</em>${team(p.b)}</span>${u?`<small>Đã vào sân</small>`:`<span class="pb"><button class="ghost" data-act="premv" data-id="${p.id}" data-d="-1" aria-label="Lên" ${i===0?"disabled":""}>↑</button><button class="ghost" data-act="premv" data-id="${p.id}" data-d="1" aria-label="Xuống" ${i===P.length-1?"disabled":""}>↓</button><button class="ghost danger" data-act="predel" data-id="${p.id}" aria-label="Bỏ">✕</button></span>`}</div>`}).join("")}</div>`:`<small class="rule">Chưa có trận định sẵn nào.</small>`;
+  const act=D.players.filter(p=>p.active!==false);
+  const slot=i=>preSel[i]?`<span class="gs on">${av(D.pmap.get(preSel[i]),"sm",1)}${nm(preSel[i])}</span>`:`<span class="gs">${i<2?"Đội 1":"Đội 2"}</span>`;
+  h+=`<div class="gadd"><span class="lbl">Thêm trận ${P.length+1} · chạm chọn 4 người: 2 người đầu là đội 1, 2 người sau là đội 2</span>
+    <div class="gsel">${slot(0)}${slot(1)}<b>vs</b>${slot(2)}${slot(3)}<button class="primary" data-act="preadd" ${preSel.length<4?"disabled":""}>Thêm trận</button></div>
+    ${errs.pre?`<p class="err">${esc(errs.pre)}</p>`:""}${pplPick(D,act,{act:"prepick",key:"pre",sel:preSel})}</div>
+    <small class="rule">Khi bấm Xếp trận, các trận này vào sân trước theo đúng thứ tự (trận nào có người đang bận thì chờ lượt sau). Hết danh sách thì app tự xếp như cũ.</small>`;
+  return h;
+}
 // Trọng tài cho buổi: bật thì giao sân ngay tại đây, mời thêm trọng tài không cần vào Cài đặt CLB
 function refBlock(D){
   if(D.c.refOn!==true)return `<small class="rule">Buổi này ban tổ chức tự nhập tỉ số. Tích “Trọng tài” để giao sân cho trọng tài nhập điểm.</small>`;
@@ -117,6 +133,7 @@ function vPrep(D){
   h+=card(tick("cphi",c.cphi!==false,"Chi phí"),moneyBlock(D));
   h+=card(tick("gton",(c.gt||"khong")!=="khong","Giải thưởng"),prizeBlock(D));
   h+=card(tick("refon",c.refOn===true,"Trọng tài"),refBlock(D));
+  if(!G)h+=card(tick("preon",c.preOn===true,"Xếp sẵn các trận đầu"),presetBlock(D));
   h+=card("Lời MC đọc thể thức",mcBlock(D));
   h+=flexNote;
   if(phaseOf(D)==="live")return h+`<button class="ball wide" data-act="step" data-v="live">Về trang Đang đánh →</button>`;
@@ -138,6 +155,7 @@ function sheetInner(D){
     ${tick("cphi",D.c.cphi!==false,"Chi phí")}${moneyBlock(D)}
     ${tick("gton",(D.c.gt||"khong")!=="khong","Giải thưởng")}${prizeBlock(D)}
     ${tick("refon",D.c.refOn===true,"Trọng tài")}${refBlock(D)}
+    ${isG(D.c)?"":tick("preon",D.c.preOn===true,"Xếp sẵn các trận đầu")+presetBlock(D)}
     <span class="lbl">Lời MC đọc thể thức</span>${mcBlock(D)}
     <div class="infonote">Áp dụng từ trận kế tiếp. Trận đang đánh và kết quả đã lưu giữ nguyên. Người cho nghỉ vẫn giữ thành tích đã đánh.</div>
     <button class="primary" data-act="sheetx">Xong</button>`;
@@ -255,7 +273,7 @@ async function chotBuoi(){
       money:moneySnap(D,M),fee:{fee:D.c.fee,keo:D.c.keo,hi:D.c.hi,lo:D.c.lo,cap:D.c.cap},
       paid:{...(pd.paid||{})},adj:{...(pd.adj||{}),...extra},track:true,closedAt:Date.now(),closedBy:who(),sname:D.c.sname||"",rule:ruleTxt(D.c)});
     for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
-    await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},phase:"prep",sname:""});
+    await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},phase:"prep",sname:"",presets:[]});
   },"Đã chốt buổi, đây là trang tổng kết để chia sẻ");
   chotMien=false;go("buoi",{sid:D.sid});
 }
@@ -281,6 +299,13 @@ async function sessionAct(act,id,b,e){
   if(act==="win2"){const on=b.dataset.v==="1";write(()=>saveCfg({win2:on}),on?"Thắng phải cách 2":"Chạm là thắng");return true}
   if(act==="ptmax"){const c=cfg(),on=b.dataset.v==="1";write(()=>saveCfg({ptMax:on?Math.max(c.target+2,+c.ptMax||c.target+4):0}));return true}
   if(act==="ptmaxd"){const c=cfg(),n=Math.min(40,Math.max(c.target+1,(+c.ptMax||c.target+4)+Number(b.dataset.d)));write(()=>saveCfg({ptMax:n}));return true}
+  if(act==="preon"){const on=cfg().preOn!==true;write(()=>saveCfg({preOn:on}),on?"Bật xếp sẵn trận đầu":"Tắt xếp sẵn, xếp tự động hoàn toàn");return true}
+  if(act==="prepick"){const k=preSel.indexOf(id);if(k>=0)preSel.splice(k,1);else if(preSel.length<4)preSel.push(id);delete errs.pre;render();return true}
+  if(act==="preadd"){if(preSel.length<4){errs.pre="Chọn đủ 4 người: 2 người đội 1, 2 người đội 2.";render();return true}
+    const L=[...(cfg().presets||[]),{id:"pr"+Date.now().toString(36),a:preSel.slice(0,2),b:preSel.slice(2,4)}];preSel=[];delete errs.pre;
+    write(()=>saveCfg({presets:L}),`Đã thêm trận định sẵn #${L.length}`);return true}
+  if(act==="premv"){const L=[...(cfg().presets||[])],i=L.findIndex(p=>p.id===id),j=i+Number(b.dataset.d);if(i<0||j<0||j>=L.length)return true;[L[i],L[j]]=[L[j],L[i]];write(()=>saveCfg({presets:L}));return true}
+  if(act==="predel"){const L=(cfg().presets||[]).filter(p=>p.id!==id);write(()=>saveCfg({presets:L}),"Đã bỏ trận định sẵn");return true}
   if(act==="refon"){const on=cfg().refOn!==true;write(()=>saveCfg({refOn:on}),on?"Buổi này có trọng tài":"Buổi này không dùng trọng tài");return true}
   if(act==="cphi"){const on=cfg().cphi===false;write(()=>saveCfg(on?{cphi:true,thu:cfg().thu==="khong"?"keo":cfg().thu}:{cphi:false}),on?"Buổi này có thu tiền":"Buổi này không thu tiền");return true}
   if(act==="gton"){const c=cfg(),on=(c.gt||"khong")==="khong";const g=on?(c.gtPrev&&c.gtPrev!=="khong"?c.gtPrev:isG(c)?"hang":"trich"):"khong";
