@@ -873,7 +873,7 @@ textarea#cf-mc{width:100%;font:inherit;font-size:14px;line-height:1.5;padding:10
 .refct{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
 .refct button{min-width:40px;min-height:38px;padding:0 8px;border:1.5px solid var(--line-2);background:var(--surface);color:var(--muted);font-weight:800}
 .refct button.on{background:#1b7a3d;border-color:#1b7a3d;color:#fff}
-.court-h .rnd .rh .gr[data-l]{position:relative;padding-left:40px}
+.gr[data-l]{position:relative;padding-left:40px}
 .gr[data-l]::before{content:attr(data-l);position:absolute;left:12px;top:50%;transform:translateY(-50%);font:800 10px var(--display);color:var(--muted);letter-spacing:.04em}
 .gnext{padding:8px 14px;border-top:1px solid var(--line);font:800 10px var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--blue);background:#f4f9fe}
 .shd .segs{margin-left:auto}.shd .segs button{min-height:34px;padding:0 10px;font-size:10px}
@@ -930,3 +930,10 @@ button.mebox.mtog{padding:14px 16px;min-height:0}
 .mtog .mh small{font-size:13px;color:var(--muted);font-weight:400}
 .mtog .chev{font-style:normal;font-size:18px;color:var(--blue);flex:none}
 .refline .lnk{margin-left:auto;background:none;border:0;color:var(--blue);font-weight:700;font-size:12px;min-height:28px;padding:0;text-transform:none;letter-spacing:0;font-family:var(--body)}
+/* Lịch sử: nhãn thể thức/quỹ xuống dòng dưới tên buổi, không ép chữ */
+.sessh{grid-template-columns:auto minmax(0,1fr) auto;row-gap:6px}
+.sessh .code{grid-row:1 / span 2;align-self:center}
+.sessh .mname{grid-column:2;grid-row:1}
+.sessh .mname b{display:block;overflow-wrap:anywhere}
+.sessh .pill{grid-column:2;grid-row:2;justify-self:start;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.sessh .chev{grid-column:3;grid-row:1 / span 2;align-self:center}

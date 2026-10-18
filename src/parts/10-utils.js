@@ -88,15 +88,7 @@ function waitQueue(D){
 }
 function meBox(D,opt={}){
   const p=meP(D);
-  if(!p){if(!D.players.length)return "";
-    const byN=(a,b)=>String(a.name).localeCompare(String(b.name),"vi");
-    const here=D.players.filter(x=>x.active!==false).sort(byN),away=D.players.filter(x=>x.active===false).sort(byN);
-    const q=String(val("me-q","")).trim();
-    const list=q||meAll||!here.length?[...here,...away]:here;
-    if(!meOpen)return `<button class="mebox ask mtog" data-act="meopen" aria-expanded="false"><span class="mh"><b>Bạn là ai?</b><small>Chạm để chọn tên của bạn, xem trận, hạng và chi phí của bạn.</small></span><i class="chev" aria-hidden="true">▾</i></button>`;
-    return `<div class="mebox ask"><button class="mtog in" data-act="meopen" aria-expanded="true"><span class="mh"><b>Bạn là ai?</b><small>Chạm vào tên của bạn.</small></span><i class="chev" aria-hidden="true">▴</i></button>
-      ${pplPick(D,list,{act:"mepick",key:"me"})}
-      ${!q&&!meAll&&here.length&&away.length?`<button class="lnk more" data-act="meall">Xem tất cả thành viên (${D.players.length})</button>`:""}</div>`}
+  if(!p)return "";
   const s=D.st.get(p.id),all=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating),rank=all.findIndex(x=>x.id===p.id)+1;
   const pm=D.playing.find(m=>[...m.a,...m.b].includes(p.id));
   let st;
