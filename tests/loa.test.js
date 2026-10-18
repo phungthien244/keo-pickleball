@@ -95,3 +95,30 @@ test("đang đọc thì nút thành Dừng màu đỏ, nút tắt loa chặn đ�
   await e.tick();
   expect(e.V()).not.toContain('data-act="spkstop"');
 });
+
+test("đổi tên sân: thẻ trận, loa và lịch dùng tên sân thật", async () => {
+  const said = [];
+  const e = setup({ pin: true });
+  globalThis.window.speechSynthesis = { getVoices: () => [{ name: "Linh", lang: "vi-VN" }], cancel() {}, speak: u => said.push(u) };
+  globalThis.SpeechSynthesisUtterance = function (t) { this.text = t; };
+  globalThis.speechSynthesis = globalThis.window.speechSynthesis;
+  await e.boot();
+  e.input("bulk", "Tuấn\nHà | nữ\nMinh\nLan | nữ\nKhoa\nVy | nữ\nBình\nMai | nữ"); await e.click("add");
+  await e.tab("san");
+  await e.click("cnopen");
+  e.H.change({ target: { dataset: { save: "cname", i: "1" }, value: "3" } }); await e.tick();
+  e.H.change({ target: { dataset: { save: "cname", i: "2" }, value: "VIP" } }); await e.tick();
+  await e.click("ccol", { i: "1", v: "#c62a2f" });
+  expect(e.store.get("app/config").cnames).toEqual(["3", "VIP"]);
+  expect(e.store.get("app/config").ccolors[0]).toBe("#c62a2f");
+  await e.click("start"); await e.click("gen");
+  const P = e.docs("matches/", m => m.status === "playing");
+  expect(P.find(([, m]) => m.court === 1)[1].cn).toBe("3");
+  expect(e.T()).toContain("Sân 3");
+  expect(e.T()).toContain("Sân VIP");
+  expect(e.V()).toContain("--cc:#c62a2f");
+  await e.click("speak", { id: P.find(([, m]) => m.court === 1)[0] });
+  expect(said.pop().text).toContain("vào sân số 3,");
+  await e.click("speak", { id: P.find(([, m]) => m.court === 2)[0] });
+  expect(said.pop().text).toContain("vào sân VIP,");
+});

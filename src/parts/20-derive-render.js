@@ -74,8 +74,8 @@ function pageHead(D){
 let tkItems=[],tkI=0,tkKey="";
 function ticker(D){
   let label,items;
-  if(D.playing.length){label="Đang đánh";items=D.playing.map(m=>`Sân ${m.court} · ${m.a.map(id=>D.pmap.get(id)?.name||"?").join(" & ")} vs ${m.b.map(id=>D.pmap.get(id)?.name||"?").join(" & ")}`)}
-  else if(D.done.length){label="Vừa xong";items=[...D.done].reverse().slice(0,4).map(m=>`Sân ${m.court} · ${m.a.map(id=>D.pmap.get(id)?.name||"?").join(" & ")} ${m.sa}–${m.sb} ${m.b.map(id=>D.pmap.get(id)?.name||"?").join(" & ")}`)}
+  if(D.playing.length){label="Đang đánh";items=D.playing.map(m=>`Sân ${mName(m)} · ${m.a.map(id=>D.pmap.get(id)?.name||"?").join(" & ")} vs ${m.b.map(id=>D.pmap.get(id)?.name||"?").join(" & ")}`)}
+  else if(D.done.length){label="Vừa xong";items=[...D.done].reverse().slice(0,4).map(m=>`Sân ${mName(m)} · ${m.a.map(id=>D.pmap.get(id)?.name||"?").join(" & ")} ${m.sa}–${m.sb} ${m.b.map(id=>D.pmap.get(id)?.name||"?").join(" & ")}`)}
   else{label=S.live?"Trực tiếp":"Kết nối";items=[S.offline?"Không kết nối được dữ liệu chung":S.live?`Buổi #${D.sid} · chưa có trận nào`:"Đang kết nối…"]}
   const k=label+"|"+items.join("||");if(k===tkKey)return;tkKey=k;tkItems=items;if(tkI>=items.length)tkI=0;
   $("#tkl").textContent=label;tkShow();

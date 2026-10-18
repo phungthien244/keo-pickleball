@@ -41,9 +41,22 @@ function buoiBlock(D){
   return `<label class="fld"><span class="lbl">Tên buổi / tên giải · không bắt buộc</span><input id="cf-sname" data-draft="cf-sname" data-save="cfg" data-key="sname" maxlength="60" placeholder="Ví dụ: Kèo tối thứ 5" value="${esc(val("cf-sname",c.sname||""))}"></label>
   <div class="fld"><span class="lbl">Thể thức</span><span class="seg segf">${sgB("fmt","xoay",G?"giai":"xoay","Xoay cặp",lockF)}${sgB("fmt","giai",G?"giai":"xoay","Giải cặp cố định",lockF)}</span>${lockF?`<small class="rule">Đã có trận nên giữ nguyên thể thức.</small>`:""}</div>`;
 }
+// Tên sân (để loa đọc đúng) và màu thẻ sân. Ví dụ thuê sân 2, 3, 4 thì đặt tên 2, 3, 4.
+let cnOpen=false;
+function courtNames(c){
+  const n=Math.max(1,+c.courts||1),custom=Array.from({length:n},(_,i)=>cName(i+1)!==String(i+1)).some(Boolean);
+  const chips=Array.from({length:n},(_,i)=>`<span class="cnchip" style="--cc:${cColor(i+1)}">Sân ${esc(cName(i+1))}</span>`).join("");
+  let h=`<div class="cnbar"><span class="cnchips">${chips}</span><button class="lnk" data-act="cnopen" aria-expanded="${cnOpen}">${cnOpen?"Xong":"Đổi tên, màu sân"}</button></div>`;
+  if(!cnOpen)return h;
+  return h+`<div class="cnlist">${Array.from({length:n},(_,k)=>{const i=k+1,cur=cColor(i);return `<div class="cnrow"><span class="cnno" style="--cc:${cur}">${i}</span>
+    <label class="cnin"><span class="sr">Tên sân thứ ${i}</span><span class="pre">Sân</span><input id="cn-${i}" data-draft="cn-${i}" data-save="cname" data-i="${i}" maxlength="12" placeholder="${i}" value="${esc(val("cn-"+i,((c.cnames||[])[k])||""))}"></label>
+    <span class="cnsw">${CCOL.map(([hx,lb])=>`<button class="sw${hx===cur?" on":""}" style="--sw:${hx}" data-act="ccol" data-i="${i}" data-v="${hx}" aria-label="Màu ${lb}" aria-pressed="${hx===cur}"></button>`).join("")}</span></div>`}).join("")}
+    <small class="rule">Gõ đúng số hoặc tên sân thật, ví dụ đánh sân 2, 3, 4 thì đặt tên 2, 3, 4. Loa sẽ đọc “mời vào sân số 2”. Màu dùng cho thẻ trận và lịch của sân đó.</small></div>`;
+}
 function fmtBlock(D){
   const c=D.c,G=isG(c),w2=winBy2(c),mx=ptMax(c);
   return `<div class="srow"><span>Số sân</span><span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân">−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân">+</button></span></div>
+  ${courtNames(c)}
   <div class="srow"><span>Chạm điểm</span><span class="stepper"><button data-act="target" data-d="-1" aria-label="Giảm điểm">−</button><span class="num">${c.target}</span><button data-act="target" data-d="1" aria-label="Tăng điểm">+</button></span></div>
   <span class="seg segf"><button data-act="win2" data-v="1" aria-pressed="${w2}">Thắng cách 2</button><button data-act="win2" data-v="0" aria-pressed="${!w2}">Chạm là thắng</button></span>
   ${w2?`<span class="seg segf"><button data-act="ptmax" data-v="0" aria-pressed="${!mx}">Không giới hạn</button><button data-act="ptmax" data-v="1" aria-pressed="${!!mx}">Có điểm trần</button></span>

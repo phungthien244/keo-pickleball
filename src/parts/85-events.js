@@ -11,6 +11,8 @@ document.addEventListener("change",e=>{
     shrink(f).then(d=>write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{logo:d}),"Đã cập nhật ảnh CLB")).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}
   if(t.dataset&&t.dataset.pick){t.checked?pickSel.add(t.dataset.pick):pickSel.delete(t.dataset.pick);render();return}
   const s=t.dataset&&t.dataset.save;if(!s)return;
+  if(s==="cname"){if(!canWrite)return;const i=+t.dataset.i,c=cfg(),L=[...(c.cnames||[])];while(L.length<i)L.push("");L[i-1]=String(t.value||"").trim().slice(0,12);
+    write(()=>saveCfg({cnames:L}).then(()=>delete drafts["cn-"+i]),L[i-1]?`Đã đặt tên sân ${L[i-1]}`:`Sân thứ ${i} dùng tên mặc định`);return}
   if(s==="gprize"){if(!canWrite)return;const i=+t.dataset.i,pz=[...(cfg().giai?.prizes||[0,0,0])];pz[i]=Math.max(0,Number(t.value)||0);write(()=>saveG({prizes:pz}).then(()=>delete drafts["gz-"+i]));return}
   if(s==="name"){const v=t.value.trim();if(!v){toast("Tên không được để trống.");return}
     write(()=>db.collection("players").doc(t.dataset.id).update({name:v}).then(()=>{delete drafts[t.dataset.draft];S.everWrote=true}))}
@@ -82,6 +84,7 @@ document.addEventListener("click",async e=>{
     if(v==="live"&&phaseOf(D)!=="live"){toast("Buổi chưa bắt đầu. Bấm “Bắt đầu buổi” ở cuối trang Chuẩn bị.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san",keep:1});keepPos()}return}
     stepView=v==="prep"?"prep":null;sheetOpen=false;
     if(route!=="app"||tab!=="san")go("app",{tab:"san",keep:1});else render();keepPos();return}
+  if(act==="cnopen"){cnOpen=!cnOpen;render();return}
   if(act==="gview"){gView=b.dataset.v==="luot"?"luot":"san";render();return}
   if(act==="attadd"){attAdd=!attAdd;render();return}
   if(act==="undoopen"){undoOpen=!undoOpen;render();return}
@@ -221,6 +224,7 @@ document.addEventListener("click",async e=>{
   else if(act==="cancel"){pendSave.delete(id);pendCancel.add(id);render()}
   else if(act==="cancelx"){pendCancel.delete(id);render()}
   else if(act==="cancelok"){pendCancel.delete(id);const m=S.matches.find(x=>x.id===id);if(!m)return;write(()=>trashMatches([m],"cancel"),"Đã hủy trận · bấm Hoàn tác nếu nhầm")}
+  else if(act==="ccol"){const i=+b.dataset.i,c=cfg(),L=[...(c.ccolors||[])];while(L.length<i)L.push("");L[i-1]=b.dataset.v;write(()=>saveCfg({ccolors:L}))}
   else if(act==="refct"){const [t,uid]=String(b.dataset.k).split(":"),c=Number(b.dataset.c);
     const L=t==="m"?(S.members||[]):(S.editors||[]),r=L.find(x=>x.id===uid);if(!r)return;
     const cur=(r.courts||[]).map(Number),next=cur.includes(c)?cur.filter(x=>x!==c):[...cur,c].sort((x,y)=>x-y);

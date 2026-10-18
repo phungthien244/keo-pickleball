@@ -15,7 +15,7 @@ async function trashMatches(list,why){
 function findMatch(id){return S.matches.find(x=>x.id===id)||Object.values(S.pm||{}).flat().find(x=>x&&x.id===id)}
 function cancelConfirm(D,m){
   if(!pendCancel.has(m.id))return "";
-  return `<div class="cfm cx"><span class="r">Hủy trận <b>Sân ${m.court}</b>? Bốn người sẽ quay lại hàng chờ.</span>
+  return `<div class="cfm cx"><span class="r">Hủy trận <b>Sân ${esc(cName(m.court))}</b>? Bốn người sẽ quay lại hàng chờ.</span>
     <div class="two"><button class="danger" data-act="cancelok" data-id="${m.id}">Xác nhận hủy</button><button class="line" data-act="cancelx" data-id="${m.id}">Không hủy</button></div></div>`;
 }
 let undoOpen=false;
@@ -26,7 +26,7 @@ function undoBar(){
   if(!undoOpen)return h;
   const D=derive(),nm=id=>esc(D.pmap.get(id)?.name||"?");
   const L=[...T].sort((a,b)=>(b.at||0)-(a.at||0));
-  return h+`<div class="ulist">${L.map(it=>{const d=it.d||{};return `<div class="urow"><span class="ut"><b>${WHY[it.why]||"Xóa"} · Sân ${d.court||"?"}</b><span>${(d.a||[]).map(nm).join(" &amp; ")} – ${(d.b||[]).map(nm).join(" &amp; ")}${d.status==="done"?` <span class="num">${d.sa}–${d.sb}</span>`:""}</span><small>${hm(it.at)}${it.by?" · "+esc(it.by):""}</small></span>${armed("undoone:"+it.id)?`<button class="sm primary" data-act="undoone" data-id="${it.id}">Bấm lần nữa</button>`:`<button class="sm" data-act="undoone" data-id="${it.id}">Hoàn tác</button>`}</div>`}).join("")}
+  return h+`<div class="ulist">${L.map(it=>{const d=it.d||{};return `<div class="urow"><span class="ut"><b>${WHY[it.why]||"Xóa"} · Sân ${esc(d.cn||cName(d.court||"?"))}</b><span>${(d.a||[]).map(nm).join(" &amp; ")} – ${(d.b||[]).map(nm).join(" &amp; ")}${d.status==="done"?` <span class="num">${d.sa}–${d.sb}</span>`:""}</span><small>${hm(it.at)}${it.by?" · "+esc(it.by):""}</small></span>${armed("undoone:"+it.id)?`<button class="sm primary" data-act="undoone" data-id="${it.id}">Bấm lần nữa</button>`:`<button class="sm" data-act="undoone" data-id="${it.id}">Hoàn tác</button>`}</div>`}).join("")}
     ${n>1?`<button class="${armed("undoall:x")?"primary":"line"} wide" data-act="undoall">${armed("undoall:x")?"Bấm lần nữa để hoàn tác tất cả":`↶ Hoàn tác tất cả (${n})`}</button>`:""}</div>`;
 }
 // Khôi phục mọi trận trong thùng rác. Trận đang đánh mà người chơi đã lên sân khác thì giữ lại.
@@ -61,8 +61,9 @@ function refsOf(n){
   return L;
 }
 function refTag(n){
-  const L=refsOf(n);if(!L.length)return canWrite&&(S.members||S.editors)?`<span class="reft none">Chưa có trọng tài</span>`:"";
-  return `<span class="reft">🧑‍⚖️ ${esc(L.join(", "))}</span>`;
+  const L=refsOf(n);
+  if(!L.length)return canWrite&&(S.members||S.editors)?`<div class="refline none"><span class="ri" aria-hidden="true">!</span><span>Chưa giao trọng tài</span><a href="${pathOf("caidat")}" data-go="caidat">Giao sân</a></div>`:"";
+  return `<div class="refline"><span class="ri" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span><span>Trọng tài</span><b>${esc(L.join(", "))}</b></div>`;
 }
 // Trọng tài chỉ thấy các sân được giao
 const myCourt=m=>!REF||MYCT.includes(Number(m.court));

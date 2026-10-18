@@ -92,7 +92,7 @@ function meBox(D,opt={}){
   const s=D.st.get(p.id),all=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating),rank=all.findIndex(x=>x.id===p.id)+1;
   const pm=D.playing.find(m=>[...m.a,...m.b].includes(p.id));
   let st;
-  if(pm)st=`Đang đánh sân ${pm.court}`;
+  if(pm)st=`Đang đánh sân ${cName(pm.court)}`;
   else if(p.active===false)st="Hôm nay chưa vào buổi";
   else if(isG(D.c))st="Chờ lượt theo lịch giải";
   else{const q=waitQueue(D).findIndex(x=>x.id===p.id);st=q>=0?`Thứ ${q+1} trong hàng chờ`:"Đang chờ"}
@@ -108,3 +108,11 @@ function repaint(){try{const v=document.getElementById("view");if(!v||!v.classLi
   const off=()=>v.classList.remove("rp");requestAnimationFrame(()=>requestAnimationFrame(()=>{off();
     // vẫn còn hình sót: nhích cuộn 1px rồi trả lại để trình duyệt vẽ lại toàn trang
     const y=window.scrollY||0;try{scrollTo(0,y+1);scrollTo(0,y)}catch(e){}}))}catch(e){}}
+
+/* ----- Tên sân và màu sân (cài trong Sân và luật điểm) ----- */
+const CCOL=[["#0c2b44","Xanh đen"],["#1f6fd1","Xanh dương"],["#1b7a3d","Xanh lá"],["#d9601a","Cam"],["#6b3fb5","Tím"],["#c62a2f","Đỏ"],["#0f7c80","Xanh ngọc"],["#c2367a","Hồng"]];
+const cName=n=>{const v=((cfg().cnames)||[])[Number(n)-1];return String(v==null?"":v).trim()||String(n)};
+const mName=m=>m?(m.status!=="done"||!m.cn?cName(m.court):m.cn):"?";
+const cColor=n=>{const v=((cfg().ccolors)||[])[Number(n)-1];return /^#[0-9a-f]{6}$/i.test(v||"")?v:CCOL[(Number(n)-1)%CCOL.length][0]};
+// Đọc loa: "sân số 2" nếu là số, còn lại đọc nguyên tên ("sân VIP")
+const cSpeak=n=>{const v=cName(n);return /^\d+$/.test(v)?`sân số ${v}`:`sân ${v}`};

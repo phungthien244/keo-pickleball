@@ -59,7 +59,7 @@ async function generate(){
   let seq=D.SM.reduce((m,x)=>Math.max(m,x.seq||0),0);
   const batch=D.SB.reduce((m,x)=>Math.max(m,x.n||0),0)+1, now=Date.now(), session=D.sid;
   await write(async()=>{
-    for(let i=0;i<best.length;i++){seq++;await db.collection("matches").doc().set({session,seq,batch,court:freeCourts[i],a:best[i][0],b:best[i][1],kind:kindOf(D,{a:best[i][0],b:best[i][1]}),sa:null,sb:null,status:"playing",createdAt:now})}
+    for(let i=0;i<best.length;i++){seq++;await db.collection("matches").doc().set({session,seq,batch,court:freeCourts[i],cn:cName(freeCourts[i]),a:best[i][0],b:best[i][1],kind:kindOf(D,{a:best[i][0],b:best[i][1]}),sa:null,sb:null,status:"playing",createdAt:now})}
     await db.collection("batches").doc("s"+session+"b"+batch).set({session,n:batch,sitting,createdAt:now});
     S.everWrote=true;
   },`Đã xếp ${best.length} trận`);

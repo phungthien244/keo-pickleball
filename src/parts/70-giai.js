@@ -70,7 +70,7 @@ async function gFill(quiet){
   if(!lock.acquired){if(!quiet)toast("Có người khác đang xếp trận, thử lại sau vài giây.");return 0}
   let seq=D.SM.reduce((m,x)=>Math.max(m,x.seq||0),0);const now=Date.now();
   await write(async()=>{for(const [ct,g] of pick){const X=GD.pm.get(g.x),Y=GD.pm.get(g.y);seq++;
-    await db.collection("matches").doc().set({session:D.sid,seq,court:ct,giai:true,pa:g.x,pb:g.y,round:g.r,a:[X.a,X.b],b:[Y.a,Y.b],sa:null,sb:null,status:"playing",createdAt:now})}
+    await db.collection("matches").doc().set({session:D.sid,seq,court:ct,cn:cName(ct),giai:true,pa:g.x,pb:g.y,round:g.r,a:[X.a,X.b],b:[Y.a,Y.b],sa:null,sb:null,status:"playing",createdAt:now})}
     S.everWrote=true},null);
   return pick.length;
 }
@@ -126,7 +126,7 @@ function gRun(D,GD){
 function gCourt(D,GD,m){
   const X=GD.T.get(m.pa),Y=GD.T.get(m.pb),ka=`sa-${m.id}`,kb=`sb-${m.id}`;
   const side=(t,k,lab)=>`<div class="team"><div class="names"><div class="tl">${pairAv(D,t.p,"md")}<div>${pairNm(D,t.p)}<small class="num">${t.w} thắng · ${t.l} thua · Rating TB ${r2(pairR(D,t.p))}</small></div></div></div><input class="score num" id="${k}" data-draft="${k}" type="number" inputmode="numeric" min="0" max="11" aria-label="${lab}" value="${esc(val(k,""))}" ${canScore(m)?"":"disabled"}></div>`;
-  return `<article class="court${isNew(m.id+"p")?" new":""}"><div class="court-h"><h3>Sân ${m.court}</h3><span class="num">Lượt ${m.round} · Trận #${m.seq}</span>${refTag(m.court)}${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>
+  return `<article class="court${isNew(m.id+"p")?" new":""}" style="--cc:${cColor(m.court)}"><div class="court-h"><h3>Sân ${esc(cName(m.court))}</h3><span class="num">Lượt ${m.round} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${esc(cName(m.court))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>${refTag(m.court)}
     ${side(X,ka,"Điểm đội 1")}${side(Y,kb,"Điểm đội 2")}
     <div class="court-f"><span class="meta" style="flex:1">${esc(ruleTxt(D.c))}</span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button>`:""}${canScore(m)?`<button class="primary" data-act="savechk" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>${saveConfirm(D,m)}${cancelConfirm(D,m)}
     ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}</article>`;
@@ -143,7 +143,7 @@ function gRow(D,GD,g){
   const nmX=`<span class="${w?w===g.x?"w":"l":""}">${pairNm(D,X)}</span>`,nmY=`<span class="r ${w?w===g.y?"w":"l":""}">${pairNm(D,Y)}</span>`;
   let mid;
   if(g.st==="done")mid=`<span class="m num">${g.sx}–${g.sy}</span>`;
-  else if(g.st==="live")mid=`<span class="m live">SÂN ${g.m.court}</span>`;
+  else if(g.st==="live")mid=`<span class="m live">SÂN ${esc(cName(g.m.court))}</span>`;
   else if(g.st==="wo")mid=`<span class="m wo">BỎ</span>`;
   else mid=`<span class="m vs">VS</span>`;
   const ed=canWrite&&g.st==="done";
@@ -282,7 +282,7 @@ function gCourts(D,GD){
     if(REF&&!MYCT.includes(i))continue;
     const D1=done.filter(g=>Number(g.m.court)===i),L1=GD.games.filter(g=>g.st==="live"&&Number(g.m.court)===i),N1=plan.get(i)||[];
     const row=(g,tag)=>gRow(D,GD,g).replace('<div class="gr','<div data-l="'+tag+'" class="gr');
-    h+=`<div class="rnd${L1.length?" live":N1.length?" next":""}"><div class="rh"><span>SÂN ${i}</span>${refTag(i)}<span>${D1.length} xong · ${N1.length} sắp tới</span></div>
+    h+=`<div class="rnd crt" style="--cc:${cColor(i)}"><div class="rh"><span>SÂN ${esc(cName(i))}</span><span>${L1.length?"Đang đánh · ":""}${D1.length} xong · ${N1.length} sắp tới</span></div>${refTag(i)}
       ${D1.map(g=>row(g,"L"+g.r)).join("")}${L1.map(g=>row(g,"L"+g.r)).join("")}
       ${N1.length?`<div class="gnext">Sắp tới · dự kiến</div>`+N1.map((g,k)=>row(g,(k+1)+"")).join(""):""}
       ${!D1.length&&!L1.length&&!N1.length?`<div class="gr bye"><span class="meta">Chưa có trận.</span></div>`:""}</div>`;

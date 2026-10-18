@@ -76,8 +76,8 @@ function keoPill(c,pA){
 }
 function courtCard(D,m){
   const c=D.c,i=D.info.get(m.id),pA=i.pA, ka=`sa-${m.id}`,kb=`sb-${m.id}`;
-  return `<article class="court${isNew(m.id+"p")?" new":""}">
-    <div class="court-h"><h3>Sân ${m.court}</h3><span class="num">${KIND[kindOf(D,m)]} · Trận #${m.seq}</span>${refTag(m.court)}${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${m.court}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>
+  return `<article class="court${isNew(m.id+"p")?" new":""}" style="--cc:${cColor(m.court)}">
+    <div class="court-h"><h3>Sân ${esc(cName(m.court))}</h3><span class="num">${KIND[kindOf(D,m)]} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${esc(cName(m.court))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>${refTag(m.court)}
     <div class="team"><div class="names">${teamLine(D,m.a)}</div><input class="score num" id="${ka}" data-draft="${ka}" type="number" inputmode="numeric" min="0" max="99" aria-label="Điểm đội 1" value="${esc(val(ka,""))}" ${canScore(m)?"":"disabled"}></div>
     <div class="prob" title="Xác suất thắng dự kiến"><i style="width:${Math.round(pA*100)}%"></i></div>
     <div class="bar" style="justify-content:space-between;padding:6px 16px 0"><span class="lbl num" style="color:var(--navy)">${Math.round(pA*100)}% thắng</span><span class="lbl num">${Math.round((1-pA)*100)}% thắng</span></div>
@@ -88,13 +88,13 @@ function courtCard(D,m){
 }
 function histRow(D,m){
   const i=D.info.get(m.id)||{},ka=`ea-${m.id}`,kb=`eb-${m.id}`;
-  if(editing.has(m.id))return `<div class="hrow"><span class="meta">S${m.court}</span>
+  if(editing.has(m.id))return `<div class="hrow"><span class="meta">S${esc(mName(m))}</span>
     <div class="who">${m.a.map(id=>nm(D,id)).join(" &amp; ")} <span class="l">vs</span> ${m.b.map(id=>nm(D,id)).join(" &amp; ")}
     <div class="bar" style="margin-top:6px"><input class="score num" style="width:64px;font-size:20px" id="${ka}" data-draft="${ka}" type="number" inputmode="numeric" value="${esc(val(ka,m.sa))}" aria-label="Điểm đội 1"> <span>–</span> <input class="score num" style="width:64px;font-size:20px" id="${kb}" data-draft="${kb}" type="number" inputmode="numeric" value="${esc(val(kb,m.sb))}" aria-label="Điểm đội 2"></div>
     ${errs[m.id]?`<p class="err">${esc(errs[m.id])}</p>`:""}</div>
     <div class="bar"><button class="ghost" data-act="edit-x" data-id="${m.id}">Thôi</button><button class="primary" data-act="edit-save" data-id="${m.id}">Lưu</button></div></div>`;
   const A=m.a.map(id=>nm(D,id)).join(" &amp; "),B=m.b.map(id=>nm(D,id)).join(" &amp; ");
-  return `<div class="hrow${isNew(m.id+"d")?" new":""}"><span class="meta num">S${m.court}<br>#${m.seq}</span>
+  return `<div class="hrow${isNew(m.id+"d")?" new":""}"><span class="meta num">S${esc(mName(m))}<br>#${m.seq}</span>
     <div class="who">${i.aWin?`<b>${A}</b>`:`<span class="l">${A}</span>`} <span class="l">vs</span> ${!i.aWin?`<b>${B}</b>`:`<span class="l">${B}</span>`}
       <div class="bar" style="margin-top:4px;gap:6px"><span class="pill lose">Thua góp ${i.fee}k/người</span><span class="pill">${KIND[kindOf(D,m)]}</span><span class="pill num" title="Rating thay đổi theo điểm thực tế so với dự kiến, giống DUPR">Dự kiến ${expScore(i.eS,D.c.target)} · đội thắng ${sgn(i.aWin?i.dA:-i.dA)}</span></div></div>
     <div style="text-align:right"><div class="sc num">${m.sa}–${m.sb}</div>${canWrite?`<button class="ghost" data-act="edit" data-id="${m.id}">Sửa</button>${delBtn("mdel",m.id,"Xóa")}`:""}</div></div>`;
@@ -105,6 +105,6 @@ function histRow(D,m){
 const liveShareBtn=()=>`<button class="lshare" data-act="lshare" aria-label="Chia sẻ buổi đang đánh">📤 Chia sẻ</button>`;
 function liveShareText(D){
   const c=D.c,act=D.players.filter(p=>p.active!==false).length,club=(CLUB&&CLUB.name)||c.title||"CLB";
-  const L=D.playing.slice().sort((a,b)=>a.court-b.court).map(m=>`Sân ${m.court}: ${(m.a||[]).map(id=>D.pmap.get(id)?.name||"?").join(" & ")} vs ${(m.b||[]).map(id=>D.pmap.get(id)?.name||"?").join(" & ")}`);
+  const L=D.playing.slice().sort((a,b)=>a.court-b.court).map(m=>`Sân ${esc(mName(m))}: ${(m.a||[]).map(id=>D.pmap.get(id)?.name||"?").join(" & ")} vs ${(m.b||[]).map(id=>D.pmap.get(id)?.name||"?").join(" & ")}`);
   return `🔴 ĐANG ĐÁNH TRỰC TIẾP · ${club}\n${sessTitle(c,D.sid)} · ${D.playing.length} sân · ${act} người${D.done.length?` · đã xong ${D.done.length} trận`:""}${L.length?"\n"+L.join("\n"):""}\nXem tỉ số, hàng chờ và bảng xếp hạng trực tiếp:`;
 }

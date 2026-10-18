@@ -10,7 +10,7 @@ if(hasTTS())try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>
 const xung=p=>p&&p.gender==="F"?"chị":"anh";
 function callText(D,m){
   const team=ids=>ids.map(id=>{const p=D.pmap.get(id);return `${xung(p)} ${p?.name||""}`.trim()}).join(", ");
-  return `Xin mời cặp ${team(m.a)}, và cặp ${team(m.b)}, vào sân số ${m.court}, chuẩn bị thi đấu.`;
+  return `Xin mời cặp ${team(m.a)}, và cặp ${team(m.b)}, vào ${cSpeak(m.court)}, chuẩn bị thi đấu.`;
 }
 function speakDevice(text,tok){
   if(!hasTTS()){toast("Trình duyệt này chưa hỗ trợ đọc loa.");loaDone(tok);return}
@@ -76,12 +76,12 @@ const pendSave=new Set();
 function resultText(D,m,a,b){
   const team=ids=>ids.map(id=>{const p=D.pmap.get(id);return `${xung(p)} ${p?.name||""}`.trim()}).join(", ");
   const W=a>b?m.a:m.b,L=a>b?m.b:m.a;
-  return `Sân số ${m.court} kết thúc. Cặp ${team(W)} chiến thắng, tỉ số là ${Math.max(a,b)}, ${Math.min(a,b)}.`;
+  return `${cSpeak(m.court).replace(/^s/,"S")} kết thúc. Cặp ${team(W)} chiến thắng, tỉ số là ${Math.max(a,b)}, ${Math.min(a,b)}.`;
 }
 function saveConfirm(D,m){
   if(!pendSave.has(m.id))return "";
   const a=Number(val("sa-"+m.id,"")),b=Number(val("sb-"+m.id,"")),W=a>b?m.a:m.b;
-  return `<div class="cfm"><span class="r">Sân ${m.court}: <b>${W.map(id=>esc(D.pmap.get(id)?.name||"?")).join(" &amp; ")}</b> thắng <b class="num">${Math.max(a,b)}–${Math.min(a,b)}</b></span>
+  return `<div class="cfm"><span class="r">Sân ${esc(cName(m.court))}: <b>${W.map(id=>esc(D.pmap.get(id)?.name||"?")).join(" &amp; ")}</b> thắng <b class="num">${Math.max(a,b)}–${Math.min(a,b)}</b></span>
     <button class="primary" data-act="save" data-read="1" data-id="${m.id}">✓ Xác nhận${loaMuted()?"":" &amp; đọc kết quả"}</button>
     <button class="ghost" data-act="savex" data-id="${m.id}">Sửa lại tỉ số</button></div>`;
 }
