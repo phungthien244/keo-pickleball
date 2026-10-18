@@ -131,6 +131,6 @@ function pplPick(D,list,o){
   const q=String(val(o.key+"-q","")).trim().toLowerCase(),sel=new Set(o.sel||[]);
   const L=q?list.filter(p=>String(p.name).toLowerCase().includes(q)):list;
   const search=list.length>8?`<label class="ppq"><span class="sr">Tìm tên</span><input id="${o.key}-q" data-draft="${o.key}-q" data-live="1" type="search" placeholder="Tìm tên…" value="${esc(val(o.key+"-q",""))}" autocomplete="off"></label>`:"";
-  return search+`<div class="ppg">${L.map(p=>`<button class="ppt${sel.has(p.id)?" on":""}" data-act="${o.act}" data-id="${p.id}" aria-pressed="${sel.has(p.id)}">${av(p,"md")}<span class="pn">${esc(p.name)}</span>${o.meta?`<small>${o.meta(p)}</small>`:""}</button>`).join("")||`<p class="rule">Không có tên phù hợp.</p>`}</div>`;
+  return search+`<div class="ppg">${L.map(p=>`<button class="ppt${sel.has(p.id)?" on":""}" data-act="${o.act}" data-id="${p.id}" aria-pressed="${sel.has(p.id)}">${av(p,"md",1)}<span class="pn">${esc(p.name)}</span>${o.meta?`<small>${o.meta(p)}</small>`:""}</button>`).join("")||`<p class="rule">Không có tên phù hợp.</p>`}</div>`;
 }
 let meAll=false,meOpen=false;

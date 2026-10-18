@@ -100,7 +100,7 @@ function gSetup(D,G){
     if(free.length<2)h+=`<p class="rule" style="margin-top:10px">Cần thêm người có mặt hôm nay ở tab Người chơi để ghép cặp mới.</p>`;
     else{const S2=[drafts.gp1,drafts.gp2].filter(Boolean),nmOf=id=>esc(D.pmap.get(id)?.name||"?");
       h+=`<div class="gadd"><span class="lbl">Thêm cặp mới · còn ${GMAX-n} chỗ · chạm chọn 2 người</span>
-        <div class="gsel">${[0,1].map(i=>S2[i]?`<span class="gs on">${av(D.pmap.get(S2[i]),"sm")}${nmOf(S2[i])}</span>`:`<span class="gs">Người ${i+1}</span>`).join(`<b>&amp;</b>`)}<button class="primary" data-act="gadd" ${S2.length<2?"disabled":""}>Thêm cặp</button></div>
+        <div class="gsel">${[0,1].map(i=>S2[i]?`<span class="gs on">${av(D.pmap.get(S2[i]),"sm",1)}${nmOf(S2[i])}</span>`:`<span class="gs">Người ${i+1}</span>`).join(`<b>&amp;</b>`)}<button class="primary" data-act="gadd" ${S2.length<2?"disabled":""}>Thêm cặp</button></div>
         ${pplPick(D,free,{act:"gpick",key:"gp",sel:S2,meta:x=>r2(D.st.get(x.id).rating)})}</div>`}}
   if(errs.gadd)h+=`<p class="err">${esc(errs.gadd)}</p>`;
   h+=`</div><p class="rule">Hạng 1, 2, 3 lấy từ bảng xếp hạng cuối cùng sau khi đánh hết vòng tròn. Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Tiền thưởng chỉnh ở khung Giải thưởng phía trên.</p>`;

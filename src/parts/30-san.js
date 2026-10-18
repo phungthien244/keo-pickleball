@@ -48,10 +48,10 @@ const T_LABEL={FM:"Đôi nam nữ",MM:"Đôi nam",FF:"Đôi nữ"};
 const KIND={mixed:"Đôi nam nữ",gender:"Cùng giới",hybrid:"Trận lai"};
 const kindOf=(D,m)=>m.kind||(()=>{const a=tType(D,m.a),b=tType(D,m.b);return a==="FM"&&b==="FM"?"mixed":a===b?"gender":"hybrid"})();
 const AVC=["#1f8fe5","#3a6ea5","#1a7f45","#c9302c","#7a4cc2","#c7770b","#127a8a","#b0337a"];
-function av(p,cls=""){
+function av(p,cls="",nolink){
   if(!p)return `<span class="av ${cls}"></span>`;
   const n=String(p.name||"?").trim(),w=n.split(/\s+/),ini=(w[w.length-1]||"?").charAt(0).toUpperCase();
-  const lk=p.id&&MODE==="club"&&S.players.some(x=>x.id===p.id)?` data-pid="${esc(p.id)}" title="Xem hồ sơ ${esc(n)}"`:"";
+  const lk=!nolink&&p.id&&MODE==="club"&&S.players.some(x=>x.id===p.id)?` data-pid="${esc(p.id)}" title="Xem hồ sơ ${esc(n)}"`:"";
   if(p.photo&&/^data:image\//.test(p.photo))return `<span class="av ${cls}"${lk}><img src="${esc(p.photo)}" alt="" decoding="async"></span>`;
   let h=0;for(const ch of n)h=(h*31+ch.charCodeAt(0))>>>0;
   return `<span class="av ${cls}" style="background:${AVC[h%AVC.length]}" aria-hidden="true"${lk}>${esc(ini)}</span>`;

@@ -22,6 +22,7 @@ test("người xem chọn tên mình: thấy đang đánh sân nào, hàng chờ
   expect(e.V()).not.toContain('data-act="mepick"');
   await e.click("meopen");
   expect(e.V()).toContain('data-act="mepick"');
+  expect(e.V()).not.toMatch(/class="ppt[^"]*"[^>]*>[^<]*<span class="av[^"]*" data-pid/);
   expect(e.V()).not.toContain("<select data-me");
   expect(e.V()).not.toContain('data-act="courts"');
   expect(e.V()).not.toContain('data-act="gen"');
