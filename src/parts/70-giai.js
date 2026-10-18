@@ -85,7 +85,7 @@ function vGiaiSan(D){
   if(canWrite&&(phaseOf(D)==="prep"||stepView==="prep"))return steps3(1,D)+vPrep(D);
   if(canWrite&&!G.locked)return steps3(2,D)+cfgChip(D)+gSetup(D,G)+undoBar();
   if(canWrite)return steps3(2,D)+cfgChip(D)+gRun(D,gDerive(D))+undoBar();
-  return refNote()+(G.locked?gRun(D,gDerive(D)):gSetup(D,G));
+  return refNote()+(G.locked&&phaseOf(D)==="live"?`<div class="lsrow">${liveShareBtn()}<span class="rule">Gửi link xem trực tiếp vào nhóm Zalo</span></div>`:"")+(G.locked?gRun(D,gDerive(D)):gSetup(D,G));
 }
 function gSetup(D,G){
   const c=D.c,P=G.pairs||[],n=P.length,tot=n*(n-1)/2,mins=Math.ceil(tot/Math.max(1,c.courts))*GSLOT,pz=G.prizes||[0,0,0];

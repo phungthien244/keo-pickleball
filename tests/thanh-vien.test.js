@@ -38,3 +38,19 @@ test("trang đăng nhập CLB: vào bằng PIN rồi chuyển sang Sân", async 
   expect(e.mk("#hact").innerHTML).toContain('href="/q7/cai-dat"');
   expect(e.T()).toContain("Chưa được giao sân");
 });
+
+test("đang có buổi đánh: người xem không vào được Quỹ và Lịch sử, có nút chia sẻ trực tiếp", async () => {
+  const e = setup({ host: "pikeco.app", path: "/q7/san", data: { ...club, "clubs/q7/app/config": { title: "Q7", courts: 1, session: 1, phase: "live" } } });
+  let shared = null;
+  globalThis.navigator.clipboard = { writeText: async t => { shared = t; } };
+  await e.boot();
+  await e.tab("tien");
+  expect(e.T()).toContain("đang đánh");
+  expect(e.T()).not.toContain("Sổ quỹ CLB");
+  await e.tab("ls");
+  expect(e.T()).toContain("đang đánh");
+  await e.click("lshare"); await e.until(() => shared);
+  expect(shared).toContain("ĐANG ĐÁNH TRỰC TIẾP");
+  expect(shared).toContain("Sân 1: An & Chi vs Bình & Dung");
+  expect(shared).toContain("/q7/san");
+});

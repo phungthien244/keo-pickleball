@@ -47,7 +47,11 @@ function render(){
   if(autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
   const selTab=route==="home"?"home":route==="buoi"?"ls":route==="chot"?"san":route==="vdv"?"bxh":(route==="caidat"||route==="clogin")?"":tab;
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===selTab));
-  {const tb=document.querySelector('#tabs [data-tab="tien"]');if(tb)tb.style.display=isG(c)&&(c.thu||"keo")==="khong"&&(c.gt||"khong")==="khong"?"none":""}
+  // Đang có buổi đánh: người xem qua link không thấy tab Quỹ và Lịch sử
+  const hideV=!canWrite&&MODE==="club"&&phaseOf(D)==="live";
+  if(hideV&&route==="app"&&(tab==="tien"||tab==="ls"))tab="san";
+  {const tb=document.querySelector('#tabs [data-tab="tien"]');if(tb)tb.style.display=hideV||(isG(c)&&(c.thu||"keo")==="khong"&&(c.gt||"khong")==="khong")?"none":""}
+  {const tb=document.querySelector('#tabs [data-tab="ls"]');if(tb)tb.style.display=hideV?"none":""}
   document.title=route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:route==="caidat"?`Cài đặt · ${c.title}`:route==="chot"?`Chốt buổi #${D.sid} · ${c.title}`:route==="vdv"?`${D.pmap.get(routePid)?.name||"Hồ sơ"} · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="clogin"?vClubLogin:route==="chot"?vChot:route==="vdv"?(D=>vHoSo(D,routePid)):route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);

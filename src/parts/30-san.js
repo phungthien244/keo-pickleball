@@ -37,7 +37,7 @@ function vSanView(D){
       :`<div class="soon"><b>Hôm nay chưa có buổi</b><span>${last?`Buổi gần nhất: #${last.sid} · ${dmy(last.endedAt||last.startedAt)}. <a href="${pathOf("buoi",{sid:last.sid})}" data-go="buoi" data-id="${last.sid}">Xem kết quả</a>`:"Ban tổ chức sẽ mở buổi ở đây. Trang tự cập nhật."}</span></div>`;
     return meBox(D,{pay:false})+box;
   }
-  let h=refNote()+`<div class="liveln"><span class="dot"></span>${esc(sessTitle(c,D.sid))} · đang đánh · ${D.playing.length} sân · ${act.length} người</div>`+meBox(D);
+  let h=refNote()+`<div class="liveln"><span class="dot"></span><span class="grow">${esc(sessTitle(c,D.sid))} · đang đánh · ${D.playing.length} sân · ${act.length} người</span>${liveShareBtn()}</div>`+meBox(D);
   const PL=D.playing.filter(myCourt);
   h+=PL.length?`<div class="lab"><span class="lbl">${REF?"Sân của bạn":"Đang đánh"}</span></div><div class="courts">${PL.map(m=>courtCard(D,m)).join("")}</div>`:REF?`<div class="empty"><strong>Sân của bạn đang trống</strong>Chờ ban tổ chức xếp trận vào sân ${MYCT.join(", ")||"được giao"}.</div>`:`<div class="empty"><strong>Sân đang trống</strong>Chờ ban tổ chức xếp trận. Trang tự cập nhật, không cần tải lại.</div>`;
   return h+queueBox(D,false)+doneBox(D);
@@ -100,3 +100,11 @@ function histRow(D,m){
     <div style="text-align:right"><div class="sc num">${m.sa}–${m.sb}</div>${canWrite?`<button class="ghost" data-act="edit" data-id="${m.id}">Sửa</button>${delBtn("mdel",m.id,"Xóa")}`:""}</div></div>`;
 }
 
+
+/* ----- Chia sẻ buổi đang đánh vào nhóm ----- */
+const liveShareBtn=()=>`<button class="lshare" data-act="lshare" aria-label="Chia sẻ buổi đang đánh">📤 Chia sẻ</button>`;
+function liveShareText(D){
+  const c=D.c,act=D.players.filter(p=>p.active!==false).length,club=(CLUB&&CLUB.name)||c.title||"CLB";
+  const L=D.playing.slice().sort((a,b)=>a.court-b.court).map(m=>`Sân ${m.court}: ${(m.a||[]).map(id=>D.pmap.get(id)?.name||"?").join(" & ")} vs ${(m.b||[]).map(id=>D.pmap.get(id)?.name||"?").join(" & ")}`);
+  return `🔴 ĐANG ĐÁNH TRỰC TIẾP · ${club}\n${sessTitle(c,D.sid)} · ${D.playing.length} sân · ${act} người${D.done.length?` · đã xong ${D.done.length} trận`:""}${L.length?"\n"+L.join("\n"):""}\nXem tỉ số, hàng chờ và bảng xếp hạng trực tiếp:`;
+}

@@ -63,6 +63,9 @@ document.addEventListener("click",async e=>{
     return}
   if(act==="bxf"){bxF=b.dataset.v;render();return}
   if(act==="hf"){hF=b.dataset.v;render();return}
+  if(act==="lshare"){const D=derive(),u=absUrl(pathOf("app",{tab:"san"})),txt=liveShareText(D);
+    if(navigator.share){try{await navigator.share({title:"Đang đánh trực tiếp",text:txt+"\n",url:u})}catch(x){}return}
+    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
   if(act==="pshare"){const D=derive(),u=absUrl(pathOf("vdv",{pid:id})),txt=profileShare(D,id);
     if(navigator.share){try{await navigator.share({title:"Hồ sơ vận động viên",text:txt+"\n",url:u})}catch(x){}return}
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
