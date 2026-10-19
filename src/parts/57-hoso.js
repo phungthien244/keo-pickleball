@@ -54,7 +54,7 @@ function vHoSo(D,id){
   let h=`<section class="phero"><span class="bk">Hồ sơ vận động viên</span>
     <div class="pid">${av(p,"xl")}<div class="t"><h1>${esc(p.name)}</h1><span class="mt">${p.code?esc(p.code)+" · ":""}${p.gender==="F"?"Nữ":"Nam"}${first?` · đánh từ ${dmy(first.at).replace(/^\d+\//,"")}`:""}</span><span class="rkb">#${rank} CLB · Số ${rg} ${p.gender==="F"?"nữ":"nam"}</span></div></div>
     <div class="prt"><div><span class="k">Rating</span><b class="num">${r2(s.rating)}</b></div>${last&&Number.isFinite(last.d)?`<div class="dd"><b class="${dCls(last.d)} num">${dTxt(last.d)}</b><small>${last.today?"hôm nay":`buổi #${last.sid}`}</small></div>`:""}</div>
-    <button class="pshare" data-act="pshare" data-id="${esc(id)}">Chia sẻ hồ sơ</button></section>
+    ${proExtra(p)}<button class="pshare" data-act="pshare" data-id="${esc(id)}">Chia sẻ hồ sơ</button></section>${proEdit(D,id)}
   <div class="pstats"><div><b class="num">${X.ses.length}</b><span>Buổi</span></div><div><b class="num">${X.games}</b><span>Trận</span></div><div><b class="num">${pc}%</b><span>Thắng</span></div><div><b class="num">${allM?X.best:"…"}</b><span>Chuỗi thắng</span></div></div>`;
   h+=card(`Rating qua các buổi<span class="meta">${X.ses.length} buổi</span>`,ratingChart(X.ses));
   if(titles.length)h+=card("Danh hiệu",`<div class="ptit">${titles.map(([i,a,b,c])=>`<div class="bd ${c}"><i>${i}</i><span><b>${a}</b>${esc(b)}</span></div>`).join("")}</div>`);

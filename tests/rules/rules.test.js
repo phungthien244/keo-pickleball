@@ -249,3 +249,15 @@ describe("đăng ký: khách vãng lai và chuyển khoản", () => {
     await assertFails(setDoc(doc(zalo("zalo_9"), "clubs/aep/regs/3_zalo_9"), { ...g, uid: "zalo_9" }));
   });
 });
+
+describe("người chơi tự sửa hồ sơ", () => {
+  const zalo = uid => env.authenticatedContext(uid, { firebase: { sign_in_provider: "custom" } }).firestore();
+  test("chỉ sửa hồ sơ của mình, chỉ các mục giới thiệu", async () => {
+    await seed({ "clubs/aep/links/zalo_1": { status: "ok", pid: "p1" }, "clubs/aep/players/p2": { name: "B" }, "clubs/aep/links/zalo_2": { status: "pending", pid: "p2" } });
+    await assertSucceeds(updateDoc(doc(zalo("zalo_1"), "clubs/aep/players/p1"), { bio: "Xin chào", hand: "R", nick: "A1" }));
+    await assertFails(updateDoc(doc(zalo("zalo_1"), "clubs/aep/players/p1"), { rating0: 5 }));
+    await assertFails(updateDoc(doc(zalo("zalo_1"), "clubs/aep/players/p1"), { name: "Khác" }));
+    await assertFails(updateDoc(doc(zalo("zalo_1"), "clubs/aep/players/p2"), { bio: "x" }));
+    await assertFails(updateDoc(doc(zalo("zalo_2"), "clubs/aep/players/p2"), { bio: "x" }));
+  });
+});

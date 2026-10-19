@@ -176,3 +176,21 @@ test("bắt buộc thu trước: giữ chỗ quá 30 phút chưa chuyển thì n
   expect(e.T()).toContain("Đã đăng ký 1");
   expect(e.T()).not.toContain("chờ 1");
 });
+
+test("Mini App: nút Hồ sơ góc phải, người chơi tự sửa ảnh, biệt danh, giới thiệu, tay thuận, vợt", async () => {
+  const data = base({ "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
+  MINI(e, "#/q7/dang-ky");
+  await e.boot(); await e.until(() => e.mk("#hact").innerHTML.includes('data-go="vdv"'));
+  const openPro = async pid => { await e.H.click({ target: { closest: s => (s === "[data-pid]" ? { dataset: { pid } } : null) }, preventDefault() {} }); await e.tick(); };
+  await openPro("p1"); await e.until(() => e.V().includes('data-act="meedit"'));
+  await e.click("meedit"); await e.until(() => e.V().includes('id="me-bio"'));
+  e.input("me-nick", "Sát thủ"); e.input("me-bio", "Thích đánh đôi nam nữ"); e.input("me-paddle", "Joola"); e.input("me-since", "2023");
+  await e.click("mehand", { v: "L" }); await e.click("mesave");
+  await e.until(() => e.store.get("clubs/q7/players/p1").bio === "Thích đánh đôi nam nữ");
+  expect(e.store.get("clubs/q7/players/p1")).toMatchObject({ nick: "Sát thủ", hand: "L", paddle: "Joola", since: "2023" });
+  await e.until(() => e.T().includes("Tay trái"));
+  // không sửa được hồ sơ người khác
+  await openPro("p2"); await e.until(() => e.V().includes("Chia sẻ hồ sơ") && !e.T().includes("Sát thủ"));
+  expect(e.V()).not.toContain('data-act="meedit"');
+});

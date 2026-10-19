@@ -167,7 +167,19 @@ service cloud.firestore {
 
       // Dữ liệu buổi đánh: CLB phải đang hoạt động mới ghi được
       match /app/{docId}     { allow read: if canRead(); allow write: if canEdit(); }
-      match /players/{docId} { allow read: if canRead(); allow write: if canEdit(); }
+      match /players/{docId} {
+        allow read: if canRead();
+        allow write: if canEdit();
+        // Người chơi đã được duyệt tự sửa hồ sơ của mình: ảnh, biệt danh, giới thiệu, tay thuận, vợt, năm bắt đầu chơi
+        allow update: if active() && player()
+          && get(/databases/$(database)/documents/clubs/$(c)/links/$(request.auth.uid)).data.status == 'ok'
+          && get(/databases/$(database)/documents/clubs/$(c)/links/$(request.auth.uid)).data.pid == docId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photo', 'nick', 'bio', 'hand', 'paddle', 'since'])
+          && request.resource.data.get('photo', '').size() < 60000
+          && request.resource.data.get('bio', '').size() <= 300
+          && request.resource.data.get('nick', '').size() <= 30
+          && request.resource.data.get('paddle', '').size() <= 60;
+      }
       match /matches/{docId} { allow read: if canRead(); allow write: if canEdit(); allow update: if scoreOk(); }
       // Buổi đã xóa: chỉ chủ CLB khôi phục
       match /deleted/{docId} {

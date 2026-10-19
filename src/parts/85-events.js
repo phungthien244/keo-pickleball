@@ -3,6 +3,9 @@ document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.dataset&&t.dataset.me){setMe(t.value);return}
+  if(t.dataset&&t.dataset.myphoto){const f=t.files&&t.files[0];t.value="";const pid=myPid();if(!f||!pid)return;
+    if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
+    shrink(f).then(d=>FB.updateDoc(FB.doc(FB.fs,PFX+"players/"+pid),{photo:d})).then(()=>toast("Đã đổi ảnh đại diện")).catch(()=>toast("Chưa đổi được ảnh, thử ảnh khác."));return}
   if(t.dataset&&t.dataset.photo){const f=t.files&&t.files[0],id=t.dataset.photo;t.value="";if(!f||!canWrite)return;
     if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
     shrink(f).then(d=>write(()=>db.collection("players").doc(id).update({photo:d}),"Đã cập nhật ảnh")).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}

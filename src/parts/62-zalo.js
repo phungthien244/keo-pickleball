@@ -92,7 +92,7 @@ function miniNav(){
   if(!MINI||MODE!=="club")return "";
   const cur=route==="vdv"?"bxh":route==="app"?tab:"dk";
   const it=(t,ic,l)=>`<button data-tab="${t}" aria-selected="${cur===t}"><span aria-hidden="true">${ic}</span>${l}</button>`;
-  return `<nav class="mnav">${it("dk","✍","Đăng ký")}${it("bxh","🏆","Xếp hạng")}${it("toi","👤","Của tôi")}</nav>`;
+  return `<nav class="mnav">${it("dk","✍","Đăng ký")}${it("bxh","🏆","Xếp hạng")}${it("toi","🏠","CLB")}</nav>`;
 }
 
 /* ----- Xử lý bấm ----- */
@@ -114,6 +114,7 @@ async function zaloAct(act,b,id){
     try{await FB.setDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid),d);toast("Đã gửi, chờ chủ CLB duyệt")}catch(e){toast("Chưa gửi được, thử lại.")}
     return true}
   if(await regAct(act,b,id))return true;
+  if(await meAct(act,b))return true;
   return false;
 }
 async function zaloAdminAct(act,b,id){
