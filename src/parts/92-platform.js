@@ -8,7 +8,7 @@ const slugOf=t=>noAcc(t).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-
 let clubsLoading=false,codesLoading=false;
 function loadClubs(force){
   if(!window.FB||clubsLoading||(S.clubs&&!force))return;clubsLoading=true;
-  FB.getDocs(FB.collection(FB.fs,"clubs")).then(async q=>{let L=q.docs.map(d=>({id:d.id,...d.data()}));if(isPA())L=await Promise.all(L.map(c=>FB.getDoc(FB.doc(FB.fs,"clubs/"+c.id+"/private/info")).then(s=>s.exists()?{...c,...s.data()}:c).catch(()=>c)));S.clubs=L;clubsLoading=false;render()}).catch(()=>{S.clubs=[];clubsLoading=false;render()});
+  FB.getDocs(FB.collection(FB.fs,"clubs")).then(async q=>{let L=q.docs.map(d=>({id:d.id,...d.data()}));if(isPA())L=await Promise.all(L.map(c=>FB.getDoc(FB.doc(FB.fs,"clubs/"+c.id+"/private/info")).then(s=>s.exists()?{...c,...s.data()}:c).catch(()=>c)));S.clubs=L;S.clubsStale=false;clubsLoading=false;if(MINI)exCacheSave();render()}).catch(()=>{S.clubs=[];clubsLoading=false;render()});
 }
 function loadCodes(force){
   if(!window.FB||codesLoading||(S.codes&&!force)||!isPA())return;codesLoading=true;
@@ -64,8 +64,9 @@ function vLogin(){
   return h+`<p class="lead">${esc(u.email||"")} chưa làm chủ CLB nào. Nếu bạn là quản lý hoặc trọng tài, hãy mở link mời chủ CLB gửi.</p>
     <a class="cta y" href="/tao-clb" data-go="tao">Tạo CLB</a><button class="cta o" data-act="logout">Đổi tài khoản</button>${isPA()?`<a class="cta o" href="/quan-tri" data-go="qt">Quản trị nền tảng</a>`:""}</div>`;
 }
+let lastAnimP="";const doAnimP=k=>{const d=k!==lastAnimP;lastAnimP=k;return d};
 function renderPlatform(){
-  if(MINI){if(!splashGone)hideSplash();document.title="pikeco.app";const ae=document.activeElement,aid=ae&&ae.id;$("#view").innerHTML=`<section class="mx">${mxExplore()}</section>`;if(aid){const el=document.getElementById(aid);if(el)el.focus()}return}
+  if(MINI){if(!splashGone)hideSplash();document.title="pikeco.app";const ae=document.activeElement,aid=ae&&ae.id;setView(`<section class="mx${doAnimP("mx|"+(mxSeg.exTab||""))?" mxanim":""}">${mxExplore()}</section>`);if(aid){const el=document.getElementById(aid);if(el)el.focus()}return}
   const u=authUser,t=$(".tkwrap"),tb=$("#tabs"),lg=$("#clogo");if(t)t.hidden=true;if(tb)tb.hidden=true;if(lg)lg.hidden=true;
   $("#title").innerHTML=`pikeco<span class="dotapp">.app</span>`;$("#curl").textContent="";
   $("#hact").innerHTML=MINI?"":isGoogle(u)?`${S.myClub?`<a href="/${esc(S.myClub)}">CLB của tôi</a>`:""}<button data-act="logout">Thoát</button>`:`<a href="/dang-nhap" data-go="login">Đăng nhập</a>`;
@@ -75,7 +76,7 @@ function renderPlatform(){
   const v={start:vStart,clb:vClb,tao:vTao,login:vLogin,qt:vQt}[route]||vStart;
   const ae=document.activeElement,aid=ae&&ae.id,sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   const akey="p|"+route,doAnim=akey!==lastAnim;lastAnim=akey;
-  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${v()}</section>`;
+  setView(`<section class="${doAnim?"anim":""}">${v()}</section>`);
   if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}
 }
 function vTao(){

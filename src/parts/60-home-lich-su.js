@@ -27,7 +27,7 @@ function vHome(D){
   const pod=(x,cls,lb)=>x?`<div class="pod ${cls}">${av(x.p,cls==="p1"?"lg":"md")}<span class="n">${esc(x.p.name)}</span><span class="r num">${r2(x.r)}</span><span class="stp">${lb}</span></div>`:`<div class="pod ${cls}"></div>`;
   const nF=ppl.filter(F).length,nM=ppl.length-nF;
   const q=String(val("hq","")).trim().toLowerCase();
-  const list=ppl.map((x,i)=>({...x,i})).filter(x=>(hF==="all"||(hF==="F")===F(x))&&(!q||x.p.name.toLowerCase().includes(q)));
+  const list=ppl.map((x,i)=>({...x,i})).filter(x=>(hF==="all"||(hF==="F")===F(x))&&hasQ(q,x.p.name));
   const fb=(v,l,n)=>`<button data-act="hf" data-v="${v}" aria-pressed="${hF===v}">${l} · ${n}</button>`;
   if(ppl.length>=2){const third=alt&&alt!==sec?alt:ppl[2],lb3=alt&&alt!==sec?(F(alt)?"Số 1 nữ":"Số 1 nam"):"Số 3";
     const card=(x,i,lb)=>x?`<div class="pc p${i}"><span class="md">${lb}</span><span class="avs">${av(x.p,i===1?"lg":"md")}</span><span class="tx"><span class="n">${esc(x.p.name)}</span><span class="s num">${x.A.g?`${x.A.ses.size} giải đấu · thắng ${pct(x.A.w,x.A.g)}%`:"chưa đánh"}${x.d!=null?` · <span class="${dCls(x.d)}">${dTxt(x.d)}</span>`:""}</span></span><span class="pz num">${r2(x.r)}</span></div>`:"";

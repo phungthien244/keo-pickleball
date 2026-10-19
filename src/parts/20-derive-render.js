@@ -64,10 +64,10 @@ function render(){
   // Đang chạy hiệu ứng mà dữ liệu cập nhật: chờ hiệu ứng xong mới vẽ lại, tránh giật/chạy lại 2 lần
   if(MINI&&!doAnim&&!loading&&akey===lastAnim&&mxAnimUntil>Date.now()){clearTimeout(mxAnimT);mxAnimT=setTimeout(render,mxAnimUntil-Date.now()+30);return}
   if(!(MINI&&loading))lastAnim=akey; noAnimOnce=false; if(MINI&&doAnim)mxAnimUntil=Date.now()+520;
-  if(MINI&&MODE==="club"&&!S.noClub&&!clubChecked){if(!splashGone)hideSplash();$("#view").innerHTML=`<section class="mx">${mxLoading()}</section>`;return}
-  if(MINI&&MODE==="club"&&!legacy&&!S.noClub){if(!splashGone)hideSplash();$("#view").innerHTML=`<section class="mx${doAnim&&!loading?" mxanim":""}">${loading?mxLoading():renderMini(D)}</section>`;mxCheckin(D);if(!loading&&mxMode()==="ql")syncSheet(D);
+  if(MINI&&MODE==="club"&&!S.noClub&&!clubChecked){if(!splashGone)hideSplash();setView(`<section class="mx">${mxLoading()}</section>`);return}
+  if(MINI&&MODE==="club"&&!legacy&&!S.noClub){if(!splashGone)hideSplash();setView(`<section class="mx${doAnim&&!loading?" mxanim":""}">${loading?mxLoading():renderMini(D)}</section>`);mxCheckin(D);if(!loading&&mxMode()==="ql")syncSheet(D);
     if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}return}
-  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${loading?skeleton():v(D)}${MINI?"":clubFoot()}</section>${miniNav()}`;
+  setView(`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${loading?skeleton():v(D)}${MINI?"":clubFoot()}</section>${miniNav()}`);
   syncSheet(D);
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
   if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}

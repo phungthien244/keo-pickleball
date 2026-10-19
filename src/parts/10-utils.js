@@ -34,6 +34,31 @@ setTimeout(()=>{if(!splashGone)hideSplash()},20000);
 const shareUrl=sid=>absUrl(pathOf("buoi",{sid}));
 
 const $=s=>document.querySelector(s);
+// Tìm không dấu: "ha noi" khớp "Hà Nội"
+const hasQ=(q,...xs)=>{const k=noAcc(q).toLowerCase();return !k||xs.some(x=>noAcc(x).toLowerCase().includes(k))};
+// Vẽ trang: đang gõ trong ô tìm thì chỉ cập nhật phần khác, giữ nguyên ô đang gõ (không mất con trỏ, không vỡ bộ gõ tiếng Việt)
+const LIVEQ=["q","hq","cq"];
+function setView(html){
+  const v=$("#view");if(!v)return;const ae=document.activeElement;
+  const typing=ae&&ae.id&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")&&ae.dataset&&(ae.dataset.live||LIVEQ.includes(ae.dataset.draft))&&v.contains&&v.contains(ae);
+  if(!typing||!document.createElement){v.innerHTML=html;return}
+  const t=document.createElement("div");t.innerHTML=html;morphKids(v,t,ae);
+}
+function morphKids(a,b,keep){
+  const A=[...a.childNodes],B=[...b.childNodes];
+  for(let i=0;i<B.length;i++){const x=A[i],y=B[i];
+    if(!x){a.appendChild(y);continue}
+    if(x.nodeType!==y.nodeType||x.nodeName!==y.nodeName||(x.id||"")!==(y.id||"")){a.replaceChild(y,x);continue}
+    if(x.nodeType!==1){if(x.nodeValue!==y.nodeValue)x.nodeValue=y.nodeValue;continue}
+    if(x===keep)continue;
+    if(x.isEqualNode(y)&&!(x.contains&&x.contains(keep)))continue;
+    for(const at of [...x.attributes])if(!y.hasAttribute(at.name))x.removeAttribute(at.name);
+    for(const at of [...y.attributes])if(x.getAttribute(at.name)!==at.value)x.setAttribute(at.name,at.value);
+    morphKids(x,y,keep);
+    if((x.tagName==="INPUT"||x.tagName==="SELECT"||x.tagName==="TEXTAREA")&&x.value!==y.value)x.value=y.value;
+  }
+  for(let i=A.length-1;i>=B.length;i--)if(A[i].parentNode===a)a.removeChild(A[i]);
+}
 // Xác nhận bằng hộp thoại (xem 12-confirm.js): armOr(k) mở hộp thoại, bấm "Xác nhận" thì chạy lại đúng thao tác đó
 const armed=k=>false;
 const delBtn=(act,id,label)=>armed(act+":"+id)?`<button class="danger" data-act="${act}" data-id="${id}">Bấm lần nữa để xóa</button>`:`<button class="ghost danger" data-act="${act}" data-id="${id}">${label}</button>`;
@@ -114,7 +139,7 @@ const cSpeak=n=>{const v=cName(n);return /^\d+$/.test(v)?`sân số ${v}`:`sân 
 // list: người để chọn; o.act: hành động khi bấm; o.sel: các id đang chọn; o.key: khoá ô tìm; o.meta(p): dòng nhỏ dưới tên
 function pplPick(D,list,o){
   const q=String(val(o.key+"-q","")).trim().toLowerCase(),sel=new Set(o.sel||[]);
-  const L=q?list.filter(p=>String(p.name).toLowerCase().includes(q)):list;
+  const L=q?list.filter(p=>hasQ(q,p.name)):list;
   const search=list.length>8?`<label class="ppq"><span class="sr">Tìm tên</span><input id="${o.key}-q" data-draft="${o.key}-q" data-live="1" type="search" placeholder="Tìm tên…" value="${esc(val(o.key+"-q",""))}" autocomplete="off"></label>`:"";
   return search+`<div class="ppg">${L.map(p=>`<button class="ppt${sel.has(p.id)?" on":""}" data-act="${o.act}" data-id="${p.id}" aria-pressed="${sel.has(p.id)}">${av(p,"md",1)}<span class="pn">${esc(p.name)}</span>${o.meta?`<small>${o.meta(p)}</small>`:""}</button>`).join("")||`<p class="rule">Không có tên phù hợp.</p>`}</div>`;
 }
