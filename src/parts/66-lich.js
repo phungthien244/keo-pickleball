@@ -364,12 +364,12 @@ async function xApply(D,X,quiet){
   if(X.preOn!=null&&X.fmt!=="giai")p.preOn=!!X.preOn;
   let n=0;
   await write(async()=>{await saveCfg(p);await db.collection("sched").doc(X.id).update({num:D.sid});
-    const R=withX(X,()=>regList(D)),inS=new Set(R.conf.map(x=>x.pid).filter(Boolean));
+    const R=withX(X,()=>regList(D)),inS=new Set(R.conf.filter(x=>x.arrived).map(x=>x.pid).filter(Boolean));
     n=await withX(X,()=>regStart(D));
-    // Có người đăng ký: điểm danh đúng theo danh sách (người khác bấm thêm ở Điểm danh)
-    if(inS.size)for(const pl of D.players){const on=inS.has(pl.id);if((pl.active!==false)!==on)await db.collection("players").doc(pl.id).update({active:on})}
+    // Có người đăng ký: danh sách có mặt = người đã check-in (chưa ai tới thì để trống, check-in xong mới vào)
+    if(R.conf.length)for(const pl of D.players){const on=inS.has(pl.id);if((pl.active!==false)!==on)await db.collection("players").doc(pl.id).update({active:on})}
   },quiet?null:`Đã chọn ${xName(X)}`);
-  if(n)toast(`Đã điểm danh ${n} người theo đăng ký`);
+  if(n)toast(`Đã điểm danh ${n} người đã check-in`);
 }
 // Chốt buổi: buổi trong lịch chuyển sang Đã xong
 async function xFinish(D){const X=xCur();if(X)await db.collection("sched").doc(X.id).update({st:"done",num:D.sid,doneAt:Date.now()})}

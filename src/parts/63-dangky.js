@@ -209,8 +209,10 @@ function approvals(D){
 async function regStart(D){
   const X=xCur();if(X&&!RX)return withX(X,()=>regStart(D));
   if(!RX&&!regOpen())return 0;
+  // Giải đấu theo lịch: chỉ người đã check-in (quét mã hoặc BTC check-in tay) mới vào danh sách có mặt
   const R=regList(D);let n=0;const paid=[];
   for(const x of R.conf){
+    if(RX&&!x.arrived){if(x.pay==="ok"&&x.pid)paid.push(x.pid);continue}
     let pid=x.pid;
     if(x.guest&&!pid){const ref=db.collection("players").doc();pid=ref.id;
       await ref.set({name:x.name||"Vận động viên",gender:x.gender==="F"?"F":"M",rating0:Math.min(8,Math.max(1,+x.lv||2.5)),active:true,guest:true,createdAt:Date.now(),code:"PB-"+String(nextCode()).padStart(3,"0")});

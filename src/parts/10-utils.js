@@ -159,3 +159,18 @@ function pplPick(D,list,o){
   return search+`<div class="ppg">${L.map(p=>`<button class="ppt${sel.has(p.id)?" on":""}" data-act="${o.act}" data-id="${p.id}" aria-pressed="${sel.has(p.id)}">${av(p,"md",1)}<span class="pn">${esc(p.name)}</span>${o.meta?`<small>${o.meta(p)}</small>`:""}</button>`).join("")||`<p class="rule">Không có tên phù hợp.</p>`}</div>`;
 }
 let meAll=false,meOpen=false;
+
+// Lưu mã QR chuyển khoản: Mini App lưu thẳng vào thư viện ảnh (tải file trong Zalo thường không mở xem được)
+async function saveQr(url,n){
+  let bl;try{const r=await fetch(url);bl=await r.blob();if(!/^image\//.test(bl.type||""))throw 0}catch(x){openOut(url);return}
+  const data=await new Promise((ok,no)=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=no;f.readAsDataURL(bl)}).catch(()=>"");
+  const Z=window.ZMP;
+  if(typeof MINI!=="undefined"&&MINI&&Z&&Z.saveImageToGallery&&data){try{await Z.saveImageToGallery({imageBase64Data:data});toast("Đã lưu mã QR vào thư viện ảnh");return}catch(x){}}
+  const fn=`QR-${String(n).replace(/\s+/g,"-")}.png`,file=new File([bl],fn,{type:bl.type||"image/png"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:"Mã QR chuyển khoản"});return}catch(x){}}
+  const u=URL.createObjectURL(bl),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("Đã lưu mã QR");
+}
+// Mở link ra ngoài (app ngân hàng, bản đồ): trong Zalo dùng openOutApp
+function openOut(url){const Z=window.ZMP;if(Z&&Z.openOutApp){Z.openOutApp({url}).catch(()=>{try{window.open(url,"_blank")}catch(e){}});return}try{window.open(url,"_blank")}catch(e){location.href=url}}
+// Hàng nút mở thẳng app ngân hàng, điền sẵn số tiền và nội dung (app nào hỗ trợ VietQR deeplink)
+const bankApps=(amt,note,sid)=>`<span class="lbl">Mở thẳng app ngân hàng · điền sẵn số tiền và nội dung</span><div class="apps">${BANK_APPS.map(([a,l])=>`<a href="${esc(appUrl(a,amt,note,sid))}" target="_blank" rel="noopener" data-act="bankapp" data-v="${esc(appUrl(a,amt,note,sid))}"><img src="https://cdn.vietqr.io/bank-app-icon/${a}-android.webp" alt="" width="40" height="40" loading="lazy"><span>${l}</span></a>`).join("")}</div><small class="rule">App nào chưa điền sẵn số tiền thì dùng “Lưu mã QR” rồi quét ảnh trong app ngân hàng.</small>`;

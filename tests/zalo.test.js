@@ -239,7 +239,7 @@ test("thu phí trước: người chơi chuyển khoản lúc đăng ký, chủ 
   await o.until(() => o.T().includes("Sửa giải đấu"));
   expect(o.store.get("clubs/q7/app/config")).toMatchObject({ thu: "phi", phi: 60, sname: "Giải đấu tối" });
   await o.until(() => o.store.get("clubs/q7/app/pay-1")?.paid?.p1 === true);
-  expect(o.store.get("clubs/q7/players/p1").active).toBe(true);
+  expect(o.store.get("clubs/q7/players/p1").active).toBe(false); // đã trả nhưng chưa check-in: chưa có mặt
 });
 
 test("vận động viên ngoài CLB đăng ký không cần duyệt, bắt đầu giải đấu thì có hồ sơ và được điểm danh", async () => {
@@ -344,13 +344,14 @@ test("bản Testing: dán link mời trong tab Tôi để nhận quyền quản 
   await e.until(() => e.V().includes('data-act="mxmode"'));
 });
 
-test("tab Sân: hôm nay 2 giải đấu theo lịch thì tự chọn giải đấu gần giờ nhất, đổi được; người quét QR ở sân tự có mặt", async () => {
+test("tab Sân: hôm nay 2 giải đấu theo lịch thì tự chọn giải đấu gần giờ nhất, đổi được; chỉ người đã check-in mới có mặt", async () => {
   const now = Date.now(), near = now + 60e3, far = now + 120e3;
   const data = base({ "clubs/q7/sched/a": sched({ name: "Giải đấu gần", at: near, deadline: near }), "clubs/q7/sched/b": sched({ name: "Giải đấu xa", at: far, deadline: far, courts: 3 }),
     "clubs/q7/regs/a_p_p1": { sid: "a", pid: "p1", at: 1 }, "clubs/q7/regs/b_p_p2": { sid: "b", pid: "p2", at: 1, arrived: true } });
   const e = setup({ host: "pikeco.app", path: "/q7/san", user: OWNER, data });
   await e.boot(); await e.until(() => e.store.get("clubs/q7/app/config").schedId === "a");
-  await e.until(() => e.store.get("clubs/q7/players/p1").active === true);
+  // đã đăng ký nhưng chưa check-in: chưa vào danh sách có mặt
+  await e.until(() => e.store.get("clubs/q7/players/p1").active === false);
   expect(e.store.get("clubs/q7/players/p3").active).toBe(false);
   await e.until(() => e.V().includes('data-act="xprep" data-id="b"'));
   await e.click("xprep", { id: "b" });
@@ -399,4 +400,21 @@ test("giải đăng ký theo cặp: người rủ chọn đồng đội trong CL
   // đồng đội nhận lời: đăng ký với cùng mã cặp
   await globalThis.window.FB.setDoc({ path: "clubs/q7/regs/s1_zalo_8" }, { sid: "s1", uid: "zalo_8", pid: p2, name: "B", at: Date.now(), pay: "none", team: "s1_zalo_9" });
   await e.until(() => e.T().includes("CẶP CỦA BẠN"));
+});
+
+test("check-in: các nút đều hỏi xác nhận; check-in tay vào danh sách có mặt, hoàn tác thì ra lại", async () => {
+  const now = Date.now(), at = now + 60e3;
+  const data = base({ "clubs/q7/sched/a": sched({ name: "Giải đấu gần", at, deadline: at }), "clubs/q7/regs/a_p_p1": { sid: "a", pid: "p1", at: 1 } });
+  const e = setup({ host: "pikeco.app", path: "/q7/san", user: OWNER, data });
+  await e.boot(); await e.until(() => e.store.get("clubs/q7/app/config").schedId === "a");
+  await e.until(() => e.store.get("clubs/q7/players/p1").active === false);
+  await e.click("ckman", { id: "a_p_p1" });
+  expect(e.store.get("clubs/q7/regs/a_p_p1").arrived).toBeFalsy();
+  expect(e.CF()).toContain("Check-in tay");
+  await e.ok("ckman", { id: "a_p_p1" });
+  await e.until(() => e.store.get("clubs/q7/regs/a_p_p1").arrived === true);
+  await e.until(() => e.store.get("clubs/q7/players/p1").active === true);
+  await e.ok("ckundo", { id: "a_p_p1" });
+  await e.until(() => e.store.get("clubs/q7/regs/a_p_p1").arrived === false);
+  await e.until(() => e.store.get("clubs/q7/players/p1").active === false);
 });

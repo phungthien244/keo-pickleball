@@ -12,6 +12,7 @@ function cfmName(k,id){try{
   if(k==="pdel"||k==="del"||k==="phdel"||k==="unzalo")return derive().pmap.get(id)?.name||"";
   if(k==="xcancel"||k==="xdel")return (S.sched||[]).find(z=>z.id===id)?.name||"";
   if(k==="regdel"||k==="regpayok"||k==="regpayundo"||k==="regrefund"){const x=(S.regs||[]).find(z=>z.id===id);return x?(x.name||derive().pmap.get(x.pid)?.name||""):""}
+  if(/^ck/.test(k)){const x=(S.regs||[]).find(z=>z.id===id);return x?(x.pid?derive().pmap.get(x.pid)?.name||x.name:x.name)||"":""}
   if(k==="gout"||k==="gdel"){const D=derive(),p=(cfg().giai?.pairs||[]).find(z=>z.id===id);return p?[p.a,p.b].map(i=>D.pmap.get(i)?.name||"?").join(" & "):""}
   if(k==="cancel"){const m=(S.matches||[]).find(z=>z.id===id);return m?"Sân "+cName(m.court):""}
 }catch(e){}return ""}
@@ -48,6 +49,14 @@ function cfmInfo(key){
     edclear:["Thu hồi tất cả PIN?","Mọi máy đang vào bằng PIN mất quyền ghi, cần nhập lại PIN.","Thu hồi","d"],
     migrate:["Chuyển dữ liệu?","Chỉ làm một lần. Đừng tắt app trong lúc chuyển.","Bắt đầu chuyển","p"],
     gout:[`${n||"Cặp này"} bỏ giải?`,"Trận chưa đánh tính thắng cho đối thủ, không cộng hiệu số.","Bỏ giải","d"],
+    ckok:[`Xác nhận${q||" người này"} đã tới?`,"Đúng người như ảnh: vào danh sách có mặt, sẵn sàng thi đấu.","Đúng người","p"],
+    cklater:[`Cho${q||" người này"} vào sân, trả sau?`,"Vẫn ghi CHƯA TRẢ lệ phí. Nhớ thu sau khi đánh.","Cho vào, trả sau","p"],
+    ckno:[`Không phải${q}?`,"Bỏ lượt quét này. Người đó phải quét lại mã trên máy ban tổ chức.","Không phải","d"],
+    ckcash:[`Đã nhận lệ phí${q}?`,"Chỉ bấm khi đã cầm tiền mặt hoặc đã thấy tiền vào tài khoản.","Đã nhận tiền","p"],
+    ckunsent:[`Chưa thấy tiền${q}?`,"Đổi về CHƯA TRẢ, nhờ người chơi trả tại bàn.","Chưa thấy","d"],
+    ckpaidok:[`Đã nhận tiền${q}?`,"Ghi nhận đã trả lệ phí và cho vào giải đấu.","Đã nhận · check-in","p"],
+    ckman:[`Check-in tay${q}?`,"Dùng khi cần nhanh. Danh sách ghi ✋ TAY để phân biệt với tự quét mã.","Check-in tay","p"],
+    ckundo:[`Hoàn tác check-in${q}?`,"Người này ra khỏi danh sách có mặt, trở về chưa tới.","Hoàn tác","d"],
     kodraw:["Bốc chia bảng lại?","Các bảng hiện tại bị bỏ, bốc lại từ đầu. Lần bốc mới được ghi \"bốc lại\" để mọi người thấy.","Bốc lại","d"],
     gbredo:["Bốc lại các cặp?","Các cặp bốc thăm hiện tại bị bỏ, bốc lại từ đầu. Lần bốc mới được ghi \"bốc lại\" để mọi người thấy.","Bốc lại","d"],
     gdel:[`Bỏ cặp ${n||"này"}?`,"Cặp bị xoá khỏi danh sách giải.","Bỏ cặp","d"],

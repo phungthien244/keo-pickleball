@@ -343,8 +343,8 @@ async function sessionAct(act,id,b,e){
   if(act==="att"){const p=S.players.find(x=>x.id===id);if(!p)return true;const on=p.active!==false;
     if(on&&derive().playing.some(m=>[...m.a,...m.b].includes(id))){toast("Người này đang trên sân, lưu tỉ số trước.");return true}
     // Người đã đăng ký giải đấu hôm nay mà chưa check-in: BTC check-in tay giúp (đánh dấu khác với quét mã)
-    const X=xCur(),r=!on&&X&&(S.regs||[]).find(z=>z.sid===X.id&&z.pid===id&&!z.cancel&&!z.arrived);
-    write(async()=>{await db.collection("players").doc(id).update({active:!on});if(r)await db.collection("regs").doc(r.id).update({arrived:true,arrBy:"btc",arrivedAt:Date.now()})},on?`${p.name} nghỉ`:r?`Đã check-in tay ${p.name}`:`${p.name} có mặt`);return true}
+    const X=xCur(),r=!on&&X&&(S.regs||[]).find(z=>z.sid===X.id&&z.pid===id&&!z.cancel&&!z.arrived),ra=on&&X&&(S.regs||[]).find(z=>z.sid===X.id&&z.pid===id&&!z.cancel&&z.arrived);
+    write(async()=>{await db.collection("players").doc(id).update({active:!on});if(r)await db.collection("regs").doc(r.id).update({arrived:true,arrBy:"btc",arrivedAt:Date.now()});if(ra)await db.collection("regs").doc(ra.id).update({arrived:false,ci:0,ciCode:""})},on?`${p.name} nghỉ`:r?`Đã check-in tay ${p.name}`:`${p.name} có mặt`);return true}
   if(act==="attall"){const D=derive(),busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),all=D.players.every(p=>p.active!==false);
     await write(async()=>{for(const p of D.players){const want=all?busy.has(p.id):true;if((p.active!==false)!==want)await db.collection("players").doc(p.id).update({active:want})}},all?"Đã bỏ chọn":"Đã chọn tất cả");return true}
   if(act==="lpaid"){const sid=derive().sid,p=b.dataset.p,on=!(payDoc(sid).paid||{})[p];

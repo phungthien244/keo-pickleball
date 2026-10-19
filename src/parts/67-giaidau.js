@@ -160,7 +160,8 @@ function gdPay(D,mine){
   let h=`<div class="gdtop2"><b>Thanh toán · ${esc(xName(RX))}</b></div>`+gdSteps(2);
   h+=`<div class="gdhold"><b data-cd="${end}">${gdMMSS(end-Date.now())}</b><span>Đang giữ chỗ #${pos+1} cho bạn. Chuyển khoản trong 15 phút để chắc chỗ.</span></div>`;
   h+=`<div class="gdbox gdqr"><span class="gdnote">Số tiền</span><b class="gdamt">${kVND(k)}</b><img src="${esc(qrUrl(amt,note))}" alt="Mã QR chuyển ${kVND(k)}" width="220" height="220">
-    <span class="gdnote">Quét bằng app ngân hàng bất kỳ · số tiền và nội dung đã điền sẵn</span><button class="line wide" data-act="saveqr" data-v="${esc(qrUrl(amt,note))}" data-n="${esc(note)}">Lưu mã QR</button></div>`;
+    <span class="gdnote">Quét bằng app ngân hàng bất kỳ · số tiền và nội dung đã điền sẵn</span><button class="line wide" data-act="saveqr" data-v="${esc(qrUrl(amt,note))}" data-n="${esc(note)}">Lưu mã QR vào máy</button></div>`;
+  h+=`<div class="gdbox">${bankApps(amt,note,D.sid)}</div>`;
   h+=`<div class="gdbox"><h3>Hoặc chuyển khoản thủ công</h3><div class="gdrow"><span>Ngân hàng</span><b>${esc(BANK.name||"")}</b></div><div class="gdrow"><span>Số tài khoản</span><span class="gdv"><b>${esc(BANK.acc)}</b>${cp(BANK.acc)}</span></div>
     <div class="gdrow"><span>Chủ tài khoản</span><b>${esc(BANK.holder||"")}</b></div><div class="gdrow"><span>Nội dung</span><span class="gdv"><b class="lose">${esc(note)}</b>${cp(note)}</span></div><span class="gdnote">Ghi đúng nội dung để BTC đối chiếu nhanh.</span></div>`;
   const cta=`<button class="primary wide win" data-act="regpaid">TÔI ĐÃ CHUYỂN KHOẢN</button>${regPayMode()!=="req"?`<button class="ghost wide" data-act="gdsite">Chưa chuyển được? Đổi sang trả tại sân</button>`:""}`;

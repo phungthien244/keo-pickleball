@@ -51,6 +51,7 @@ document.addEventListener("click",onAct=async e=>{
   const act=b.dataset.act,id=b.dataset.id;
   // Nút dạng <a href="#">: không để trình duyệt đổi đường dẫn (Mini App dùng # để định tuyến, đổi # sẽ nhảy về CLB cũ)
   if(b.tagName==="A"&&b.getAttribute&&b.getAttribute("href")==="#"&&e.preventDefault)e.preventDefault();
+  if(b.dataset&&b.dataset.act==="bankapp"&&e.preventDefault)e.preventDefault();
   if(act==="cfmok"){await cfmOk();return}
   if(act==="cfmx"){cfmClose();return}
   LASTDS={...b.dataset};
@@ -128,10 +129,8 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="qv"){qView=b.dataset.v==="so"?"so":"buoi";render();return}
   if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;showSheet();return}
   if(act==="pay"){payOpen={sid:Number(b.dataset.sid),name:b.dataset.n,k:Number(b.dataset.k)};showSheet();return}
-  if(act==="saveqr"){try{const r=await fetch(b.dataset.v),bl=await r.blob(),fn=`QR-${b.dataset.n.replace(/\s+/g,"-")}.png`,file=new File([bl],fn,{type:bl.type||"image/png"});
-      if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:"Mã QR chuyển khoản"})}catch(x){}return}
-      const u=URL.createObjectURL(bl),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("Đã lưu mã QR")}
-    catch(x){window.open(b.dataset.v,"_blank")}return}
+  if(act==="saveqr"){await saveQr(b.dataset.v,b.dataset.n||"chuyen-khoan");return}
+  if(act==="bankapp"){openOut(b.dataset.v);return}
   if(act==="cp"){try{await navigator.clipboard.writeText(b.dataset.v);toast("Đã copy: "+b.dataset.v)}catch(x){toast(b.dataset.v)}return}
   if(act==="paid"){if(!canWrite)return;const sid=Number(id),h=S.hist.find(z=>z.sid===sid);if(!h)return;const pd={...(h.paid||{})};pd[b.dataset.p]=!pd[b.dataset.p];
     write(()=>db.doc("app/hist-"+sid).update({paid:pd}),pd[b.dataset.p]?"Đã đánh dấu đã nhận phí":"Đã bỏ đánh dấu");return}
