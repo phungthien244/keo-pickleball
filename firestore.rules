@@ -228,7 +228,8 @@ service cloud.firestore {
         allow read: if canRead();
         allow create: if canEdit() || (
           active() && player()
-          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv'])
+          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv', 'hold'])
+          && request.resource.data.get('hold', false) is bool
           && request.resource.data.uid == request.auth.uid
           && id == string(request.resource.data.sid) + '_' + request.auth.uid
           && request.resource.data.get('pay', 'none') in ['none', 'sent']
@@ -251,13 +252,21 @@ service cloud.firestore {
               && request.resource.data.name is string && request.resource.data.name.size() > 0)
           )
         );
-        // Người chơi: báo đã chuyển khoản (chưa trả → đã chuyển), hoặc hủy trước giờ khóa hủy
+        // Check-in: người chơi quét mã đang hiện trên máy ban tổ chức (mã đổi liên tục, có hạn)
+        function ciOk() {
+          let k = get(/databases/$(database)/documents/clubs/$(c)/ci/$(string(resource.data.sid))).data;
+          return request.resource.data.ciCode == k.code && request.time.toMillis() < k.exp
+            && request.resource.data.ci is int;
+        }
+        // Người chơi: báo đã chuyển khoản (chưa trả → đã chuyển), đổi sang trả tại sân, check-in, hoặc hủy trước giờ khóa hủy
         function beforeLock() {
           return lockOf(resource.data.sid) == 0 || request.time.toMillis() < lockOf(resource.data.sid);
         }
         allow update: if canEdit() || (
           player() && resource.data.uid == request.auth.uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pay', 'paidAt', 'cancel', 'cancelAt', 'arrived', 'arrivedAt'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pay', 'paidAt', 'cancel', 'cancelAt', 'hold', 'ci', 'ciCode'])
+          && (!('hold' in request.resource.data.diff(resource.data).affectedKeys()) || request.resource.data.hold == false)
+          && (!('ci' in request.resource.data.diff(resource.data).affectedKeys()) || ciOk())
           && (request.resource.data.get('pay', 'none') == resource.data.get('pay', 'none')
               || (resource.data.get('pay', 'none') == 'none' && request.resource.data.get('pay', 'none') == 'sent'))
           && (!('cancel' in request.resource.data.diff(resource.data).affectedKeys())
@@ -266,6 +275,19 @@ service cloud.firestore {
         allow delete: if canEdit() || (
           player() && resource.data.uid == request.auth.uid && beforeLock()
         );
+      }
+      // Mã check-in đang hiện trên máy ban tổ chức: chỉ ban tổ chức đọc, ghi
+      match /ci/{sid} {
+        allow read, write: if canEdit();
+      }
+      // Ảnh của VĐV ngoài CLB lúc đăng ký: chỉ ban tổ chức và chính người đó xem
+      match /regpics/{id} {
+        allow read: if isAdmin() || isPA() || (signedIn() && resource.data.uid == request.auth.uid);
+        allow create, update: if signedIn() && request.resource.data.uid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['img', 'uid', 'at'])
+          && request.resource.data.img is string && request.resource.data.img.size() < 120000
+          && get(/databases/$(database)/documents/clubs/$(c)/regs/$(id)).data.uid == request.auth.uid;
+        allow delete: if canEdit() || (signedIn() && resource.data.uid == request.auth.uid);
       }
     }
   }

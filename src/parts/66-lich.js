@@ -168,9 +168,9 @@ function xPeople(D,X){
 }
 
 /* ----- Form tạo / sửa buổi ----- */
-const XF_KEYS=["name","date","time","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","h1","h2","h3","rep","days","auto","openD","reg","cp","gton","gt","gtv","trao","c1","c2","c3","adv","win2","ptMax","gmode","refOn","preOn","noteOn"];
+const XF_KEYS=["name","date","time","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","h1","h2","h3","rep","days","auto","openD","reg","cp","gton","gt","gtv","trao","c1","c2","c3","adv","win2","ptMax","gmode","refOn","preOn","noteOn","incl"];
 // Các trường của buổi được chép từ buổi trước (Dùng lại) và lưu vào lịch lặp
-const XCOPY=["name","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","reg","cp","gton","gt","gtv","trao","adv","win2","ptMax","gmode","refOn","preOn"];
+const XCOPY=["name","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","reg","cp","gton","gt","gtv","trao","adv","win2","ptMax","gmode","refOn","preOn","incl"];
 function xFmtLast(f){return schedAll().filter(x=>x.fmt===f&&x.st!=="cancel").pop()||null}
 // Giá trị phẳng cho form từ một buổi (hang, chia → ô riêng)
 const xFlat=X=>{const r={};for(const k of XCOPY)if(X[k]!==undefined)r[k]=X[k];const h=X.hang||[],ch=X.chia||[];
@@ -186,7 +186,7 @@ function xSrc(D){
 function xDef(c,f){const G=f==="giai",ch=chiaOf(c),k=hangOf(c);
   return {fmt:G?"giai":"xoay",name:"",end:"",place:"",map:"",note:"",courts:+c.courts||2,target:+c.target||11,max:G?16:0,lvMin:"",lvMax:"",guests:false,thu:c.thu||"keo",fee:0,phi:+c.phi||50,feeG:"",pay:"off",dlH:0,lockH:2,
     reg:true,cp:c.cphi!==false,gton:G||(c.gt||"khong")!=="khong",gt:G?"hang":((c.gt&&c.gt!=="khong")?c.gt:"trich"),gtv:+c.gtv||30,trao:c.trao||"namnu",c1:ch[0],c2:ch[1],c3:ch[2],h1:k[0]||(G?300:200),h2:k[1]||(G?150:100),h3:k[2]||50,
-    adv:false,win2:winBy2(c),ptMax:+c.ptMax||0,gmode:c.gmode||"mix",refOn:c.refOn===true,preOn:c.preOn===true,noteOn:false}}
+    adv:false,win2:winBy2(c),ptMax:+c.ptMax||0,gmode:c.gmode||"mix",refOn:c.refOn===true,preOn:c.preOn===true,noteOn:false,incl:""}}
 let xSrcCache=null;
 const xv=(D,k)=>{const s=xSrcCache||xSrc(D);const v=s[k];return val("xf-"+k,typeof v==="boolean"?(v?"1":"0"):v==null?"":v)};
 function xForm(D){
@@ -219,6 +219,7 @@ function xForm(D){
   h+=opt("cp",G?"Lệ phí":"Thu chi phí",`${THU[thu]||""}${fee?` · ${fmtK(fee)}`:""}${v("pay")!=="off"?` · chuyển khoản ${v("pay")==="req"?"bắt buộc":"tùy chọn"}`:""}`,
     `<div class="fld"><span class="lbl">Cách thu</span>${seg("thu",[["keo","Thua góp"],["deu","Chia đều"],["phi","Phí cố định"]])}</div>
      <div class="form">${thu==="phi"?inp("phi","Mỗi người (k)",'type="number" min="0" inputmode="numeric"'):inp("fee","Dự kiến mỗi người (k)",'type="number" min="0" inputmode="numeric" placeholder="0"')}${v("guests")==="1"?inp("feeG","VĐV ngoài CLB (k)",'type="number" min="0" inputmode="numeric" placeholder="như thành viên"'):""}</div>
+     ${inp("incl","Lệ phí gồm những gì (không bắt buộc)",'maxlength="120" placeholder="Tiền sân, bóng thi đấu, nước"')}
      <div class="fld"><span class="lbl">Chuyển khoản lúc đăng ký</span>${seg("pay",[["off","Không"],["opt","Tùy chọn"],["req","Bắt buộc"]])}</div>
      ${v("pay")!=="off"&&!(BANK&&BANK.acc)?`<small class="rule" style="color:var(--lose)">Cần khai ngân hàng nhận phí ở Cài đặt CLB.</small>`:""}`);
   h+=opt("gton","Giải thưởng",gt==="hang"?`Nhất ${fmtK(+v("h1")||0)} · Nhì ${fmtK(+v("h2")||0)} · Ba ${fmtK(+v("h3")||0)}`:`${GT[gt]||""}${G||top3?" · hạng 1, 2, 3":" · Số 1 nam & nữ"}`,
@@ -259,8 +260,8 @@ function xRead(D){
     thu:["phi","deu","keo"].includes(v("thu"))?v("thu"):"keo",fee:Math.max(0,n("fee",0)),phi:Math.max(0,n("phi",0)),feeG:v("feeG")===""?"":Math.max(0,n("feeG",0)),pay:["off","opt","req"].includes(v("pay"))?v("pay"):"off",
     dlH:Math.max(0,n("dlH",0)),lockH:Math.max(0,n("lockH",2)),
     reg:b("reg"),cp:b("cp"),gton:b("gton"),gt:["hang","trich","codinh","gop"].includes(v("gt"))?v("gt"):"trich",gtv:Math.max(0,n("gtv",0)),trao:v("trao")==="top3"?"top3":"namnu",
-    hang:[n("h1",0),n("h2",0),n("h3",0)],chia:[n("c1",50),n("c2",30),n("c3",20)],adv:b("adv"),win2:v("win2")==="1",ptMax:Math.max(0,n("ptMax",0)),gmode:v("gmode")==="same"?"same":"mix",refOn:b("refOn"),preOn:b("preOn")};
-  if(!f.cp){f.pay="off";f.fee=0}
+    hang:[n("h1",0),n("h2",0),n("h3",0)],chia:[n("c1",50),n("c2",30),n("c3",20)],adv:b("adv"),win2:v("win2")==="1",ptMax:Math.max(0,n("ptMax",0)),gmode:v("gmode")==="same"?"same":"mix",refOn:b("refOn"),preOn:b("preOn"),incl:v("incl").slice(0,120)};
+  if(!f.cp){f.pay="off";f.fee=0;f.incl=""}
   const t=v("time"),d=v("date");
   return {f,t,d,rep:v("rep")==="1",days:String(xv(D,"days")).split(",").filter(Boolean).map(Number),auto:v("auto")!=="0",openD:Math.max(1,n("openD",2))};
 }
@@ -298,10 +299,7 @@ const xClearDraft=()=>{for(const k of XF_KEYS)delete drafts["xf-"+k];xSrcCache=n
 /* ----- Người chơi: danh sách buổi sắp tới (Trang chủ Mini App, trang Đăng ký trên web) ----- */
 function xPlayerCards(D,o={}){
   const U=schedUp().filter(x=>x.st!=="draft"&&(o.all||xState(x)!=="plan"||x.openAt-Date.now()<7*864e5));
-  return U.slice(0,o.max||99).map(x=>{const mine=authUser&&(S.regs||[]).find(r=>r.sid===x.id&&r.uid===authUser.uid&&!r.cancel),s=xState(x),n=xRegN(x),m=+x.max||0,fee=xFee(x);
-    const st=s==="live"?`<span class="xchip ok">Đang đánh</span>`:x.reg===false?xChip(x):mine?`<span class="xchip ok">✓ Bạn đã đăng ký${mine.pay==="ok"?" · đã trả":mine.pay==="sent"?" · chờ xác nhận phí":""}</span>`:s==="plan"?xChip(x):xOpen(x)?(m&&n>=m?`<span class="xchip warn">Hết chỗ · vào danh sách chờ</span>`:`<span class="xchip ok">Đang nhận đăng ký${m?` · còn ${m-n} chỗ`:""}</span>`):`<span class="xchip">Đã đóng đăng ký</span>`;
-    return `<a class="xcard pl${mine?" mine":""}" href="${s==="live"?pathOf("app",{tab:"san"}):pathOf("app",{tab:"dk",x:x.id})}" ${s==="live"?`data-go="app" data-t="san"`:`data-go="app" data-t="dk" data-x="${esc(x.id)}"`}>${xDate(x.at,!!mine||s==="live")}
-      <span class="t"><b>${esc(xName(x))}</b><small>${esc([xTime(x),xFmt(x),fee&&fmtK(fee),m&&`${n}/${m}`].filter(Boolean).join(" · "))}</small><span class="xrow">${st}</span>${!mine&&xOpen(x)?`<span class="xgo">${m&&n>=m?"Vào danh sách chờ":"Đăng ký"} ›</span>`:""}</span></a>`}).join("");
+  return U.slice(0,o.max||99).map(x=>gdCard(D,x)).join("");
 }
 // Trang Đăng ký khi chưa chọn buổi: danh sách các buổi
 function vLichPlayer(D){
@@ -326,7 +324,7 @@ function xAutoPrep(D){
 }
 function xPrepHead(D){
   const X=xCur(),c=D.c,thu=c.thu||"keo",T=isAdm()?xToday():[];
-  let h="";
+  let h=ckCard(D);
   if(T.length>1&&phaseOf(D)!=="live"&&!D.SM.length)h+=`<div class="xpick" role="group" aria-label="Chọn giải đấu hôm nay">${T.slice().sort((a,b)=>a.at-b.at).map(x=>`<button data-act="xprep" data-id="${x.id}" aria-pressed="${X&&X.id===x.id}"><b>${hm(x.at)}</b>${esc(xName(x))}</button>`).join("")}</div>`;
   h+=`<section class="xhero prephd"><span class="k">${esc(sessTitle(c,D.sid))} · chuẩn bị${X&&X.at?` · ${esc(xTime(X))}`:""}</span>
     <div class="xrow2"><h1>${esc(X?xName(X):(c.sname||"Giải đấu nhanh"))}</h1>${X?`<a class="xedit" href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}">Sửa giải đấu ›</a>`:""}</div>

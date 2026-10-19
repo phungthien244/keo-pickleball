@@ -57,7 +57,7 @@ function render(){
   {const tb=document.querySelector('#tabs [data-tab="ls"]');if(tb)tb.style.display=hideV?"none":""}
   document.title=MINI?"pikeco.app":route==="buoi"?`Tổng kết giải đấu #${routeSid} · ${c.title}`:route==="caidat"?`Cài đặt · ${c.title}`:route==="chot"?`Chốt giải đấu #${D.sid} · ${c.title}`:route==="vdv"?`${D.pmap.get(routePid)?.name||"Hồ sơ"} · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
-  const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="clogin"?vClubLogin:route==="chot"?vChot:route==="vdv"?(D=>vHoSo(D,routePid)):route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs,dk:vDk,toi:vToi}[tab]||vSan);
+  const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="clogin"?vClubLogin:route==="chot"?vChot:route==="vdv"?(D=>vHoSo(D,routePid)):route==="buoi"?(D=>vBuoi(D,routeSid)):({san:vSanCk,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs,dk:vDk,toi:vToi}[tab]||vSanCk);
   // Mini App: chờ biết vai trò (quản lý/người chơi) và lịch giải đấu rồi mới vẽ, tránh trang nhảy nhiều lần lúc mở
   const loading=!S.offline&&!S.noClub&&!S.priv&&!(S.mReady&&S.hReady&&S.pReady);
   // Mini App: chỉ chạy hiệu ứng khi đổi trang (không chạy lại khi dữ liệu về hay mạng đổi trạng thái)
@@ -67,9 +67,9 @@ function render(){
   if(!(MINI&&loading))lastAnim=akey; noAnimOnce=false; if(MINI&&doAnim)mxAnimUntil=Date.now()+520;
   if(MINI&&MODE==="club"&&!S.noClub&&!clubChecked){if(!splashGone)hideSplash();setView(`<section class="mx">${mxLoading()}</section>`);return}
   if(MINI&&MODE==="club"&&!legacy&&!S.noClub){if(!splashGone)hideSplash();
-    setView(`<section class="mx${doAnim&&!loading?" mxanim":""}">${loading?mxLoading():renderMini(D)}</section>`);mxCheckin(D);if(!loading&&mxMode()==="ql")syncSheet(D);
+    setView(`<section class="mx${doAnim&&!loading?" mxanim":""}">${loading?mxLoading():renderMini(D)}</section>`);ckPlayer(D);if(!loading&&mxMode()==="ql")syncSheet(D);
     if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}return}
-  setView(`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${loading?skeleton():v(D)}${MINI?"":clubFoot()}</section>${miniNav()}`);
+  setView(`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${loading?skeleton():v(D)}${MINI?"":clubFoot()}</section>${miniNav()}${canWrite&&!MINI?ckPopup(D):""}`);
   syncSheet(D);
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
   if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}

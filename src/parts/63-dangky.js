@@ -1,7 +1,7 @@
 /* ---------- Đăng ký buổi: chủ CLB mở buổi, người chơi đăng ký (Mini App), thu tiền trước tùy chọn ---------- */
 const MINI_APP_ID="180913816434821856";
 const miniLink=(cid=CID,x)=>`https://zalo.me/s/${MINI_APP_ID}/?clb=${encodeURIComponent(cid)}${x?"&buoi="+encodeURIComponent(x):""}`;
-const HOLD_MS=30*60e3; // Bắt buộc thu trước: giữ chỗ 30 phút cho người chưa chuyển
+const HOLD_MS=15*60e3; // Chọn chuyển khoản ngay (hoặc bắt buộc thu trước): giữ chỗ 15 phút cho người chưa chuyển
 // RX: buổi trong lịch đang xem (66-lich.js). Không có RX: buổi hiện tại theo cách cũ (app/config.reg)
 const regCfg=()=>RX||cfg().reg||{};
 // Mỗi CLB mở đăng ký cho 1 buổi sắp tới (buổi hiện tại đang chuẩn bị)
@@ -12,7 +12,7 @@ const feeMem=()=>{const c=RX||cfg(),r=regCfg();return Math.max(0,(c.thu||"keo")=
 const feeGuest=()=>{const r=regCfg();return Math.max(0,r.feeG!=null&&r.feeG!==""?+r.feeG:feeMem())};
 const feeOf=x=>x&&x.guest?feeGuest():feeMem();
 const payOn=()=>regPayMode()!=="off"&&(feeMem()>0||feeGuest()>0);
-const isHeldOut=x=>regPayMode()==="req"&&(x.pay||"none")==="none"&&Date.now()-(x.at||0)>HOLD_MS;
+const isHeldOut=x=>(regPayMode()==="req"||x.hold===true)&&(x.pay||"none")==="none"&&!x.arrived&&Date.now()-(x.at||0)>HOLD_MS;
 function regList(D){
   const max=Math.max(1,+regCfg().max||999);
   const K=regKey(D),mine=S.regs||[],L=mine.filter(r=>r.sid===K&&!r.cancel&&!isHeldOut(r)).sort((a,b)=>(a.at||0)-(b.at||0));
@@ -138,8 +138,7 @@ function dkAdmin(D){
   h+=card("Gửi link đăng ký",`<p class="rule">Link mở thẳng trang đăng ký trong Zalo. Dán vào nhóm hoặc in mã QR dán ở sân.</p>
     <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="cp" data-v="${esc(link)}">Copy</button></div>
     <div class="dkqr"><img alt="Mã QR mở trang đăng ký" width="180" height="180" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&data=${encodeURIComponent(link)}"><button class="primary" data-act="regshare">📤 Gửi tin mở đăng ký</button></div>`);
-  const ck=miniLink()+"&diemdanh=1";
-  h+=card("Mã QR điểm danh tại sân",`<p class="rule">In và dán ở sân. Người chơi quét bằng Zalo khi tới nơi là báo đã đến, bạn thấy dấu ✓ trong danh sách.</p><div class="dkqr"><img alt="Mã QR điểm danh" width="180" height="180" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&data=${encodeURIComponent(ck)}"><button class="line" data-act="cp" data-v="${esc(ck)}">Copy link điểm danh</button></div>`);
+  h+=card("Check-in tại sân",`<p class="rule">Ngày đánh, mở tab Sân, bấm “Mở mã check-in”. Người chơi quét mã trên máy bạn bằng Zalo, máy bạn bật thẻ có ảnh để so mặt rồi bấm Đúng người.</p>`);
   if(phaseOf(D)==="prep"&&regList(D).all.length)h+=`<p class="rule" style="text-align:center">Bấm “Bắt đầu giải đấu” ở trang Sân: người đã đăng ký được tự điểm danh, vận động viên ngoài CLB được thêm vào danh sách.</p>`;
   return h;
 }
@@ -233,13 +232,21 @@ async function regAct(act,b,id){
     if(guest&&!regCfg().guests)return true;
     if((S.regs||[]).some(x=>x.sid===regKey(D)&&x.uid===u.uid&&!x.cancel&&!isHeldOut(x))){toast("Bạn đã có trong danh sách.");return true}
     if(regClosed()){toast("Đã hết hạn đăng ký giải đấu này.");return true}
-    const pay=b.dataset.v==="sent"?"sent":"none";
-    let d={sid:regKey(D),uid:u.uid,at:Date.now(),pay};
+    const step=mxDk==="reg1";
+    if(step&&val("gd-ok","")!=="1"){errs.gdok="Đánh dấu đã đọc chính sách hủy để tiếp tục.";render();return true}
+    const pay=b.dataset.v==="sent"?"sent":"none",hold=b.dataset.v==="hold",rid=regKey(D)+"_"+u.uid;
+    let d={sid:regKey(D),uid:u.uid,at:Date.now(),pay};if(hold)d.hold=true;
     if(guest){const el=document.getElementById&&document.getElementById("gs-name"),nm=String((el&&el.value)||drafts["gs-name"]||zaloProf().n||"").trim().slice(0,30);
       if(!nm){toast("Nhập tên của bạn.");return true}
+      if(step&&!gsPhoto){errs.gs="Thêm ảnh rõ mặt của bạn để ban tổ chức nhận ra lúc check-in.";render();return true}
       d={...d,guest:true,name:nm,gender:drafts["gs-g"]==="F"?"F":"M",lv:String(val("gs-lv","3.0"))}}
     else d={...d,pid:L.pid,name:D.pmap.get(L.pid)?.name||""};
-    try{await FB.setDoc(FB.doc(FB.fs,PFX+"regs/"+regKey(D)+"_"+u.uid),d);guestOpen=false;toast(pay==="sent"?"Đã đăng ký, chờ chủ CLB xác nhận phí":"Đã đăng ký")}catch(e){toast("Chưa đăng ký được, thử lại.")}
+    // Lần trước quá giờ giữ chỗ: xoá đăng ký cũ rồi đăng ký lại
+    const old=(S.regs||[]).find(x=>x.id===rid);
+    try{if(old)await FB.deleteDoc(FB.doc(FB.fs,PFX+"regs/"+rid));
+      await FB.setDoc(FB.doc(FB.fs,PFX+"regs/"+rid),d);if(guest)await gdSavePic(rid);
+      guestOpen=false;mxDk=null;gsPhoto="";delete drafts["gd-ok"];gdOpt={who:"",pay:""};gdInfo=false;
+      toast(pay==="sent"?"Đã đăng ký, chờ chủ CLB xác nhận phí":hold?"Đã giữ chỗ 15 phút · chuyển khoản để chắc chỗ":"Đã đăng ký");render()}catch(e){toast("Chưa đăng ký được, thử lại.")}
     return true}
   if(act==="regpaid"){const D=derive(),mine=(S.regs||[]).find(x=>x.sid===regKey(D)&&x.uid===authUser?.uid&&!x.cancel);if(!mine)return true;
     try{await FB.updateDoc(FB.doc(FB.fs,PFX+"regs/"+mine.id),{pay:"sent",paidAt:Date.now()});toast("Đã báo chuyển khoản, chờ chủ CLB xác nhận")}catch(e){toast("Chưa gửi được, thử lại.")}

@@ -293,6 +293,39 @@ describe("đăng ký: khách vãng lai và chuyển khoản", () => {
   });
 });
 
+describe("giữ chỗ, ảnh VĐV ngoài CLB, check-in quét mã máy BTC", () => {
+  const zalo = uid => env.authenticatedContext(uid, { firebase: { sign_in_provider: "custom" } }).firestore();
+  const r = { sid: "s1", uid: "zalo_7", guest: true, name: "Lan", gender: "F", lv: "3.0", at: 1, pay: "none" };
+  beforeEach(async () => { await seed({ "clubs/aep/sched/s1": { st: "open", guests: true, at: Date.now() + 864e5, lockAt: Date.now() + 864e5 - 7200e3 } }); });
+  test("đăng ký kèm giữ chỗ, đổi sang trả tại sân, không tự bật lại giữ chỗ", async () => {
+    await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ...r, hold: true }));
+    await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { hold: "x" }));
+    await assertSucceeds(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { hold: false }));
+    await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { hold: true }));
+  });
+  test("ảnh chỉ chủ đăng ký ghi, ban tổ chức đọc, người khác không đọc", async () => {
+    await seed({ "clubs/aep/regs/s1_zalo_7": r });
+    await assertFails(setDoc(doc(zalo("zalo_8"), "clubs/aep/regpics/s1_zalo_7"), { img: "data:image/jpeg;base64,AA", uid: "zalo_8", at: 1 }));
+    await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regpics/s1_zalo_7"), { img: "data:image/jpeg;base64,AA", uid: "zalo_7", at: 1 }));
+    await assertSucceeds(getDoc(doc(google("ad"), "clubs/aep/regpics/s1_zalo_7")));
+    await assertSucceeds(getDoc(doc(zalo("zalo_7"), "clubs/aep/regpics/s1_zalo_7")));
+    await assertFails(getDoc(doc(zalo("zalo_8"), "clubs/aep/regpics/s1_zalo_7")));
+    await assertFails(getDoc(doc(guest(), "clubs/aep/regpics/s1_zalo_7")));
+  });
+  test("check-in chỉ với mã đang hiện và còn hạn; người chơi không tự đánh dấu đã tới", async () => {
+    await seed({ "clubs/aep/regs/s1_zalo_7": r, "clubs/aep/ci/s1": { code: "K7QF9A", exp: Date.now() + 40000 } });
+    await assertFails(getDoc(doc(zalo("zalo_7"), "clubs/aep/ci/s1")));
+    await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ci: Date.now(), ciCode: "SAI000" }));
+    await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { arrived: true, arrivedAt: 1 }));
+    await assertSucceeds(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ci: Date.now(), ciCode: "K7QF9A" }));
+    await assertFails(updateDoc(doc(zalo("zalo_8"), "clubs/aep/regs/s1_zalo_7"), { ci: Date.now(), ciCode: "K7QF9A" }));
+    await seed({ "clubs/aep/ci/s1": { code: "OLD111", exp: Date.now() - 1000 } });
+    await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ci: Date.now(), ciCode: "OLD111" }));
+    await assertSucceeds(setDoc(doc(google("ad"), "clubs/aep/ci/s1"), { code: "NEW222", exp: Date.now() + 40000 }));
+    await assertSucceeds(updateDoc(doc(google("ad"), "clubs/aep/regs/s1_zalo_7"), { arrived: true, arrBy: "qr", arrivedAt: 2 }));
+  });
+});
+
 describe("người chơi tự sửa hồ sơ", () => {
   const zalo = uid => env.authenticatedContext(uid, { firebase: { sign_in_provider: "custom" } }).firestore();
   test("chỉ sửa hồ sơ của mình, chỉ các mục giới thiệu", async () => {

@@ -65,10 +65,16 @@ test("người chơi: Trang chủ Mini App liệt kê các giải đấu sắp t
   expect(e.T()).toContain("Giải đấu tối"); expect(e.T()).toContain("Giải đấu cuối tuần"); expect(e.T()).toContain("Tự mở");
   expect(e.T()).not.toContain("Nháp riêng");
   expect(e.V()).toContain('data-x="s1"');
-  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="regin"'));
-  await e.click("regin");
+  expect(e.V()).toContain('class="gdcard x');
+  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
+  expect(e.T()).toContain("THỂ THỨC"); expect(e.T()).toContain("Hủy và hoàn phí"); expect(e.T()).toContain("Luật thi đấu");
+  await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
+  expect(e.T()).toContain("Bạn đăng ký với tư cách");
+  await e.click("regin"); expect(e.T()).toContain("Đánh dấu đã đọc chính sách hủy");
+  await e.click("gdagree"); await e.click("regin");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.sid === "s1");
-  await e.until(() => e.T().includes("Bạn đã giữ chỗ"));
+  await e.until(() => e.T().includes("Vé của bạn"));
+  expect(e.T()).toContain("QUÉT MÃ CHECK-IN");
 });
 
 test("bắt đầu giải đấu: tự điểm danh người đã đăng ký và đóng đăng ký", async () => {
@@ -210,13 +216,16 @@ test("thu phí trước: người chơi chuyển khoản lúc đăng ký, chủ 
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
   MINI(e, "#/q7/dang-ky/s1");
   await e.boot();
-  await e.until(() => e.V().includes('data-act="regin" data-v="sent"'));
-  expect(e.V()).toContain("img.vietqr.io");
-  expect(e.T()).toContain("60.000đ");
-  expect(e.T()).toContain("trả tại sân");
-  await e.click("regin", { v: "sent" });
+  await e.until(() => e.V().includes('data-act="gdreg"'));
+  await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin" data-v="hold"'));
+  expect(e.T()).toContain("GIỮ CHỖ CHẮC"); expect(e.T()).toContain("Trả tại sân");
+  await e.click("gdagree"); await e.click("regin", { v: "hold" });
+  await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.hold === true);
+  await e.until(() => e.V().includes("img.vietqr.io"));
+  expect(e.T()).toContain("60.000đ"); expect(e.T()).toContain("Đang giữ chỗ #1");
+  await e.click("regpaid");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.pay === "sent");
-  await e.until(() => e.T().includes("Chờ xác nhận phí"));
+  await e.until(() => e.T().includes("Chờ BTC xác nhận"));
   delete globalThis.window.ZMINI; await new Promise(r => setTimeout(r, 700));
   // chủ CLB xác nhận ở trang buổi
   const o = setup({ host: "pikeco.app", path: "/q7/dang-ky/s1", user: OWNER, data: Object.fromEntries(e.store) });

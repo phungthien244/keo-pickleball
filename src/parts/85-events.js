@@ -4,6 +4,8 @@ document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.dataset&&t.dataset.me){setMe(t.value);return}
+  if(t.dataset&&t.dataset.gsphoto){const f=t.files&&t.files[0];t.value="";if(!f)return;if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
+    shrink(f).then(d=>{gsPhoto=d;delete errs.gs;render()}).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}
   if(t.dataset&&t.dataset.myphoto){const f=t.files&&t.files[0];t.value="";const pid=myPid();if(!f||!pid)return;
     if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
     shrink(f).then(d=>FB.updateDoc(FB.doc(FB.fs,PFX+"players/"+pid),{photo:d})).then(()=>toast("Đã đổi ảnh đại diện")).catch(()=>toast("Chưa đổi được ảnh, thử ảnh khác."));return}
@@ -153,6 +155,7 @@ document.addEventListener("click",onAct=async e=>{
   // Trọng tài chỉ được lưu tỉ số ở sân được giao
   const REF_ACTS=["savechk","savex","save","cancelx"];
   if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
+  if(canWrite&&!legacy&&await ckAct(act,b,id))return;
   if(canWrite&&!legacy&&await zaloAdminAct(act,b,id))return;
   if(act==="migrate"){if(!legacy||!isGoogle(authUser)||!S.rootEditor){toast("Cần đăng nhập Google và nhập PIN trước.");return}if(!armOr("migrate:x"))return;try{await migrate()}catch(x){S.migMsg="Chuyển chưa xong ("+((x&&x.code)||"lỗi")+"). Kiểm tra luật Firestore mới đã xuất bản chưa rồi thử lại.";render()}return}
   if(act==="bsave"&&isAdm()){const code=val("bk-code",CLUB?.bank?.code||"mb"),bk=BANKS.find(z=>z[0]===code)||BANKS[0],acc=String(val("bk-acc",CLUB?.bank?.acc||"")).replace(/\s/g,""),hd=noAcc(val("bk-holder",CLUB?.bank?.holder||""));
