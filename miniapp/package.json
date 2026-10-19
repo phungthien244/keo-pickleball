@@ -1,0 +1,21 @@
+{
+  "name": "pikeco-miniapp",
+  "private": true,
+  "type": "module",
+  "description": "Zalo Mini App của pikeco.app: người chơi đăng ký buổi bằng Zalo",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "login": "zmp login",
+    "deploy": "zmp deploy"
+  },
+  "dependencies": {
+    "firebase": "^10.12.2",
+    "zmp-sdk": "2.53.2"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10",
+    "zmp-cli": "4.0.3",
+    "zmp-vite-plugin": "1.1.6"
+  }
+}

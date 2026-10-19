@@ -36,7 +36,7 @@ async function acceptInvite(){
     const iv=s.data();if(iv.exp<Date.now()){toast("Link mời đã hết hạn, nhờ quản lý tạo link mới.");return}
     await FB.setDoc(FB.doc(FB.fs,PFX+"members/"+authUser.uid),{role:iv.role,invite:tok,name:authUser.displayName||"",email:authUser.email||"",at:Date.now()});
     await refreshRole();toast(`Đã nhận quyền ${ROLE_LB[iv.role]} của ${CLUB?.name||"CLB"}.`);
-    INVITE=null;route="home";try{history.replaceState(null,"",pathOf("home"))}catch(e){}
+    INVITE=null;route="home";setPath(pathOf("home"),1);
     render();
   }catch(e){toast("Không nhận được lời mời, thử lại.")}
 }
@@ -118,6 +118,7 @@ const clubFoot=()=>`<footer class="pfoot"><a href="/">pikeco.app</a> · quản l
 function clubLoginBody(){
   const u=authUser,tok=inviteTok();
   let h="";
+  if(MINI)return PLAYER_ON()?`<section class="card2"><h2>Người chơi</h2><div class="cb">${isPlayer(u)?`<p class="rule">Bạn đã vào bằng Zalo. Đăng ký buổi ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a>`:zaloBtn("Vào bằng Zalo")}</div></section><p class="rule">Ban tổ chức quản lý CLB trên pikeco.app.</p>`:"";
   if(!tok&&!legacy&&PLAYER_ON())h+=`<section class="card2"><h2>Người chơi</h2><div class="cb">${isPlayer(u)?`<p class="rule">Máy này đã tham gia. Bạn đăng ký buổi ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a>`:`<p class="rule">Tự đăng ký buổi chơi, không cần tài khoản. Chạm vào tên mình, chủ CLB duyệt một lần là xong. Mở được ngay trong Zalo.</p>${zaloBtn()}`}</div></section>`;
   h+=`<section class="card2"><h2>${tok?"Nhận lời mời ban tổ chức":"Chủ CLB, quản lý"}</h2><div class="cb">`;
   if(isGoogle(u)&&!canWrite)h+=`<p class="rule">Đang đăng nhập ${esc(u.email||"")} nhưng tài khoản này chưa có quyền ở CLB. Nhờ chủ CLB gửi link mời, hoặc đổi tài khoản.</p><button class="line" data-act="logout">Đổi tài khoản Google</button>`;

@@ -48,6 +48,10 @@ class SetText { constructor(v) { this.v = v } element(e) { e.setInnerContent(thi
 
 export async function onRequest(ctx) {
   const res = await ctx.next();
+  // Zalo Mini App gọi /api/* từ tên miền khác (h5.zdn.vn)
+  if (new URL(ctx.request.url).pathname.startsWith("/api/") && !res.headers.has("access-control-allow-origin")) {
+    const r = new Response(res.body, res); r.headers.set("access-control-allow-origin", "*"); return r;
+  }
   const ct = res.headers.get("content-type") || "";
   if (ctx.request.method !== "GET" || !ct.includes("text/html")) return res;
   let m = null;

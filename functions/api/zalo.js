@@ -1,5 +1,6 @@
 // Đăng nhập với Zalo (OAuth v4 + PKCE) → đổi sang tài khoản Firebase (custom token)
 // Cần biến môi trường trên Cloudflare: ZALO_SECRET (khoá bí mật app Zalo), FIREBASE_SA (JSON khoá dịch vụ Firebase)
+import { customToken } from "../../lib/fbtoken.js";
 const APP_ID = "381645138886815816";
 const CALLBACK = "https://pikeco.app/api/zalo";
 const enc = new TextEncoder();
@@ -9,20 +10,6 @@ const rand = n => { const a = new Uint8Array(n); crypto.getRandomValues(a); retu
 const cookie = (req, k) => { const m = (req.headers.get("cookie") || "").match(new RegExp("(?:^|; )" + k + "=([^;]*)")); return m ? decodeURIComponent(m[1]) : ""; };
 const safeBack = b => (typeof b === "string" && /^\/[a-z0-9][a-z0-9-]{1,18}[a-z0-9](\/[\w\-\/]*)?$/i.test(b) ? b : "/");
 
-async function customToken(sa, uid, claims) {
-  const now = Math.floor(Date.now() / 1000);
-  const head = b64uStr(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const body = b64uStr(JSON.stringify({
-    iss: sa.client_email, sub: sa.client_email,
-    aud: "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
-    iat: now, exp: now + 3600, uid, claims
-  }));
-  const pem = sa.private_key.replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
-  const der = Uint8Array.from(atob(pem), c => c.charCodeAt(0));
-  const key = await crypto.subtle.importKey("pkcs8", der, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
-  const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, enc.encode(head + "." + body));
-  return head + "." + body + "." + b64u(sig);
-}
 
 const fail = (back, why) => Response.redirect(new URL(back + "#zerr=" + encodeURIComponent(why), CALLBACK).toString(), 302);
 

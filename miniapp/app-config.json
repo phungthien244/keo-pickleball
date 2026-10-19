@@ -1,0 +1,15 @@
+{
+  "app": {
+    "title": "AEP Pickleball",
+    "headerColor": "#0c2b44",
+    "textColor": "white",
+    "statusBar": "normal",
+    "leftButton": "back",
+    "actionBarHidden": false,
+    "hideIOSSafeAreaBottom": false,
+    "hideAndroidBottomNavigationBar": false
+  },
+  "listCSS": [],
+  "listSyncJS": [],
+  "listAsyncJS": []
+}

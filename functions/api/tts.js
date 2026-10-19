@@ -5,7 +5,7 @@
 // Âm thanh được lưu đệm 30 ngày nên câu đã đọc không tốn thêm ký tự.
 const VOICES = ["vi-VN-Chirp3-HD-Aoede", "vi-VN-Neural2-A", "vi-VN-Wavenet-A"];
 const OK_TEXT = /^Xin mời cặp .{1,160}, vào sân số \d{1,2}, chuẩn bị thi đấu\.$/;
-const OK_HOST = /(^|\.)pikeco\.app$|\.pikeco\.pages\.dev$|^pikeco\.pages\.dev$|^localhost$/;
+const OK_HOST = /(^|\.)pikeco\.app$|^h5\.zdn\.vn$|\.pikeco\.pages\.dev$|^pikeco\.pages\.dev$|^localhost$/;
 
 // Giọng nữ cho phép chọn (tên giọng Google). Giọng mặc định là phần tử đầu.
 const PICK = /^vi-VN-(Chirp3-HD-[A-Za-z]+|Neural2-[A-Z]|Wavenet-[A-Z]|Standard-[A-Z])$/;

@@ -3,19 +3,34 @@
 const ZALO_ON=false;
 // Bản web không cho người chơi tự vào; đăng ký qua Zalo Mini App (window.ZMINI do bản Mini App đặt)
 const PLAYER_ON=()=>!!window.ZMINI;
-const isPlayer=u=>!!u&&(/^zalo_/.test(String(u.uid||""))||(u.isAnonymous&&!REF&&!canWrite));
+const isPlayer=u=>!!u&&(/^zalo_/.test(String(u.uid||""))||(PLAYER_ON()&&u.isAnonymous&&!REF&&!canWrite));
+// Zalo Mini App: lấy ID người dùng (không cần hỏi quyền), đổi sang tài khoản pikeco qua máy chủ
+async function miniLogin(quiet){
+  const Z=window.ZMP;if(!Z)return false;
+  if(authUser&&/^zalo_/.test(String(authUser.uid||"")))return true;
+  try{
+    const id=await Z.getUserID();
+    let at="";try{at=await Z.getAccessToken()}catch(e){}
+    try{const ui=await Z.getUserInfo({autoRequestPermission:false}),u=ui&&ui.userInfo;if(u&&u.name)localStorage.setItem("pb-zprof",JSON.stringify({n:u.name,p:u.avatar||""}))}catch(e){}
+    const r=await fetch(API+"/api/zalo-mini",{method:"POST",headers:{"content-type":"text/plain"},body:JSON.stringify({id:String(id||""),at})});
+    const j=await r.json().catch(()=>({}));if(!j.token)throw new Error(j.error||"no token");
+    await FB.signInWithCustomToken(FB.auth,j.token);return true;
+  }catch(e){if(!quiet)toast("Chưa vào được bằng Zalo, thử lại.");return false}
+}
 let unsubLink=null;
 function zaloProf(){try{return JSON.parse(localStorage.getItem("pb-zprof")||"{}")}catch(e){return {}}}
 async function zaloStart(){
   if(!PLAYER_ON())return;
   if(ZALO_ON){if(window.FB_TARGET==="mock"){FB.signInWithCustomToken(FB.auth,"demo").then(()=>location.reload());return}
     location.href="/api/zalo?start=1&back="+encodeURIComponent(location.pathname);return}
+  if(window.ZMP){if(await miniLogin())toast("Chạm vào tên của bạn để chủ CLB duyệt");return}
   try{if(!authUser){const r=await FB.signInAnonymously(FB.auth);authUser=r.user}
     await refreshRole();if(route==="clogin")go("app",{tab:"san"});else render();toast("Chạm vào tên của bạn để chủ CLB duyệt")}
   catch(e){toast("Chưa vào được, thử lại.")}
 }
 // Trang vừa được Zalo trả về: #zt=<token>&zn=<tên>&zp=<ảnh> hoặc #zerr=<lỗi>
 async function zaloHash(){
+  if(MINI){miniLogin(true);return}
   const h=String(location.hash||"");if(!/[#&](zt|zerr)=/.test(h))return;
   const q=new URLSearchParams(h.slice(1));
   try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
@@ -31,7 +46,7 @@ function watchLink(){
     if(S.link&&S.link.status==="ok"&&S.link.pid&&ME!==S.link.pid){ME=S.link.pid;try{localStorage.setItem("pb-me-"+CID,ME)}catch(e){}}
     render()},()=>{S.link=null;render()})}catch(e){}
 }
-const zaloBtn=(label)=>PLAYER_ON()?`<button class="primary wide" data-act="zlogin">${label?label.replace("Đăng nhập Zalo để đăng ký","Tham gia để đăng ký"):"Tham gia để đăng ký buổi"}</button>`:`<small class="rule">Người chơi đăng ký trong Zalo Mini App của CLB.</small>`;
+const zaloBtn=(label)=>window.ZMP?`<button class="zalobtn" data-act="zlogin"><b>Z</b>${label&&!/Đăng nhập Zalo/.test(label)?label:"Vào bằng Zalo để đăng ký"}</button>`:PLAYER_ON()?`<button class="primary wide" data-act="zlogin">${label?label.replace("Đăng nhập Zalo để đăng ký","Tham gia để đăng ký"):"Tham gia để đăng ký buổi"}</button>`:`<small class="rule">Người chơi đăng ký trong Zalo Mini App của CLB.</small>`;
 
 /* ----- Thẻ cho người chơi đăng nhập Zalo nhưng chưa có hồ sơ ----- */
 let lnkPick=null,lnkNew=false;

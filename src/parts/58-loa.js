@@ -49,7 +49,7 @@ function speak(text,voice,key,force){
   const play=buf=>{if(tok!==LOA.tok)return;try{const s=actx.createBufferSource();s.buffer=buf;s.connect(actx.destination);s.onended=()=>loaDone(tok);s.start(0);asrc=s}catch(e){speakDevice(text,tok)}};
   if(ttsCache.has(ck)){play(ttsCache.get(ck));return}
   const ab=typeof AbortController!=="undefined"?new AbortController():null,tm=setTimeout(()=>ab&&ab.abort(),text.length>220?20000:6000);
-  fetch("/api/tts?"+(voice?"v="+encodeURIComponent(voice)+"&":"")+"t="+encodeURIComponent(text),ab?{signal:ab.signal}:{}).then(r=>{clearTimeout(tm);
+  fetch(API+"/api/tts?"+(voice?"v="+encodeURIComponent(voice)+"&":"")+"t="+encodeURIComponent(text),ab?{signal:ab.signal}:{}).then(r=>{clearTimeout(tm);
     if(r.status===503){ttsOff=true;throw 0}
     if(!r.ok||!/audio/.test(r.headers.get("content-type")||""))throw 0;return r.arrayBuffer()})
     .then(b=>new Promise((ok,no)=>{const p=actx.decodeAudioData(b,ok,no);if(p&&p.then)p.then(ok,no)}))

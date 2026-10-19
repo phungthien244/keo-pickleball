@@ -62,7 +62,7 @@ test("chủ CLB duyệt người mới: tạo hồ sơ gắn tài khoản Zalo",
 
 test("người chơi không cần tài khoản: vào bằng máy mình, chọn tên, chờ duyệt", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7/dang-nhap", data: base() });
-  globalThis.window.ZMINI = 1;
+  globalThis.window.ZMINI = 1; globalThis.location.hash = "#/q7/dang-nhap";
   await e.boot(); await e.until(() => e.V().includes('data-act="zlogin"'));
   await e.click("zlogin");
   await e.until(() => e.T().includes("Bạn là ai trong CLB"));
@@ -76,4 +76,18 @@ test("bản web: không có nút tham gia cho người chơi", async () => {
   await e.boot(); await e.until(() => e.T().includes("Đăng ký buổi"));
   expect(e.V()).not.toContain('data-act="zlogin"');
   expect(e.T()).toContain("Zalo Mini App");
+});
+
+test("Zalo Mini App: tự vào bằng ID Zalo, mở thẳng CLB, chọn tên", async () => {
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/180913816434821856/", search: "?clb=q7", data: base() });
+  let sent = null;
+  globalThis.window.ZMINI = 1;
+  globalThis.window.ZMP = { getUserID: async () => "5550001112", getAccessToken: async () => "AT", getUserInfo: async () => ({ userInfo: { name: "Lan Zalo", avatar: "" } }) };
+  globalThis.fetch = async (u, o) => { sent = { u, body: JSON.parse(o.body) }; return { json: async () => ({ token: "9" }) }; };
+  await e.boot(); await e.until(() => e.T().includes("Bạn là ai trong CLB"));
+  expect(sent.u).toBe("https://pikeco.app/api/zalo-mini");
+  expect(sent.body).toEqual({ id: "5550001112", at: "AT" });
+  await e.click("lnkpick", { id: "p3" }); await e.click("lnksend");
+  await e.until(() => e.store.get("clubs/q7/links/zalo_9")?.pid === "p3");
+  delete globalThis.window.ZMP;
 });
