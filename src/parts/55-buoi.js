@@ -7,7 +7,7 @@
 let sheetOpen=false,qView="buoi",ledForm=null,chotMien=false;
 const payDoc=sid=>(S.pays&&S.pays["pay-"+sid])||{};
 const phaseOf=D=>(D.SM.length||D.c.phase==="live"||(isG(D.c)&&D.c.giai&&D.c.giai.locked))?"live":"prep";
-const fmtTxt=c=>isG(c)?"Cặp cố định xoay vòng":"Xoay cặp";
+const fmtTxt=c=>isG(c)?(isKO(c.giai)?"Vòng bảng → Knockout":"Cặp cố định xoay vòng"):"Xoay cặp";
 const who=()=>authUser&&!authUser.isAnonymous?(authUser.displayName||"Ban tổ chức"):"Trọng tài";
 const hm=t=>t?new Date(t).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}):"";
 const dhm=t=>t?`${hm(t)} ${dmy(t)}`:"";

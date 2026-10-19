@@ -28,7 +28,7 @@ function gbDraw(A,B,avoid){
 }
 const gbSw=on=>`<span class="sw${on?" on":""}" aria-hidden="true"><i></i></span>`;
 function gbSheet(D){
-  const G=cfg().giai||{},n=(G.pairs||[]).length,room=GMAX-n,{A,B}=gbGroups(D);
+  const G=cfg().giai||{},n=(G.pairs||[]).length,room=gMax(cfg().giai)-n,{A,B}=gbGroups(D);
   const Ai=A.filter(p=>!gbOut.has(p.id)),Bi=B.filter(p=>!gbOut.has(p.id)),diff=Ai.length-Bi.length,big=diff>0?Ai:Bi,k=Math.min(Ai.length,Bi.length,room);
   const avg=L=>L.length?r2(L.reduce((s,p)=>s+gbRt(D,p.id),0)/L.length):"–";
   const col=(L,g)=>L.map(p=>`<button class="gbp${gbOut.has(p.id)?" out":""}" data-act="gbflip" data-id="${p.id}" aria-label="Chuyển ${esc(p.name)} sang nhóm ${g==="A"?"B":"A"}">${av(p,"sm",1)}<span class="t">${esc(p.name)}${gbOut.has(p.id)?"<small>ngồi ngoài</small>":""}</span><b class="num">${r2(gbRt(D,p.id))}</b><span class="mv">⇅</span></button>`).join("")||`<p class="rule" style="padding:8px 10px">Chưa có ai</p>`;
@@ -42,7 +42,7 @@ function gbSheet(D){
     h+=`<div class="gbwarn"><b>Lẻ ${m} người ở nhóm ${diff>0?"A":"B"}.</b> Chọn ${m>1?`${m} người`:"người"} ngồi ngoài, hoặc chuyển người sang nhóm kia. Muốn ghép với người của BTC: thêm người đó ở mục Điểm danh rồi xếp vào nhóm ${diff>0?"B":"A"}.
       <span class="gbouts">${big.concat(big===Ai?A.filter(p=>gbOut.has(p.id)):B.filter(p=>gbOut.has(p.id))).map(p=>`<button class="chip${gbOut.has(p.id)?" on":""}" data-act="gbout" data-id="${p.id}" aria-pressed="${gbOut.has(p.id)}">${esc(p.name)}</button>`).join("")}</span></div>`}
   else if(gbOut.size)h+=`<div class="gbwarn">Ngồi ngoài: ${[...gbOut].map(id=>esc(D.pmap.get(id)?.name||"")).join(", ")} <span class="gbouts">${[...gbOut].map(id=>`<button class="chip on" data-act="gbout" data-id="${id}">${esc(D.pmap.get(id)?.name||"")} ✕</button>`).join("")}</span></div>`;
-  if(k<Math.min(Ai.length,Bi.length))h+=`<div class="gbwarn">Giải tối đa ${GMAX} cặp: chỉ bốc ${k} cặp.</div>`;
+  if(k<Math.min(Ai.length,Bi.length))h+=`<div class="gbwarn">Giải tối đa ${gMax(cfg().giai)} cặp: chỉ bốc ${k} cặp.</div>`;
   const last=gbLastPairs();
   h+=`<div class="gbopts">${last.size?`<button class="gbopt" data-act="gbavoid" aria-pressed="${gbAvoid}"><span>Tránh trùng cặp giải trước</span>${gbSw(gbAvoid)}</button>`:""}
     <button class="gbopt" data-act="gblive" aria-pressed="${gbLive}"><span>Bốc từng cặp (chiếu cho mọi người xem)</span>${gbSw(gbLive)}</button></div>
@@ -91,7 +91,7 @@ async function gbAct(act,b,id){
   if(act==="gbgo"){const D=derive(),G=cfg().giai||{},P=G.pairs||[],{A,B}=gbGroups(D);
     const Ai=A.filter(p=>!gbOut.has(p.id)).map(p=>p.id),Bi=B.filter(p=>!gbOut.has(p.id)).map(p=>p.id);
     if(!Ai.length||Ai.length!==Bi.length){toast("Hai nhóm phải bằng số người.");return true}
-    const r=gbDraw(Ai,Bi,gbAvoid?gbLastPairs():new Set()),room=GMAX-P.length,t=Date.now().toString(36);
+    const r=gbDraw(Ai,Bi,gbAvoid?gbLastPairs():new Set()),room=gMax(cfg().giai)-P.length,t=Date.now().toString(36);
     const add=r.pairs.slice(0,room).map(([a,bb],i)=>({id:"c"+t+i,a,b:bb,draw:1}));
     if(!add.length){toast("Không còn chỗ cho cặp mới.");return true}
     const n=((G.draw&&G.draw.n)||0)+1;

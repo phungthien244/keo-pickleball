@@ -182,18 +182,19 @@ document.addEventListener("click",onAct=async e=>{
     if(cfg().fmt===v||(v==="xoay"&&!cfg().fmt))return;
     const keep=sheetOpen||phaseOf(derive())==="live";write(()=>saveCfg({fmt:v,giai:cfg().giai||{pairs:[],prizes:[0,0,0],out:{},locked:false},...(keep?{phase:"live"}:{})}),v==="giai"?"Đã chọn thể thức Cặp cố định xoay vòng":"Đã chọn thể thức Xoay cặp");return}
   if(await gbAct(act,b,id))return;
+  if(await koAct(act,b,id))return;
   if(act==="gaddopen"){gAddOpen=true;delete drafts.gp1;delete drafts.gp2;delete drafts["gp-q"];delete errs.gadd;render();return}
   if(act==="gaddx"){gAddOpen=false;render();return}
   if(act==="gauto"){const D=derive(),P=cfg().giai?.pairs||[],used=new Set(P.flatMap(p=>[p.a,p.b])),rt=id=>D.st.get(id)?.rating??2.5;
     const F=D.players.filter(p=>p.active!==false&&!used.has(p.id)).sort((a,b)=>rt(b.id)-rt(a.id)),add=[];
     // Mạnh nhất ghép yếu nhất cho các cặp cân trình
-    for(let i=0,j=F.length-1;i<j&&P.length+add.length<GMAX;i++,j--)add.push({id:"c"+Date.now().toString(36)+i,a:F[i].id,b:F[j].id});
+    for(let i=0,j=F.length-1;i<j&&P.length+add.length<gMax(cfg().giai);i++,j--)add.push({id:"c"+Date.now().toString(36)+i,a:F[i].id,b:F[j].id});
     if(!add.length){toast("Không còn đủ người để ghép.");return}
     write(()=>saveG({pairs:[...P,...add]}),`Đã ghép ${add.length} cặp cân trình`);return}
   if(act==="gadd"){const a=String(drafts.gp1||""),bb=String(drafts.gp2||""),P=cfg().giai?.pairs||[];
     if(!a||!bb){errs.gadd="Chọn đủ 2 người.";render();return}
     if(a===bb){errs.gadd="Hai người phải khác nhau.";render();return}
-    if(P.length>=GMAX){errs.gadd=`Tối đa ${GMAX} cặp.`;render();return}
+    if(P.length>=gMax(cfg().giai)){errs.gadd=`Tối đa ${gMax(cfg().giai)} cặp.`;render();return}
     if(P.some(p=>[p.a,p.b].includes(a)||[p.a,p.b].includes(bb))){errs.gadd="Người này đã có cặp.";render();return}
     delete errs.gadd;gAddOpen=b.dataset.v==="more";delete drafts["gp-q"];write(()=>saveG({pairs:[...P,{id:"c"+Date.now().toString(36),a,b:bb}]}).then(()=>{delete drafts.gp1;delete drafts.gp2}),"Đã thêm cặp");return}
   if(act==="gnowopen"){gNowOpen=!gNowOpen;gNowSel=[];render();return}
@@ -210,7 +211,7 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="gpremv"){const L=[...(G0().presets||[])],i=L.findIndex(p=>p.id===id),j=i+Number(b.dataset.d);if(i<0||j<0||j>=L.length)return;[L[i],L[j]]=[L[j],L[i]];write(()=>saveG({presets:L}));return}
   if(act==="gpredel"){if(!armOr("gpredel:"+id))return;write(()=>saveG({presets:(G0().presets||[]).filter(p=>p.id!==id)}),"Đã bỏ trận định sẵn");return}
   if(act==="gdel"){if(!armOr("gdel:"+id))return;write(()=>saveG({pairs:(cfg().giai?.pairs||[]).filter(p=>p.id!==id)}),"Đã bỏ cặp");return}
-  if(act==="gstart"){const P=cfg().giai?.pairs||[];if(P.length<3){errs.giai="Cần ít nhất 3 cặp.";render();return}delete errs.giai;if(!armOr("gstart:x"))return;
+  if(act==="gstart"){const P=cfg().giai?.pairs||[];if(P.length<3){errs.giai="Cần ít nhất 3 cặp.";render();return}if(isKO(cfg().giai)&&!koGroupsOk(cfg().giai)){errs.giai="Bốc chia bảng trước khi tạo lịch.";render();return}delete errs.giai;if(!armOr("gstart:x"))return;
     await write(()=>saveCfg({phase:"live",giai:{...(cfg().giai||{}),locked:true,startedAt:Date.now(),out:{}}}),"Đã tạo lịch thi đấu");await gFill();return}
   if(act==="gfill"){const n=await gFill();toast(n?`Đã đưa ${n} trận vào sân`:"Chưa đưa được trận nào: sân đã đầy hoặc các cặp còn lại đang đánh.");return}
   if(act==="gout"){if(derive().playing.some(m=>m.giai&&(m.pa===id||m.pb===id))){toast("Cặp này đang trên sân, lưu tỉ số hoặc hủy trận trước.");return}
@@ -294,14 +295,14 @@ document.addEventListener("click",onAct=async e=>{
   else if(act==="undoone"){if(!armOr("undoone:"+id))return;let r;await write(async()=>{r=await undoAll(id)});if(r)toast(r.n?"Đã khôi phục trận":"Chưa khôi phục được: người chơi đang ở sân khác hoặc hết sân trống")}
   else if(act==="undoall"){if(!armOr("undoall:x"))return;let r;await write(async()=>{r=await undoAll()});if(r)toast(r.k?`Đã khôi phục ${r.n} trận, ${r.k} trận chưa khôi phục được vì người chơi đang ở sân khác`:`Đã khôi phục ${r.n} trận`)}
   else if(act==="savechk"){const m=S.matches.find(x=>x.id===id);if(!m)return;const ra=val("sa-"+id,""),rb=val("sb-"+id,""),a=Number(ra),bb=Number(rb);
-    const msg=ra===""||rb===""?"Nhập điểm hai đội.":validPts(a,bb,cfg());if(msg){errs[id]=msg;pendSave.delete(id);render();return}
+    const msg=ra===""||rb===""?"Nhập điểm hai đội.":vPtsM(m,a,bb);if(msg){errs[id]=msg;pendSave.delete(id);render();return}
     delete errs[id];pendSave.add(id);render()}
   else if(act==="savex"){pendSave.delete(id);render()}
   else if(act==="readres"){const D=derive(),m=D.SM.find(x=>x.id===id);if(!m)return;speak(resultText(D,m,Number(val("sa-"+id,"")),Number(val("sb-"+id,""))),"","r:"+id)}
   else if(act==="save"||act==="edit-save"){
     const m=S.matches.find(x=>x.id===id);const pre=act==="save"?["sa-","sb-"]:["ea-","eb-"];
     const a=Number(val(pre[0]+id,act==="save"?"":m.sa)),bb=Number(val(pre[1]+id,act==="save"?"":m.sb));
-    pendSave.delete(id);const msg=(val(pre[0]+id,"")===""&&act==="save")||(val(pre[1]+id,"")===""&&act==="save")?"Nhập điểm hai đội.":validPts(a,bb,cfg());
+    pendSave.delete(id);const msg=(val(pre[0]+id,"")===""&&act==="save")||(val(pre[1]+id,"")===""&&act==="save")?"Nhập điểm hai đội.":vPtsM(m,a,bb);
     if(msg){errs[id]=msg;render();return}
     delete errs[id];
     if(act==="save"&&b.dataset.read&&!loaMuted()){const D=derive();if(m)speak(resultText(D,m,a,bb),"","r:"+id)}

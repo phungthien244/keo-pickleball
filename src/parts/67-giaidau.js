@@ -1,6 +1,6 @@
 /* ---------- Giải đấu phía người chơi: thẻ, chi tiết, đăng ký 3 bước, thanh toán, vé ---------- */
-const GDT={xoay:{c:"x",lb:"⟳ XOAY CẶP · GIAO LƯU",sh:"XOAY CẶP",d:"Đổi đồng đội mỗi trận"},giai:{c:"g",lb:"🏆 GIẢI CẶP CỐ ĐỊNH",sh:"GIẢI CẶP",d:"Cặp cố định, đánh vòng tròn"}};
-const gdTy=x=>GDT[x&&x.fmt==="giai"?"giai":"xoay"];
+const GDT={xoay:{c:"x",lb:"⟳ XOAY CẶP · GIAO LƯU",sh:"XOAY CẶP",d:"Đổi đồng đội mỗi trận"},giai:{c:"g",lb:"🏆 GIẢI CẶP CỐ ĐỊNH",sh:"GIẢI CẶP",d:"Cặp cố định, đánh vòng tròn"},bang:{c:"vb",lb:"▦ VÒNG BẢNG → KNOCKOUT",sh:"VÒNG BẢNG",d:"Chia bảng, nhất nhì vào loại trực tiếp"}};
+const gdTy=x=>GDT[x&&x.fmt==="giai"?(x.ko?"bang":"giai"):"xoay"];
 const gdBand=(x,short)=>`<span class="gdty ${gdTy(x).c}">${short?gdTy(x).sh:gdTy(x).lb}</span>`;
 // Tổng giải thưởng (thưởng từng hạng) hoặc cách lập quỹ giải
 function gdPrize(x){

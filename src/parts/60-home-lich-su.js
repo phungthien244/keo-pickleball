@@ -46,7 +46,7 @@ function vHome(D){
 }
 // Tin nhắn chia sẻ lên nhóm Zalo (link trang tổng kết được nối thêm ở cuối)
 const clubNm=D=>String(CLUB?.name||D.c.title||"CLB").trim();
-const fmtLine=(snap,fallback)=>[snap?.type==="giai"?"Cặp cố định xoay vòng":"Xoay cặp",snap?.rule||fallback].filter(Boolean).join(" · ");
+const fmtLine=(snap,fallback)=>[snap?.type==="giai"?(snap.giai&&snap.giai.ko?"Vòng bảng → Knockout":"Cặp cố định xoay vòng"):"Xoay cặp",snap?.rule||fallback].filter(Boolean).join(" · ");
 function shareText(D,x){
   const r=x.rows,s=x.snap||{},M=s.money,n=x.ms.length||s.matchCount||0,m=r[0];
   const L=[`TỔNG KẾT ${s.sname?s.sname.toUpperCase():"GIẢI ĐẤU ĐÁNH"} · ${dmy(x.at)}`,`${clubNm(D)} · ${fmtLine(s)} · ${n} trận · ${r.length} người`];

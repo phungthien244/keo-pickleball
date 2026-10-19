@@ -1619,3 +1619,33 @@ label.primary.gdfile{background:var(--blue);color:#fff}label.line.gdfile{border:
 .gbft{position:sticky;bottom:0;margin:auto -16px 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 2fr;gap:8px;background:linear-gradient(transparent,#1a0f2e 30%)}
 .gbft .line{background:transparent;color:#d9c8f0;border-color:rgba(255,255,255,.3);min-height:56px}
 .gbnext{min-height:60px;background:var(--yellow);border-color:var(--yellow);color:var(--navy);font-size:14px}.gbft .gbnext:only-child{grid-column:1/-1}
+/* ===== Vòng bảng → Knockout ===== */
+.gdty.vb,.gdhero.vb,.gdcta.vb{background:#6b3fa0}.gdticket.vb{border-top-color:#6b3fa0}button.primary.vb{background:#6b3fa0;border-color:#6b3fa0}
+.xfmt.vb .ic{background:#f3eefa;color:#6b3fa0}.xnew{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.08em;background:#6b3fa0;color:#fff;padding:2px 6px;margin-left:4px;vertical-align:middle}
+.komode{display:flex;width:100%;margin-bottom:10px}.komode button{flex:1;font-size:11px;padding:0 6px}
+.kobox{background:var(--surface);border:2px solid #6b3fa0;margin-top:10px;display:flex;flex-direction:column}
+.koh{display:flex;flex-direction:column;gap:4px;padding:12px 12px 0}.koh small{font-size:12px;color:var(--muted)}
+.kobd{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.korow{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}.korow>span:first-child{color:var(--muted);flex:none}
+.kosg{display:flex}.kosg button{min-height:38px;padding:0 10px;font-size:11px}
+.kobd .gbopt{border:1px solid var(--line)}
+.kodraw{min-height:52px;background:#6b3fa0;border-color:#6b3fa0;color:#fff;font-size:13px}
+.kogrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 12px 10px}
+.kog{border:1px solid var(--line);display:flex;flex-direction:column;min-width:0}.kog>b{background:var(--navy);color:#fff;font-family:var(--display);font-weight:900;font-size:13px;padding:7px 10px}
+.kop{display:flex;align-items:center;gap:6px;padding:7px 10px;border-top:1px solid var(--line);font-size:13px}.kop .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.kop small{color:var(--muted);font-size:11px}
+.hg{font-size:9px;font-weight:800;background:var(--yellow);color:var(--navy);padding:2px 4px;flex:none}
+.kotbls{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px}
+.kotb{background:var(--surface);border:1px solid var(--line)}.kotbh{display:flex;justify-content:space-between;align-items:baseline;padding:8px 10px;background:var(--navy);color:#fff}.kotbh b{font-family:var(--display);font-weight:900;font-size:13px}.kotbh small{color:var(--sky);font-size:11px}
+.kotb table{width:100%;border-collapse:collapse;font-size:13px}.kotb th{font-size:10px;color:#8a99a6;font-weight:700;text-align:right;padding:5px 6px}.kotb th:nth-child(2){text-align:left}
+.kotb td{padding:7px 6px;border-top:1px solid var(--line);text-align:right}.kotb td:nth-child(2){text-align:left;width:100%}.kotb td:first-child{color:#8a99a6}
+.kotb tr.q td{background:#eef7f1}.kotb tr.q td:first-child{box-shadow:inset 4px 0 0 var(--win);color:var(--win);font-weight:800}.kotb tr.out td{opacity:.5}
+.koq{display:inline-block;width:10px;height:10px;background:var(--win);vertical-align:middle;margin-right:2px}
+.kobr{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.kocol{display:flex;flex-direction:column;gap:6px;min-width:168px;flex:1}
+.kocl{font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.kocs{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:8px}
+.kom{background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;font-size:13px}
+.kom>span{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 8px;min-height:30px}.kom>span+span{border-top:1px solid var(--line)}
+.kom>span em{font-style:normal;color:#8a99a6}.kom .w{font-weight:700}.kom .w b{color:var(--win)}.kom .l{color:#8a99a6}
+.kom.live{border:2px solid var(--lose)}.kom .lv{font-size:10px;font-weight:800;color:var(--lose);padding:4px 8px 0;letter-spacing:.06em}
+.ko3{margin-top:10px;display:flex;flex-direction:column;gap:6px;max-width:220px}

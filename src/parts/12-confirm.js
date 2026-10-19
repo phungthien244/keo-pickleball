@@ -48,6 +48,7 @@ function cfmInfo(key){
     edclear:["Thu hồi tất cả PIN?","Mọi máy đang vào bằng PIN mất quyền ghi, cần nhập lại PIN.","Thu hồi","d"],
     migrate:["Chuyển dữ liệu?","Chỉ làm một lần. Đừng tắt app trong lúc chuyển.","Bắt đầu chuyển","p"],
     gout:[`${n||"Cặp này"} bỏ giải?`,"Trận chưa đánh tính thắng cho đối thủ, không cộng hiệu số.","Bỏ giải","d"],
+    kodraw:["Bốc chia bảng lại?","Các bảng hiện tại bị bỏ, bốc lại từ đầu. Lần bốc mới được ghi \"bốc lại\" để mọi người thấy.","Bốc lại","d"],
     gbredo:["Bốc lại các cặp?","Các cặp bốc thăm hiện tại bị bỏ, bốc lại từ đầu. Lần bốc mới được ghi \"bốc lại\" để mọi người thấy.","Bốc lại","d"],
     gdel:[`Bỏ cặp ${n||"này"}?`,"Cặp bị xoá khỏi danh sách giải.","Bỏ cặp","d"],
     gend:["Kết thúc giải?","Trận chưa đánh không tính, xếp hạng theo kết quả hiện có rồi lưu giải.","Kết thúc","d"],

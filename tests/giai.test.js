@@ -125,3 +125,50 @@ test("giải cặp: bốc thăm nhóm A/B, lẻ người phải chọn ngồi ng
   expect(G2.pairs.every(p => women.includes(p.b) && !women.includes(p.a))).toBe(true);
   expect(G2.draw.n).toBe(2);
 });
+
+test("vòng bảng → knockout: chia bảng có hạt giống, vòng bảng, bán kết, chung kết chạm 15, tranh hạng ba", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK\nL\nM\nN\nO\nP"); await e.click("add");
+  await e.tab("san"); await e.click("cset", { k: "fmt", v: "giai" });
+  await e.click("komode", { v: "1" });
+  expect(e.store.get("app/config").giai.ko.n).toBe(4);
+  await e.click("koset", { k: "n", v: "2" });
+  await e.click("gauto");
+  expect(e.store.get("app/config").giai.pairs.length).toBe(8);
+  expect(e.V()).toMatch(/data-act="gstart" disabled/);
+  await e.click("kodraw");
+  const K = e.store.get("app/config").giai.ko;
+  expect(K.groups.length).toBe(2);
+  expect(K.groups.every(g => g.length === 4)).toBe(true);
+  // mỗi bảng 1 hạt giống
+  expect(K.groups.every(g => g.filter(id => K.seeds.includes(id)).length === 1)).toBe(true);
+  expect(e.T()).toContain("BẢNG A");
+  await e.ok("gstart");
+  const playing = () => e.docs("matches/", m => m.status === "playing");
+  let k = 0;
+  while (playing().length && k < 40) {
+    const [id, m] = playing()[0];
+    if (m.ko) {
+      if (m.ko === "k1-0") {
+        expect(m.to).toBe(15);
+        e.input("sa-" + id, "11"); e.input("sb-" + id, "9"); await e.click("save", { id });
+        expect(e.V()).toContain("15");
+        e.input("sa-" + id, "15"); e.input("sb-" + id, "12");
+      } else { e.input("sa-" + id, "11"); e.input("sb-" + id, "6"); }
+    } else { e.input("sa-" + id, k % 2 ? "11" : "8"); e.input("sb-" + id, k % 2 ? "4" : "11"); }
+    await e.click("save", { id }); k++;
+  }
+  const done = e.docs("matches/", m => m.giai && m.status === "done");
+  expect(done.filter(([, m]) => !m.ko).length).toBe(12);
+  expect(done.filter(([, m]) => m.ko).map(([, m]) => m.ko).sort()).toEqual(["k0-0", "k0-1", "k1-0", "k3"]);
+  // nhất bảng A không gặp nhì bảng A ở bán kết
+  const sf = done.filter(([, m]) => m.ko && m.ko.startsWith("k0")).map(([, m]) => [m.pa, m.pb]);
+  for (const [x, y] of sf) expect(K.groups.some(g => g.includes(x) && g.includes(y))).toBe(false);
+  expect(e.T()).toContain("VÔ ĐỊCH");
+  await e.click("gend"); await e.click("gend"); await e.until(() => e.store.has("app/hist-1"));
+  const h = e.store.get("app/hist-1");
+  const fin = done.find(([, m]) => m.ko === "k1-0")[1];
+  expect(h.giai.table[0].id).toBe(fin.sa > fin.sb ? fin.pa : fin.pb);
+  expect(h.giai.ko.n).toBe(2);
+});
