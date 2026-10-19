@@ -29,7 +29,7 @@ function mxNav(){
 // Đang nạp CLB (vừa chuyển CLB): dựng sẵn khung Mini App, không lộ giao diện web
 function mxLoading(){
   const k=myClubs().find(x=>x.id===CID),nm=(CLUB&&CLUB.name)||(k&&k.name)||"";
-  return `<div class="mxbar"><span class="mxclub">${clubAv(k||{id:CID,name:nm},"",nm)}<b>${esc(nm)}</b></span><span class="mxme">${mxSvg("me")}</span></div><div class="mxbody">${skeleton()}</div>${mxNav()}`;
+  return `<div class="mxbar"><span class="mxclub">${clubAv(k||{id:CID,name:nm},"",nm)}<b>${esc(nm)}</b></span><span class="mxme">${mxSvg("me")}</span></div><div class="mxbody">${skeleton()}</div>${mxMode()==="ql"?mxMgrNav():mxNav()}`;
 }
 // Thanh "Lượt của tôi": ghim khi buổi đang diễn ra và mình có mặt
 function mxTurn(D){

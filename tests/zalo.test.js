@@ -203,7 +203,7 @@ test("Zalo Mini App: tự vào bằng ID Zalo, mở thẳng CLB, xin tham gia b�
 
 test("thu phí trước: người chơi chuyển khoản lúc đăng ký, chủ CLB xác nhận, chuẩn bị giải đấu hôm nay thì trang Quỹ đánh dấu đã trả", async () => {
   // Giải đấu hôm nay: 23:00, hoặc 10 phút nữa nếu đã quá 23:00 (chạy test lúc khuya)
-  const now = new Date(Math.max(new Date().setHours(23, 0, 0, 0), Date.now() + 10 * 6e4));
+  const now = new Date(Math.min(Math.max(new Date().setHours(23, 0, 0, 0), Date.now() + 10 * 6e4), new Date().setHours(23, 59, 0, 0)));
   const data = base({ "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1, bank: { code: "mb", bin: "970422", name: "MB Bank", acc: "0123456789", holder: "NGUYEN A" } },
     "clubs/q7/sched/s1": sched({ at: now.getTime(), deadline: now.getTime(), thu: "phi", phi: 60, pay: "opt" }),
     "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
@@ -354,7 +354,8 @@ test("tab Sân: hôm nay 2 giải đấu theo lịch thì tự chọn giải đ�
 test("tạo giải đấu: tùy chọn bật/tắt (chi phí, giải thưởng hạng 1-2-3, luật nâng cao, trọng tài) được áp vào giải đấu khi chuẩn bị", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data: base() });
   await e.boot(); await e.click("xnew"); await e.click("xfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-k="gton"'));
-  const d = new Date(); d.setMinutes(d.getMinutes() + 30);
+  // Giải đấu hôm nay: 30 phút nữa, nhưng không qua nửa đêm (chạy test lúc khuya)
+  const d = new Date(Math.min(Date.now() + 30 * 6e4, new Date().setHours(23, 59, 0, 0)));
   e.input("xf-date", iso(d)); e.input("xf-time", `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`);
   await e.click("xfset", { k: "gton", v: "1" }); await e.until(() => e.V().includes('data-k="gt"'));
   await e.click("xfset", { k: "gt", v: "hang" }); e.input("xf-h1", "300");

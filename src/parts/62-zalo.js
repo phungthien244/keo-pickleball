@@ -7,7 +7,10 @@ const isPlayer=u=>!!u&&(/^zalo_/.test(String(u.uid||""))||(PLAYER_ON()&&u.isAnon
 // Zalo Mini App: lấy ID người dùng (không cần hỏi quyền), đổi sang tài khoản pikeco qua máy chủ
 async function miniLogin(quiet){
   const Z=window.ZMP;if(!Z)return false;
-  if(authUser&&/^zalo_/.test(String(authUser.uid||"")))return true;
+  // Chờ Firebase đọc lại phiên đăng nhập đã lưu: đã có tài khoản Zalo thì không cần đăng nhập lại qua máy chủ
+  try{if(FB.auth&&FB.auth.authStateReady)await FB.auth.authStateReady()}catch(e){}
+  const cu=(FB.auth&&FB.auth.currentUser)||authUser;
+  if(cu&&/^zalo_/.test(String(cu.uid||"")))return true;
   try{
     const id=await Z.getUserID();
     if(window.FB_TARGET==="mock"){await FB.signInWithCustomToken(FB.auth,String(id||"demo"));authUser={uid:"zalo_"+String(id||"demo"),isAnonymous:false};await refreshRole();render();return true}

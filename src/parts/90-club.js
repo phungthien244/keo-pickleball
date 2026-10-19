@@ -30,6 +30,7 @@ async function refreshRole(){
   }
   if(u!==authUser)return;
   ROLE=role;canWrite=!!role;REF=!legacy&&(ROLE==="scorer"||ROLE==="pin");if(REF)canWrite=false;S.authReady=true;
+  if(MINI&&!legacy)lsSet("pb-role-"+CID,role||"");
   watchRef();watchAdmin();watchLink();
 }
 // Bỏ mã mời khỏi địa chỉ sau khi đã dùng (Mini App giữ ?clb=… trên địa chỉ)
@@ -191,3 +192,7 @@ function invBox(role){
     <div class="bt"><button class="primary" data-act="invshare">Gửi qua Zalo</button><button data-act="cp" data-v="${esc(L.zalo)}">Copy link Zalo</button></div>
     <small class="rule">Quản lý trên máy tính: <button class="lnk" data-act="cp" data-v="${esc(L.url)}">copy link web</button>, mở bằng Chrome/Safari rồi đăng nhập Google.</small></div>`;
 }
+
+// Mini App: dùng vai trò lần trước trong lúc chờ kiểm tra lại (tránh trang nháy giữa giao diện người chơi và quản lý)
+function roleGuess(){if(!MINI||MODE!=="club"||ROLE||legacy)return;const r=lsGet("pb-role-"+CID)||"";if(!r)return;
+  ROLE=r;canWrite=true;REF=r==="scorer"||r==="pin";if(REF)canWrite=false}

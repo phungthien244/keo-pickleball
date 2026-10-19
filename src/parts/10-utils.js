@@ -28,6 +28,7 @@ function paySheet(){
     <p class="rule">Nếu app mở lên mà chưa có chi phí, bấm Lưu mã QR ở trên rồi quét ảnh trong app.</p>
   </div></div>`;
 }
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 let splashGone=false;
 // Đổi CLB trong Mini App: bỏ màn chào, hiện ngay khung CLB (avatar, tên) trong lúc tải
 const quickNext=()=>{try{sessionStorage.setItem("pb-quick","1")}catch(e){}};
@@ -68,7 +69,7 @@ const delBtn=(act,id,label)=>armed(act+":"+id)?`<button class="danger" data-act=
 const logoOk=c=>c&&typeof c.logo==="string"&&/^data:image\//.test(c.logo);
 // Avatar CLB dùng chung: logo nếu có, không thì 2 chữ đầu tên (bỏ "CLB", "Pickleball"…) trên màu cố định theo CLB
 const CAVC=["#1f8fe5","#1a7f45","#c97a16","#6b4fa0","#b33a6b","#3a7a8a","#0c2b44","#a23b2a"];
-const clubCol=c=>{const k=String((c&&(c.id||c.name))||"");let h=0;for(const ch of k)h=(h*31+ch.charCodeAt(0))>>>0;return CAVC[h%CAVC.length]};
+const clubCol=c=>{const k=String((c&&(c.id||(c===CLUB?CID:c.name)))||"");let h=0;for(const ch of k)h=(h*31+ch.charCodeAt(0))>>>0;return CAVC[h%CAVC.length]};
 function clubIni(name){
   const W=String(name||"").trim().split(/\s+/).filter(Boolean),skip=["clb","cau","lac","bo","pickleball","club","pb"];
   let L=W.filter(w=>!skip.includes(noAcc(w).toLowerCase()));if(!L.length)L=W;if(!L.length)return "P";

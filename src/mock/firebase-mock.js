@@ -67,4 +67,12 @@ window.FB={fs:{},auth:{},
  runTransaction:async(fs,fn)=>fn({get:window.FB.getDoc,set:(r,d)=>window.FB.setDoc(r,d)}),
  signInAnonymously:async()=>({user:{uid:"demo",isAnonymous:true}}),signOut:async()=>{},signInWithCustomToken:async(a,t)=>{try{sessionStorage.setItem("pb-mock-zalo","1");if(t&&t!=="demo"&&/^[a-z0-9]{2,20}$/i.test(t))sessionStorage.setItem("pb-mock-zuid",t)}catch(e){}return{user:ZALO_USER}},onAuthStateChanged:(a,f)=>setTimeout(()=>f(isZaloDemo()?ZALO_USER:isGuest()?null:DEMO_USER),0)};
 })();
+// Đo tốc độ: ?tre=300 giả lập mạng chậm (mỗi lần hỏi máy chủ chờ 300ms), giữ qua các lần tải lại
+(function(){let L=0;try{const m=location.search.match(/[?&]tre=(\d+)/);if(m)sessionStorage.setItem("pb-mock-tre",m[1]);L=+(sessionStorage.getItem("pb-mock-tre")||0)}catch(e){}
+  if(!L)return;const F=window.FB,wait=t=>new Promise(r=>setTimeout(r,t));
+  for(const k of ["getDoc","getDocs","setDoc","updateDoc","deleteDoc"]){const f=F[k];F[k]=async(...a)=>{await wait(L);return f(...a)}}
+  const os=F.onSnapshot;F.onSnapshot=(r,o,n,e)=>{let ok=false,un=null,dead=false;const cb=typeof o==="function"?o:n;const n2=(...a)=>{if(ok)cb(...a)};
+    setTimeout(()=>{if(dead)return;ok=true;un=typeof o==="function"?os(r,n2,n):os(r,o,n2,e)},L);return()=>{dead=true;un&&un()}};
+  const oa=F.onAuthStateChanged;F.onAuthStateChanged=(a,f)=>oa(a,u=>setTimeout(()=>f(u),Math.round(L/2)));
+})();
 window.FB_TARGET="mock";
