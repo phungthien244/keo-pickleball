@@ -15,7 +15,7 @@ const COSTS=[["court","Tiền sân"],["water","Tiền nước"],["ball","Tiền 
 // Thanh 3 bước: luôn dính dưới các tab, bấm để chuyển qua lại. n = bước đang xem, ph = bước thật của buổi.
 let stepView=null;
 function steps3(n,D){
-  const L=[["prep","Chuẩn bị"],["live","Đang đánh"],["chot","Chốt buổi"]];
+  const L=[["prep","Tùy chọn"],["live","Đang đánh"],["chot","Chốt buổi"]];
   const ph=D?(phaseOf(D)==="live"?2:1):n;
   return `<nav class="bsteps" aria-label="Các bước của buổi">${L.map(([v,l],i)=>{const k=i+1,on=k===n,ok=k<ph;
     return `<button class="${on?"on":ok?"ok":""}" data-act="step" data-v="${v}"${on?' aria-current="step"':""}><b>${ok&&!on?"✓":k}</b>${l}</button>`}).join("")}</nav>`;
@@ -137,7 +137,7 @@ function vPrep(D){
   if(!X){h+=xNoSched(D);h+=card(live?"Buổi này":"Buổi nhanh · không cần đăng ký trước",buoiBlock(D))}
   const n=D.players.filter(p=>p.active!==false).length;
   h+=card(`Điểm danh · ai có mặt?`,attChips(D));
-  h+=`<span class="xsec">Tùy chọn · bấm để mở</span>`;
+  h+=`<span class="xsec">Cài đặt thêm · bấm để mở</span>`;
   h+=prepRow("san","Sân và luật điểm",`${c.courts} sân · chạm ${c.target}${winBy2(c)?" cách 2":""}${ptMax(c)?`, trần ${ptMax(c)}`:""}`,fmtBlock(D));
   h+=prepRow("tien","Chi phí",c.cphi===false?"Không thu tiền":THU[thu]+(thu==="phi"?` ${fmtK(+c.phi||0)}`:""),tick("cphi",c.cphi!==false,"Thu chi phí buổi này")+moneyBlock(D));
   h+=prepRow("giai","Giải thưởng",gt==="khong"?"Không trao giải":GT[gt]||"",tick("gton",gt!=="khong","Trao giải buổi này")+prizeBlock(D));
