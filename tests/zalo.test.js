@@ -194,9 +194,10 @@ test("thu tiền trước: người chơi chuyển khoản lúc đăng ký, ch�
   await o.click("regpayok", { id: "s1_zalo_9" });
   await o.until(() => o.store.get("clubs/q7/regs/s1_zalo_9").pay === "ok");
   // hôm nay ở tab Sân: chuẩn bị buổi theo lịch
-  await o.nav("app", { t: "san" }); await o.until(() => o.V().includes('data-act="xprep" data-id="s1"'));
-  await o.click("xprep", { id: "s1" });
+  // hôm nay ở tab Sân: buổi theo lịch được chọn sẵn, điểm danh theo đăng ký
+  await o.nav("app", { t: "san" });
   await o.until(() => o.store.get("clubs/q7/app/config").schedId === "s1");
+  await o.until(() => o.T().includes("Sửa buổi"));
   expect(o.store.get("clubs/q7/app/config")).toMatchObject({ thu: "phi", phi: 60, sname: "Kèo tối" });
   await o.until(() => o.store.get("clubs/q7/app/pay-1")?.paid?.p1 === true);
   expect(o.store.get("clubs/q7/players/p1").active).toBe(true);
@@ -302,4 +303,20 @@ test("bản Testing: dán link mời trong tab Tôi để nhận quyền quản 
   e.input("mx-inv", "https://zalo.me/s/180913816434821856/?clb=q7&moi=abc123"); await e.click("mxinvgo");
   await e.until(() => e.store.get("clubs/q7/members/zalo_9")?.role === "scorer");
   await e.until(() => e.V().includes('data-act="mxmode"'));
+});
+
+test("tab Sân: hôm nay 2 buổi theo lịch thì tự chọn buổi gần giờ nhất, đổi được; người quét QR ở sân tự có mặt", async () => {
+  const now = Date.now(), near = now + 60e3, far = now + 120e3;
+  const data = base({ "clubs/q7/sched/a": sched({ name: "Kèo gần", at: near, deadline: near }), "clubs/q7/sched/b": sched({ name: "Kèo xa", at: far, deadline: far, courts: 3 }),
+    "clubs/q7/regs/a_p_p1": { sid: "a", pid: "p1", at: 1 }, "clubs/q7/regs/b_p_p2": { sid: "b", pid: "p2", at: 1, arrived: true } });
+  const e = setup({ host: "pikeco.app", path: "/q7/san", user: OWNER, data });
+  await e.boot(); await e.until(() => e.store.get("clubs/q7/app/config").schedId === "a");
+  await e.until(() => e.store.get("clubs/q7/players/p1").active === true);
+  expect(e.store.get("clubs/q7/players/p3").active).toBe(false);
+  await e.until(() => e.V().includes('data-act="xprep" data-id="b"'));
+  await e.click("xprep", { id: "b" });
+  await e.until(() => e.store.get("clubs/q7/app/config").schedId === "b");
+  expect(e.store.get("clubs/q7/app/config").courts).toBe(3);
+  await e.until(() => e.store.get("clubs/q7/players/p2").active === true);
+  expect(e.T()).toContain("QR");
 });

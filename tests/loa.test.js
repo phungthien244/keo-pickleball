@@ -31,6 +31,7 @@ test("lời MC đọc thể thức: tự tạo theo cài đặt, sửa được,
   e.input("bulk", "Tuấn\nHà | nữ\nMinh\nLan | nữ"); await e.click("add");
   await e.tab("san");
   expect(e.T()).toContain("Lời MC đọc thể thức");
+  await e.click("prow", { v: "mc" });
   expect(e.T()).toContain("Mỗi trận đánh chạm 11 điểm, đội thắng phải cách biệt 2 điểm");
   expect(e.T()).toContain("Khi một đội đạt 6 điểm, hai đội đổi sân");
   expect(e.T()).toContain("đánh lại");

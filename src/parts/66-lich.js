@@ -264,18 +264,35 @@ function vLichPlayer(D){
   if(c)return `<span class="xsec">Buổi sắp tới</span>${c}`+(PLAYER_ON()?linkCard(D):"");
   return dkPlayer(D);
 }
-// Tab Sân · Chuẩn bị: buổi hôm nay theo lịch
-function xPrepCard(D){
-  if(legacy||!isAdm())return "";
+// Tab Sân · Sẵn sàng: buổi hôm nay theo lịch được chọn sẵn
+const xToday=()=>schedUp().filter(x=>sameDay(x.at,Date.now())&&x.st!=="cancel"&&x.st!=="done").sort((a,b)=>Math.abs(a.at-Date.now())-Math.abs(b.at-Date.now()));
+const xAutoDone=new Set();
+function xAutoPrep(D){
+  if(legacy||!isAdm()||!S.schedReady||!S.regs)return;
   const X=xCur();
-  if(X)return `<div class="xprep on"><span class="t"><span class="k">Buổi theo lịch</span><b>${esc(xName(X))}</b><small>${esc([`${dowVN(X.at)} ${xTime(X)}`,`${xRegN(X)} người đăng ký`].join(" · "))}</small></span><a class="lnk" href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}">Cài đặt buổi ›</a></div>`;
-  if(phaseOf(D)==="live")return "";
-  const T=schedUp().filter(x=>sameDay(x.at,Date.now())&&x.st!=="cancel");
-  if(!T.length)return "";
-  return `<div class="xprep"><span class="k">Hôm nay có ${T.length} buổi theo lịch</span>${T.map(x=>`<button class="xprepbtn" data-act="xprep" data-id="${x.id}"><b>${hm(x.at)}</b><span>${esc(xName(x))} · ${xRegN(x)} người đăng ký</span><span class="go">Chuẩn bị buổi này ›</span></button>`).join("")}<small class="rule">Lấy thể thức, số sân, chi phí của buổi và điểm danh người đã đăng ký.</small></div>`;
+  // Chưa chọn buổi: lấy buổi hôm nay gần giờ nhất (một lần)
+  if(!X&&phaseOf(D)!=="live"&&!D.SM.length){const T=xToday()[0];
+    if(T&&!xAutoDone.has(D.sid+"|"+T.id)){xAutoDone.add(D.sid+"|"+T.id);setTimeout(()=>xApply(derive(),T,true),0)}return}
+  // Người quét QR ở sân: tự đánh dấu có mặt
+  if(X)for(const r of (S.regs||[]).filter(r=>r.sid===X.id&&r.arrived&&r.pid&&!r.cancel)){const p=D.pmap.get(r.pid),k="arr|"+r.id;
+    if(p&&p.active===false&&!xAutoDone.has(k)){xAutoDone.add(k);setTimeout(()=>write(()=>db.collection("players").doc(p.id).update({active:true})),0)}}
+}
+function xPrepHead(D){
+  const X=xCur(),c=D.c,thu=c.thu||"keo",T=isAdm()?xToday():[];
+  let h="";
+  if(T.length>1&&phaseOf(D)!=="live"&&!D.SM.length)h+=`<div class="xpick" role="group" aria-label="Chọn buổi hôm nay">${T.slice().sort((a,b)=>a.at-b.at).map(x=>`<button data-act="xprep" data-id="${x.id}" aria-pressed="${X&&X.id===x.id}"><b>${hm(x.at)}</b>${esc(xName(x))}</button>`).join("")}</div>`;
+  h+=`<section class="xhero prephd"><span class="k">${esc(sessTitle(c,D.sid))} · chuẩn bị${X&&X.at?` · ${esc(xTime(X))}`:""}</span>
+    <div class="xrow2"><h1>${esc(X?xName(X):(c.sname||"Buổi nhanh"))}</h1>${X?`<a class="xedit" href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}">Sửa buổi ›</a>`:""}</div>
+    <span class="sub">${esc([fmtTxt(c),`${c.courts} sân`,`chạm ${c.target}${winBy2(c)?" cách 2":""}`,c.cphi===false?"không thu tiền":THU[thu]+(thu==="phi"?` ${fmtK(+c.phi||0)}`:""),X&&`${xRegN(X)} người đăng ký`].filter(Boolean).join(" · "))}</span></section>`;
+  return h;
+}
+function xNoSched(D){
+  if(legacy||!isAdm()||phaseOf(D)==="live")return "";
+  const nx=schedUp().find(x=>x.at>Date.now()&&x.st!=="draft");
+  return `<a class="dkban" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk"><span class="t"><b>Hôm nay chưa có buổi theo lịch</b><small>${nx?`Buổi tới: ${esc(dowVN(nx.at))} ${esc(dmy(nx.at).slice(0,5))} · ${esc(xTime(nx))} · ${esc(xName(nx))}`:"Lên lịch buổi để người chơi đăng ký trước"}</small></span><span aria-hidden="true">›</span></a>`;
 }
 // Áp cài đặt buổi trong lịch vào buổi hiện tại (tab Sân), điểm danh theo đăng ký
-async function xApply(D,X){
+async function xApply(D,X,quiet){
   const p={schedId:X.id,sname:X.name||"",courts:+X.courts||D.c.courts,target:+X.target||D.c.target,thu:X.thu||D.c.thu||"keo"};
   if(X.thu==="phi")p.phi=+X.phi||0;
   if(X.fmt==="giai"){p.fmt="giai";p.giai=D.c.giai&&isG(D.c)?D.c.giai:{pairs:[],prizes:[0,0,0],out:{},locked:false};const k=X.hang||[];if(k.some(v=>+v>0))Object.assign(p,{gt:"hang",hang1:+k[0]||0,hang2:+k[1]||0,hang3:+k[2]||0})}
@@ -284,8 +301,9 @@ async function xApply(D,X){
   await write(async()=>{await saveCfg(p);await db.collection("sched").doc(X.id).update({num:D.sid});
     const R=withX(X,()=>regList(D)),inS=new Set(R.conf.map(x=>x.pid).filter(Boolean));
     n=await withX(X,()=>regStart(D));
-    for(const pl of D.players){const on=inS.has(pl.id);if(on&&pl.active===false)await db.collection("players").doc(pl.id).update({active:true})}
-  },`Đã chuẩn bị ${xName(X)}`);
+    // Có người đăng ký: điểm danh đúng theo danh sách (người khác bấm thêm ở Điểm danh)
+    if(inS.size)for(const pl of D.players){const on=inS.has(pl.id);if((pl.active!==false)!==on)await db.collection("players").doc(pl.id).update({active:on})}
+  },quiet?null:`Đã chọn ${xName(X)}`);
   if(n)toast(`Đã điểm danh ${n} người theo đăng ký`);
 }
 // Chốt buổi: buổi trong lịch chuyển sang Đã xong

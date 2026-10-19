@@ -32,8 +32,10 @@ function attChips(D){
   if(!D.players.length)return `<p class="rule">Chưa có thành viên. Nhập tên bên dưới, mỗi dòng một người.</p><div class="attnew">${addPanel(D,[])}</div>`;
   const L=[...D.players].sort((a,b)=>(busy.has(b.id)-busy.has(a.id))||((a.active===false)-(b.active===false))||String(a.name).localeCompare(String(b.name),"vi"));
   const away=D.players.filter(p=>p.active===false);
+  const X=xCur(),RG=X?(S.regs||[]).filter(r=>r.sid===X.id&&!r.cancel):[],arr=new Set(RG.filter(r=>r.arrived).map(r=>r.pid)),reg=new Set(RG.map(r=>r.pid));
+  const tag=id=>arr.has(id)?`<small class="atag q">QR</small>`:reg.has(id)?`<small class="atag">đăng ký</small>`:"";
   return `<div class="lab" style="margin:0"><span class="meta num">${n}/${D.players.length} người có mặt</span><button class="lnk" data-act="attall">${n===D.players.length?"Bỏ chọn hết":"Chọn tất cả"}</button></div>
-  <div class="attc">${L.map(p=>{const on=p.active!==false;return `<button class="ac${on?" on":""}${busy.has(p.id)?" busy":""}" data-act="att" data-id="${p.id}" aria-pressed="${on}">${on?"✓ ":""}${esc(p.name)}${busy.has(p.id)?" · trên sân":""}</button>`}).join("")}<button class="ac add" data-act="attadd" aria-expanded="${attAdd}">${attAdd?"✕ Đóng":"+ Người mới"}</button></div>
+  <div class="attc">${L.map(p=>{const on=p.active!==false;return `<button class="ac${on?" on":""}${busy.has(p.id)?" busy":""}" data-act="att" data-id="${p.id}" aria-pressed="${on}">${on?"✓ ":""}${esc(p.name)}${busy.has(p.id)?" · trên sân":""}${tag(p.id)}</button>`}).join("")}<button class="ac add" data-act="attadd" aria-expanded="${attAdd}">${attAdd?"✕ Đóng":"+ Người mới"}</button></div>
   ${attAdd?`<div class="attnew">${addPanel(D,away)}</div>`:""}`;
 }
 function buoiBlock(D){
@@ -124,24 +126,28 @@ function prizeBlock(D){
 const flexNote=`<div class="flexnote"><b>Không khoá cứng.</b> Mọi mục trên vẫn sửa được khi đang đánh (nút Sửa ở tab Sân) và sau khi chốt (mở lại buổi trong Lịch sử).</div>`;
 
 /* ----- ① Chuẩn bị ----- */
+// Bước Sẵn sàng: tóm tắt buổi → ai có mặt → tùy chọn (thu gọn, mở ra là đủ mọi cài đặt cũ) → Bắt đầu
+let prepOpen=new Set();
+function prepRow(k,title,sum,body){const on=prepOpen.has(k);
+  return `<div class="pxrow${on?" on":""}"><button class="prowh" data-act="prow" data-v="${k}" aria-expanded="${on}"><span>${title}</span><small>${esc(sum)}</small><i aria-hidden="true">${on?"−":"›"}</i></button>${on?`<div class="prowb">${body}</div>`:""}</div>`}
 function vPrep(D){
-  const c=D.c,G=isG(c);
-  let h=`<div class="phead2"><h2>${esc(sessTitle(c,D.sid))} · chuẩn bị</h2><p class="rule">${phaseOf(D)==="live"?"Buổi đang đánh. Sửa ở đây áp dụng từ trận kế tiếp, mọi thay đổi lưu ngay.":`Chỉ ban tổ chức thấy phần này. Thành viên thấy “Buổi #${D.sid} sắp bắt đầu”. Mọi thay đổi lưu ngay.`}</p></div>`;
-  // Buổi theo lịch: tên, thể thức lấy từ tab Tạo / Lịch buổi, không sửa lặp ở đây
-  h+=xPrepCard(D);
-  if(!xCur())h+=card("Buổi này",buoiBlock(D));
-  h+=card("Điểm danh",attChips(D));
-  h+=card("Sân và luật điểm",fmtBlock(D));
-  h+=card(tick("cphi",c.cphi!==false,"Chi phí"),moneyBlock(D));
-  h+=card(tick("gton",(c.gt||"khong")!=="khong","Giải thưởng"),prizeBlock(D));
-  h+=card(tick("refon",c.refOn===true,"Trọng tài"),refBlock(D));
-  if(!G)h+=card(tick("preon",c.preOn===true,"Xếp sẵn các trận đầu"),presetBlock(D));
-  h+=card("Lời MC đọc thể thức",mcBlock(D));
-  h+=flexNote;
-  if(phaseOf(D)==="live")return h+`<button class="ball wide" data-act="step" data-v="live">Về trang Đang đánh →</button>`;
-  if(G)return h+gSetup(D,c.giai||{pairs:[]});
+  const c=D.c,G=isG(c),X=xCur(),live=phaseOf(D)==="live",thu=c.thu||"keo",gt=c.gt||"khong";
+  xAutoPrep(D);
+  let h=xPrepHead(D);
+  if(!X){h+=xNoSched(D);h+=card(live?"Buổi này":"Buổi nhanh · không cần đăng ký trước",buoiBlock(D))}
   const n=D.players.filter(p=>p.active!==false).length;
-  return h+`<button class="ball wide" data-act="start">Bắt đầu buổi #${D.sid} →</button><p class="rule" style="text-align:center;margin-top:-6px">${n<4?`Cần ít nhất 4 người có mặt để xếp trận, hiện có ${n}.`:"Có thể chuẩn bị từ trước, bấm khi mọi người tới sân."}</p>`;
+  h+=card(`Điểm danh · ai có mặt?`,attChips(D));
+  h+=`<span class="xsec">Tùy chọn · bấm để mở</span>`;
+  h+=prepRow("san","Sân và luật điểm",`${c.courts} sân · chạm ${c.target}${winBy2(c)?" cách 2":""}${ptMax(c)?`, trần ${ptMax(c)}`:""}`,fmtBlock(D));
+  h+=prepRow("tien","Chi phí",c.cphi===false?"Không thu tiền":THU[thu]+(thu==="phi"?` ${fmtK(+c.phi||0)}`:""),tick("cphi",c.cphi!==false,"Thu chi phí buổi này")+moneyBlock(D));
+  h+=prepRow("giai","Giải thưởng",gt==="khong"?"Không trao giải":GT[gt]||"",tick("gton",gt!=="khong","Trao giải buổi này")+prizeBlock(D));
+  h+=prepRow("tt","Trọng tài",c.refOn===true?"Trọng tài nhập điểm":"Ban tổ chức tự nhập",tick("refon",c.refOn===true,"Trọng tài nhập điểm")+refBlock(D));
+  if(!G)h+=prepRow("pre","Xếp sẵn các trận đầu",c.preOn===true?`${(c.presets||[]).length} trận xếp sẵn`:"Tắt",tick("preon",c.preOn===true,"Xếp sẵn các trận đầu")+presetBlock(D));
+  h+=prepRow("mc","Lời MC đọc thể thức","Loa đọc khi bắt đầu",mcBlock(D));
+  h+=flexNote;
+  if(live)return h+`<button class="ball wide" data-act="step" data-v="live">Về trang Đang đánh →</button>`;
+  if(G)return h+gSetup(D,c.giai||{pairs:[]});
+  return h+`<div class="prepgo"><button class="ball wide" data-act="start">Bắt đầu buổi #${D.sid} · ${n} người →</button><p class="rule">${n<4?`Cần ít nhất 4 người có mặt để xếp trận, hiện có ${n}.`:"Có thể chuẩn bị từ trước, bấm khi mọi người tới sân."}</p></div>`;
 }
 
 /* ----- ② Đang đánh: dải tóm tắt + bảng Sửa ----- */
@@ -298,6 +304,7 @@ async function sessionAct(act,id,b,e){
   if(act.startsWith("rr"))return rrAct(act);
   if(act==="sheet"){sheetOpen=true;render();return true}
   if(act==="sheetx"){if(b.classList&&b.classList.contains("sheetbg")&&e.target!==b)return true;sheetOpen=false;render();return true}
+  if(act==="prow"){const k=b.dataset.v;if(prepOpen.has(k))prepOpen.delete(k);else prepOpen.add(k);render();return true}
   if(act==="start"){const D=derive(),ro=regOpen();let n=0;
     await write(async()=>{n=await regStart(D);await saveCfg(ro?{phase:"live",reg:{...regCfg(),on:false}}:{phase:"live"})},`Đã bắt đầu buổi #${D.sid}`);if(n)toast(`Đã bắt đầu · điểm danh thêm ${n} người đã đăng ký`);return true}
   if(act==="win2"){const on=b.dataset.v==="1";write(()=>saveCfg({win2:on}),on?"Thắng phải cách 2":"Chạm là thắng");return true}

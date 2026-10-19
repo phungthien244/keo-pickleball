@@ -1210,3 +1210,23 @@ a.xcard.pl{flex-direction:row}
 .xsecbox .fld input,.xsecbox .fld textarea,.xsecbox .fld select{width:100%;box-sizing:border-box}
 .xsecbox .fld{display:flex;flex-direction:column;gap:5px;min-width:0}
 .xsecbox .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+/* ===== Tab Sân · Sẵn sàng ===== */
+.prephd .xedit{color:var(--yellow);font-weight:600;font-size:13px;text-decoration:none;white-space:nowrap}
+.xpick{display:flex;gap:6px}
+.xpick button{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:48px;padding:6px 10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-family:var(--body);font-size:12px;text-transform:none;letter-spacing:0;text-align:left}
+.xpick button b{font-family:var(--display);font-size:15px}
+.xpick button[aria-pressed="true"]{background:var(--yellow);border-color:var(--yellow)}
+.pxrow{background:var(--surface);border:1px solid var(--line)}
+.pxrow+.pxrow{margin-top:-1px}
+.prowh{width:100%;display:flex;align-items:center;gap:10px;min-height:52px;padding:0 14px;border:0;background:none;color:var(--ink);font-family:var(--body);font-size:14px;font-weight:600;text-transform:none;letter-spacing:0;text-align:left}
+.prowh span{flex:none}.prowh small{margin-left:auto;color:var(--muted);font-weight:400;font-size:12px;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prowh i{font-style:normal;color:var(--muted);width:14px;text-align:center}
+.pxrow.on .prowh{border-bottom:1px solid var(--line)}
+.prowb{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.atag{margin-left:4px;font-size:10px;font-weight:600;color:var(--muted)}
+.atag.q{color:var(--win)}
+.prepgo{position:sticky;bottom:0;z-index:4;background:var(--bg);padding:10px 0 4px;display:flex;flex-direction:column;gap:4px}
+.mx .prepgo{bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+.prepgo .rule{text-align:center;margin:0}
+.prowh small{flex:1}
+.prowb .tick{align-self:flex-start}

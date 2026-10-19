@@ -104,6 +104,7 @@ test("luật điểm: chạm, cách 2, điểm trần; tên buổi; tắt chi ph
   expect(e.T()).not.toContain("Kèo tối thứ 5 · Buổi #1");
   await e.click("ptmax", { v: "1" });
   expect(e.store.get("app/config").ptMax).toBe(15);
+  await e.click("prow", { v: "tien" });
   await e.click("cphi");
   expect(e.store.get("app/config").cphi).toBe(false);
   expect(e.T()).toContain("Buổi này không thu tiền");
@@ -142,7 +143,7 @@ test("giải vòng tròn: giải thưởng nhất nhì ba tuỳ chỉnh", async 
   await e.click("gton");
   expect(e.store.get("app/config").gt).toBe("hang");
   await e.cfg("hang1", 500); await e.cfg("hang3", 0);
-  expect(e.T()).toContain("Quỹ CLB trả tổng 600k");
+  await e.click("prow", { v: "giai" }); expect(e.T()).toContain("Quỹ CLB trả tổng 600k");
   await e.click("cset", { k: "gt", v: "trich" });
   await e.cfg("chia1", 70); await e.cfg("chia2", 30); await e.cfg("chia3", 0);
   expect(e.T()).toContain("Tổng 100%");
