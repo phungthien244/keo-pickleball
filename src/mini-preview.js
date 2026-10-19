@@ -27,7 +27,7 @@ import "../miniapp/src/mini.css";
   // Khung giống thanh tiêu đề Zalo
   const bar = document.createElement("div");
   bar.className = "zbar";
-  bar.innerHTML = `<span class="zb" aria-hidden="true">‹</span><b>Pikeco</b><span class="zcap" aria-hidden="true"><i>···</i><i>✕</i></span>`;
+  bar.innerHTML = `<span class="zb" aria-hidden="true">‹</span><b>pikeco.app</b><span class="zcap" aria-hidden="true"><i>···</i><i>✕</i></span>`;
   document.body.appendChild(bar);
   document.body.insertAdjacentHTML("beforeend", BODY);
   const st = document.createElement("style");

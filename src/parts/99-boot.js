@@ -31,8 +31,9 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
   if(!window.FB){S.offline=true;render();return}
   try{const s=await FB.getDoc(FB.doc(FB.fs,"clubs/"+CID));
     if(s.exists()){CLUB=s.data();PFX="clubs/"+CID+"/";legacy=false;BANK=clubBank()}
-    else if(CID!=="aep"){S.noClub=true;hideSplash();render();return}
-  }catch(e){if(CID!=="aep"){S.offline=true;render();return}}
+    else if(CID!=="aep"){clubChecked=true;S.noClub=true;hideSplash();render();return}
+  }catch(e){clubChecked=true;if(CID!=="aep"){S.offline=true;render();return}}
+  clubChecked=true;
   db=makeDb(PFX);
   hideSplash();
   fromRedirect();

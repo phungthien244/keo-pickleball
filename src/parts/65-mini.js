@@ -16,9 +16,17 @@ function mxShell(D,body,cta=""){
   let h=`<div class="mxbar"><button class="mxclub" data-act="mxsheet"><span class="clogo">${logoHtml(CLUB,nm)}</span><b>${esc(nm)}</b><span aria-hidden="true">▾</span></button><a class="mxme" href="${pathOf("app",{tab:"toi"})}" data-go="app" data-t="toi" aria-label="Tôi">${p?av(p,"sm",1):mxSvg("me")}</a></div>`;
   h+=mxTurn(D)+`<div class="mxbody">${body}</div>`;
   if(cta)h+=`<div class="mxcta">${cta}</div>`;
-  const it=(k,t,go,lb)=>`<a class="${mxCur()===k?"on":""}" href="${go}" ${t}>${mxSvg(k==="hist"?"hist":k)}<span>${lb}</span></a>`;
-  h+=`<nav class="mxnav">${it("home",`data-go="home"`,pathOf("home"),"Trang chủ")}${it("live",`data-go="app" data-t="san"`,pathOf("app",{tab:"san"}),"Trực tiếp")}${it("rank",`data-go="app" data-t="bxh"`,pathOf("app",{tab:"bxh"}),"Xếp hạng")}${it("hist",`data-go="app" data-t="ls"`,pathOf("app",{tab:"ls"}),"Lịch sử")}${it("me",`data-go="app" data-t="toi"`,pathOf("app",{tab:"toi"}),"Tôi")}</nav>`;
+  h+=mxNav();
   return h+mxSheetHtml();
+}
+function mxNav(){
+  const it=(k,t,go,lb)=>`<a class="${mxCur()===k?"on":""}" href="${go}" ${t}>${mxSvg(k==="hist"?"hist":k)}<span>${lb}</span></a>`;
+  return `<nav class="mxnav">${it("home",`data-go="home"`,pathOf("home"),"Trang chủ")}${it("live",`data-go="app" data-t="san"`,pathOf("app",{tab:"san"}),"Trực tiếp")}${it("rank",`data-go="app" data-t="bxh"`,pathOf("app",{tab:"bxh"}),"Xếp hạng")}${it("hist",`data-go="app" data-t="ls"`,pathOf("app",{tab:"ls"}),"Lịch sử")}${it("me",`data-go="app" data-t="toi"`,pathOf("app",{tab:"toi"}),"Tôi")}</nav>`;
+}
+// Đang nạp CLB (vừa chuyển CLB): dựng sẵn khung Mini App, không lộ giao diện web
+function mxLoading(){
+  const k=myClubs().find(x=>x.id===CID),nm=(CLUB&&CLUB.name)||(k&&k.name)||"";
+  return `<div class="mxbar"><span class="mxclub"><span class="clogo">${esc((nm||CID).charAt(0).toUpperCase())}</span><b>${esc(nm)}</b></span><span class="mxme">${mxSvg("me")}</span></div><div class="mxbody">${skeleton()}</div>${mxNav()}`;
 }
 // Thanh "Lượt của tôi": ghim khi buổi đang diễn ra và mình có mặt
 function mxTurn(D){

@@ -1035,6 +1035,10 @@ div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
 .mini .wrap{padding:0 0 calc(64px + env(safe-area-inset-bottom,0px));width:100%;max-width:none;margin:0;box-sizing:border-box;flex:1 1 100%;min-height:100vh}
 .mini main#view,.mini .mx{width:100%;box-sizing:border-box}
 .mini section.mx{padding-top:0}
+/* Chuyển trang trong Mini App: nội dung trượt lên lần lượt như bản web, thanh CLB và thanh dưới đứng yên */
+.mxanim .mxbody > *{animation:up .45s var(--ease) both}
+.mxanim .mxbody > *:nth-child(2){animation-delay:.05s}.mxanim .mxbody > *:nth-child(3){animation-delay:.1s}.mxanim .mxbody > *:nth-child(4){animation-delay:.15s}.mxanim .mxbody > *:nth-child(n+5){animation-delay:.2s}
+.mxanim .mxbody tbody tr,.mxanim .mxbody .mrow,.mxanim .mxbody .hrow{animation:up .4s var(--ease) both}
 .mini main#view{padding:0}
 .mx{font-size:15px}
 .mxbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}

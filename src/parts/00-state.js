@@ -17,7 +17,7 @@ const TSEG=Object.fromEntries(Object.entries(SEGT).map(([k,v])=>[v,k]));
 // Trọng tài (tài khoản Trọng tài hoặc máy vào bằng PIN): chỉ nhập điểm sân được giao
 let REF=false,MYCT=[];
 const canScore=m=>!!m&&(canWrite||(REF&&MYCT.includes(Number(m.court))));
-let MODE="platform",CID="aep",PFX="",CLUB=null,ROLE=null,legacy=true,INVITE=null;
+let MODE="platform",CID="aep",PFX="",CLUB=null,ROLE=null,legacy=true,INVITE=null,clubChecked=false;
 // Bản Zalo Mini App: đường dẫn trong app nằm sau dấu #, mở thẳng CLB (?clb=… hoặc mặc định aep)
 const MINI=typeof window!=="undefined"&&!!window.ZMINI;
 const API=MINI?"https://pikeco.app":"";

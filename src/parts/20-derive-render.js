@@ -55,12 +55,13 @@ function render(){
   if(hideV&&route==="app"&&(tab==="tien"||tab==="ls"))tab="san";
   {const tb=document.querySelector('#tabs [data-tab="tien"]');if(tb)tb.style.display=hideV||(isG(c)&&(c.thu||"keo")==="khong"&&(c.gt||"khong")==="khong")?"none":""}
   {const tb=document.querySelector('#tabs [data-tab="ls"]');if(tb)tb.style.display=hideV?"none":""}
-  document.title=route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:route==="caidat"?`Cài đặt · ${c.title}`:route==="chot"?`Chốt buổi #${D.sid} · ${c.title}`:route==="vdv"?`${D.pmap.get(routePid)?.name||"Hồ sơ"} · ${c.title}`:c.title;
+  document.title=MINI?"pikeco.app":route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:route==="caidat"?`Cài đặt · ${c.title}`:route==="chot"?`Chốt buổi #${D.sid} · ${c.title}`:route==="vdv"?`${D.pmap.get(routePid)?.name||"Hồ sơ"} · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="clogin"?vClubLogin:route==="chot"?vChot:route==="vdv"?(D=>vHoSo(D,routePid)):route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs,dk:vDk,toi:vToi}[tab]||vSan);
   const loading=!S.offline&&!S.noClub&&!S.priv&&!(S.mReady&&S.hReady&&S.pReady);
-  const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim&&!noAnimOnce; lastAnim=akey; noAnimOnce=false;
-  if(MINI&&MODE==="club"&&!legacy&&!S.noClub){$("#view").innerHTML=`<section class="mx">${loading?skeleton():renderMini(D)}</section>`;mxCheckin(D);
+  const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim&&!noAnimOnce; if(!(MINI&&loading))lastAnim=akey; noAnimOnce=false;
+  if(MINI&&MODE==="club"&&!S.noClub&&!clubChecked){if(!splashGone)hideSplash();$("#view").innerHTML=`<section class="mx">${mxLoading()}</section>`;return}
+  if(MINI&&MODE==="club"&&!legacy&&!S.noClub){if(!splashGone)hideSplash();$("#view").innerHTML=`<section class="mx${doAnim&&!loading?" mxanim":""}">${loading?mxLoading():renderMini(D)}</section>`;mxCheckin(D);
     if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}return}
   $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${loading?skeleton():v(D)}${MINI?"":clubFoot()}</section>${miniNav()}`;
   syncSheet(D);
