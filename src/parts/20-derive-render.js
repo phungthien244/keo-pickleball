@@ -45,7 +45,7 @@ function render(){
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:"";
   if(!splashGone&&(S.offline||S.noClub||(S.live&&S.mReady&&S.hReady)))hideSplash();
   if(!MINI&&autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
-  {const tb=document.querySelector('#tabs [data-tab="dk"]');if(tb){const n=pendCount();tb.hidden=!(isAdm()&&!legacy);tb.textContent=n?`Đăng ký (${n})`:"Đăng ký"}}
+  {const tb=document.querySelector('#tabs [data-tab="dk"]');if(tb){const n=pendCount();tb.hidden=!(isAdm()&&!legacy);tb.textContent=n?`Lịch buổi (${n})`:"Lịch buổi"}}
   if(MINI){rememberClub();if(ME&&ME!==myPid())ME=myPid();const cu=document.getElementById("curl");if(cu)cu.textContent="";const tb=document.getElementById("tabs");if(tb)tb.hidden=true;const tk=document.querySelector(".tkwrap");if(tk)tk.hidden=true;
     $("#hact").innerHTML=miniHact(D)}
   const selTab=route==="home"?"home":route==="buoi"?"ls":route==="chot"?"san":route==="vdv"?"bxh":(route==="caidat"||route==="clogin")?"":tab;
@@ -77,7 +77,7 @@ let lastAnim="",mxAnimUntil=0,mxAnimT=null,seenReady=false,bxF="all";const seen=
 const isNew=k=>seenReady&&!seen.has(k);
 const today=()=>{const d=new Date();return `${d.getDate()}/${d.getMonth()+1}`};
 function pageHead(D){
-  const H={dk:[(CLUB?.name||D.c.title),"Đăng ký buổi"],toi:["Mini App Pikeco","CLB của bạn"],san:[sessTitle(D.c,D.sid)+" · "+today(),"Sân đấu"],bxh:[sessTitle(D.c,D.sid)+" · hôm nay","Xếp hạng"],nguoi:[(CLUB?.name||D.c.title),"Thành viên"],tien:[sessTitle(D.c,D.sid)+" · "+today(),"Quỹ"],ls:["Các buổi đã đánh","Lịch sử"],...(MINI?{bxh:[(CLUB?.name||D.c.title),"Bảng xếp hạng"]}:{})}[tab]||["",""];
+  const H={dk:[(CLUB?.name||D.c.title),"Lịch buổi"],toi:["Mini App Pikeco","CLB của bạn"],san:[sessTitle(D.c,D.sid)+" · "+today(),"Sân đấu"],bxh:[sessTitle(D.c,D.sid)+" · hôm nay","Xếp hạng"],nguoi:[(CLUB?.name||D.c.title),"Thành viên"],tien:[sessTitle(D.c,D.sid)+" · "+today(),"Quỹ"],ls:["Các buổi đã đánh","Lịch sử"],...(MINI?{bxh:[(CLUB?.name||D.c.title),"Bảng xếp hạng"]}:{})}[tab]||["",""];
   if(isG(D.c)){if(tab==="san"||tab==="tien")H[1]="Cặp cố định xoay vòng";if(tab==="bxh"){H[0]=D.c.sname?sessTitle(D.c,D.sid):"Cặp cố định xoay vòng";H[1]="Xếp hạng cặp"}}
   return `<div class="phead"><span class="eyebrow">${esc(H[0])}</span><h2 class="ptitle">${esc(H[1])}</h2></div>`;
 }

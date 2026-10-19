@@ -190,6 +190,34 @@ describe("người chơi Zalo", () => {
     await assertFails(setDoc(doc(anon("a9"), "clubs/aep/members/a9"), { role: "admin", invite: "ok1" }));
     await assertSucceeds(setDoc(doc(zalo("zalo_2"), "clubs/aep/members/zalo_2"), { role: "admin", invite: "ok1", via: "zalo", name: "Z", email: "", at: 1 }));
   });
+  test("lịch buổi: chỉ quản lý tạo buổi; người chơi đăng ký buổi đang mở hoặc đã tới giờ tự mở", async () => {
+    const T = Date.now(), at = T + 2 * 864e5;
+    await assertFails(setDoc(doc(zalo("zalo_1"), "clubs/aep/sched/x"), { st: "open", at }));
+    await assertSucceeds(setDoc(doc(google("ad"), "clubs/aep/sched/x0"), { st: "draft", at }));
+    await seed({ "clubs/aep/links/zalo_1": { status: "ok", pid: "p1" },
+      "clubs/aep/sched/op": { st: "open", at, deadline: at, lockAt: at - 7200e3, guests: true },
+      "clubs/aep/sched/dr": { st: "draft", at, deadline: at },
+      "clubs/aep/sched/pl": { st: "plan", openAt: T - 1000, at, deadline: at },
+      "clubs/aep/sched/fu": { st: "plan", openAt: T + 864e5, at, deadline: at },
+      "clubs/aep/sched/dl": { st: "open", at, deadline: T - 1000 },
+      "clubs/aep/sched/lk": { st: "open", at: T + 3600e3, deadline: T + 3600e3, lockAt: T - 1000 } });
+    const reg = (sid, extra = {}) => setDoc(doc(zalo("zalo_1"), `clubs/aep/regs/${sid}_zalo_1`), { sid, uid: "zalo_1", pid: "p1", at: 1, pay: "none", ...extra });
+    await assertSucceeds(reg("op"));
+    await assertSucceeds(reg("pl"));
+    await assertFails(reg("dr"));
+    await assertFails(reg("fu"));
+    await assertFails(reg("dl"));
+    await assertFails(reg("nope"));
+    await assertFails(reg("op", { pid: "p2" }));
+    // khách: buổi cho khách mới được
+    await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/op_zalo_7"), { sid: "op", uid: "zalo_7", name: "Khách", guest: true, at: 1, pay: "sent" }));
+    await assertFails(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/pl_zalo_7"), { sid: "pl", uid: "zalo_7", name: "Khách", guest: true, at: 1 }));
+    // hủy: trước giờ khóa hủy của buổi đó
+    await assertSucceeds(deleteDoc(doc(zalo("zalo_1"), "clubs/aep/regs/op_zalo_1")));
+    await seed({ "clubs/aep/regs/lk_zalo_1": { sid: "lk", uid: "zalo_1", pid: "p1", at: 1, pay: "none" } });
+    await assertFails(deleteDoc(doc(zalo("zalo_1"), "clubs/aep/regs/lk_zalo_1")));
+    await assertFails(updateDoc(doc(zalo("zalo_1"), "clubs/aep/regs/lk_zalo_1"), { cancel: true, cancelAt: 2 }));
+  });
   test("gửi yêu cầu nhận hồ sơ, chỉ quản lý duyệt", async () => {
     await assertSucceeds(setDoc(doc(zalo("zalo_1"), "clubs/aep/links/zalo_1"), { status: "pending", pid: "p1", zname: "A", at: 1 }));
     await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/links/zalo_2"), { status: "ok", pid: "p1", at: 1 }));

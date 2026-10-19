@@ -91,7 +91,7 @@ function miniNav(){
 /* ----- Xử lý bấm ----- */
 async function zaloAct(act,b,id){
   if(act==="zlogin"){zaloStart();return true}
-  if(act==="miniclub"){if(id===CID&&MODE==="club"){go("app",{tab:"dk"});return true}setPath("/"+id);location.reload();return true}
+  if(act==="miniclub"){const x=b.dataset.x;if(id===CID&&MODE==="club"){go("app",{tab:"dk",x});return true}setPath("/"+id+(x?"/dang-ky/"+encodeURIComponent(x):""));location.reload();return true}
   if(act==="miniexplore"){setPath("/clb");location.reload();return true}
   if(act==="openweb"){const u="https://pikeco.app"+(b.dataset.v||"/");if(window.ZMP&&window.ZMP.openWebview){try{await window.ZMP.openWebview({url:u})}catch(e){location.href=u}}else location.href=u;return true}
   if(act==="lnkcancel"){try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid))}catch(e){}return true}
@@ -101,14 +101,15 @@ async function zaloAct(act,b,id){
     const d={status:"pending",zname:String(zp.n||"").slice(0,40),photo:String(zp.p||"").slice(0,400),at:Date.now(),newName:nn};
     try{await FB.setDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid),d);toast("Đã gửi, chờ chủ CLB duyệt")}catch(e){toast("Chưa gửi được, thử lại.")}
     return true}
-  if(await regAct(act,b,id))return true;
+  if(await withX(xCtx(),()=>regAct(act,b,id)))return true;
   if(await meAct(act,b))return true;
-  if(await mxAct(act,b,id))return true;
+  if(await withX(xCtx(),()=>mxAct(act,b,id)))return true;
   return false;
 }
 async function zaloAdminAct(act,b,id){
   const D=derive();
-  if(await regAdminAct(act,b,id,D))return true;
+  if(await xAct(act,b,id,D))return true;
+  if(await withX(xCtx(),()=>regAdminAct(act,b,id,D)))return true;
   if(act==="apvpick"||act==="apvnew"){const m=act==="apvpick"?"pick":"new";if(apvOpen===id&&apvMode===m)apvOpen=null;else{apvOpen=id;apvMode=m;apvSel=null}render();return true}
   if(act==="apvp"){apvSel=apvSel===id?null:id;render();return true}
   if(act==="apvg"){drafts["apv-g"]=b.dataset.v;render();return true}

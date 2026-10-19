@@ -43,7 +43,7 @@ document.addEventListener("click",async e=>{
   {const pv=e.target.closest("[data-pid]");if(pv&&!e.target.closest("label")&&!e.target.closest(".ppt")){e.preventDefault&&e.preventDefault();go("vdv",{pid:pv.dataset.pid});return}}
   const tb=e.target.closest("[data-tab]");if(tb){const t=tb.dataset.tab;if(t==="home"){go("home");return}
     try{localStorage.setItem("pb-tab",t)}catch(x){}go("app",{tab:t});return}
-  const gl=e.target.closest("[data-go]");if(gl){e.preventDefault();go(gl.dataset.go,{sid:gl.dataset.id,tab:gl.dataset.t});return}
+  const gl=e.target.closest("[data-go]");if(gl){e.preventDefault();go(gl.dataset.go,{sid:gl.dataset.id,tab:gl.dataset.t,x:gl.dataset.x});return}
   const b=e.target.closest("[data-act]");if(!b)return;
   const act=b.dataset.act,id=b.dataset.id;
   if(act==="login"){

@@ -127,8 +127,9 @@ const flexNote=`<div class="flexnote"><b>Không khoá cứng.</b> Mọi mục tr
 function vPrep(D){
   const c=D.c,G=isG(c);
   let h=`<div class="phead2"><h2>${esc(sessTitle(c,D.sid))} · chuẩn bị</h2><p class="rule">${phaseOf(D)==="live"?"Buổi đang đánh. Sửa ở đây áp dụng từ trận kế tiếp, mọi thay đổi lưu ngay.":`Chỉ ban tổ chức thấy phần này. Thành viên thấy “Buổi #${D.sid} sắp bắt đầu”. Mọi thay đổi lưu ngay.`}</p></div>`;
-  h+=card("Buổi này",buoiBlock(D));
-  if(!legacy&&isAdm())h+=dkBanner(D)||`<a class="dkban" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk"><span class="t"><b>Đăng ký buổi</b><small>Cho người chơi tự đăng ký trong Zalo</small></span><span aria-hidden="true">›</span></a>`;
+  // Buổi theo lịch: tên, thể thức lấy từ tab Tạo / Lịch buổi, không sửa lặp ở đây
+  h+=xPrepCard(D);
+  if(!xCur())h+=card("Buổi này",buoiBlock(D));
   h+=card("Điểm danh",attChips(D));
   h+=card("Sân và luật điểm",fmtBlock(D));
   h+=card(tick("cphi",c.cphi!==false,"Chi phí"),moneyBlock(D));
@@ -274,7 +275,8 @@ async function chotBuoi(){
       money:moneySnap(D,M),fee:{fee:D.c.fee,keo:D.c.keo,hi:D.c.hi,lo:D.c.lo,cap:D.c.cap},
       paid:{...(pd.paid||{})},adj:{...(pd.adj||{}),...extra},track:true,closedAt:Date.now(),closedBy:who(),sname:D.c.sname||"",rule:ruleTxt(D.c)});
     for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
-    await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},phase:"prep",sname:"",presets:[]});
+    await xFinish(D);
+    await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},phase:"prep",sname:"",presets:[],schedId:null});
   },"Đã chốt buổi, đây là trang tổng kết để chia sẻ");
   chotMien=false;go("buoi",{sid:D.sid});
 }

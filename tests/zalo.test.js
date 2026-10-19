@@ -15,24 +15,60 @@ const ZU = { uid: "zalo_9", isAnonymous: false, displayName: "Zalo" };
 
 const MINI = (e, hash) => { globalThis.window.ZMINI = 1; if (hash) globalThis.location.hash = hash; };
 
-test("chủ CLB: trang Đăng ký mở đăng ký, số chỗ, thêm người, danh sách chờ, link Mini App", async () => {
+const DAY = 864e5, tmr = () => { const d = new Date(Date.now() + DAY); d.setHours(19, 0, 0, 0); return d; };
+const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const sched = (extra = {}) => { const at = tmr().getTime(); return { name: "Kèo tối", fmt: "xoay", at, end: "21:30", courts: 2, target: 11, max: 8, guests: false, thu: "keo", fee: 0, pay: "off", lockH: 2, dlH: 0, deadline: at, lockAt: at - 2 * 3600e3, st: "open", openAt: 0, ...extra }; };
+
+test("chủ CLB: Lịch buổi, tạo buổi Xoay cặp và mở đăng ký, thêm người, danh sách chờ, link Mini App của buổi", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data: base() });
-  await e.boot(); await e.until(() => e.V().includes('data-act="regon"'));
-  await e.click("regon");
-  await e.until(() => e.store.get("clubs/q7/app/config").reg?.on === true);
-  expect(e.store.get("clubs/q7/app/config").reg.sid).toBe(1);
-  await e.until(() => e.V().includes('data-key="max"'));
-  expect(e.V()).toContain("zalo.me/s/180913816434821856/?clb=q7");
-  e.H.change({ target: { dataset: { save: "reg", key: "max" }, value: "1" } });
-  await e.until(() => e.store.get("clubs/q7/app/config").reg.max === 1);
+  await e.boot(); await e.until(() => e.V().includes('data-act="xnew"'));
+  await e.click("xnew"); await e.until(() => e.V().includes('data-act="xfmt" data-v="giai"'));
+  await e.click("xfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-act="xsave"'));
+  e.input("xf-name", "Kèo tối thứ 5"); e.input("xf-date", iso(tmr())); e.input("xf-time", "19:00"); e.input("xf-max", "1");
+  await e.click("xsave", { v: "open" });
+  await e.until(() => [...e.store.keys()].some(k => k.startsWith("clubs/q7/sched/")));
+  const [k, X] = [...e.store].find(([k]) => k.startsWith("clubs/q7/sched/")), id = k.split("/").pop();
+  expect(X).toMatchObject({ name: "Kèo tối thứ 5", fmt: "xoay", st: "open", max: 1 });
+  expect(X.at).toBe(tmr().getTime());
+  await e.until(() => e.V().includes('data-act="regadd"'));
+  expect(e.V()).toContain(`zalo.me/s/180913816434821856/?clb=q7&amp;buoi=${id}`);
   await e.click("regadd"); await e.click("regaddp", { id: "p1" });
-  await e.until(() => e.store.get("clubs/q7/regs/1_p_p1"));
+  await e.until(() => e.store.get(`clubs/q7/regs/${id}_p_p1`)?.sid === id);
   await e.click("regadd"); await e.click("regaddp", { id: "p2" });
   await e.until(() => e.T().includes("chờ"));
-  await e.click("regatt"); await e.click("regatt");
-  await e.until(() => e.store.get("clubs/q7/players/p1").active === true);
-  expect(e.store.get("clubs/q7/players/p2").active).toBe(false);
-  expect(e.store.get("clubs/q7/players/p3").active).toBe(false);
+  expect(e.store.get("clubs/q7/players/p1").active).toBe(false);
+});
+
+test("lặp lại hằng tuần, tự mở đăng ký: tạo lịch lặp và các buổi 2 tuần tới, buổi lặp tự mở trước 2 ngày", async () => {
+  const e = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data: base() });
+  await e.boot(); await e.until(() => e.V().includes('data-act="xnew"'));
+  await e.click("xnew"); await e.click("xfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-k="rep"'));
+  e.input("xf-date", iso(tmr())); e.input("xf-time", "19:00");
+  await e.click("xfset", { k: "rep", v: "1" }); await e.until(() => e.V().includes('data-act="xfday"'));
+  await e.click("xsave", { v: "open" });
+  await e.until(() => [...e.store.keys()].some(k => k.startsWith("clubs/q7/series/")));
+  const S = [...e.store].find(([k]) => k.startsWith("clubs/q7/series/"))[1];
+  expect(S).toMatchObject({ days: [tmr().getDay()], time: "19:00", auto: true, openD: 2, on: true });
+  await e.until(() => [...e.store.keys()].filter(k => k.startsWith("clubs/q7/sched/")).length >= 2);
+  const L = [...e.store].filter(([k]) => k.startsWith("clubs/q7/sched/")).map(([, v]) => v).sort((a, b) => a.at - b.at);
+  expect(L[0].st).toBe("open");
+  expect(L[1]).toMatchObject({ st: "plan", openAt: L[1].at - 2 * DAY });
+  expect(L[1].at - L[0].at).toBe(7 * DAY);
+});
+
+test("người chơi: Trang chủ Mini App liệt kê các buổi sắp tới, mở buổi và đăng ký riêng từng buổi", async () => {
+  const data = base({ "clubs/q7/sched/s1": sched(), "clubs/q7/sched/s2": sched({ name: "Kèo cuối tuần", at: tmr().getTime() + 2 * DAY, st: "plan", openAt: Date.now() + DAY }),
+    "clubs/q7/sched/s3": sched({ name: "Nháp riêng", st: "draft" }), "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
+  MINI(e, "#/q7");
+  await e.boot(); await e.until(() => e.T().includes("Buổi sắp tới"));
+  expect(e.T()).toContain("Kèo tối"); expect(e.T()).toContain("Kèo cuối tuần"); expect(e.T()).toContain("Tự mở");
+  expect(e.T()).not.toContain("Nháp riêng");
+  expect(e.V()).toContain('data-x="s1"');
+  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="regin"'));
+  await e.click("regin");
+  await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.sid === "s1");
+  await e.until(() => e.T().includes("Bạn đã giữ chỗ"));
 });
 
 test("bắt đầu buổi: tự điểm danh người đã đăng ký và đóng đăng ký", async () => {
@@ -137,25 +173,33 @@ test("Zalo Mini App: tự vào bằng ID Zalo, mở thẳng CLB, xin tham gia b�
   delete globalThis.window.ZMP;
 });
 
-test("thu tiền trước: người chơi chuyển khoản lúc đăng ký, chủ CLB xác nhận, trang Quỹ đánh dấu đã trả", async () => {
+test("thu tiền trước: người chơi chuyển khoản lúc đăng ký, chủ CLB xác nhận, chuẩn bị buổi hôm nay thì trang Quỹ đánh dấu đã trả", async () => {
+  const now = new Date(); now.setHours(23, 0, 0, 0);
   const data = base({ "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1, bank: { code: "mb", bin: "970422", name: "MB Bank", acc: "0123456789", holder: "NGUYEN A" } },
-    "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep", thu: "phi", phi: 60, reg: { on: true, sid: 1, max: 8, pay: "opt" } },
+    "clubs/q7/sched/s1": sched({ at: now.getTime(), deadline: now.getTime(), thu: "phi", phi: 60, pay: "opt" }),
     "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
-  MINI(e, "#/q7/dang-ky");
+  MINI(e, "#/q7/dang-ky/s1");
   await e.boot(); await e.until(() => e.V().includes('data-act="regin" data-v="sent"'));
   expect(e.V()).toContain("img.vietqr.io");
   expect(e.T()).toContain("60.000đ");
   expect(e.T()).toContain("trả tại sân");
   await e.click("regin", { v: "sent" });
-  await e.until(() => e.store.get("clubs/q7/regs/1_zalo_9")?.pay === "sent");
+  await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.pay === "sent");
   await e.until(() => e.T().includes("Chờ xác nhận tiền"));
-  // chủ CLB xác nhận
-  const o = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data: Object.fromEntries(e.store) });
+  delete globalThis.window.ZMINI; await new Promise(r => setTimeout(r, 700));
+  // chủ CLB xác nhận ở trang buổi
+  const o = setup({ host: "pikeco.app", path: "/q7/dang-ky/s1", user: OWNER, data: Object.fromEntries(e.store) });
   await o.boot(); await o.until(() => o.V().includes('data-act="regpayok"'));
-  await o.click("regpayok", { id: "1_zalo_9" });
-  await o.until(() => o.store.get("clubs/q7/regs/1_zalo_9").pay === "ok");
+  await o.click("regpayok", { id: "s1_zalo_9" });
+  await o.until(() => o.store.get("clubs/q7/regs/s1_zalo_9").pay === "ok");
+  // hôm nay ở tab Sân: chuẩn bị buổi theo lịch
+  await o.nav("app", { t: "san" }); await o.until(() => o.V().includes('data-act="xprep" data-id="s1"'));
+  await o.click("xprep", { id: "s1" });
+  await o.until(() => o.store.get("clubs/q7/app/config").schedId === "s1");
+  expect(o.store.get("clubs/q7/app/config")).toMatchObject({ thu: "phi", phi: 60, sname: "Kèo tối" });
   await o.until(() => o.store.get("clubs/q7/app/pay-1")?.paid?.p1 === true);
+  expect(o.store.get("clubs/q7/players/p1").active).toBe(true);
 });
 
 test("khách vãng lai đăng ký không cần duyệt, bắt đầu buổi thì có hồ sơ và được điểm danh", async () => {
@@ -177,12 +221,17 @@ test("khách vãng lai đăng ký không cần duyệt, bắt đầu buổi thì
   expect(o.store.get("clubs/q7/players/" + pid)).toMatchObject({ name: "Tuấn khách", guest: true, active: true, rating0: 3 });
 });
 
-test("bắt buộc thu trước: giữ chỗ quá 30 phút chưa chuyển thì nhường chỗ", async () => {
+test("bắt buộc thu trước: giữ chỗ quá 30 phút chưa chuyển thì nhường chỗ (đăng ký cách cũ tự chuyển sang lịch buổi)", async () => {
   const old = Date.now() - 31 * 60e3;
   const data = base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep", thu: "phi", phi: 50, reg: { on: true, sid: 1, max: 1, pay: "req" } },
     "clubs/q7/regs/1_p_p1": { sid: 1, pid: "p1", at: old, pay: "none" }, "clubs/q7/regs/1_p_p2": { sid: 1, pid: "p2", at: old + 1000, pay: "sent" } });
   const e = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data });
-  await e.boot(); await e.until(() => e.T().includes("đã nhường chỗ"));
+  await e.boot(); await e.until(() => e.store.get("clubs/q7/sched/m1")?.st === "open");
+  await e.until(() => e.store.get("clubs/q7/regs/m1_p_p2")?.sid === "m1");
+  expect(e.store.get("clubs/q7/regs/1_p_p1")).toBeUndefined();
+  expect(e.store.get("clubs/q7/app/config").reg.on).toBe(false);
+  await e.nav("app", { t: "dk", x: "m1" });
+  await e.until(() => e.T().includes("đã nhường chỗ"));
   expect(e.T()).toContain("Đã đăng ký 1");
   expect(e.T()).not.toContain("chờ 1");
 });

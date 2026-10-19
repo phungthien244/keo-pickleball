@@ -200,9 +200,30 @@ service cloud.firestore {
         allow delete: if (signedIn() && request.auth.uid == uid) || isAdmin();
       }
 
+      // Lịch buổi: nhiều buổi sắp tới, mỗi buổi một tài liệu; lịch lặp hằng tuần
+      match /sched/{x} {
+        allow read: if canRead();
+        allow write: if canEdit();
+      }
+      match /series/{x} {
+        allow read: if canRead();
+        allow write: if canEdit();
+      }
+
       // Đăng ký buổi: người chơi đã được duyệt tự đăng ký, tự hủy trước giờ khóa hủy
+      // sid là số: buổi hiện tại (cách cũ, app/config.reg). sid là chuỗi: một buổi trong lịch (sched/{sid}).
       function cfgDoc() { return get(/databases/$(database)/documents/clubs/$(c)/app/config).data; }
       function myLink() { return get(/databases/$(database)/documents/clubs/$(c)/links/$(request.auth.uid)).data; }
+      function sx(s) { return get(/databases/$(database)/documents/clubs/$(c)/sched/$(s)).data; }
+      // Buổi đang nhận đăng ký: mở tay, hoặc tự mở khi tới giờ
+      function sxOpen(s) {
+        let d = sx(s);
+        return (d.get('st', '') == 'open'
+            || (d.get('st', '') == 'plan' && d.get('openAt', 0) > 0 && request.time.toMillis() >= d.get('openAt', 0)))
+          && (d.get('deadline', 0) == 0 || request.time.toMillis() < d.get('deadline', 0));
+      }
+      function regRules() { return request.resource.data.sid is int ? cfgDoc().get('reg', {}) : sx(request.resource.data.sid); }
+      function lockOf(sid) { return sid is int ? cfgDoc().get('reg', {}).get('lockAt', 0) : sx(sid).get('lockAt', 0); }
       match /regs/{id} {
         allow read: if canRead();
         allow create: if canEdit() || (
@@ -210,15 +231,21 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv'])
           && request.resource.data.uid == request.auth.uid
           && id == string(request.resource.data.sid) + '_' + request.auth.uid
-          && cfgDoc().get('reg', {}).get('on', false) == true
-          && request.resource.data.sid == cfgDoc().get('session', 1)
           && request.resource.data.get('pay', 'none') in ['none', 'sent']
-          && (cfgDoc().get('reg', {}).get('deadline', 0) == 0
-              || request.time.toMillis() < cfgDoc().get('reg', {}).get('deadline', 0))
+          && (
+            (request.resource.data.sid is int
+              && cfgDoc().get('reg', {}).get('on', false) == true
+              && request.resource.data.sid == cfgDoc().get('session', 1)
+              && (cfgDoc().get('reg', {}).get('deadline', 0) == 0
+                  || request.time.toMillis() < cfgDoc().get('reg', {}).get('deadline', 0)))
+            || (request.resource.data.sid is string
+              && exists(/databases/$(database)/documents/clubs/$(c)/sched/$(request.resource.data.sid))
+              && sxOpen(request.resource.data.sid))
+          )
           && (
             (myLink().status == 'ok' && myLink().pid == request.resource.data.pid
               && request.resource.data.get('guest', false) == false)
-            || (cfgDoc().get('reg', {}).get('guests', false) == true
+            || (regRules().get('guests', false) == true
               && request.resource.data.get('guest', false) == true
               && request.resource.data.get('pid', null) == null
               && request.resource.data.name is string && request.resource.data.name.size() > 0)
@@ -226,8 +253,7 @@ service cloud.firestore {
         );
         // Người chơi: báo đã chuyển khoản (chưa trả → đã chuyển), hoặc hủy trước giờ khóa hủy
         function beforeLock() {
-          return cfgDoc().get('reg', {}).get('lockAt', 0) == 0
-            || request.time.toMillis() < cfgDoc().get('reg', {}).get('lockAt', 0);
+          return lockOf(resource.data.sid) == 0 || request.time.toMillis() < lockOf(resource.data.sid);
         }
         allow update: if canEdit() || (
           player() && resource.data.uid == request.auth.uid
@@ -238,9 +264,7 @@ service cloud.firestore {
               || (request.resource.data.cancel == true && beforeLock()))
         );
         allow delete: if canEdit() || (
-          player() && resource.data.uid == request.auth.uid
-          && (cfgDoc().get('reg', {}).get('lockAt', 0) == 0
-              || request.time.toMillis() < cfgDoc().get('reg', {}).get('lockAt', 0))
+          player() && resource.data.uid == request.auth.uid && beforeLock()
         );
       }
     }

@@ -26,7 +26,13 @@ store.set("clubs/aep/members/demo",{role:"owner",name:"Bạn (demo)",email:"ban@
 store.set("clubs/aep/members/u2",{role:"admin",name:"Minh",email:"minh@demo.vn",at:Date.now()});
 store.set("clubs/aep/editors/pin1",{pin:"x",at:Date.now()});
 store.set("clubs/aep/invites/demo-ql",{role:"admin",exp:Date.now()+3650*864e5,by:"demo",at:Date.now()});
-store.set("clubs/aep/invites/demo-tt",{role:"scorer",exp:Date.now()+3650*864e5,by:"demo",at:Date.now()});})();
+store.set("clubs/aep/invites/demo-tt",{role:"scorer",exp:Date.now()+3650*864e5,by:"demo",at:Date.now()});
+{const T=new Date();T.setDate(T.getDate()+1);T.setHours(19,0,0,0);const at=T.getTime(),tpl={name:"Kèo tối",fmt:"xoay",end:"21:30",place:"Sân AEP, Q7",courts:2,target:11,max:16,guests:true,thu:"keo",fee:60,feeG:80,pay:"opt",lockH:2,dlH:0,note:"Mang nước, sân có bóng."};
+store.set("clubs/aep/series/w1",{days:[2,4],time:"19:00",end:"21:30",tpl,auto:true,openD:2,on:true,at:Date.now()});
+store.set("clubs/aep/sched/s-mai",{...tpl,at,deadline:at,lockAt:at-2*3600e3,st:"open",openAt:0,series:"w1",createdAt:Date.now()});
+["d0","d2","d4","d6","d8"].forEach((pid,i)=>store.set("clubs/aep/regs/s-mai_p_"+pid,{sid:"s-mai",pid,name:store.get("clubs/aep/players/"+pid)?.name||"",at:Date.now()-(9-i)*36e5,pay:i<2?"ok":i===2?"sent":"none",by:"Bạn (demo)"}));
+const G=new Date();G.setDate(G.getDate()+4);G.setHours(8,0,0,0);
+store.set("clubs/aep/sched/s-giai",{name:"Giải cặp tháng này",fmt:"giai",end:"11:30",place:"Sân AEP, Q7",courts:3,target:11,max:16,guests:false,thu:"phi",phi:100,pay:"req",lockH:12,dlH:24,at:G.getTime(),deadline:G.getTime()-864e5,lockAt:G.getTime()-12*3600e3,hang:[300,150,50],st:"draft",openAt:0,createdAt:Date.now()});}})();
 window.PA_OVERRIDE="ban@demo.vn";
 store.set("users/demo",{club:"aep",at:Date.now()});
 store.set("clubs/q7-smash",{name:"Q7 Smash Pickleball",public:true,owner:"u7",status:"pending",city:"TP.HCM",size:"20–50",createdAt:Date.now()-36e5});
@@ -56,8 +62,8 @@ window.FB={fs:{},auth:{},
  deleteDoc:async r=>{store.delete(r.path);notify()},
  getDoc:async r=>({id:r.id,exists:()=>store.has(r.path),data:()=>store.get(r.path),metadata:{fromCache:false}}),
   writeBatch:fs=>{const ops=[];return{set:(r,d)=>ops.push(["s",r,d]),update:(r,d)=>ops.push(["u",r,d]),commit:async()=>{for(const [t,r,d] of ops){if(t==="s")store.set(r.path,JSON.parse(JSON.stringify(d)));else store.set(r.path,{...store.get(r.path),...JSON.parse(JSON.stringify(d))})}notify()}}},
- query:(c,w)=>({isCol:true,path:c.path,flt:w}),where:(f,op,v)=>({f,v}),getDocs:async r=>({docs:[...store].filter(([k,v])=>k.startsWith(r.path+"/")&&k.split("/").length===r.path.split("/").length+1&&(!r.flt||v[r.flt.f]===r.flt.v)).map(([k,v])=>({id:k.split("/").pop(),data:()=>v}))}),
- onSnapshot:(r,o,n)=>{const f=()=>{if(r.isCol){const docs=[...store].filter(([k,v])=>k.startsWith(r.path+"/")&&k.split("/").length===r.path.split("/").length+1&&(!r.flt||v[r.flt.f]===r.flt.v)).map(([k,v])=>({id:k.split("/").pop(),data:()=>v}));n({docs,metadata:{fromCache:false}})}else n({id:r.id,exists:()=>store.has(r.path),data:()=>store.get(r.path),metadata:{fromCache:false}})};subs.push(f);f();return()=>{}},
+ query:(c,w)=>({isCol:true,path:c.path,flt:w}),where:(f,op,v)=>({f,op,v}),getDocs:async r=>({docs:[...store].filter(([k,v])=>k.startsWith(r.path+"/")&&k.split("/").length===r.path.split("/").length+1&&(!r.flt||(r.flt.op==="in"?r.flt.v.includes(v[r.flt.f]):v[r.flt.f]===r.flt.v))).map(([k,v])=>({id:k.split("/").pop(),data:()=>v}))}),
+ onSnapshot:(r,o,n)=>{const f=()=>{if(r.isCol){const docs=[...store].filter(([k,v])=>k.startsWith(r.path+"/")&&k.split("/").length===r.path.split("/").length+1&&(!r.flt||(r.flt.op==="in"?r.flt.v.includes(v[r.flt.f]):v[r.flt.f]===r.flt.v))).map(([k,v])=>({id:k.split("/").pop(),data:()=>v}));n({docs,metadata:{fromCache:false}})}else n({id:r.id,exists:()=>store.has(r.path),data:()=>store.get(r.path),metadata:{fromCache:false}})};subs.push(f);f();return()=>{}},
  runTransaction:async(fs,fn)=>fn({get:window.FB.getDoc,set:(r,d)=>window.FB.setDoc(r,d)}),
  signInAnonymously:async()=>({user:{uid:"demo",isAnonymous:true}}),signOut:async()=>{},signInWithCustomToken:async(a,t)=>{try{sessionStorage.setItem("pb-mock-zalo","1");if(t&&t!=="demo"&&/^[a-z0-9]{2,20}$/i.test(t))sessionStorage.setItem("pb-mock-zuid",t)}catch(e){}return{user:ZALO_USER}},onAuthStateChanged:(a,f)=>setTimeout(()=>f(isZaloDemo()?ZALO_USER:isGuest()?null:DEMO_USER),0)};
 })();

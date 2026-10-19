@@ -5,7 +5,7 @@ const drafts={}; const editing=new Set(); const errs={};
 let db=null, canWrite=false, authUser=null, tab="san", resetArm=0, delArm=null, holder=Math.random().toString(36).slice(2);
 try{tab=localStorage.getItem("pb-tab")||"san"}catch(e){}
 if(tab==="home")tab="san";
-let routePid="",route="home",routeSid=0,autoRoute=true,hF="all";
+let routePid="",routeX=null,route="home",routeSid=0,autoRoute=true,hF="all";
 /* ---------- đường dẫn ----------
    Nền tảng: /  /clb  /tao-clb  /dang-nhap  /quan-tri
    CLB:      /aep  /aep/san  /aep/xep-hang  /aep/thanh-vien  /aep/quy  /aep/lich-su
@@ -26,7 +26,8 @@ function miniStart(){
   const q=String(new URLSearchParams(location.search||"").get("clb")||"").toLowerCase().replace(/[^a-z0-9-]/g,"");
   let last="";try{last=localStorage.getItem("pb-mini-last")||""}catch(e){}
   const c=q||String(last).replace(/[^a-z0-9-]/g,"");
-  return c?"/"+c:"/clb";
+  const b=String(new URLSearchParams(location.search||"").get("buoi")||"").replace(/[^A-Za-z0-9_-]/g,"");
+  return c?"/"+c+(b&&q?"/dang-ky/"+b:""):"/clb";
 }
 const curPath=()=>MINI?(String(location.hash||"").slice(1)||miniStart()):location.pathname;
 const setPath=(p,rep)=>{try{history[rep?"replaceState":"pushState"](null,"",MINI?location.pathname+location.search+"#"+p:p)}catch(e){}};
@@ -50,7 +51,7 @@ function readPath(path){
   if(!s.length)return{mode:"platform",route:"start"};
   if(s.length===1&&PSEG[s[0]]!==undefined)return{mode:"platform",route:PSEG[s[0]]};
   const r={mode:"club",cid:slugClean(s[0])||"aep",route:"home"};
-  if(TSEG[s[1]]){r.route="app";r.tab=TSEG[s[1]]}
+  if(TSEG[s[1]]){r.route="app";r.tab=TSEG[s[1]];if(r.tab==="dk")r.xid=s[2]||null}
   else if(s[1]==="buoi"){r.route="buoi";r.sid=Number(s[2])||0}
   else if(s[1]==="cai-dat")r.route="caidat";
   else if(s[1]==="dang-nhap")r.route="clogin";
@@ -59,14 +60,14 @@ function readPath(path){
   else if(s[1]==="so-ke"){r.route="cmp";r.pid=s[2]||""}
   else if(s[1]==="moi"){r.invite=s[2]||null;r.route="clogin"}
   return r}
-function applyPath(r){route=r.route;if(r.mode==="club"){if(r.tab)tab=r.tab;if(r.route==="buoi")routeSid=r.sid;if(r.route==="vdv"||r.route==="cmp")routePid=r.pid;if(r.route!=="home")autoRoute=false}}
+function applyPath(r){route=r.route;if(r.mode==="club"){if(r.tab)tab=r.tab;if(r.route==="app")routeX=r.tab==="dk"?(r.xid||null):null;if(r.route==="buoi")routeSid=r.sid;if(r.route==="vdv"||r.route==="cmp")routePid=r.pid;if(r.route!=="home")autoRoute=false}}
 {const lp=legacyPath();if(lp)setPath(lp,1);
   let r=readPath(lp||curPath());if(MINI&&r.mode!=="club"&&r.route!=="clb")r=readPath("/clb");MODE=r.mode;if(r.mode==="club"){CID=r.cid;INVITE=r.invite||null}applyPath(r)}
 function pathOf(r,opt={}){
   if(RSEG[r]!==undefined)return "/"+RSEG[r];
   const c="/"+CID;
   if(r==="buoi")return `${c}/buoi/${opt.sid!=null?opt.sid:routeSid}`;
-  if(r==="app")return `${c}/${SEGT[opt.tab||tab]||"san"}`;
+  if(r==="app"){const t=opt.tab||tab,x=t==="dk"?(opt.x!==undefined?opt.x:(opt.tab?null:routeX)):null;return `${c}/${SEGT[t]||"san"}${x?"/"+encodeURIComponent(x):""}`}
   if(r==="caidat")return c+"/cai-dat";
   if(r==="clogin")return c+"/dang-nhap";
   if(r==="chot")return c+"/chot-buoi";
@@ -76,7 +77,7 @@ function pathOf(r,opt={}){
 const absUrl=p=>(MINI?"https://pikeco.app":location.origin)+p;
 function go(r,opt={}){
   if((RSEG[r]!==undefined?"platform":"club")!==MODE){if(MINI){if(r==="clb"){setPath("/clb");location.reload()}return}location.href=pathOf(r,opt);return}
-  route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="vdv"||r==="cmp")routePid=String(opt.pid||"");if(r==="app"&&opt.tab)tab=opt.tab;
+  route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="vdv"||r==="cmp")routePid=String(opt.pid||"");if(r==="app"&&opt.tab)tab=opt.tab;if(r==="app")routeX=tab==="dk"?(opt.x||null):null;
   setPath(pathOf(r));
   if(!opt.keep)try{scrollTo({top:0})}catch(e){}
   render();if(typeof repaint==="function")repaint()}

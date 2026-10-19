@@ -1,23 +1,24 @@
 /* ---------- Đăng ký buổi: chủ CLB mở buổi, người chơi đăng ký (Mini App), thu tiền trước tùy chọn ---------- */
 const MINI_APP_ID="180913816434821856";
-const miniLink=(cid=CID)=>`https://zalo.me/s/${MINI_APP_ID}/?clb=${encodeURIComponent(cid)}`;
+const miniLink=(cid=CID,x)=>`https://zalo.me/s/${MINI_APP_ID}/?clb=${encodeURIComponent(cid)}${x?"&buoi="+encodeURIComponent(x):""}`;
 const HOLD_MS=30*60e3; // Bắt buộc thu trước: giữ chỗ 30 phút cho người chưa chuyển
-const regCfg=()=>cfg().reg||{};
+// RX: buổi trong lịch đang xem (66-lich.js). Không có RX: buổi hiện tại theo cách cũ (app/config.reg)
+const regCfg=()=>RX||cfg().reg||{};
 // Mỗi CLB mở đăng ký cho 1 buổi sắp tới (buổi hiện tại đang chuẩn bị)
-const regOpen=()=>{const r=regCfg();return r.on===true&&(r.sid==null||r.sid===(cfg().session||1))};
+const regOpen=()=>{if(RX)return xOpen(RX);const r=regCfg();return r.on===true&&(r.sid==null||r.sid===(cfg().session||1))};
 const regPayMode=()=>{const m=regCfg().pay;return m==="opt"||m==="req"?m:"off"};
 // Phí: Lệ phí cố định dùng số của phần Chi phí; cách thu khác dùng "phí dự kiến" của buổi
-const feeMem=()=>{const c=cfg(),r=regCfg();return Math.max(0,(c.thu||"keo")==="phi"?+c.phi||0:+r.fee||0)};
+const feeMem=()=>{const c=RX||cfg(),r=regCfg();return Math.max(0,(c.thu||"keo")==="phi"?+c.phi||0:+r.fee||0)};
 const feeGuest=()=>{const r=regCfg();return Math.max(0,r.feeG!=null&&r.feeG!==""?+r.feeG:feeMem())};
 const feeOf=x=>x&&x.guest?feeGuest():feeMem();
 const payOn=()=>regPayMode()!=="off"&&(feeMem()>0||feeGuest()>0);
 const isHeldOut=x=>regPayMode()==="req"&&(x.pay||"none")==="none"&&Date.now()-(x.at||0)>HOLD_MS;
 function regList(D){
   const max=Math.max(1,+regCfg().max||999);
-  const mine=S.regs||[],L=mine.filter(r=>r.sid===D.sid&&!r.cancel&&!isHeldOut(r)).sort((a,b)=>(a.at||0)-(b.at||0));
+  const K=regKey(D),mine=S.regs||[],L=mine.filter(r=>r.sid===K&&!r.cancel&&!isHeldOut(r)).sort((a,b)=>(a.at||0)-(b.at||0));
   return {all:L,conf:L.slice(0,max),wait:L.slice(max),max,
-    refund:mine.filter(r=>r.sid===D.sid&&r.cancel&&(r.pay==="sent"||r.pay==="ok")),
-    expired:mine.filter(r=>r.sid===D.sid&&!r.cancel&&isHeldOut(r))};
+    refund:mine.filter(r=>r.sid===K&&r.cancel&&(r.pay==="sent"||r.pay==="ok")),
+    expired:mine.filter(r=>r.sid===K&&!r.cancel&&isHeldOut(r))};
 }
 const regLockAt=()=>{const r=regCfg();return r.at?r.at-(+r.lockH||0)*3600e3:0};
 const regClosed=()=>{const r=regCfg(),t=Date.now();return (r.deadline&&t>r.deadline)||(r.at&&t>r.at)};
@@ -31,7 +32,7 @@ const PAYLB={none:"Chưa trả",sent:"Chờ xác nhận tiền",ok:"Đã trả"}
 
 /* ----- Thông tin buổi (người chơi và người xem) ----- */
 function sessBox(D,R){
-  const r=regCfg(),c=D.c;R=R||regList(D);
+  const r=regCfg(),c=RX?{...D.c,...RX,sname:xName(RX)}:D.c;R=R||regList(D);
   const map=r.map?` <a href="${esc(r.map)}" target="_blank" rel="noopener">Bản đồ ↗</a>`:"";
   const chips=[`${c.courts} sân`,fmtTxt(c),lvTxt(r),feeMem()?`${fmtK(feeMem())}/người`:THU[c.thu||"keo"],r.guests?"Nhận khách":""].filter(Boolean);
   return `<div class="rh"><span class="lbl">Đăng ký buổi</span><b>${esc(c.sname||"Buổi đánh tới")}</b><span>${esc(whenFull(r))}${r.place?` · ${esc(r.place)}`:""}${map}</span></div>
@@ -46,14 +47,14 @@ function regFaces(D,R){
 // Khung chuyển khoản: QR điền sẵn số tiền và nội dung
 function payBox(D,name,k){
   if(!BANK||!BANK.acc)return `<small class="rule">CLB chưa khai ngân hàng nhận tiền, bạn trả tại sân.</small>`;
-  const amt=Math.round(k*1000),note=payNote(D.sid,name||"KHACH");
+  const amt=Math.round(k*1000),note=RX?payNoteX(RX,name||"KHACH"):payNote(D.sid,name||"KHACH");
   return `<div class="rgpay"><img src="${esc(qrUrl(amt,note))}" alt="Mã QR chuyển ${kVND(k)}" width="110" height="110"><div class="kv2"><span>Số tiền</span><b class="num">${kVND(k)}</b><span>Nội dung</span><b>${esc(note)}</b><span>${esc(BANK.name||"")}</span><b class="num">${esc(BANK.acc)}</b><button class="line" data-act="saveqr" data-v="${esc(qrUrl(amt,note))}" data-n="${esc(note)}">Lưu mã QR</button></div></div>`;
 }
 // Nút chính cho người chơi
 function regAction(D,R){
-  const r=regCfg(),u=authUser,mine=u&&(S.regs||[]).find(x=>x.sid===D.sid&&x.uid===u.uid&&!x.cancel),locked=r.at&&Date.now()>regLockAt();
+  const r=regCfg(),u=authUser,mine=u&&(S.regs||[]).find(x=>x.sid===regKey(D)&&x.uid===u.uid&&!x.cancel),locked=r.at&&Date.now()>regLockAt();
   if(canWrite)return `<a class="lnk" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">Quản lý đăng ký ›</a>`;
-  if(!PLAYER_ON())return `<a class="zalobtn" href="${miniLink()}"><b>Z</b>Mở trong Zalo để đăng ký</a>`;
+  if(!PLAYER_ON())return `<a class="zalobtn" href="${miniLink(CID,RX&&RX.id)}"><b>Z</b>Mở trong Zalo để đăng ký</a>`;
   if(!isPlayer(u))return zaloBtn("Vào bằng Zalo để đăng ký");
   if(mine&&!isHeldOut(mine)){
     const pos=R.all.indexOf(mine),k=feeOf(mine),pay=mine.pay||"none",nm=mine.guest?mine.name:D.pmap.get(mine.pid)?.name;
@@ -87,13 +88,18 @@ function guestForm(D){
     <button class="ghost" data-act="guestopen">Quay lại</button></section>`;
 }
 function regCard(D){
-  if(MODE!=="club"||legacy||!regOpen()||phaseOf(D)==="live")return "";
+  if(MODE!=="club"||legacy)return "";
+  if(!RX&&(S.sched||[]).length){const c=xPlayerCards(D);return c?`<section class="xupl"><span class="xsec">Buổi sắp tới</span>${c}</section>`:""}
+  if(!regOpen()||phaseOf(D)==="live")return "";
   const R=regList(D);
   return `<section class="regcard">${sessBox(D,R)}${regAction(D,R)}${regFaces(D,R)}</section>`;
 }
 // Chủ CLB ở trang Tổng quan / Chuẩn bị: một dòng tóm tắt dẫn tới trang Đăng ký
 function dkBanner(D){
   if(!isAdm()||legacy)return "";
+  if((S.sched||[]).length){const n=pendCount(),U=schedUp(),o=U.filter(xOpen).length,pay=(S.regs||[]).filter(x=>typeof x.sid==="string"&&!x.cancel&&x.pay==="sent").length;
+    if(!n&&!U.length)return "";
+    return `<a class="dkban" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk"><span class="t"><b>Lịch buổi · ${U.length} buổi sắp tới</b><small>${[o&&`${o} buổi đang nhận đăng ký`,n&&`${n} người xin tham gia`,pay&&`${pay} khoản tiền cần xác nhận`].filter(Boolean).join(" · ")||"Chưa mở đăng ký"}</small></span><span aria-hidden="true">›</span></a>`}
   const n=pendCount(),R=regList(D),pay=R.all.filter(x=>x.pay==="sent").length+R.refund.filter(x=>x.pay!=="refund").length;
   if(!n&&!regOpen())return "";
   const sub=[n&&`${n} người chờ duyệt`,pay&&`${pay} khoản tiền cần xem`,!n&&!pay&&regOpen()&&"Đang mở đăng ký"].filter(Boolean).join(" · ");
@@ -103,15 +109,15 @@ function dkBanner(D){
 /* ----- Trang Đăng ký (tab dk) ----- */
 function vDk(D){
   if(legacy)return `<div class="empty"><strong>Chưa dùng được</strong>CLB cần chuyển sang tài khoản CLB trước.</div>`;
-  if(isAdm())return dkAdmin(D);
-  return dkPlayer(D);
+  if(isAdm())return vLichAdm(D);
+  return vLichPlayer(D);
 }
 function dkPlayer(D){
   const live=phaseOf(D)==="live",R=regList(D),u=authUser,r=regCfg();
   if(PLAYER_ON()&&!isPlayer(u))return `<section class="regcard"><b>Đang vào bằng Zalo…</b><span class="rule">Nếu chờ lâu, bấm nút dưới.</span>${zaloBtn("Vào lại bằng Zalo")}</section>`;
   if(PLAYER_ON()&&S.link===undefined)return `<p class="rule">Đang tải…</p>`;
   if(live)return `<section class="regcard"><span class="lbl">Buổi đang diễn ra</span><b>${esc(sessTitle(D.c,D.sid))}</b><span class="rule">${D.playing.length} sân đang đánh · ${D.done.length} trận xong</span><a class="primary wide" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Xem trực tiếp</a></section>`;
-  const mine=u&&(S.regs||[]).find(x=>x.sid===D.sid&&x.uid===u.uid&&!x.cancel&&!isHeldOut(x));
+  const mine=u&&(S.regs||[]).find(x=>x.sid===regKey(D)&&x.uid===u.uid&&!x.cancel&&!isHeldOut(x));
   if(PLAYER_ON()&&(!S.link||S.link.status!=="ok")&&!mine){
     if(guestOpen&&r.guests&&regOpen())return guestForm(D);
     let h="";
@@ -170,7 +176,7 @@ function regPeople(D){
     return `<div class="prer${i>=R.max?" done":""}"><b class="no num">${i+1}</b><span class="pm">${nm(x)}${x.arrived?` <small class="gtag" style="color:var(--win)">✓ đã đến</small>`:""}${x.guest?` <small class="gtag">khách ${esc(x.lv||"")}</small>`:""}${i>=R.max?` <small>· chờ</small>`:""}<small>${hm(x.at)} ${dmy(x.at)}${x.by?" · "+esc(x.by):""}${po&&k?` · ${kVND(k)} · <span class="paychip ${pay}">${PAYLB[pay]}</span>`:""}</small></span>
       <span class="pb">${po&&k&&pay!=="ok"?`<button class="line" data-act="regpayok" data-id="${x.id}">✓ Đã nhận</button>`:""}${po&&pay==="ok"?`<button class="ghost" data-act="regpayundo" data-id="${x.id}" aria-label="Bỏ xác nhận">↺</button>`:""}<button class="ghost danger" data-act="regdel" data-id="${x.id}" aria-label="Bỏ">${armed("regdel:"+x.id)?"Bỏ?":"✕"}</button></span></div>`};
   const got=R.all.filter(x=>x.pay==="ok").reduce((s,x)=>s+feeOf(x),0);
-  let b=`<div class="lab" style="margin:0 0 4px"><span class="lbl">Đã đăng ký ${R.conf.length}${R.wait.length?` · chờ ${R.wait.length}`:""}${po?` · đã nhận ${kVND(got)}`:""}</span>${R.all.length?`<button class="lnk" data-act="regatt">${armed("regatt:x")?"Bấm lần nữa":"Điểm danh theo đăng ký"}</button>`:""}</div>`;
+  let b=`<div class="lab" style="margin:0 0 4px"><span class="lbl">Đã đăng ký ${R.conf.length}${R.wait.length?` · chờ ${R.wait.length}`:""}${po?` · đã nhận ${kVND(got)}`:""}</span>${R.all.length&&(!RX||cfg().schedId===RX.id)?`<button class="lnk" data-act="regatt">${armed("regatt:x")?"Bấm lần nữa":"Điểm danh theo đăng ký"}</button>`:""}</div>`;
   b+=R.all.length?`<div class="prel">${R.all.map(row).join("")}</div>`:`<small class="rule">Chưa ai đăng ký.</small>`;
   if(R.refund.length)b+=`<span class="lbl rgsec">Đã hủy, cần hoàn tiền</span><div class="prel">${R.refund.map(x=>`<div class="prer"><span class="pm">${nm(x)}<small>${kVND(feeOf(x))} · hủy lúc ${hm(x.cancelAt)} · ${x.pay==="refund"?"đã hoàn":"chưa hoàn"}</small></span><span class="pb">${x.pay!=="refund"?`<button class="line" data-act="regrefund" data-id="${x.id}">Đã hoàn</button>`:""}<button class="ghost danger" data-act="regdel" data-id="${x.id}" aria-label="Xoá">${armed("regdel:"+x.id)?"Xoá?":"✕"}</button></span></div>`).join("")}</div>`;
   if(R.expired.length)b+=`<small class="rule">${R.expired.length} người giữ chỗ quá 30 phút chưa chuyển khoản, đã nhường chỗ.</small>`;
@@ -202,7 +208,8 @@ function approvals(D){
 }
 // Bắt đầu buổi: điểm danh người đã đăng ký, tạo hồ sơ khách, đánh dấu đã trả ở trang Quỹ
 async function regStart(D){
-  if(!regOpen())return 0;
+  const X=xCur();if(X&&!RX)return withX(X,()=>regStart(D));
+  if(!RX&&!regOpen())return 0;
   const R=regList(D);let n=0;const paid=[];
   for(const x of R.conf){
     let pid=x.pid;
@@ -224,21 +231,21 @@ async function regAct(act,b,id){
     if(!isPlayer(u))return true;
     if(!guest&&(!L||L.status!=="ok"))return true;
     if(guest&&!regCfg().guests)return true;
-    if((S.regs||[]).some(x=>x.sid===D.sid&&x.uid===u.uid&&!x.cancel&&!isHeldOut(x))){toast("Bạn đã có trong danh sách.");return true}
+    if((S.regs||[]).some(x=>x.sid===regKey(D)&&x.uid===u.uid&&!x.cancel&&!isHeldOut(x))){toast("Bạn đã có trong danh sách.");return true}
     if(regClosed()){toast("Đã hết hạn đăng ký buổi này.");return true}
     const pay=b.dataset.v==="sent"?"sent":"none";
-    let d={sid:D.sid,uid:u.uid,at:Date.now(),pay};
+    let d={sid:regKey(D),uid:u.uid,at:Date.now(),pay};
     if(guest){const el=document.getElementById&&document.getElementById("gs-name"),nm=String((el&&el.value)||drafts["gs-name"]||zaloProf().n||"").trim().slice(0,30);
       if(!nm){toast("Nhập tên của bạn.");return true}
       d={...d,guest:true,name:nm,gender:drafts["gs-g"]==="F"?"F":"M",lv:String(val("gs-lv","3.0"))}}
     else d={...d,pid:L.pid,name:D.pmap.get(L.pid)?.name||""};
-    try{await FB.setDoc(FB.doc(FB.fs,PFX+"regs/"+D.sid+"_"+u.uid),d);guestOpen=false;toast(pay==="sent"?"Đã đăng ký, chờ chủ CLB xác nhận tiền":"Đã đăng ký")}catch(e){toast("Chưa đăng ký được, thử lại.")}
+    try{await FB.setDoc(FB.doc(FB.fs,PFX+"regs/"+regKey(D)+"_"+u.uid),d);guestOpen=false;toast(pay==="sent"?"Đã đăng ký, chờ chủ CLB xác nhận tiền":"Đã đăng ký")}catch(e){toast("Chưa đăng ký được, thử lại.")}
     return true}
-  if(act==="regpaid"){const D=derive(),mine=(S.regs||[]).find(x=>x.sid===D.sid&&x.uid===authUser?.uid&&!x.cancel);if(!mine)return true;
+  if(act==="regpaid"){const D=derive(),mine=(S.regs||[]).find(x=>x.sid===regKey(D)&&x.uid===authUser?.uid&&!x.cancel);if(!mine)return true;
     try{await FB.updateDoc(FB.doc(FB.fs,PFX+"regs/"+mine.id),{pay:"sent",paidAt:Date.now()});toast("Đã báo chuyển khoản, chờ chủ CLB xác nhận")}catch(e){toast("Chưa gửi được, thử lại.")}
     return true}
   if(act==="regout"){const D=derive();if(!armOr("regout:x"))return true;
-    const mine=(S.regs||[]).find(x=>x.sid===D.sid&&x.uid===authUser?.uid&&!x.cancel);if(!mine)return true;
+    const mine=(S.regs||[]).find(x=>x.sid===regKey(D)&&x.uid===authUser?.uid&&!x.cancel);if(!mine)return true;
     try{if(mine.pay==="sent"||mine.pay==="ok"){await FB.updateDoc(FB.doc(FB.fs,PFX+"regs/"+mine.id),{cancel:true,cancelAt:Date.now()});toast("Đã hủy. Chủ CLB sẽ hoàn tiền cho bạn")}
       else{await FB.deleteDoc(FB.doc(FB.fs,PFX+"regs/"+mine.id));toast("Đã hủy đăng ký")}}catch(e){toast("Đã quá giờ hủy hoặc chưa hủy được.")}
     return true}
@@ -250,17 +257,18 @@ async function regAdminAct(act,b,id,D){
   if(act==="regguest"){await write(()=>saveCfg({reg:{...regCfg(),guests:b.dataset.v==="1"}}));return true}
   if(act==="regpay"){const v=["off","opt","req"].includes(b.dataset.v)?b.dataset.v:"off";await write(()=>saveCfg({reg:{...regCfg(),pay:v}}),v==="off"?"Không thu trước":v==="opt"?"Thu trước tùy chọn":"Bắt buộc thu trước");return true}
   if(act==="regadd"){regAddOpen=!regAddOpen;render();return true}
-  if(act==="regaddp"){const p=D.pmap.get(id);if(!p)return true;await write(()=>db.collection("regs").doc(D.sid+"_p_"+id).set({sid:D.sid,uid:p.zuid||null,pid:id,name:p.name,at:Date.now(),by:who(),pay:"none"}),`Đã thêm ${p.name}`);return true}
+  if(act==="regaddp"){const p=D.pmap.get(id);if(!p)return true;await write(()=>db.collection("regs").doc(regKey(D)+"_p_"+id).set({sid:regKey(D),uid:p.zuid||null,pid:id,name:p.name,at:Date.now(),by:who(),pay:"none"}),`Đã thêm ${p.name}`);return true}
   if(act==="regdel"){if(!armOr("regdel:"+id))return true;await write(()=>db.collection("regs").doc(id).delete(),"Đã bỏ khỏi danh sách");return true}
   if(act==="regpayok"){const x=(S.regs||[]).find(z=>z.id===id);if(!x)return true;
-    await write(async()=>{await db.collection("regs").doc(id).update({pay:"ok",okAt:Date.now(),okBy:who()});if(x.pid)await savePay(D.sid,nx=>{nx.paid[x.pid]=true})},"Đã xác nhận nhận tiền");return true}
+    await write(async()=>{await db.collection("regs").doc(id).update({pay:"ok",okAt:Date.now(),okBy:who()});if(x.pid&&xPaySid(x,D))await savePay(D.sid,nx=>{nx.paid[x.pid]=true})},"Đã xác nhận nhận tiền");return true}
   if(act==="regpayundo"){const x=(S.regs||[]).find(z=>z.id===id);if(!x)return true;
-    await write(async()=>{await db.collection("regs").doc(id).update({pay:"none"});if(x.pid)await savePay(D.sid,nx=>{delete nx.paid[x.pid]})},"Đã bỏ xác nhận");return true}
+    await write(async()=>{await db.collection("regs").doc(id).update({pay:"none"});if(x.pid&&xPaySid(x,D))await savePay(D.sid,nx=>{delete nx.paid[x.pid]})},"Đã bỏ xác nhận");return true}
   if(act==="regrefund"){const x=(S.regs||[]).find(z=>z.id===id);if(!x)return true;
-    await write(async()=>{await db.collection("regs").doc(id).update({pay:"refund",refundAt:Date.now()});if(x.pid)await savePay(D.sid,nx=>{delete nx.paid[x.pid]})},"Đã ghi nhận hoàn tiền");return true}
+    await write(async()=>{await db.collection("regs").doc(id).update({pay:"refund",refundAt:Date.now()});if(x.pid&&xPaySid(x,D))await savePay(D.sid,nx=>{delete nx.paid[x.pid]})},"Đã ghi nhận hoàn tiền");return true}
   if(act==="regatt"){const R=regList(D),inS=new Set(R.conf.map(x=>x.pid).filter(Boolean));if(!armOr("regatt:x"))return true;
     await write(async()=>{for(const p of D.players){const on=inS.has(p.id);if((p.active!==false)!==on)await db.collection("players").doc(p.id).update({active:on})}},`Điểm danh ${inS.size} người theo danh sách đăng ký`);return true}
-  if(act==="regshare"){const r=regCfg(),R=regList(D),u=miniLink(),club=(CLUB&&CLUB.name)||D.c.title,left=+r.max?Math.max(0,+r.max-R.conf.length):null,c=D.c;
+  if(act==="regshare"){if(id&&!RX){const X=schedById(id);if(X)return withX(X,()=>regAdminAct(act,b,null,D))}
+    const r=regCfg(),R=regList(D),u=miniLink(CID,RX&&RX.id),club=(CLUB&&CLUB.name)||D.c.title,left=+r.max?Math.max(0,+r.max-R.conf.length):null,c=RX?{...D.c,...RX,sname:xName(RX)}:D.c;
     const L=[`📣 ${club}: mở đăng ký ${c.sname||"buổi đánh tới"}`,`🗓 ${whenFull(r)}`,r.place&&`📍 ${r.place}${r.map?` · ${r.map}`:""}`,
       `🏓 ${c.courts} sân · ${fmtTxt(c)}${lvTxt(r)?" · "+lvTxt(r):""}${r.guests?" · nhận khách":""}`,
       feeMem()?`💰 ${fmtK(feeMem())}/người${r.guests&&feeGuest()!==feeMem()?` · khách ${fmtK(feeGuest())}`:""}${regPayMode()==="req"?" · chuyển khoản khi đăng ký":regPayMode()==="opt"?" · chuyển khoản trước hoặc trả tại sân":""}`:null,

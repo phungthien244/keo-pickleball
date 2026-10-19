@@ -205,7 +205,8 @@ async function endGiai(){
         table:GD.table.map(t=>({id:t.p.id,a:t.p.a,b:t.p.b,na:nmOf(t.p.a),nb:nmOf(t.p.b),gp:t.gp,w:t.w,l:t.l,pf:t.pf,pa:t.pa,wo:t.wo,out:t.out})),
         games:GD.games.filter(g=>g.st==="done"||(g.st==="wo"&&g.wo)).map(g=>({r:g.r,x:g.x,y:g.y,sx:g.sx,sy:g.sy,wo:g.wo||null,court:g.m?.court||null,seq:g.m?.seq||null,at:g.m?.doneAt||null}))}});
     for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
-    await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},fmt:"xoay",giai:null,phase:"prep",sname:""});
+    await xFinish(D);
+    await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},fmt:"xoay",giai:null,phase:"prep",sname:"",schedId:null});
   },"Đã lưu giải, đây là trang tổng kết để chia sẻ");go("buoi",{sid:D.sid});
 }
 function vGiaiSum(D,x,back){

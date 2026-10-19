@@ -46,8 +46,17 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
   const subSession=sid=>{if(sid===subSid)return;if(subSid!=null)S.pm[subSid]=S.matches;subSid=sid;if(unsubM)unsubM();if(unsubB)unsubB();S.mReady=false;S.matches=[];S.batches=[];
     unsubM=db.collection("matches").where("session",sid).onSnapshot(q=>{S.matches=q.docs.map(d=>({id:d.id,...d.data()}));S.mReady=true;live(q.metadata);autoGFill()},fail);
     unsubB=db.collection("batches").where("session",sid).onSnapshot(q=>{S.batches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail)
-    if(!legacy){if(unsubR)unsubR();S.regs=[];unsubR=db.collection("regs").where("sid",sid).onSnapshot(q=>{S.regs=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{})}};
-  db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;subSession(cfg().session||1);live(s.metadata)},fail);
+    subRegs()};
+  // Đăng ký: của buổi hiện tại (cách cũ, sid là số) và của các buổi trong lịch còn sắp tới (sid là mã buổi)
+  let regKeyNow="";
+  const subRegs=()=>{if(legacy)return;const ids=[subSid,...schedUp().map(x=>x.id),cfg().schedId].filter((x,i,a)=>x!=null&&a.indexOf(x)===i).slice(0,30),k=JSON.stringify(ids);
+    if(k===regKeyNow)return;regKeyNow=k;if(unsubR)unsubR();
+    unsubR=FB.onSnapshot(FB.query(FB.collection(FB.fs,PFX+"regs"),FB.where("sid","in",ids)),{},q=>{S.regs=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{})};
+  if(!legacy){
+    FB.onSnapshot(FB.collection(FB.fs,PFX+"sched"),{},q=>{S.sched=q.docs.map(d=>({id:d.id,...d.data()}));S.schedReady=true;subRegs();render()},()=>{S.sched=[];S.schedReady=true;render()});
+    FB.onSnapshot(FB.collection(FB.fs,PFX+"series"),{},q=>{S.series=q.docs.map(d=>({id:d.id,...d.data()}));S.seriesReady=true;render()},()=>{S.series=[];S.seriesReady=true});
+  }
+  db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;subSession(cfg().session||1);subRegs();live(s.metadata)},fail);
   db.collection("app").onSnapshot(q=>{const A=q.docs.map(d=>({id:d.id,...d.data()}));
     S.hist=A.filter(d=>d.id.startsWith("hist-"));S.pays=Object.fromEntries(A.filter(d=>d.id.startsWith("pay-")).map(d=>[d.id,d]));S.led=A.filter(d=>d.id.startsWith("led-"));S.trash=A.find(d=>d.id==="trash")||null;
     S.hReady=true;render()},fail);

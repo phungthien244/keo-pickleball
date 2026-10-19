@@ -10,7 +10,7 @@ export function setup({ search = "", path = "/", host = "rr.pikeco.app", user = 
   let idc = 5000;
   const clone = d => JSON.parse(JSON.stringify(d));
   const children = r => [...store]
-    .filter(([k, v]) => k.startsWith(r.path + "/") && k.split("/").length === r.path.split("/").length + 1 && (!r.flt || v[r.flt.f] === r.flt.v))
+    .filter(([k, v]) => k.startsWith(r.path + "/") && k.split("/").length === r.path.split("/").length + 1 && (!r.flt || (r.flt.op === "in" ? r.flt.v.includes(v[r.flt.f]) : v[r.flt.f] === r.flt.v)))
     .map(([k, v]) => ({ id: k.split("/").pop(), data: () => v }));
   const snap = r => ({ id: r.id, exists: () => store.has(r.path), data: () => store.get(r.path), metadata: { fromCache: false } });
   const env = { store, user, authCb: null, url: null, href: null, reloaded: 0 };
@@ -39,7 +39,7 @@ export function setup({ search = "", path = "/", host = "rr.pikeco.app", user = 
       };
     },
     query: (c, w) => ({ isCol: true, path: c.path, flt: w }),
-    where: (f, op, v) => ({ f, v }),
+    where: (f, op, v) => ({ f, op, v }),
     getDocs: async r => ({ docs: children(r) }),
     onSnapshot: (r, o, n) => {
       const f = () => (r.isCol ? n({ docs: children(r), metadata: { fromCache: false } }) : n(snap(r)));
