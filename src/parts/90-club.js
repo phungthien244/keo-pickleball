@@ -118,7 +118,7 @@ const clubFoot=()=>`<footer class="pfoot"><a href="/">pikeco.app</a> · quản l
 function clubLoginBody(){
   const u=authUser,tok=inviteTok();
   let h="";
-  if(!tok&&!legacy)h+=`<section class="card2"><h2>Người chơi</h2><div class="cb">${isPlayer(u)?`<p class="rule">Máy này đã tham gia. Bạn đăng ký buổi ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a>`:`<p class="rule">Tự đăng ký buổi chơi, không cần tài khoản. Chạm vào tên mình, chủ CLB duyệt một lần là xong. Mở được ngay trong Zalo.</p>${zaloBtn()}`}</div></section>`;
+  if(!tok&&!legacy&&PLAYER_ON())h+=`<section class="card2"><h2>Người chơi</h2><div class="cb">${isPlayer(u)?`<p class="rule">Máy này đã tham gia. Bạn đăng ký buổi ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a>`:`<p class="rule">Tự đăng ký buổi chơi, không cần tài khoản. Chạm vào tên mình, chủ CLB duyệt một lần là xong. Mở được ngay trong Zalo.</p>${zaloBtn()}`}</div></section>`;
   h+=`<section class="card2"><h2>${tok?"Nhận lời mời ban tổ chức":"Chủ CLB, quản lý"}</h2><div class="cb">`;
   if(isGoogle(u)&&!canWrite)h+=`<p class="rule">Đang đăng nhập ${esc(u.email||"")} nhưng tài khoản này chưa có quyền ở CLB. Nhờ chủ CLB gửi link mời, hoặc đổi tài khoản.</p><button class="line" data-act="logout">Đổi tài khoản Google</button>`;
   else h+=`<p class="rule">${tok?"Bạn được mời vào ban tổ chức. Đăng nhập Google để nhận quyền.":"Đăng nhập Google để sửa cài đặt, xếp sân và quản lý thành viên."}</p><button class="gwide" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập bằng Google</button>`;

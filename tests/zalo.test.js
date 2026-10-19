@@ -62,9 +62,18 @@ test("chủ CLB duyệt người mới: tạo hồ sơ gắn tài khoản Zalo",
 
 test("người chơi không cần tài khoản: vào bằng máy mình, chọn tên, chờ duyệt", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7/dang-nhap", data: base() });
+  globalThis.window.ZMINI = 1;
   await e.boot(); await e.until(() => e.V().includes('data-act="zlogin"'));
   await e.click("zlogin");
   await e.until(() => e.T().includes("Bạn là ai trong CLB"));
   await e.click("lnkpick", { id: "p2" }); await e.click("lnksend");
   await e.until(() => e.store.get("clubs/q7/links/anon")?.pid === "p2");
+});
+
+test("bản web: không có nút tham gia cho người chơi", async () => {
+  const data = base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep", reg: { on: true, max: 4 } } });
+  const e = setup({ host: "pikeco.app", path: "/q7/san", data });
+  await e.boot(); await e.until(() => e.T().includes("Đăng ký buổi"));
+  expect(e.V()).not.toContain('data-act="zlogin"');
+  expect(e.T()).toContain("Zalo Mini App");
 });

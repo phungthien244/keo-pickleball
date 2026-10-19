@@ -1,10 +1,13 @@
 /* ---------- Người chơi: đăng nhập Zalo, nhận hồ sơ, đăng ký buổi ---------- */
 // Zalo chặn lấy thông tin người dùng từ máy chủ ngoài Việt Nam → tạm tắt, người chơi vào bằng tài khoản ẩn danh trên máy mình, chủ CLB duyệt
 const ZALO_ON=false;
+// Bản web không cho người chơi tự vào; đăng ký qua Zalo Mini App (window.ZMINI do bản Mini App đặt)
+const PLAYER_ON=()=>!!window.ZMINI;
 const isPlayer=u=>!!u&&(/^zalo_/.test(String(u.uid||""))||(u.isAnonymous&&!REF&&!canWrite));
 let unsubLink=null;
 function zaloProf(){try{return JSON.parse(localStorage.getItem("pb-zprof")||"{}")}catch(e){return {}}}
 async function zaloStart(){
+  if(!PLAYER_ON())return;
   if(ZALO_ON){if(window.FB_TARGET==="mock"){FB.signInWithCustomToken(FB.auth,"demo").then(()=>location.reload());return}
     location.href="/api/zalo?start=1&back="+encodeURIComponent(location.pathname);return}
   try{if(!authUser){const r=await FB.signInAnonymously(FB.auth);authUser=r.user}
@@ -28,7 +31,7 @@ function watchLink(){
     if(S.link&&S.link.status==="ok"&&S.link.pid&&ME!==S.link.pid){ME=S.link.pid;try{localStorage.setItem("pb-me-"+CID,ME)}catch(e){}}
     render()},()=>{S.link=null;render()})}catch(e){}
 }
-const zaloBtn=(label)=>ZALO_ON?`<button class="zalobtn" data-act="zlogin"><b>Z</b>${label||"Đăng nhập với Zalo"}</button>`:`<button class="primary wide" data-act="zlogin">${label?label.replace("Đăng nhập Zalo để đăng ký","Tham gia để đăng ký"):"Tham gia để đăng ký buổi"}</button>`;
+const zaloBtn=(label)=>PLAYER_ON()?`<button class="primary wide" data-act="zlogin">${label?label.replace("Đăng nhập Zalo để đăng ký","Tham gia để đăng ký"):"Tham gia để đăng ký buổi"}</button>`:`<small class="rule">Người chơi đăng ký trong Zalo Mini App của CLB.</small>`;
 
 /* ----- Thẻ cho người chơi đăng nhập Zalo nhưng chưa có hồ sơ ----- */
 let lnkPick=null,lnkNew=false;
