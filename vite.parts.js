@@ -1,9 +1,10 @@
 import { readFileSync, readdirSync } from "node:fs";
-import { resolve } from "node:path";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // Code app nằm trong src/parts/*.js, nối theo thứ tự tên file thành một module chung
 // (các phần dùng chung trạng thái S, CLUB, ROLE...). Tách dần sang module thật sau.
-const PARTS = resolve(import.meta.dirname || new URL(".", import.meta.url).pathname, "src/parts");
+const PARTS = resolve(dirname(fileURLToPath(import.meta.url)), "src/parts");
 export function appParts() {
   const id = "virtual:app", rid = "\0virtual:app";
   return {
