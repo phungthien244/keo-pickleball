@@ -34,8 +34,8 @@ setTimeout(()=>{if(!splashGone)hideSplash()},20000);
 const shareUrl=sid=>absUrl(pathOf("buoi",{sid}));
 
 const $=s=>document.querySelector(s);
-const ARM={k:"",t:0};const armed=k=>ARM.k===k&&Date.now()<ARM.t;
-function armOr(k){if(armed(k)){ARM.k="";return true}ARM.k=k;ARM.t=Date.now()+4000;render();setTimeout(render,4100);return false}
+// Xác nhận bằng hộp thoại (xem 12-confirm.js): armOr(k) mở hộp thoại, bấm "Xác nhận" thì chạy lại đúng thao tác đó
+const armed=k=>false;
 const delBtn=(act,id,label)=>armed(act+":"+id)?`<button class="danger" data-act="${act}" data-id="${id}">Bấm lần nữa để xóa</button>`:`<button class="ghost danger" data-act="${act}" data-id="${id}">${label}</button>`;
 const logoOk=c=>c&&typeof c.logo==="string"&&/^data:image\//.test(c.logo);
 const logoHtml=(c,name)=>logoOk(c)?`<img src="${c.logo}" alt="">`:esc(String(name||"P").trim().charAt(0).toUpperCase()||"P");

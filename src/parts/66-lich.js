@@ -386,7 +386,7 @@ async function xAct(act,b,id,D){
   if(act==="xptab"){xPTab=b.dataset.v;render();return true}
   if(act==="xqr"){xQr=xQr===id?null:id;render();return true}
   if(act==="xopen"){await write(()=>db.collection("sched").doc(id).update({st:"open",openAt:0}),"Đã mở đăng ký");return true}
-  if(act==="xpause"){await write(()=>db.collection("sched").doc(id).update({st:"draft"}),"Đã tạm dừng đăng ký");return true}
+  if(act==="xpause"){if(!armOr("xpause:"+id))return true;await write(()=>db.collection("sched").doc(id).update({st:"draft"}),"Đã tạm dừng đăng ký");return true}
   if(act==="xcancel"){if(!armOr("xcancel:"+id))return true;await write(()=>db.collection("sched").doc(id).update({st:"cancel"}),"Đã hủy buổi");return true}
   if(act==="xdel"){if(!armOr("xdel:"+id))return true;await write(()=>db.collection("sched").doc(id).delete(),"Đã xoá buổi");go("app",{tab:"dk"});return true}
   if(act==="xsoff"){if(!armOr("xsoff:"+id))return true;

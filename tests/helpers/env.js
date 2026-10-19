@@ -80,6 +80,9 @@ export function setup({ search = "", path = "/", host = "rr.pikeco.app", user = 
     V: () => mk("#view").innerHTML,
     T: () => mk("#view").innerHTML.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " "),
     async click(act, ds = {}) { await H.click({ target: { closest: s => (s === "[data-act]" ? { dataset: { act, ...ds } } : null) } }); await tick(); },
+    // thao tác có hộp thoại xác nhận: bấm nút rồi bấm "Xác nhận"
+    async ok(act, ds = {}) { await this.click(act, ds); await H.click({ target: { closest: s => (s === "[data-act]" ? { dataset: { act: "cfmok" } } : null) } }); await tick(); },
+    CF: () => mk("#cfm").innerHTML,
     async nav(go, ds = {}) { await H.click({ target: { closest: s => (s === "[data-go]" ? { dataset: { go, ...ds } } : null) }, preventDefault() {} }); await tick(); },
     async tab(t) { await H.click({ target: { closest: s => (s === "[data-tab]" ? { dataset: { tab: t } } : null) } }); await tick(); },
     input(k, v) { H.input({ target: { dataset: { draft: k }, value: v } }); },

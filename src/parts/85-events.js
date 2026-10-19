@@ -39,13 +39,16 @@ document.addEventListener("change",e=>{
     else if(k==="title"){v=v.trim()||DEF.title;write(()=>saveCfg({title:v}).then(()=>delete drafts["cf-title"]))}
     else{const n=Math.max(0,Number(v)||0);write(()=>saveCfg({[k]:n}).then(()=>delete drafts["cf-"+k]))}}
 });
-document.addEventListener("click",async e=>{
+document.addEventListener("click",onAct=async e=>{
   {const pv=e.target.closest("[data-pid]");if(pv&&!e.target.closest("label")&&!e.target.closest(".ppt")){e.preventDefault&&e.preventDefault();go("vdv",{pid:pv.dataset.pid});return}}
   const tb=e.target.closest("[data-tab]");if(tb){const t=tb.dataset.tab;if(t==="home"){go("home");return}
     try{localStorage.setItem("pb-tab",t)}catch(x){}go("app",{tab:t});return}
   const gl=e.target.closest("[data-go]");if(gl){e.preventDefault();go(gl.dataset.go,{sid:gl.dataset.id,tab:gl.dataset.t,x:gl.dataset.x});return}
   const b=e.target.closest("[data-act]");if(!b)return;
   const act=b.dataset.act,id=b.dataset.id;
+  if(act==="cfmok"){await cfmOk();return}
+  if(act==="cfmx"){cfmClose();return}
+  LASTDS={...b.dataset};
   if(act==="login"){
     // Đọc thẳng ô đang nhập (bàn phím điện thoại có khi không báo sự kiện gõ), ưu tiên ô cùng khung với nút bấm
     const box=(b.closest&&b.closest("section,.cb,.pinrow,.bar,form"))||document;
@@ -73,7 +76,7 @@ document.addEventListener("click",async e=>{
   if(act==="meall"){meAll=true;render();return}
   if(act==="meopen"){meOpen=!meOpen;if(!meOpen){meAll=false;delete drafts["me-q"]}render();return}
   if(act==="gpick"){const L=[drafts.gp1,drafts.gp2].filter(Boolean);const k=L.indexOf(id);if(k>=0)L.splice(k,1);else{if(L.length>=2)L.shift();L.push(id)}drafts.gp1=L[0]||"";drafts.gp2=L[1]||"";delete errs.gadd;render();return}
-  if(act==="logout"){try{await FB.signOut(FB.auth)}catch(x){}canWrite=false;ROLE=null;S.rootEditor=false;S.link=undefined;watchAdmin();watchLink();render();return}
+  if(act==="logout"){if(!armOr("logout:x"))return;try{await FB.signOut(FB.auth)}catch(x){}canWrite=false;ROLE=null;S.rootEditor=false;S.link=undefined;watchAdmin();watchLink();render();return}
   if(act==="glogin"){if(inApp()){toast("Mở trang bằng Chrome hoặc Safari để đăng nhập Google.");return}
     const pr=new FB.GoogleAuthProvider();try{await FB.signInWithPopup(FB.auth,pr)}catch(x){const c=(x&&x.code)||"";if(/popup-blocked|operation-not-supported|web-storage/.test(c)){try{try{sessionStorage.setItem("pb-rd","1")}catch(z){}await FB.signInWithRedirect(FB.auth,pr)}catch(y){toast("Chưa đăng nhập được, thử lại.")}}else if(!/popup-closed|cancelled-popup/.test(c))toast("Chưa đăng nhập được: "+c)}return}
   if(act==="copy"){const txt=summaryText(derive());
@@ -115,7 +118,7 @@ document.addEventListener("click",async e=>{
   if(act==="vgrp"){const g=b.dataset.g;VGOPEN.has(g)?VGOPEN.delete(g):VGOPEN.add(g);render();return}
   if(act==="vpick"){if(!canWrite)return;const v=b.dataset.v;write(()=>saveCfg({voice:v}),"Đã đổi giọng đọc");speak(VOICE_SAMPLE,v,"v:"+v,true);return}
   if(act==="speakrules"){const D=derive();const el=document.getElementById&&document.getElementById("cf-mc");speak((el&&el.value.trim())||mcText(D),"","rules");return}
-  if(act==="mcreset"){if(!canWrite)return;delete drafts["cf-mc"];write(()=>saveCfg({mc:""}),"Đã về mẫu tự tạo");return}
+  if(act==="mcreset"){if(!canWrite)return;if(!armOr("mcreset:x"))return;delete drafts["cf-mc"];write(()=>saveCfg({mc:""}),"Đã về mẫu tự tạo");return}
   if(act==="speak"){const D=derive(),m=D.SM.find(x=>x.id===id);if(m)speak(callText(D,m),"","c:"+id);return}
   if(act==="qv"){qView=b.dataset.v==="so"?"so":"buoi";render();return}
   if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;showSheet();return}
@@ -157,7 +160,7 @@ document.addEventListener("click",async e=>{
     write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),d).then(()=>{["about",...INTRO.map(x=>x[0])].forEach(k=>delete drafts["ci-"+k])}),"Đã lưu giới thiệu CLB");return}
   if(act==="cname"&&isAdm()){const v=String(val("cl-name",CLUB?.name||"")).trim();if(v.length<3){toast("Tên CLB cần ít nhất 3 ký tự.");return}
     write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{name:v}).then(()=>{delete drafts["cl-name"];if(CLUB)CLUB.name=v}),"Đã lưu tên CLB");return}
-  if(act==="clogodel"&&isAdm()){write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{logo:""}),"Đã xoá ảnh CLB");return}
+  if(act==="clogodel"&&isAdm()){if(!armOr("clogodel:x"))return;write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{logo:""}),"Đã xoá ảnh CLB");return}
   if(act==="pub"&&isAdm()){write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{public:b.dataset.v==="1"}),"Đã lưu");return}
   if(act==="edclear"&&isAdm()){if(!armOr("edclear:x"))return;write(async()=>{for(const e of S.editors||[])await FB.deleteDoc(FB.doc(FB.fs,PFX+"editors/"+e.id))},"Đã thu hồi quyền các máy dùng PIN");return}
   if(act==="mrm"&&isAdm()){if(!armOr("mrm:"+id))return;write(()=>FB.deleteDoc(FB.doc(FB.fs,PFX+"members/"+id)),"Đã gỡ khỏi ban tổ chức");return}
@@ -198,9 +201,9 @@ document.addEventListener("click",async e=>{
     if(G0().locked){const GD=gDerive(derive()),g=GD&&GD.games.find(q=>q.key===gk(x,y));if(g&&g.st!=="wait"){errs.gpre="Hai cặp này đã đánh hoặc đang đánh với nhau.";render();return}}
     gpreSel=[];delete errs.gpre;write(()=>saveG({presets:[...L,{id:"gp"+Date.now().toString(36),x,y}]}),`Đã thêm trận định sẵn #${L.length+1}`);return}
   if(act==="gpremv"){const L=[...(G0().presets||[])],i=L.findIndex(p=>p.id===id),j=i+Number(b.dataset.d);if(i<0||j<0||j>=L.length)return;[L[i],L[j]]=[L[j],L[i]];write(()=>saveG({presets:L}));return}
-  if(act==="gpredel"){write(()=>saveG({presets:(G0().presets||[]).filter(p=>p.id!==id)}),"Đã bỏ trận định sẵn");return}
-  if(act==="gdel"){write(()=>saveG({pairs:(cfg().giai?.pairs||[]).filter(p=>p.id!==id)}),"Đã bỏ cặp");return}
-  if(act==="gstart"){const P=cfg().giai?.pairs||[];if(P.length<3){errs.giai="Cần ít nhất 3 cặp.";render();return}delete errs.giai;
+  if(act==="gpredel"){if(!armOr("gpredel:"+id))return;write(()=>saveG({presets:(G0().presets||[]).filter(p=>p.id!==id)}),"Đã bỏ trận định sẵn");return}
+  if(act==="gdel"){if(!armOr("gdel:"+id))return;write(()=>saveG({pairs:(cfg().giai?.pairs||[]).filter(p=>p.id!==id)}),"Đã bỏ cặp");return}
+  if(act==="gstart"){const P=cfg().giai?.pairs||[];if(P.length<3){errs.giai="Cần ít nhất 3 cặp.";render();return}delete errs.giai;if(!armOr("gstart:x"))return;
     await write(()=>saveCfg({phase:"live",giai:{...(cfg().giai||{}),locked:true,startedAt:Date.now(),out:{}}}),"Đã tạo lịch thi đấu");await gFill();return}
   if(act==="gfill"){const n=await gFill();toast(n?`Đã đưa ${n} trận vào sân`:"Chưa đưa được trận nào: sân đã đầy hoặc các cặp còn lại đang đánh.");return}
   if(act==="gout"){if(derive().playing.some(m=>m.giai&&(m.pa===id||m.pb===id))){toast("Cặp này đang trên sân, lưu tỉ số hoặc hủy trận trước.");return}
@@ -212,7 +215,7 @@ document.addEventListener("click",async e=>{
     await write(async()=>{await trashMatches(D.playing.filter(m=>m.giai),"gcancel");await saveG({locked:false})},"Đã hủy lịch, có thể ghép lại cặp");return}
   if(act==="gend"){if(!armOr("gend:x"))return;await endGiai();return}
   if(act==="gmode"){const v=b.dataset.v==="same"?"same":"mix";if(cfg().gmode!==v)write(()=>saveCfg({gmode:v}),v==="same"?"Đã chuyển sang ưu tiên cùng giới":"Đã chuyển sang ưu tiên khác giới");return}
-  if(act==="phdel"){write(()=>db.collection("players").doc(id).update({photo:""}),"Đã xóa ảnh");return}
+  if(act==="phdel"){if(!armOr("phdel:"+id))return;write(()=>db.collection("players").doc(id).update({photo:""}),"Đã xóa ảnh");return}
   if(act==="picktoggle"){pickOpen=!pickOpen;render();return}
   if(act==="pickall"){const away=S.players.filter(p=>p.active===false);if(pickSel.size===away.length)pickSel.clear();else away.forEach(p=>pickSel.add(p.id));render();return}
   if(act==="pickadd"){const ids=[...pickSel];if(!ids.length){toast("Chọn ít nhất một người.");return}
@@ -269,8 +272,8 @@ document.addEventListener("click",async e=>{
       if(h)await db.doc("app/hist-"+sid).delete();
       delList=null;editing.delete("s-"+sid)},`Đã xóa buổi #${sid}, rating đã tự trừ lại. Chủ CLB khôi phục được trong Cài đặt.`)}
   else if(act==="toggle"){const p=S.players.find(p=>p.id===id);write(()=>db.collection("players").doc(id).update({active:p.active===false}))}
-  else if(act==="del")write(()=>db.collection("players").doc(id).delete(),"Đã xóa");
-  else if(act==="cancel"){pendSave.delete(id);pendCancel.add(id);render()}
+  else if(act==="del"){if(!armOr("del:"+id))return;write(()=>db.collection("players").doc(id).delete(),"Đã xóa")}
+  else if(act==="cancel"){if(!armOr("cancel:"+id))return;pendSave.delete(id);pendCancel.delete(id);const m=S.matches.find(x=>x.id===id);if(!m)return;write(()=>trashMatches([m],"cancel"),"Đã hủy trận · bấm Hoàn tác nếu nhầm")}
   else if(act==="cancelx"){pendCancel.delete(id);render()}
   else if(act==="cancelok"){pendCancel.delete(id);const m=S.matches.find(x=>x.id===id);if(!m)return;write(()=>trashMatches([m],"cancel"),"Đã hủy trận · bấm Hoàn tác nếu nhầm")}
   else if(act==="ccol"){const i=+b.dataset.i,c=cfg(),L=[...(c.ccolors||[])];while(L.length<i)L.push("");L[i-1]=b.dataset.v;write(()=>saveCfg({ccolors:L}))}

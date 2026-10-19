@@ -20,7 +20,7 @@ test("xoay cặp: trận định sẵn vào sân trước theo thứ tự, sau �
   const p3 = e.store.get("app/config").presets[2].id;
   await e.click("premv", { id: p3, d: "-1" });
   expect(e.store.get("app/config").presets[1].id).toBe(p3);
-  await e.click("start");
+  await e.ok("start");
   // 2 sân: trận 1 (A,C vs B,D) và trận 2 (A,F vs E,C) đụng người → trận 3 (E,F vs G,H) vào sân 2
   await e.click("gen");
   const P = () => e.docs("matches/", m => m.status === "playing").map(([, m]) => m).sort((x, y) => x.court - y.court);
@@ -52,7 +52,7 @@ test("cặp cố định xoay vòng: trận định sẵn được gọi vào s�
   await e.click("gprepick", { id: P[4].id }); await e.click("gprepick", { id: P[3].id }); await e.click("gpreadd");
   await e.click("gprepick", { id: P[0].id }); await e.click("gprepick", { id: P[2].id }); await e.click("gpreadd");
   expect(e.store.get("app/config").giai.presets.length).toBe(2);
-  await e.click("gstart");
+  await e.ok("gstart");
   const live = e.docs("matches/", m => m.status === "playing").map(([, m]) => m).sort((a, b) => a.court - b.court);
   expect(live.length).toBe(2);
   expect([live[0].pa, live[0].pb].sort()).toEqual([P[4].id, P[3].id].sort());
@@ -67,7 +67,7 @@ test("cặp cố định vòng tròn: chọn cặp đấu tiếp theo ngay lúc 
   await e.click("cset", { k: "fmt", v: "giai" });
   const id = n => e.pid(n);
   for (const [x, y] of [["A", "C"], ["B", "D"], ["E", "F"], ["G", "H"], ["I", "K"], ["L", "M"]]) { await e.click("gpick", { id: id(x) }); await e.click("gpick", { id: id(y) }); await e.click("gadd"); }
-  await e.click("gstart");
+  await e.ok("gstart");
   const playing = () => e.docs("matches/", m => m.status === "playing").map(([k, m]) => [k, m]);
   expect(playing().length).toBe(2);
   const busy = new Set(playing().flatMap(([, m]) => [m.pa, m.pb]));

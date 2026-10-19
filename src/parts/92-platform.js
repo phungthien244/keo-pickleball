@@ -168,7 +168,7 @@ async function platformAct(act,id,b){
   else if(act==="qa-lock"){if(!armOr("qa-lock:"+id))return true;await upd(id,{status:"locked",reviewedAt:Date.now()},"Đã khoá "+id)}
   else if(act==="qa-code"){const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=crypto.getRandomValues(new Uint8Array(8)),k=Array.from(r,x=>A[x%A.length]).join("");
     try{await FB.setDoc(FB.doc(FB.fs,"codes/"+k),{used:false,at:Date.now()});toast("Đã tạo mã "+k);loadCodes(true)}catch(x){toast("Chưa tạo được mã")}}
-  else if(act==="qa-codedel"){try{await FB.deleteDoc(FB.doc(FB.fs,"codes/"+id));loadCodes(true)}catch(x){toast("Chưa xoá được")}}
+  else if(act==="qa-codedel"){if(!armOr("qa-codedel:"+id))return true;try{await FB.deleteDoc(FB.doc(FB.fs,"codes/"+id));loadCodes(true)}catch(x){toast("Chưa xoá được")}}
   else if(act==="qa-mail"){const e={service:String(val("ej-s",S.pcfg?.emailjs?.service||"")).trim(),template:String(val("ej-t",S.pcfg?.emailjs?.template||"")).trim(),key:String(val("ej-k",S.pcfg?.emailjs?.key||"")).trim()};
     try{await FB.setDoc(FB.doc(FB.fs,"platform/config"),{...(S.pcfg||{}),emailjs:e});["ej-s","ej-t","ej-k"].forEach(k=>delete drafts[k]);toast("Đã lưu cài đặt email");loadCodes(true)}catch(x){toast("Chưa lưu được")}}
   else if(act==="qa-mailtest"){await notifyEmail({club_name:"CLB thử nghiệm",club_link:clubUrl("thu"),club_slug:"thu",owner_email:authUser.email||"",city:"",size:"",contact:"",status:"Thử",admin_link:absUrl("/quan-tri")});toast("Đã gửi thử, kiểm tra hộp thư (cả mục Spam).")}

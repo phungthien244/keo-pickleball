@@ -9,7 +9,7 @@ test("nút loa mời vào sân đọc đúng xưng hô anh/chị và số sân",
   globalThis.speechSynthesis = globalThis.window.speechSynthesis;
   await e.boot();
   e.input("bulk", "Tuấn\nHà | nữ\nMinh\nLan | nữ"); await e.click("add");
-  await e.tab("san"); await e.click("start"); await e.click("gen");
+  await e.tab("san"); await e.ok("start"); await e.click("gen");
   const [id, m] = e.docs("matches/", x => x.status === "playing")[0];
   expect(e.V()).toContain('data-act="speak"');
   await e.click("speak", { id });
@@ -35,7 +35,7 @@ test("lời MC đọc thể thức: tự tạo theo cài đặt, sửa được,
   expect(e.T()).toContain("Mỗi trận đánh chạm 11 điểm, đội thắng phải cách biệt 2 điểm");
   expect(e.T()).toContain("Khi một đội đạt 6 điểm, hai đội đổi sân");
   expect(e.T()).toContain("đánh lại");
-  await e.click("start");
+  await e.ok("start");
   expect(e.V()).toContain('data-act="speakrules"');
   await e.click("speakrules");
   expect(said.pop().text).toMatch(/^Xin chào các vận động viên/);
@@ -43,7 +43,7 @@ test("lời MC đọc thể thức: tự tạo theo cài đặt, sửa được,
   expect(e.store.get("app/config").mc).toBe("Chào mừng anh chị em, hôm nay đánh chạm 15.");
   await e.click("speakrules");
   expect(said.pop().text).toBe("Chào mừng anh chị em, hôm nay đánh chạm 15.");
-  await e.click("mcreset");
+  await e.ok("mcreset");
   expect(e.store.get("app/config").mc).toBe("");
 });
 
@@ -55,7 +55,7 @@ test("lưu tỉ số: một nút Xác nhận & đọc kết quả, đọc đúng
   globalThis.speechSynthesis = globalThis.window.speechSynthesis;
   await e.boot();
   e.input("bulk", "Tuấn\nHà | nữ\nMinh\nLan | nữ"); await e.click("add");
-  await e.tab("san"); await e.click("start"); await e.click("gen");
+  await e.tab("san"); await e.ok("start"); await e.click("gen");
   const [id] = e.docs("matches/", x => x.status === "playing")[0];
   e.input("sa-" + id, "11"); e.input("sb-" + id, "7");
   await e.click("savechk", { id });
@@ -76,7 +76,7 @@ test("đang đọc thì nút thành Dừng màu đỏ, nút tắt loa chặn đ�
   globalThis.speechSynthesis = globalThis.window.speechSynthesis;
   await e.boot();
   e.input("bulk", "Tuấn\nHà | nữ\nMinh\nLan | nữ"); await e.click("add");
-  await e.tab("san"); await e.click("start"); await e.click("gen");
+  await e.tab("san"); await e.ok("start"); await e.click("gen");
   expect(e.V()).toContain('data-act="mute"');
   await e.click("speakrules");
   expect(said.length).toBe(1);
@@ -112,7 +112,7 @@ test("đổi tên sân: thẻ trận, loa và lịch dùng tên sân thật", as
   await e.click("ccol", { i: "1", v: "#c62a2f" });
   expect(e.store.get("app/config").cnames).toEqual(["3", "VIP"]);
   expect(e.store.get("app/config").ccolors[0]).toBe("#c62a2f");
-  await e.click("start"); await e.click("gen");
+  await e.ok("start"); await e.click("gen");
   const P = e.docs("matches/", m => m.status === "playing");
   expect(P.find(([, m]) => m.court === 1)[1].cn).toBe("3");
   expect(e.T()).toContain("Sân 3");

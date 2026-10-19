@@ -322,7 +322,7 @@ async function sessionAct(act,id,b,e){
   if(act==="sheetx"){if(b.classList&&b.classList.contains("sheetbg")&&e.target!==b)return true;sheetOpen=false;render();return true}
   if(act==="lseg"){liveSeg=b.dataset.v;render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="prow"){const k=b.dataset.v;if(prepOpen.has(k))prepOpen.delete(k);else prepOpen.add(k);render();return true}
-  if(act==="start"){const D=derive(),ro=regOpen();let n=0;
+  if(act==="start"){if(!armOr("start:x"))return true;const D=derive(),ro=regOpen();let n=0;
     await write(async()=>{n=await regStart(D);await saveCfg(ro?{phase:"live",reg:{...regCfg(),on:false}}:{phase:"live"})},`Đã bắt đầu buổi #${D.sid}`);if(n)toast(`Đã bắt đầu · điểm danh thêm ${n} người đã đăng ký`);return true}
   if(act==="win2"){const on=b.dataset.v==="1";write(()=>saveCfg({win2:on}),on?"Thắng phải cách 2":"Chạm là thắng");return true}
   if(act==="ptmax"){const c=cfg(),on=b.dataset.v==="1";write(()=>saveCfg({ptMax:on?Math.max(c.target+2,+c.ptMax||c.target+4):0}));return true}
@@ -333,7 +333,7 @@ async function sessionAct(act,id,b,e){
     const L=[...(cfg().presets||[]),{id:"pr"+Date.now().toString(36),a:preSel.slice(0,2),b:preSel.slice(2,4)}];preSel=[];delete errs.pre;
     write(()=>saveCfg({presets:L}),`Đã thêm trận định sẵn #${L.length}`);return true}
   if(act==="premv"){const L=[...(cfg().presets||[])],i=L.findIndex(p=>p.id===id),j=i+Number(b.dataset.d);if(i<0||j<0||j>=L.length)return true;[L[i],L[j]]=[L[j],L[i]];write(()=>saveCfg({presets:L}));return true}
-  if(act==="predel"){const L=(cfg().presets||[]).filter(p=>p.id!==id);write(()=>saveCfg({presets:L}),"Đã bỏ trận định sẵn");return true}
+  if(act==="predel"){if(!armOr("predel:"+id))return true;const L=(cfg().presets||[]).filter(p=>p.id!==id);write(()=>saveCfg({presets:L}),"Đã bỏ trận định sẵn");return true}
   if(act==="refon"){const on=cfg().refOn!==true;write(()=>saveCfg({refOn:on}),on?"Buổi này có trọng tài":"Buổi này không dùng trọng tài");return true}
   if(act==="cphi"){const on=cfg().cphi===false;write(()=>saveCfg(on?{cphi:true,thu:cfg().thu==="khong"?"keo":cfg().thu}:{cphi:false}),on?"Buổi này có thu tiền":"Buổi này không thu tiền");return true}
   if(act==="gton"){const c=cfg(),on=(c.gt||"khong")==="khong";const g=on?(c.gtPrev&&c.gtPrev!=="khong"?c.gtPrev:isG(c)?"hang":"trich"):"khong";

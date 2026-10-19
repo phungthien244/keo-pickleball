@@ -13,7 +13,7 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   for (const [x, y] of [["A", "B"], ["C", "D"], ["E", "F"], ["G", "H"], ["I", "J"]]) { e.input("gp1", e.pid(x)); e.input("gp2", e.pid(y)); await e.click("gadd"); }
   e.input("gp1", e.pid("K")); e.input("gp2", e.pid("K")); await e.click("gadd");
   expect(e.V()).toContain("Hai người phải khác nhau");
-  await e.click("gstart");
+  await e.ok("gstart");
   const playing = () => e.docs("matches/", m => m.status === "playing");
   expect(playing().length).toBe(2);
   // lịch theo sân: mỗi sân có trận đang đánh và các trận dự kiến, đủ hết số trận còn lại

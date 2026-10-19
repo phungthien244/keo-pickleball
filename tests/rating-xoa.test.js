@@ -2,7 +2,7 @@ import { test, expect } from "vitest";
 import { setup } from "./helpers/env.js";
 
 async function session(e, sa, sb) {
-  await e.tab("san"); await e.click("start");
+  await e.tab("san"); await e.ok("start");
   for (let r = 0; r < 2; r++) {
     await e.click("gen");
     for (const [id] of e.docs("matches/", m => m.status === "playing")) { e.input("sa-" + id, sa); e.input("sb-" + id, sb); await e.click("save", { id }); }

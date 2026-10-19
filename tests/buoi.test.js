@@ -19,7 +19,7 @@ test("luồng buổi: chuẩn bị → đang đánh → chốt, quỹ buổi, c�
   const ha = e.pid("Hà");
   await e.click("att", { id: ha }); expect(e.store.get("players/" + ha).active).toBe(false);
   await e.click("att", { id: ha }); expect(e.store.get("players/" + ha).active).toBe(true);
-  await e.click("start");
+  await e.ok("start");
   expect(e.store.get("app/config").phase).toBe("live");
   // ② Đang đánh: dải tóm tắt + nút Sửa, bảng sửa mở được
   expect(e.T()).toContain("Buổi #1 · đang đánh");
@@ -108,7 +108,7 @@ test("luật điểm: chạm, cách 2, điểm trần; tên buổi; tắt chi ph
   await e.click("cphi");
   expect(e.store.get("app/config").cphi).toBe(false);
   expect(e.T()).toContain("Buổi này không thu tiền");
-  await e.click("start"); await e.click("gen");
+  await e.ok("start"); await e.click("gen");
   const [id] = e.docs("matches/", m => m.status === "playing")[0];
   const tryScore = async (a, b) => { e.input("sa-" + id, a); e.input("sb-" + id, b); await e.click("save", { id }); return e.store.get("matches/" + id).status; };
   expect(await tryScore("16", "14")).toBe("playing");     // vượt trần
@@ -125,7 +125,7 @@ test("đổi thể thức trong bảng Sửa không đẩy về bước Chuẩn 
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ"); await e.click("add");
-  await e.tab("san"); await e.click("start"); await e.click("sheet");
+  await e.tab("san"); await e.ok("start"); await e.click("sheet");
   await e.click("cset", { k: "fmt", v: "giai" });
   expect(e.T()).toContain("đang đánh");
   await e.click("cset", { k: "fmt", v: "xoay" });
@@ -153,7 +153,7 @@ test("buổi không tích Chi phí và Giải thưởng: trang tổng kết khô
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ"); await e.click("add");
-  await e.tab("san"); await e.click("cphi"); await e.click("start"); await e.click("gen");
+  await e.tab("san"); await e.click("cphi"); await e.ok("start"); await e.click("gen");
   for (const [id] of e.docs("matches/", m => m.status === "playing")) { e.input("sa-" + id, "11"); e.input("sb-" + id, "4"); await e.click("save", { id }); }
   await e.click("chot"); await e.click("chot"); await e.until(() => e.store.has("app/hist-1"));
   expect(e.store.get("app/hist-1").money.on).toBe(false);
@@ -179,7 +179,7 @@ test("xoay cặp: giải thưởng tiền từng hạng hoặc chia % cho hạng
   expect(e.store.get("app/config").trao).toBe("top3");
   expect(e.T()).toContain("Chia quỹ giải");
   await e.click("cset", { k: "gt", v: "hang" });
-  await e.click("start"); await e.click("gen");
+  await e.ok("start"); await e.click("gen");
   for (const [id] of e.docs("matches/", m => m.status === "playing")) { e.input("sa-" + id, "11"); e.input("sb-" + id, "4"); await e.click("save", { id }); }
   await e.tab("tien");
   expect(e.T()).toContain("Hạng nhất");

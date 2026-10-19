@@ -76,7 +76,7 @@ test("bắt đầu buổi: tự điểm danh người đã đăng ký và đóng
     "clubs/q7/regs/1_p_p1": { sid: 1, pid: "p1", at: 1 }, "clubs/q7/regs/1_p_p2": { sid: 1, pid: "p2", at: 2 } });
   const e = setup({ host: "pikeco.app", path: "/q7/san", user: OWNER, data });
   await e.boot(); await e.until(() => e.V().includes('data-act="start"'));
-  await e.click("start");
+  await e.ok("start");
   await e.until(() => e.store.get("clubs/q7/app/config").phase === "live");
   expect(e.store.get("clubs/q7/players/p1").active).toBe(true);
   expect(e.store.get("clubs/q7/players/p2").active).toBe(true);
@@ -117,7 +117,7 @@ test("chủ CLB duyệt người mới ở trang Đăng ký: tạo hồ sơ gắ
   await e.boot(); await e.until(() => e.T().includes("1 người chờ duyệt"));
   await e.nav("app", { t: "dk" }); await e.until(() => e.T().includes("Xin tham gia CLB"));
   await e.click("apvnew", { id: "zalo_5" }); await e.until(() => e.T().includes("Tạo hồ sơ và duyệt"));
-  await e.click("lnkok", { id: "zalo_5", v: "new" });
+  await e.ok("lnkok", { id: "zalo_5", v: "new" });
   await e.until(() => e.store.get("clubs/q7/links/zalo_5").status === "ok");
   const pid = e.store.get("clubs/q7/links/zalo_5").pid;
   expect(e.store.get("clubs/q7/players/" + pid)).toMatchObject({ name: "Dũng", zuid: "zalo_5" });
@@ -191,7 +191,7 @@ test("thu tiền trước: người chơi chuyển khoản lúc đăng ký, ch�
   // chủ CLB xác nhận ở trang buổi
   const o = setup({ host: "pikeco.app", path: "/q7/dang-ky/s1", user: OWNER, data: Object.fromEntries(e.store) });
   await o.boot(); await o.until(() => o.V().includes('data-act="regpayok"'));
-  await o.click("regpayok", { id: "s1_zalo_9" });
+  await o.ok("regpayok", { id: "s1_zalo_9" });
   await o.until(() => o.store.get("clubs/q7/regs/s1_zalo_9").pay === "ok");
   // hôm nay ở tab Sân: chuẩn bị buổi theo lịch
   // hôm nay ở tab Sân: buổi theo lịch được chọn sẵn, điểm danh theo đăng ký
@@ -215,7 +215,7 @@ test("khách vãng lai đăng ký không cần duyệt, bắt đầu buổi thì
   expect(e.store.get("clubs/q7/regs/1_zalo_9").name).toBe("Tuấn khách");
   const o = setup({ host: "pikeco.app", path: "/q7/san", user: OWNER, data: Object.fromEntries(e.store) });
   await o.boot(); await o.until(() => o.V().includes('data-act="start"'));
-  await o.click("start");
+  await o.ok("start");
   await o.until(() => o.store.get("clubs/q7/app/config").phase === "live");
   await o.until(() => o.store.get("clubs/q7/regs/1_zalo_9").pid);
   const pid = o.store.get("clubs/q7/regs/1_zalo_9").pid;
@@ -259,14 +259,14 @@ test("chủ CLB ghép người xin tham gia với hồ sơ cũ: gợi ý trùng 
   const e = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data: base({ "clubs/q7/links/zalo_6": { status: "pending", newName: "an", zname: "An Nguyen", at: 1 }, "clubs/q7/links/zalo_7": { status: "pending", newName: "Khách lạ", at: 2 } }) });
   await e.boot(); await e.until(() => e.T().includes("Xin tham gia CLB (2)"));
   expect(e.V()).toContain('data-act="lnkok" data-id="zalo_6" data-v="p1"');
-  await e.click("lnkok", { id: "zalo_6", v: "p1" });
+  await e.ok("lnkok", { id: "zalo_6", v: "p1" });
   await e.until(() => e.store.get("clubs/q7/links/zalo_6").status === "ok");
   expect(e.store.get("clubs/q7/links/zalo_6").pid).toBe("p1");
   expect(e.store.get("clubs/q7/players/p1").zuid).toBe("zalo_6");
   await e.click("apvpick", { id: "zalo_7" }); await e.until(() => e.V().includes('data-act="apvp"'));
   expect(e.V()).not.toContain('data-act="apvp" data-id="p1"');
   await e.click("apvp", { id: "p2" }); await e.until(() => e.T().includes("Ghép với Bình"));
-  await e.click("lnkok", { id: "zalo_7", v: "p2" });
+  await e.ok("lnkok", { id: "zalo_7", v: "p2" });
   await e.until(() => e.store.get("clubs/q7/players/p2").zuid === "zalo_7");
 });
 

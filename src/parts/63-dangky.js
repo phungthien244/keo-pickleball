@@ -259,11 +259,11 @@ async function regAdminAct(act,b,id,D){
   if(act==="regadd"){regAddOpen=!regAddOpen;render();return true}
   if(act==="regaddp"){const p=D.pmap.get(id);if(!p)return true;await write(()=>db.collection("regs").doc(regKey(D)+"_p_"+id).set({sid:regKey(D),uid:p.zuid||null,pid:id,name:p.name,at:Date.now(),by:who(),pay:"none"}),`Đã thêm ${p.name}`);return true}
   if(act==="regdel"){if(!armOr("regdel:"+id))return true;await write(()=>db.collection("regs").doc(id).delete(),"Đã bỏ khỏi danh sách");return true}
-  if(act==="regpayok"){const x=(S.regs||[]).find(z=>z.id===id);if(!x)return true;
+  if(act==="regpayok"){const x=(S.regs||[]).find(z=>z.id===id);if(!x)return true;if(!armOr("regpayok:"+id))return true;
     await write(async()=>{await db.collection("regs").doc(id).update({pay:"ok",okAt:Date.now(),okBy:who()});if(x.pid&&xPaySid(x,D))await savePay(D.sid,nx=>{nx.paid[x.pid]=true})},"Đã xác nhận nhận tiền");return true}
-  if(act==="regpayundo"){const x=(S.regs||[]).find(z=>z.id===id);if(!x)return true;
+  if(act==="regpayundo"){const x=(S.regs||[]).find(z=>z.id===id);if(!x)return true;if(!armOr("regpayundo:"+id))return true;
     await write(async()=>{await db.collection("regs").doc(id).update({pay:"none"});if(x.pid&&xPaySid(x,D))await savePay(D.sid,nx=>{delete nx.paid[x.pid]})},"Đã bỏ xác nhận");return true}
-  if(act==="regrefund"){const x=(S.regs||[]).find(z=>z.id===id);if(!x)return true;
+  if(act==="regrefund"){const x=(S.regs||[]).find(z=>z.id===id);if(!x)return true;if(!armOr("regrefund:"+id))return true;
     await write(async()=>{await db.collection("regs").doc(id).update({pay:"refund",refundAt:Date.now()});if(x.pid&&xPaySid(x,D))await savePay(D.sid,nx=>{delete nx.paid[x.pid]})},"Đã ghi nhận hoàn tiền");return true}
   if(act==="regatt"){const R=regList(D),inS=new Set(R.conf.map(x=>x.pid).filter(Boolean));if(!armOr("regatt:x"))return true;
     await write(async()=>{for(const p of D.players){const on=inS.has(p.id);if((p.active!==false)!==on)await db.collection("players").doc(p.id).update({active:on})}},`Điểm danh ${inS.size} người theo danh sách đăng ký`);return true}

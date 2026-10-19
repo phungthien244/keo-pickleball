@@ -5,7 +5,7 @@ test("bấm ảnh vận động viên mở hồ sơ: rating, buổi, đồng đ�
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "An\nBình\nChi | nữ\nDung | nữ"); await e.click("add");
-  await e.tab("san"); await e.click("start");
+  await e.tab("san"); await e.ok("start");
   for (let r = 0; r < 4; r++) {
     await e.click("gen");
     for (const [id] of e.docs("matches/", m => m.status === "playing")) { e.input("sa-" + id, "11"); e.input("sb-" + id, "5"); await e.click("save", { id }); }

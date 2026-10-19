@@ -94,7 +94,7 @@ async function zaloAct(act,b,id){
   if(act==="miniclub"){const x=b.dataset.x;if(id===CID&&MODE==="club"){go("app",{tab:"dk",x});return true}setPath("/"+id+(x?"/dang-ky/"+encodeURIComponent(x):""));location.reload();return true}
   if(act==="miniexplore"){setPath("/clb");location.reload();return true}
   if(act==="openweb"){const u="https://pikeco.app"+(b.dataset.v||"/");if(window.ZMP&&window.ZMP.openWebview){try{await window.ZMP.openWebview({url:u})}catch(e){location.href=u}}else location.href=u;return true}
-  if(act==="lnkcancel"){try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid))}catch(e){}return true}
+  if(act==="lnkcancel"){if(!armOr("lnkcancel:x"))return true;try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid))}catch(e){}return true}
   if(act==="lnksend"){if(!isPlayer(authUser))return true;const zp=zaloProf();
     const el=document.getElementById&&document.getElementById("lnk-name"),nn=String((el&&el.value)||drafts["lnk-name"]||zp.n||"").trim().slice(0,30);
     if(!nn){toast("Nhập tên của bạn.");return true}
@@ -113,7 +113,7 @@ async function zaloAdminAct(act,b,id){
   if(act==="apvpick"||act==="apvnew"){const m=act==="apvpick"?"pick":"new";if(apvOpen===id&&apvMode===m)apvOpen=null;else{apvOpen=id;apvMode=m;apvSel=null}render();return true}
   if(act==="apvp"){apvSel=apvSel===id?null:id;render();return true}
   if(act==="apvg"){drafts["apv-g"]=b.dataset.v;render();return true}
-  if(act==="lnkok"){const x=(S.links||[]).find(z=>z.id===id);if(!x)return true;
+  if(act==="lnkok"){const x=(S.links||[]).find(z=>z.id===id);if(!x)return true;if(!armOr("lnkok:"+id))return true;
     const v=b.dataset.v||x.pid||"new",nw=v==="new",p=nw?null:D.pmap.get(v);
     if(!nw&&!p){toast("Không thấy hồ sơ này.");return true}
     if(p&&p.zuid&&p.zuid!==id){toast(`${p.name} đã ghép với tài khoản Zalo khác. Bỏ ghép trong hồ sơ trước.`);return true}
