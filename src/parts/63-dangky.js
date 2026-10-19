@@ -80,7 +80,7 @@ let guestOpen=false;
 function guestForm(D){
   const k=feeGuest(),lv=val("gs-lv","3.0");
   return `<section class="regcard"><b>Đăng ký làm khách</b><span class="rule">Không cần chờ duyệt. Giá khách ${k?fmtK(k):"theo CLB"}.</span>
-    <label class="fld"><span class="lbl">Tên của bạn</span><input id="gs-name" data-draft="gs-name" maxlength="30" value="${esc(val("gs-name",zaloProf().n||""))}"></label>
+    <label class="fld"><span class="lbl">Tên của bạn</span><input id="gs-name" data-draft="gs-name" data-live="1" maxlength="30" value="${esc(val("gs-name",zaloProf().n||""))}"></label>
     <div class="fld"><span class="lbl">Giới tính</span><span class="seg"><button data-act="gsg" data-v="M" aria-pressed="${val("gs-g","M")==="M"}">Nam</button><button data-act="gsg" data-v="F" aria-pressed="${val("gs-g","M")==="F"}">Nữ</button></span></div>
     <label class="fld"><span class="lbl">Trình độ tự đánh giá</span><select id="gs-lv" data-draft="gs-lv">${["2.0","2.5","3.0","3.5","4.0","4.5","5.0"].map(v=>`<option ${v===lv?"selected":""}>${v}</option>`).join("")}</select></label>
     ${payOn()&&k>0?payBox(D,val("gs-name",zaloProf().n||"KHACH"),k)+`<button class="primary wide" data-act="guestin" data-v="sent">Đăng ký và đã chuyển khoản</button><button class="line wide" data-act="guestin" data-v="none">${regPayMode()==="req"?"Giữ chỗ 30 phút, chuyển sau":"Đăng ký, trả tiền tại sân"}</button>`:`<button class="primary wide" data-act="guestin" data-v="none">Đăng ký làm khách</button>`}
@@ -114,9 +114,10 @@ function dkPlayer(D){
   const mine=u&&(S.regs||[]).find(x=>x.sid===D.sid&&x.uid===u.uid&&!x.cancel&&!isHeldOut(x));
   if(PLAYER_ON()&&(!S.link||S.link.status!=="ok")&&!mine){
     if(guestOpen&&r.guests&&regOpen())return guestForm(D);
-    let h=linkCard(D);
-    if(regOpen())h+=`<section class="regcard">${sessBox(D,R)}${r.guests?`<button class="line wide" data-act="guestopen">Chưa phải thành viên? Đăng ký làm khách</button>`:""}</section>`;
-    return h;
+    let h="";
+    if(regOpen())h+=`<section class="regcard">${sessBox(D,R)}${r.guests&&!(S.link&&S.link.status==="pending")?`<button class="primary wide" data-act="guestopen">Đăng ký làm khách buổi này</button><small class="rule" style="text-align:center">Không cần chờ duyệt. Là thành viên CLB? Chọn tên của bạn bên dưới.</small>`:""}</section>`;
+    else h+=`<section class="regcard"><span class="lbl">Đăng ký buổi</span><b>Chưa mở đăng ký buổi tới</b><span class="rule">Chọn tên của bạn trong CLB để được báo khi có buổi mới.</span></section>`;
+    return h+linkCard(D);
   }
   if(!regOpen())return `<section class="regcard"><span class="lbl">Đăng ký buổi</span><b>Chưa mở đăng ký buổi tới</b><span class="rule">Chủ CLB mở đăng ký là bạn thấy ở đây.</span></section>`;
   return regCard(D);

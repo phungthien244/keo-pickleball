@@ -74,7 +74,8 @@ function linkCard(D){
 /* ----- Mini App: Của tôi, các CLB đã tham gia, thanh dưới ----- */
 function myClubs(){try{return JSON.parse(localStorage.getItem("pb-mini-clubs")||"[]").filter(x=>x&&x.id)}catch(e){return []}}
 function rememberClub(){
-  if(!MINI||MODE!=="club"||legacy)return;
+  if(!MINI||MODE!=="club"||legacy||!CLUB)return;
+  if(rememberClub.done===CID)return;rememberClub.done=CID;
   try{localStorage.setItem("pb-mini-last",CID);
     const L=myClubs().filter(x=>x.id!==CID);L.unshift({id:CID,name:(CLUB&&CLUB.name)||CID});localStorage.setItem("pb-mini-clubs",JSON.stringify(L.slice(0,10)))}catch(e){}
 }
@@ -84,9 +85,9 @@ function vToi(D){
   if(p){const s=D.st.get(p.id),A=D.all.get(p.id);
     h+=`<a class="mebox" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">${av(p,"md",1)}<span class="t"><small>${esc(CLUB?.name||"")}</small><b>${esc(p.name)}</b><span class="st"><i>Rating ${r2(s.rating)}</i><i>${A.ses.size} buổi</i></span></span><span aria-hidden="true">›</span></a>`;
     h+=`<section class="card2"><h2>Buổi tới</h2><div class="cb">${regOpen()?`<p class="rule">${esc(D.c.sname||"Buổi đánh tới")} · ${esc(regWhen(regCfg().at))}</p><p><b>${mine?(R.all.indexOf(mine)<R.max?"✓ Bạn đã đăng ký":"Bạn đang trong danh sách chờ"):"Bạn chưa đăng ký"}</b></p>`:`<p class="rule">Chưa mở đăng ký buổi tới.</p>`}<a class="line wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">Mở trang đăng ký</a></div></section>`;
-  }else h+=`<section class="card2"><div class="cb"><p class="rule">${L&&L.status==="pending"?"Bạn đang chờ chủ CLB duyệt.":"Bạn chưa chọn tên trong CLB này."}</p><a class="primary wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">${L?"Xem trạng thái":"Chọn tên của bạn"}</a></div></section>`;
+  }else h+=`<section class="card2"><div class="cb"><p class="rule">${L&&L.status==="pending"?"Bạn đang chờ chủ CLB duyệt.":mine&&mine.guest?"Bạn đã đăng ký làm khách buổi tới. Muốn thành thành viên CLB thì chọn tên của bạn.":"Bạn chưa chọn tên trong CLB này."}</p><a class="primary wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">${L?"Xem trạng thái":"Chọn tên của bạn"}</a></div></section>`;
   const C=myClubs();
-  h+=`<section class="card2"><h2>CLB của bạn</h2><div class="cb">${C.map(c=>`<button class="clubrow${c.id===CID?" on":""}" data-act="miniclub" data-id="${esc(c.id)}"><b>${esc(c.name)}</b><small>${c.id===CID?"Đang xem":"Chuyển sang"}</small></button>`).join("")}<button class="line wide" data-act="miniexplore">Khám phá CLB khác</button></div></section>`;
+  h+=`<section class="card2"><h2>CLB đã vào</h2><div class="cb">${C.map(c=>`<button class="clubrow${c.id===CID?" on":""}" data-act="miniclub" data-id="${esc(c.id)}"><b>${esc(c.name)}</b><small>${c.id===CID?"Đang xem":"Chuyển sang"}</small></button>`).join("")}<button class="line wide" data-act="miniexplore">Khám phá CLB khác</button></div></section>`;
   return h;
 }
 function miniNav(){
