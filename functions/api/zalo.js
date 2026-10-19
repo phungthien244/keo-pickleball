@@ -53,9 +53,18 @@ export async function onRequestGet(ctx) {
   });
   const tj = await tr.json().catch(() => ({}));
   if (!tj.access_token) return fail(back, "Zalo không xác nhận được, thử lại.");
-  const mr = await fetch("https://graph.zalo.me/v2.0/me?fields=id,name,picture.type(large)", { headers: { access_token: tj.access_token } });
-  const me = await mr.json().catch(() => ({}));
-  if (!me.id) return fail(back, "Không lấy được thông tin Zalo.");
+  // appsecret_proof = HMAC-SHA256(access_token, khoá bí mật), một số app Zalo bắt buộc
+  const hk = await crypto.subtle.importKey("raw", enc.encode(env.ZALO_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const proof = [...new Uint8Array(await crypto.subtle.sign("HMAC", hk, enc.encode(tj.access_token)))].map(b => b.toString(16).padStart(2, "0")).join("");
+  let me = {};
+  for (const [fields, withProof] of [["id,name,picture.type(large)", true], ["id,name,picture", true], ["id,name,picture", false], ["id,name", false]]) {
+    const hd = { access_token: tj.access_token };
+    if (withProof) hd.appsecret_proof = proof;
+    const mr = await fetch("https://graph.zalo.me/v2.0/me?fields=" + fields, { headers: hd });
+    me = await mr.json().catch(() => ({}));
+    if (me.id) break;
+  }
+  if (!me.id) return fail(back, `Không lấy được thông tin Zalo (mã ${me.error ?? "?"}: ${String(me.message || "").slice(0, 80)}).`);
   let sa; try { sa = JSON.parse(env.FIREBASE_SA); } catch (e) { return fail(back, "Khoá Firebase trên máy chủ bị lỗi."); }
   const name = String(me.name || "").slice(0, 40), pic = me.picture && me.picture.data && me.picture.data.url || "";
   const tok = await customToken(sa, "zalo_" + me.id, { zalo: true, zname: name });
