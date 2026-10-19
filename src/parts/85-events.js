@@ -46,6 +46,8 @@ document.addEventListener("click",onAct=async e=>{
   const gl=e.target.closest("[data-go]");if(gl){e.preventDefault();go(gl.dataset.go,{sid:gl.dataset.id,tab:gl.dataset.t,x:gl.dataset.x});return}
   const b=e.target.closest("[data-act]");if(!b)return;
   const act=b.dataset.act,id=b.dataset.id;
+  // Nút dạng <a href="#">: không để trình duyệt đổi đường dẫn (Mini App dùng # để định tuyến, đổi # sẽ nhảy về CLB cũ)
+  if(b.tagName==="A"&&b.getAttribute&&b.getAttribute("href")==="#"&&e.preventDefault)e.preventDefault();
   if(act==="cfmok"){await cfmOk();return}
   if(act==="cfmx"){cfmClose();return}
   LASTDS={...b.dataset};
