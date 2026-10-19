@@ -34,6 +34,7 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
     else if(CID!=="aep"){clubChecked=true;S.noClub=true;hideSplash();render();return}
   }catch(e){clubChecked=true;if(CID!=="aep"){S.offline=true;render();return}}
   clubChecked=true;
+  if(MINI)S.holdT=setTimeout(()=>{S.held=true;S.holdT=null;render()},2500);
   db=makeDb(PFX);
   hideSplash();
   fromRedirect();

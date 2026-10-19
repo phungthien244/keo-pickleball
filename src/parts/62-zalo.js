@@ -65,12 +65,14 @@ function linkCard(D){
 }
 
 /* ----- Mini App: Của tôi, các CLB đã tham gia, thanh dưới ----- */
-function myClubs(){try{return JSON.parse(localStorage.getItem("pb-mini-clubs")||"[]").filter(x=>x&&x.id)}catch(e){return []}}
+function myClubs(){let L=[];try{L=JSON.parse(localStorage.getItem("pb-mini-clubs")||"[]").filter(x=>x&&x.id)}catch(e){}
+  // Bổ sung logo, tên mới nhất từ danh sách CLB đã tải (Khám phá) hoặc CLB đang mở
+  return L.map(x=>{const c=(x.id===CID&&CLUB)?CLUB:(S.clubs||[]).find(z=>z.id===x.id);return c?{...x,name:c.name||x.name,...(logoOk(c)?{logo:c.logo}:{})}:x})}
 function rememberClub(){
   if(!MINI||MODE!=="club"||legacy||!CLUB)return;
-  const k=CID+"|"+(S.link?S.link.status:"")+"|"+ROLE;if(rememberClub.done===k)return;rememberClub.done=k;
+  const k=CID+"|"+(S.link?S.link.status:"")+"|"+ROLE+"|"+((CLUB&&CLUB.logo)||"").length;if(rememberClub.done===k)return;rememberClub.done=k;
   try{localStorage.setItem("pb-mini-last",CID);
-    const L=myClubs().filter(x=>x.id!==CID);L.unshift({id:CID,name:(CLUB&&CLUB.name)||CID,role:mxRole()});localStorage.setItem("pb-mini-clubs",JSON.stringify(L.slice(0,10)))}catch(e){}
+    const L=myClubs().filter(x=>x.id!==CID);L.unshift({id:CID,name:(CLUB&&CLUB.name)||CID,role:mxRole(),...(logoOk(CLUB)&&CLUB.logo.length<60000?{logo:CLUB.logo}:{})});localStorage.setItem("pb-mini-clubs",JSON.stringify(L.slice(0,10)))}catch(e){}
 }
 function vToi(D){
   const L=S.link,p=L&&L.status==="ok"&&D.pmap.get(L.pid),R=regList(D),mine=authUser&&R.all.find(x=>x.uid===authUser.uid);
@@ -93,8 +95,8 @@ function miniNav(){
 /* ----- Xử lý bấm ----- */
 async function zaloAct(act,b,id){
   if(act==="zlogin"){zaloStart();return true}
-  if(act==="miniclub"){const x=b.dataset.x;if(id===CID&&MODE==="club"){go("app",{tab:"dk",x});return true}setPath("/"+id+(x?"/dang-ky/"+encodeURIComponent(x):""));location.reload();return true}
-  if(act==="miniexplore"){setPath("/clb");location.reload();return true}
+  if(act==="miniclub"){const x=b.dataset.x;if(id===CID&&MODE==="club"){go("app",{tab:"dk",x});return true}quickNext();setPath("/"+id+(x?"/dang-ky/"+encodeURIComponent(x):""));location.reload();return true}
+  if(act==="miniexplore"){quickNext();setPath("/clb");location.reload();return true}
   if(act==="openweb"){const u="https://pikeco.app"+(b.dataset.v||"/");if(window.ZMP&&window.ZMP.openWebview){try{await window.ZMP.openWebview({url:u})}catch(e){location.href=u}}else location.href=u;return true}
   if(act==="lnkcancel"){if(!armOr("lnkcancel:x"))return true;try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid))}catch(e){}return true}
   if(act==="lnksend"){if(!isPlayer(authUser))return true;const zp=zaloProf();

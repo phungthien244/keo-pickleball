@@ -29,7 +29,7 @@ function mxNav(){
 // Đang nạp CLB (vừa chuyển CLB): dựng sẵn khung Mini App, không lộ giao diện web
 function mxLoading(){
   const k=myClubs().find(x=>x.id===CID),nm=(CLUB&&CLUB.name)||(k&&k.name)||"";
-  return `<div class="mxbar"><span class="mxclub">${clubAv({id:CID,name:nm},"",nm)}<b>${esc(nm)}</b></span><span class="mxme">${mxSvg("me")}</span></div><div class="mxbody">${skeleton()}</div>${mxNav()}`;
+  return `<div class="mxbar"><span class="mxclub">${clubAv(k||{id:CID,name:nm},"",nm)}<b>${esc(nm)}</b></span><span class="mxme">${mxSvg("me")}</span></div><div class="mxbody">${skeleton()}</div>${mxNav()}`;
 }
 // Thanh "Lượt của tôi": ghim khi buổi đang diễn ra và mình có mặt
 function mxTurn(D){
@@ -45,7 +45,7 @@ function mxTurn(D){
 }
 // Bảng chuyển CLB
 function mxSheetHtml(){
-  if(mxSheet!=="club")return "";
+  if(mxSheet!=="club")return "";exCacheLoad();
   const C=myClubs(),row=c=>`<button class="mxrow${c.id===CID&&MODE==="club"?" cur":""}" data-act="miniclub" data-id="${esc(c.id)}">${clubAv(c)}<span class="t"><b>${esc(c.name||c.id)}</b><small>${esc(c.role||"Đã xem")}</small></span>${c.id===CID&&MODE==="club"?`<span class="ck">✓</span>`:""}</button>`;
   const man=C.filter(c=>/Chủ|Quản lý|Trọng tài/.test(c.role||"")),join=C.filter(c=>!man.includes(c));
   return `<div class="mxdim" data-act="mxsheetx"></div><div class="mxsheet" role="dialog" aria-label="Chuyển CLB"><span class="grab"></span><b class="mxh">Chuyển CLB</b>
@@ -326,7 +326,9 @@ function mxExplore(){
   if(mxSeg.exTab==="me")return mxExploreMe();
   if(mxSeg.exTab==="tao")return mxCreate();
   const mine=myClubs(),q=noAcc(String(val("cq",""))).toLowerCase().trim(),f=mxSeg.ex||"all";
-  const all=publicClubs(),others=all.filter(c=>!mine.some(m=>m.id===c.id)&&(!q||noAcc(`${c.name} ${c.city||""}`).toLowerCase().includes(q)));
+  const all=publicClubs(),mq=c=>!q||noAcc(`${c.name} ${c.city||""} ${c.id}`).toLowerCase().includes(q);
+  // Đang tìm: gộp CLB của bạn và CLB khác vào một danh sách kết quả
+  const others=all.filter(c=>(q||!mine.some(m=>m.id===c.id))&&mq(c)),mineQ=q?mine.filter(m=>mq(m)&&!all.some(c=>c.id===m.id)):mine;
   const now=new Date(),endDay=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).getTime(),wk=d=>[0,6].includes(new Date(d).getDay());
   const O=(mxOpen||[]).filter(x=>(!q||noAcc(`${x.club.name} ${x.club.city||""} ${x.r.place||""}`).toLowerCase().includes(q))&&(f==="all"||(f==="nay"&&x.r.at&&x.r.at<endDay)||(f==="tuan"&&x.r.at&&wk(x.r.at))));
   const fb=(v,l)=>`<button data-act="mxseg" data-k="ex" data-v="${v}" aria-pressed="${f===v}">${l}</button>`;
@@ -336,8 +338,10 @@ function mxExplore(){
   h+=`<span class="mxsec" id="mxopen">Giải đấu đang nhận vận động viên</span><div class="mxseg sm">${fb("all","Tất cả")}${fb("nay","Hôm nay")}${fb("tuan","Cuối tuần")}</div>`;
   h+=!mxOpen?skSess()+skSess():O.length?O.map(x=>`<button class="mxcard sess" id="os-${esc(x.club.id)}-${esc(String(x.x||x.sid||""))}" data-act="miniclub" data-id="${esc(x.club.id)}"${x.x?` data-x="${esc(x.x)}"`:""}><div class="mxsess">${x.r.at?mxDate(x.r.at):`<span class="mxdate"><b>?</b></span>`}<span class="t"><span class="mxorg">${clubAv(x.club,"s20")}<small>${esc(x.club.name)}</small></span><b>${esc(x.cf.sname||"Giải đấu")}</b><span>${x.r.at?hm(x.r.at):""}${x.r.place?` · ${esc(x.r.place)}`:""}${x.r.feeG||x.cf.phi?` · ${fmtK(+(x.r.feeG||((x.cf.thu==="phi")?x.cf.phi:x.r.fee)||0))}`:""}</span></span>${x.n==null?(+x.r.max?`<span class="tagl">${+x.r.max} chỗ</span>`:""):`<span class="tagl">${+x.r.max?`còn ${Math.max(0,+x.r.max-x.n)}`:`${x.n} người`}</span>`}</div></button>`).join("")
     :`<div class="mxcard mxempty"><b>${f==="all"?"Chưa có giải đấu nào đang mở":"Không có giải đấu nào trong thời gian này"}</b><span>Giải đấu của các CLB sẽ hiện ở đây khi mở đăng ký nhận vận động viên.</span></div>`+(mine.length||f!=="all"?"":mxSteps());
-  if(mine.length)h+=`<span class="mxsec">CLB của bạn</span>`+mine.map(c=>clubCard({...(S.clubs||[]).find(x=>x.id===c.id)||{},id:c.id,name:c.name})).join("");
-  h+=`<span class="mxsec">${mine.length?"CLB khác":"Câu lạc bộ"}</span>`+(!S.clubs?skClub()+skClub()+skClub():others.length?others.map(clubCard).join(""):`<p class="rule">Không có CLB nào khớp.</p>`);
+  if(q){const R=[...mineQ.map(c=>({...(S.clubs||[]).find(x=>x.id===c.id)||{},...c})),...others];
+    h+=`<span class="mxsec">Câu lạc bộ · ${R.length} kết quả</span>`+(!S.clubs&&!R.length?skClub()+skClub():R.length?R.map(clubCard).join(""):`<div class="mxcard mxempty"><span>Không thấy “${esc(val("cq",""))}”. Thử tên khu vực hoặc tên sân.</span></div>`)}
+  else{if(mine.length)h+=`<span class="mxsec">CLB của bạn</span>`+mine.map(c=>clubCard({...(S.clubs||[]).find(x=>x.id===c.id)||{},...c})).join("");
+    h+=`<span class="mxsec">${mine.length?"CLB khác":"Câu lạc bộ"}</span>`+(!S.clubs?skClub()+skClub()+skClub():others.length?others.map(clubCard).join(""):`<p class="rule">Chưa có CLB nào khác.</p>`)}
   if(mine.length)h+=`<button class="btn-line" data-act="mxtao">＋ Tạo CLB của bạn</button>`;
   h+=`</div><nav class="mxnav"><a class="on" href="#" data-act="mxexfind">${mxSvg("find")}<span>Khám phá</span></a><a href="#" data-act="mxexme">${mxSvg("me")}<span>Tôi</span></a></nav>`;
   return h+mxSheetHtml();
@@ -477,7 +481,7 @@ async function mxAct(act,b,id){
   if(act==="mxseg"){mxSeg[b.dataset.k]=b.dataset.v;render();return true}
   if(act==="mxtien"){mxSeg.hist="tien";go("app",{tab:"ls"});return true}
   if(act==="mxexme"){mxSeg.exTab="me";render();return true}
-  if(act==="mxtao"){if(MODE!=="platform"){try{sessionStorage.setItem("pb-mxtao","1")}catch(e){}setPath("/clb");location.reload();return true}
+  if(act==="mxtao"){if(MODE!=="platform"){try{sessionStorage.setItem("pb-mxtao","1")}catch(e){}quickNext();setPath("/clb");location.reload();return true}
     mxSeg.exTab="tao";delete errs.tao;render();mxAskName();try{window.scrollTo(0,0)}catch(e){}return true}
   if(act==="mxtaox"){mxSeg.exTab="";delete errs.tao;render();return true}
   if(act==="mxexgo"){mxSeg.exTab="";render();setTimeout(()=>{try{const el=document.getElementById("mxopen");el&&el.scrollIntoView&&el.scrollIntoView({behavior:"smooth"})}catch(e){}},60);return true}

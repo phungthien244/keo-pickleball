@@ -21,13 +21,15 @@ function watchAdmin(){
   unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"links"),{},q=>{S.links=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
 }
 async function refreshRole(){
-  ROLE=null;canWrite=false;const u=authUser;
+  // Tính xong mới gán một lần: không để trang nháy sang giao diện người chơi trong lúc chờ
+  const u=authUser;let role=null,ed=false;
   if(u){
-    if(!legacy){try{const m=await FB.getDoc(FB.doc(FB.fs,PFX+"members/"+u.uid));if(m.exists())ROLE=m.data().role}catch(e){}}
-    const ed=await isEditor(u.uid);if(!ROLE&&ed)ROLE="pin";canWrite=!!ROLE;
+    const [m,e]=await Promise.all([legacy?null:FB.getDoc(FB.doc(FB.fs,PFX+"members/"+u.uid)).catch(()=>null),isEditor(u.uid)]);
+    if(m&&m.exists())role=m.data().role;ed=e;if(!role&&ed)role="pin";
     if(legacy&&ed)S.rootEditor=true;
   }
-  REF=!legacy&&(ROLE==="scorer"||ROLE==="pin");if(REF)canWrite=false;
+  if(u!==authUser)return;
+  ROLE=role;canWrite=!!role;REF=!legacy&&(ROLE==="scorer"||ROLE==="pin");if(REF)canWrite=false;S.authReady=true;
   watchRef();watchAdmin();watchLink();
 }
 // Bỏ mã mời khỏi địa chỉ sau khi đã dùng (Mini App giữ ?clb=… trên địa chỉ)

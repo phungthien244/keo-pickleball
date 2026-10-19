@@ -1,4 +1,5 @@
 /* ---------- events ---------- */
+document.addEventListener("compositionend",e=>{const t=e.target,k=t&&t.dataset&&t.dataset.draft;if(k&&(t.dataset.live||LIVEQ.includes(k))){drafts[k]=t.value;render()}});
 document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q"||k==="hq"||k==="cq"||e.target.dataset.live)render()}});
 document.addEventListener("change",e=>{
   const t=e.target;

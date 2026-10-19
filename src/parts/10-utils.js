@@ -29,6 +29,9 @@ function paySheet(){
   </div></div>`;
 }
 let splashGone=false;
+// Đổi CLB trong Mini App: bỏ màn chào, hiện ngay khung CLB (avatar, tên) trong lúc tải
+const quickNext=()=>{try{sessionStorage.setItem("pb-quick","1")}catch(e){}};
+try{if(sessionStorage.getItem("pb-quick")){sessionStorage.removeItem("pb-quick");const el=document.getElementById("splash");if(el){el.remove();splashGone=true}}}catch(e){}
 function hideSplash(){splashGone=true;const el=document.getElementById("splash");if(!el)return;el.classList.add("out");setTimeout(()=>el.remove(),600)}
 setTimeout(()=>{if(!splashGone)hideSplash()},20000);
 const shareUrl=sid=>absUrl(pathOf("buoi",{sid}));

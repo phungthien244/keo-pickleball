@@ -58,7 +58,9 @@ function render(){
   document.title=MINI?"pikeco.app":route==="buoi"?`Tổng kết giải đấu #${routeSid} · ${c.title}`:route==="caidat"?`Cài đặt · ${c.title}`:route==="chot"?`Chốt giải đấu #${D.sid} · ${c.title}`:route==="vdv"?`${D.pmap.get(routePid)?.name||"Hồ sơ"} · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="clogin"?vClubLogin:route==="chot"?vChot:route==="vdv"?(D=>vHoSo(D,routePid)):route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs,dk:vDk,toi:vToi}[tab]||vSan);
-  const loading=!S.offline&&!S.noClub&&!S.priv&&!(S.mReady&&S.hReady&&S.pReady);
+  // Mini App: chờ biết vai trò (quản lý/người chơi) và lịch giải đấu rồi mới vẽ, tránh trang nhảy nhiều lần lúc mở
+  if(S.holdT&&S.authReady&&S.schedReady){clearTimeout(S.holdT);S.holdT=null}
+  const loading=!S.offline&&!S.noClub&&!S.priv&&(!(S.mReady&&S.hReady&&S.pReady)||(MINI&&!legacy&&!S.held&&!(S.authReady&&S.schedReady)));
   // Mini App: chỉ chạy hiệu ứng khi đổi trang (không chạy lại khi dữ liệu về hay mạng đổi trạng thái)
   const akey=MINI?route+"|"+routeSid+"|"+tab+"|"+(typeof mxMode==="function"?mxMode():""):route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim&&!noAnimOnce&&!(MINI&&loading);
   // Đang chạy hiệu ứng mà dữ liệu cập nhật: chờ hiệu ứng xong mới vẽ lại, tránh giật/chạy lại 2 lần

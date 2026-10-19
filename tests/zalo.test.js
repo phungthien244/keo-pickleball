@@ -138,7 +138,9 @@ test("Mini App không có Zalo SDK (bản thử): vào bằng máy mình, chọn
 test("bản web: người xem thấy nút mở Mini App để đăng ký, không đăng ký trên web", async () => {
   const data = base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep", reg: { on: true, max: 4 } } });
   const e = setup({ host: "pikeco.app", path: "/q7/san", data });
-  await e.boot(); await e.until(() => e.T().includes("Đăng ký giải đấu"));
+  delete globalThis.window.ZMINI;
+  await e.boot();
+  await e.until(() => e.T().includes("Đăng ký giải đấu"));
   expect(e.V()).not.toContain('data-act="zlogin"');
   expect(e.V()).not.toContain('data-act="regin"');
   expect(e.V()).toContain("zalo.me/s/180913816434821856/?clb=q7");
@@ -200,13 +202,15 @@ test("Zalo Mini App: tự vào bằng ID Zalo, mở thẳng CLB, xin tham gia b�
 });
 
 test("thu phí trước: người chơi chuyển khoản lúc đăng ký, chủ CLB xác nhận, chuẩn bị giải đấu hôm nay thì trang Quỹ đánh dấu đã trả", async () => {
-  const now = new Date(); now.setHours(23, 0, 0, 0);
+  // Giải đấu hôm nay: 23:00, hoặc 10 phút nữa nếu đã quá 23:00 (chạy test lúc khuya)
+  const now = new Date(Math.max(new Date().setHours(23, 0, 0, 0), Date.now() + 10 * 6e4));
   const data = base({ "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1, bank: { code: "mb", bin: "970422", name: "MB Bank", acc: "0123456789", holder: "NGUYEN A" } },
     "clubs/q7/sched/s1": sched({ at: now.getTime(), deadline: now.getTime(), thu: "phi", phi: 60, pay: "opt" }),
     "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
   MINI(e, "#/q7/dang-ky/s1");
-  await e.boot(); await e.until(() => e.V().includes('data-act="regin" data-v="sent"'));
+  await e.boot();
+  await e.until(() => e.V().includes('data-act="regin" data-v="sent"'));
   expect(e.V()).toContain("img.vietqr.io");
   expect(e.T()).toContain("60.000đ");
   expect(e.T()).toContain("trả tại sân");
