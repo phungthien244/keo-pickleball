@@ -60,7 +60,8 @@ function fmtBlock(D){
   const c=D.c,G=isG(c),w2=winBy2(c),mx=ptMax(c);
   return `<div class="srow"><span>Số sân</span><span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân">−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân">+</button></span></div>
   ${courtNames(c)}
-  <div class="srow"><span>Chạm điểm</span><span class="stepper"><button data-act="target" data-d="-1" aria-label="Giảm điểm">−</button><span class="num">${c.target}</span><button data-act="target" data-d="1" aria-label="Tăng điểm">+</button></span></div>
+  ${G&&isKO(c.giai)?`<div class="kobd kopts"><b class="lbl">Điểm từng vòng · Vòng bảng → Knockout</b>${koPts(koK(c.giai))}</div>`:""}
+  <div class="srow"><span>${G&&isKO(c.giai)?"Chạm điểm (mặc định)":"Chạm điểm"}</span><span class="stepper"><button data-act="target" data-d="-1" aria-label="Giảm điểm">−</button><span class="num">${c.target}</span><button data-act="target" data-d="1" aria-label="Tăng điểm">+</button></span></div>
   <span class="seg segf"><button data-act="win2" data-v="1" aria-pressed="${w2}">Thắng cách 2</button><button data-act="win2" data-v="0" aria-pressed="${!w2}">Chạm là thắng</button></span>
   ${w2?`<span class="seg segf"><button data-act="ptmax" data-v="0" aria-pressed="${!mx}">Không giới hạn</button><button data-act="ptmax" data-v="1" aria-pressed="${!!mx}">Có điểm trần</button></span>
   ${mx?`<div class="srow"><span>Điểm trần</span><span class="stepper"><button data-act="ptmaxd" data-d="-1" aria-label="Giảm điểm trần">−</button><span class="num">${mx}</span><button data-act="ptmaxd" data-d="1" aria-label="Tăng điểm trần">+</button></span></div>`:""}`:""}
@@ -137,7 +138,7 @@ function prepRow(k,title,sum,body,tog){const on=prepOpen.has(k);
 function prepRows(D){
   const c=D.c,G=isG(c),thu=c.thu||"keo",gt=c.gt||"khong",cp=c.cphi!==false,gon=gt!=="khong",mu=typeof loaMuted==="function"&&loaMuted();
   let h=`<span class="xsec">Cài đặt thêm · bật cái nào dùng cái đó</span><div class="pxrows">`;
-  h+=prepRow("san","Sân và luật điểm",`${c.courts} sân · chạm ${c.target}${winBy2(c)?" cách 2":""}${ptMax(c)?`, trần ${ptMax(c)}`:""}`,fmtBlock(D));
+  h+=prepRow("san","Sân và luật điểm",`${c.courts} sân · chạm ${c.target}${G&&isKO(c.giai)?(()=>{const K=koK(c.giai);return ` · KO chạm ${+K.kto||c.target} · CK ${K.fin==="bo3"?"3 ván":K.fin==="15"?"chạm 15":"chạm "+c.target}`})():""}${winBy2(c)?" cách 2":""}${ptMax(c)?`, trần ${ptMax(c)}`:""}`,fmtBlock(D));
   h+=prepRow("tien",G?"Chi phí, lệ phí":"Chi phí",cp?THU[thu]+(thu==="phi"?` ${fmtK(+c.phi||0)}`:""):"Tắt · không thu phí",cp?moneyBlock(D):`<small class="rule">Giải đấu này không thu phí. Bật công tắc để tính chi phí.</small>`,{act:"cphi",on:cp});
   h+=prepRow("giai","Giải thưởng",gon?GT[gt]||"":"Tắt · không trao giải",prizeBlock(D),{act:"gton",on:gon});
   h+=prepRow("tt","Trọng tài nhập điểm",c.refOn===true?"Bật":"Tắt · ban tổ chức tự nhập",refBlock(D),{act:"refon",on:c.refOn===true});

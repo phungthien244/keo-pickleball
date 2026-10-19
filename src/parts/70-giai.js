@@ -169,7 +169,7 @@ function gSetup(D,G,o={}){
 }
 function gRun(D,GD){
   const c=D.c,left=GD.total-GD.resolved,est=Math.ceil(left/Math.max(1,c.courts))*GSLOT,pc=GD.total?Math.round(GD.resolved/GD.total*100):0;
-  const live=D.playing.filter(m=>m.giai),liveV=live.filter(myCourt);
+  const live=D.playing.filter(m=>m.giai),liveV=live.filter(myCourt),gv=gView||(GD.isKO?"luot":"san");
   let h=`<div class="gprog"><div class="t"><span class="num">${GD.isKO?(GD.gDone?"Knockout":"Vòng bảng"):`Lượt ${GD.curR}/${GD.rounds}`} · xong ${GD.resolved}/${GD.total} trận</span><span class="num">${left?`Còn ~${dur(est)}`:"Đã xong"}</span></div><div class="b"><i style="width:${pc}%"></i></div></div>`;
   if(GD.complete){const t=GD.table[0];h+=`<div class="champ"><div class="k"><span>${GD.isKO?"VÔ ĐỊCH":"ĐÃ ĐÁNH XONG VÒNG TRÒN · DẪN ĐẦU"}</span><span>${(()=>{const p=prizes(D,money(D))[0];return p?fmtK(p.k):""})()}</span></div><div class="p">${pairAv(D,t.p,"lg")}<span><span class="n">${pairNm(D,t.p)}</span><span class="s num" style="display:block">${t.w} thắng · ${t.l} thua · HS ${t.pf-t.pa>0?"+":""}${t.pf-t.pa}</span></span></div>${canWrite?`<div class="champb">${champBtn("champ:live")}<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để lưu giải":"Kết thúc giải và lưu"}</button></div>`:""}</div>`}
   const top=h;h="";
@@ -179,10 +179,10 @@ function gRun(D,GD){
   else if(REF&&!GD.complete)h+=`<div class="empty"><strong>Sân của bạn đang trống</strong>Trận kế tiếp của sân ${MYCT.join(", ")||"được giao"} sẽ hiện ở đây.</div>`;
   else if(!GD.complete&&!REF)h+=`<div class="empty"><strong>Sân đang trống</strong>${canWrite?"Bấm “Đưa trận kế vào sân trống” để gọi trận tiếp theo theo lịch.":"Chờ người tổ chức gọi trận tiếp theo."}</div>`;
   const sanP=h;h="";
-  h+=`<div class="shd"><h2>Lịch thi đấu</h2>${REF?"":`<span class="seg segs"><button data-act="gview" data-v="san" aria-pressed="${gView!=="luot"}">Theo sân</button><button data-act="gview" data-v="luot" aria-pressed="${gView==="luot"}">${GD.isKO?"Theo bảng":"Theo lượt"}</button></span>`}</div>${REF||gView!=="luot"?gCourts(D,GD):GD.isKO?koLich(D,GD):gRounds(D,GD)}`;
+  h+=`<div class="shd"><h2>Lịch thi đấu</h2>${REF?"":`<span class="seg segs">${GD.isKO?`<button data-act="gview" data-v="luot" aria-pressed="${gv==="luot"}">Bảng &amp; nhánh</button><button data-act="gview" data-v="san" aria-pressed="${gv!=="luot"}">Theo sân</button>`:`<button data-act="gview" data-v="san" aria-pressed="${gv!=="luot"}">Theo sân</button><button data-act="gview" data-v="luot" aria-pressed="${gv==="luot"}">Theo lượt</button>`}</span>`}</div>${REF||gv!=="luot"?gCourts(D,GD):GD.isKO?koLich(D,GD):gRounds(D,GD)}`;
   const lichP=h;h="";
   if(canWrite){
-    if(!GD.isKO)h+=gPresetBlock(D,G0());
+    if(!GD.isKO)h+=gPresetBlock(D,G0());else h+=koMgr(D,GD);
     h+=`<div class="panel"><h2>Quản lý giải</h2><p class="rule" style="margin-bottom:6px">Cặp bỏ về: các trận chưa đánh của họ tính thắng cho đối thủ nhưng không cộng điểm vào hiệu số, rating không đổi. Trận đã đánh giữ nguyên. Cặp mệt cần nghỉ thì bấm “Cho nghỉ”: app tạm không xếp trận cho cặp đó đến khi bấm “Cho vào lại”.</p>${(()=>{const lt=gLast(D),onC=new Set(live.flatMap(m=>[m.pa,m.pb])),rs=GD.G.rest||{};return GD.pairs.map(p=>{const o=!!GD.out[p.id],st=o?"Đã bỏ giải":onC.has(p.id)?"Đang trên sân":rs[p.id]?"BTC cho nghỉ, chưa xếp trận":lt.has(p.id)?`Đã nghỉ ${Math.max(0,Math.floor((Date.now()-lt.get(p.id))/60000))} phút`:"Chưa đánh trận nào";
     return `<div class="prow2 m"><span class="no num">${GD.T.get(p.id).no}</span>${pairAv(D,p,"sm")}<span class="nm">${pairNm(D,p)}<small>${st}</small></span><span class="bt">${!o&&!onC.has(p.id)?`<button class="ghost" data-act="grest" data-id="${p.id}">${rs[p.id]?"Cho vào lại":"Cho nghỉ"}</button>`:""}${o?`<button class="ghost" data-act="gin" data-id="${p.id}">Cho quay lại</button>`:armed("gout:"+p.id)?`<button class="danger" data-act="gout" data-id="${p.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="gout" data-id="${p.id}">Bỏ giải</button>`}</span></div>`}).join("")})()}
     <div class="bar" style="margin-top:12px">${!GD.complete?`<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để kết thúc sớm":"Kết thúc giải sớm"}</button>`:""}${!D.done.some(m=>m.giai)?`<button class="ghost danger" data-act="gcancel">${armed("gcancel:x")?"Bấm lần nữa để hủy":"Hủy lịch, ghép lại cặp"}</button>`:""}</div>
@@ -325,7 +325,7 @@ function autoGFill(){
 }
 
 /* ----- Lịch theo sân: trận đã đánh, đang đánh và dự kiến kế tiếp của từng sân ----- */
-let gView="san";
+let gView=null;
 // Mô phỏng thứ tự gọi trận: sân nào xong trước nhận trận kế (cùng cách chọn với "Đưa trận kế vào sân")
 function gPlan(D,GD){
   const n=Math.max(1,+D.c.courts||1),off=GD.G.rest||{},plan=new Map();

@@ -134,6 +134,8 @@ test("vòng bảng → knockout: chia bảng có hạt giống, vòng bảng, b�
   expect(e.store.get("app/config").fmt).toBe("giai");
   expect(e.store.get("app/config").giai.ko.n).toBe(4);
   await e.click("koset", { k: "n", v: "2" });
+  await e.click("koset", { k: "kto", v: "15" });
+  expect(e.store.get("app/config").giai.ko.kto).toBe(15);
   await e.click("gauto");
   expect(e.store.get("app/config").giai.pairs.length).toBe(8);
   expect(e.V()).toMatch(/data-act="gstart" disabled/);
@@ -155,7 +157,8 @@ test("vòng bảng → knockout: chia bảng có hạt giống, vòng bảng, b�
         e.input("sa-" + id, "11"); e.input("sb-" + id, "9"); await e.click("save", { id });
         expect(e.V()).toContain("15");
         e.input("sa-" + id, "15"); e.input("sb-" + id, "12");
-      } else { e.input("sa-" + id, "11"); e.input("sb-" + id, "6"); }
+      } else if (m.ko.startsWith("k0") || m.ko === "k3") { expect(m.to).toBe(15); e.input("sa-" + id, "15"); e.input("sb-" + id, "6"); }
+      else { e.input("sa-" + id, "11"); e.input("sb-" + id, "6"); }
     } else { e.input("sa-" + id, k % 2 ? "11" : "8"); e.input("sb-" + id, k % 2 ? "4" : "11"); }
     await e.click("save", { id }); k++;
   }
