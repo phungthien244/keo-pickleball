@@ -24,7 +24,9 @@ store.set("app/hist-1",{sid:1,title:"Round Robin DUPR",startedAt:day,endedAt:day
 store.set("clubs/aep",{name:"AEP Pickleball",public:true,owner:"demo",bank:{code:"mb",bin:"970422",name:"MB Bank",acc:"17263544538888",holder:"PHAM TIEN DUNG"},createdAt:Date.now()});
 store.set("clubs/aep/members/demo",{role:"owner",name:"Bạn (demo)",email:"ban@demo.vn",at:Date.now()});
 store.set("clubs/aep/members/u2",{role:"admin",name:"Minh",email:"minh@demo.vn",at:Date.now()});
-store.set("clubs/aep/editors/pin1",{pin:"x",at:Date.now()});})();
+store.set("clubs/aep/editors/pin1",{pin:"x",at:Date.now()});
+store.set("clubs/aep/invites/demo-ql",{role:"admin",exp:Date.now()+3650*864e5,by:"demo",at:Date.now()});
+store.set("clubs/aep/invites/demo-tt",{role:"scorer",exp:Date.now()+3650*864e5,by:"demo",at:Date.now()});})();
 window.PA_OVERRIDE="ban@demo.vn";
 store.set("users/demo",{club:"aep",at:Date.now()});
 store.set("clubs/q7-smash",{name:"Q7 Smash Pickleball",public:true,owner:"u7",status:"pending",city:"TP.HCM",size:"20–50",createdAt:Date.now()-36e5});

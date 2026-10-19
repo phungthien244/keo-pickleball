@@ -29,13 +29,18 @@ async function refreshRole(){
   REF=!legacy&&(ROLE==="scorer"||ROLE==="pin");if(REF)canWrite=false;
   watchRef();watchAdmin();watchLink();
 }
+// Bỏ mã mời khỏi địa chỉ sau khi đã dùng (Mini App giữ ?clb=… trên địa chỉ)
+function dropInviteTok(){try{const q=new URLSearchParams(location.search);q.delete("moi");history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:"")+location.hash)}catch(e){}}
 const inviteTok=()=>INVITE||new URLSearchParams(location.search).get("moi");
 async function acceptInvite(){
-  const tok=inviteTok();if(!tok||legacy||!isGoogle(authUser)||(ROLE&&ROLE!=="pin"))return;
+  const tok=inviteTok(),zl=MINI&&!!authUser&&/^zalo_/.test(String(authUser.uid||""));
+  if(!tok||legacy||!(isGoogle(authUser)||zl))return;
+  if(ROLE&&ROLE!=="pin"){if(MINI){dropInviteTok();toast(`Bạn đã là ${ROLE_LB[ROLE]} của ${CLUB?.name||"CLB"}.`)}return}
   try{const s=await FB.getDoc(FB.doc(FB.fs,PFX+"invites/"+tok));if(!s.exists()){toast("Link mời không còn hiệu lực.");return}
     const iv=s.data();if(iv.exp<Date.now()){toast("Link mời đã hết hạn, nhờ quản lý tạo link mới.");return}
-    await FB.setDoc(FB.doc(FB.fs,PFX+"members/"+authUser.uid),{role:iv.role,invite:tok,name:authUser.displayName||"",email:authUser.email||"",at:Date.now()});
+    await FB.setDoc(FB.doc(FB.fs,PFX+"members/"+authUser.uid),zl?{role:iv.role,invite:tok,name:String(zaloProf().n||"Thành viên Zalo").slice(0,40),email:"",via:"zalo",at:Date.now()}:{role:iv.role,invite:tok,name:authUser.displayName||"",email:authUser.email||"",at:Date.now()});
     await refreshRole();toast(`Đã nhận quyền ${ROLE_LB[iv.role]} của ${CLUB?.name||"CLB"}.`);
+    if(zl){dropInviteTok();mxSetMode("ql")}
     INVITE=null;route="home";setPath(pathOf("home"),1);
     render();
   }catch(e){toast("Không nhận được lời mời, thử lại.")}
@@ -80,10 +85,10 @@ function clubAdmin(D){
       <div class="pinrow"><label><span class="sr">PIN mới</span><input id="newpin" data-draft="newpin" type="text" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="PIN mới, ít nhất 4 số" value="${esc(val("newpin",""))}"></label><button class="dark" data-act="pinset">Đặt PIN</button></div>
       ${errs.pinset?`<p class="err">${esc(errs.pinset)}</p>`:""}
       <div class="bar"><span class="meta grow">${(S.editors||[]).length} máy đang dùng PIN</span>${(S.editors||[]).length?`<button class="ghost danger" data-act="edclear">${armed("edclear:x")?"Bấm lần nữa":"Thu hồi tất cả"}</button>`:""}</div></div></section>
-    <section class="card2"><h2>Ban tổ chức</h2>${mem.map(m=>`<div class="mrow3">${av({name:m.name||m.email||"?"},"sm")}<span class="t"><b>${esc(m.name||m.email||m.id)}</b><small>${esc(m.email||"")}</small></span><span class="rtag${m.role==="owner"?" o":""}">${ROLE_LB[m.role]||m.role}</span>${m.role!=="owner"&&m.id!==authUser?.uid?(armed("mrm:"+m.id)?`<button class="danger" data-act="mrm" data-id="${m.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="mrm" data-id="${m.id}">Gỡ</button>`):""}</div>`).join("")}
+    <section class="card2"><h2>Ban tổ chức</h2>${mem.map(m=>`<div class="mrow3">${av({name:m.name||m.email||"?"},"sm")}<span class="t"><b>${esc(m.name||m.email||m.id)}</b><small>${esc(m.email||(m.via==="zalo"?"Tài khoản Zalo":""))}</small></span><span class="rtag${m.role==="owner"?" o":""}">${ROLE_LB[m.role]||m.role}</span>${m.role!=="owner"&&m.id!==authUser?.uid?(armed("mrm:"+m.id)?`<button class="danger" data-act="mrm" data-id="${m.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="mrm" data-id="${m.id}">Gỡ</button>`):""}</div>`).join("")}
       <div class="cb"><div class="two"><button class="line" data-act="inv" data-v="admin">Mời quản lý</button><button class="line" data-act="inv" data-v="scorer">Mời trọng tài</button></div>
-      ${S.invLink?`<div class="sharebox"><span class="lbl">Link mời ${esc(ROLE_LB[S.invLink.role])} · hết hạn sau 7 ngày</span><span class="url">${esc(S.invLink.url.replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="invshare">Gửi qua Zalo</button><button data-act="cp" data-v="${esc(S.invLink.url)}">Copy link</button></div></div>`:""}
-      <p class="rule">Người được mời mở link, đăng nhập Google là có quyền. Quản lý sửa được mọi thứ trừ gỡ chủ CLB; trọng tài chỉ nhập được tỉ số ở sân được giao.</p></div></section>`;
+      ${invBox()}
+      <p class="rule">Người được mời bấm link trong Zalo là mở Pikeco và có quyền ngay, không cần Google. Muốn quản lý trên máy tính thì mở link web rồi đăng nhập Google. Quản lý sửa được mọi thứ trừ gỡ chủ CLB; trọng tài chỉ nhập được tỉ số ở sân được giao.</p></div></section>`;
   h+=refCard();
   if(ROLE==="owner")h+=delCard();
   return h;
@@ -105,6 +110,7 @@ function vCaiDat(D){
   const u=authUser;
   let h=`<div class="dhead"><a class="bk" href="${pathOf("home")}" data-go="home">‹ ${esc(CLUB?.name||D.c.title)}</a><h1>Cài đặt CLB</h1>`;
   if(u&&u.isAnonymous&&(canWrite||REF))h+=`<div class="acct"><span class="t"><b>Trọng tài (PIN)</b><small>${REF?(MYCT.length?"Nhập tỉ số sân "+MYCT.join(", "):"Chưa được giao sân"):"Máy này đang nhập được tỉ số"}</small></span><button data-act="logout">Thoát</button></div>`;
+  else if(isPlayer(u)&&(canWrite||REF)){const pn=S.link&&S.link.status==="ok"&&D.pmap.get(S.link.pid)?.name;h+=`<div class="acct">${av({name:pn||zaloProf().n||"Z"},"sm")}<span class="t"><b>${esc(pn||zaloProf().n||"Tài khoản Zalo")}</b><small>${esc(ROLE_LB[ROLE]||"")} · đăng nhập bằng Zalo</small></span></div>`}
   else if(isPlayer(u)){const pn=S.link&&S.link.status==="ok"&&D.pmap.get(S.link.pid)?.name;h+=`<div class="acct">${av({name:pn||"?"},"sm")}<span class="t"><b>${esc(pn||"Người chơi")}</b><small>${pn?"Người chơi · máy này":"Chưa được chủ CLB duyệt"}</small></span>${u.isAnonymous?"":`<button data-act="logout">Thoát</button>`}</div>`}
   else if(isGoogle(u))h+=`<div class="acct">${av({name:u.displayName||u.email||"?"},"sm")}<span class="t"><b>${esc(u.email||u.displayName||"")}</b><small>${esc(ROLE_LB[ROLE]||"Chưa có quyền ở CLB này")}</small></span><button data-act="logout">Thoát</button></div>`;
   h+=`</div>`;
@@ -173,4 +179,12 @@ function introCard(){
     <label class="fld"><span class="lbl">Giới thiệu ngắn</span><textarea id="ci-about" data-draft="ci-about" maxlength="500" rows="3" placeholder="CLB vui vẻ, chơi đều mỗi tuần, có kèo cân trình">${esc(val("ci-about",c.about||""))}</textarea></label>
     ${INTRO.map(([k,l,ph,mx])=>`<label class="fld"><span class="lbl">${l}</span><input id="ci-${k}" data-draft="ci-${k}" maxlength="${mx}" ${k==="zalo"?'inputmode="tel"':""} placeholder="${ph}" value="${esc(val("ci-"+k,c[k]||""))}"></label>`).join("")}
     <button class="wide" data-act="cintro">Lưu giới thiệu</button></div></section>`;
+}
+
+// Hộp link mời vừa tạo: link Zalo (mở Mini App, nhận quyền bằng Zalo) và link web (đăng nhập Google)
+function invBox(role){
+  const L=S.invLink;if(!L||(role&&L.role!==role))return "";
+  return `<div class="sharebox"><span class="lbl">Link mời ${esc(ROLE_LB[L.role])} · hết hạn sau 7 ngày</span><span class="url">${esc(L.zalo.replace(/^https?:\/\//,""))}</span>
+    <div class="bt"><button class="primary" data-act="invshare">Gửi qua Zalo</button><button data-act="cp" data-v="${esc(L.zalo)}">Copy link Zalo</button></div>
+    <small class="rule">Quản lý trên máy tính: <button class="lnk" data-act="cp" data-v="${esc(L.url)}">copy link web</button>, mở bằng Chrome/Safari rồi đăng nhập Google.</small></div>`;
 }

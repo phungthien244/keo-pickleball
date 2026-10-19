@@ -65,7 +65,7 @@ function regAction(D,R){
     return h;
   }
   const linked=S.link&&S.link.status==="ok";
-  if(!linked)return r.guests?`<button class="primary wide" data-act="guestopen">Đăng ký làm khách buổi này</button>`:`<a class="primary wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">Chọn tên của bạn để đăng ký</a>`;
+  if(!linked)return r.guests?`<button class="primary wide" data-act="guestopen">Đăng ký làm khách buổi này</button>`:`<a class="primary wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">Tham gia CLB để đăng ký</a>`;
   if(regClosed())return `<small class="rule">Đã hết hạn đăng ký buổi này.</small>`;
   const full=R.conf.length>=R.max,lb=full?"Vào danh sách chờ":"Đăng ký tham gia",k=feeMem();
   if(payOn()&&k>0&&!full){
@@ -116,7 +116,7 @@ function dkPlayer(D){
     if(guestOpen&&r.guests&&regOpen())return guestForm(D);
     let h="";
     if(regOpen())h+=`<section class="regcard">${sessBox(D,R)}${r.guests&&!(S.link&&S.link.status==="pending")?`<button class="primary wide" data-act="guestopen">Đăng ký làm khách buổi này</button><small class="rule" style="text-align:center">Không cần chờ duyệt. Là thành viên CLB? Chọn tên của bạn bên dưới.</small>`:""}</section>`;
-    else h+=`<section class="regcard"><span class="lbl">Đăng ký buổi</span><b>Chưa mở đăng ký buổi tới</b><span class="rule">Chọn tên của bạn trong CLB để được báo khi có buổi mới.</span></section>`;
+    else h+=`<section class="regcard"><span class="lbl">Đăng ký buổi</span><b>Chưa mở đăng ký buổi tới</b><span class="rule">Tham gia CLB để đăng ký buổi khi chủ CLB mở.</span></section>`;
     return h+linkCard(D);
   }
   if(!regOpen())return `<section class="regcard"><span class="lbl">Đăng ký buổi</span><b>Chưa mở đăng ký buổi tới</b><span class="rule">Chủ CLB mở đăng ký là bạn thấy ở đây.</span></section>`;
@@ -179,10 +179,26 @@ function regPeople(D){
   return card("Người đăng ký",b);
 }
 let regAddOpen=false;
+let apvOpen=null,apvMode="pick",apvSel=null;
+const nameKey=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/gi,"d").toLowerCase().replace(/\s+/g," ").trim();
+// Người chơi xin tham gia: quản trị viên ghép với hồ sơ cũ (giữ rating, lịch sử) hoặc tạo hồ sơ mới
 function approvals(D){
   if(!isAdm()||legacy)return "";
   const L=(S.links||[]).filter(x=>x.status==="pending");if(!L.length)return "";
-  return `<section class="card2 apv"><h2>Người chơi chờ duyệt (${L.length})</h2><div class="cb">${L.map(x=>`<div class="refrow"><span class="t"><b>${esc(x.zname||"Người dùng Zalo")}</b><small>${x.pid?`Nhận hồ sơ: <b>${esc(D.pmap.get(x.pid)?.name||"?")}</b>${D.pmap.get(x.pid)?.zuid?" (đã có người nhận)":""}`:`Người mới: <b>${esc(x.newName||"")}</b> · ${x.gender==="F"?"Nữ":"Nam"}`}</small></span><button class="primary" data-act="lnkok" data-id="${x.id}">Duyệt</button><button class="ghost danger" data-act="lnkno" data-id="${x.id}">${armed("lnkno:"+x.id)?"Từ chối?":"Từ chối"}</button></div>`).join("")}</div></section>`;
+  const free=D.players.filter(p=>!p.zuid).sort((a,b)=>String(a.name).localeCompare(String(b.name),"vi"));
+  const row=x=>{
+    const nm=x.newName||x.zname||"Người dùng Zalo",sug=(x.pid&&D.pmap.get(x.pid))||free.find(p=>nameKey(p.name)===nameKey(nm)),op=apvOpen===x.id;
+    let h=`<div class="apvrow"><div class="refrow">${x.photo?`<img class="av md" src="${esc(x.photo)}" alt="">`:av({name:nm},"md")}<span class="t"><b>${esc(nm)}</b><small>${x.zname&&x.zname!==nm?`Zalo: ${esc(x.zname)} · `:""}gửi ${esc(regWhen(x.at||0))}</small></span></div>`;
+    if(sug&&!sug.zuid)h+=`<button class="primary wide" data-act="lnkok" data-id="${x.id}" data-v="${sug.id}">Ghép với ${esc(sug.name)}${x.pid?"":" (trùng tên)"}</button>`;
+    h+=`<div class="two"><button class="line" data-act="apvpick" data-id="${x.id}" aria-pressed="${op&&apvMode==="pick"}">${sug?"Ghép với người khác":"Ghép với thành viên cũ"}</button><button class="line" data-act="apvnew" data-id="${x.id}" aria-pressed="${op&&apvMode==="new"}">Tạo hồ sơ mới</button></div>`;
+    if(op&&apvMode==="pick"){h+=pplPick(D,free,{act:"apvp",key:"apv",sel:apvSel?[apvSel]:[]});
+      if(apvSel)h+=`<button class="primary wide" data-act="lnkok" data-id="${x.id}" data-v="${apvSel}">Ghép với ${esc(D.pmap.get(apvSel)?.name||"")}</button>`}
+    if(op&&apvMode==="new")h+=`<label class="fld"><span class="lbl">Tên trong CLB</span><input id="apv-name-${x.id}" data-draft="apv-name-${x.id}" maxlength="30" value="${esc(val("apv-name-"+x.id,nm))}"></label>
+      <div class="fld"><span class="lbl">Giới tính</span><span class="seg"><button data-act="apvg" data-v="M" aria-pressed="${val("apv-g",x.gender||"M")!=="F"}">Nam</button><button data-act="apvg" data-v="F" aria-pressed="${val("apv-g",x.gender||"M")==="F"}">Nữ</button></span></div>
+      <button class="primary wide" data-act="lnkok" data-id="${x.id}" data-v="new">Tạo hồ sơ và duyệt</button>`;
+    return h+`<button class="ghost danger" data-act="lnkno" data-id="${x.id}">${armed("lnkno:"+x.id)?"Bấm lần nữa để từ chối":"Từ chối"}</button></div>`;
+  };
+  return `<section class="card2 apv"><h2>Xin tham gia CLB (${L.length})</h2><div class="cb">${L.map(row).join("")}<small class="rule">Ghép với hồ sơ cũ để người chơi giữ rating và lịch sử. Người mới thì tạo hồ sơ mới.</small></div></section>`;
 }
 // Bắt đầu buổi: điểm danh người đã đăng ký, tạo hồ sơ khách, đánh dấu đã trả ở trang Quỹ
 async function regStart(D){

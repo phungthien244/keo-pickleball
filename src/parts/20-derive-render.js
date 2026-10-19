@@ -61,7 +61,7 @@ function render(){
   const loading=!S.offline&&!S.noClub&&!S.priv&&!(S.mReady&&S.hReady&&S.pReady);
   const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim&&!noAnimOnce; if(!(MINI&&loading))lastAnim=akey; noAnimOnce=false;
   if(MINI&&MODE==="club"&&!S.noClub&&!clubChecked){if(!splashGone)hideSplash();$("#view").innerHTML=`<section class="mx">${mxLoading()}</section>`;return}
-  if(MINI&&MODE==="club"&&!legacy&&!S.noClub){if(!splashGone)hideSplash();$("#view").innerHTML=`<section class="mx${doAnim&&!loading?" mxanim":""}">${loading?mxLoading():renderMini(D)}</section>`;mxCheckin(D);
+  if(MINI&&MODE==="club"&&!legacy&&!S.noClub){if(!splashGone)hideSplash();$("#view").innerHTML=`<section class="mx${doAnim&&!loading?" mxanim":""}">${loading?mxLoading():renderMini(D)}</section>`;mxCheckin(D);if(!loading&&mxMode()==="ql")syncSheet(D);
     if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}return}
   $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${loading?skeleton():v(D)}${MINI?"":clubFoot()}</section>${miniNav()}`;
   syncSheet(D);

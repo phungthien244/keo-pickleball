@@ -85,9 +85,9 @@ function refBlock(D){
   if(D.c.refOn!==true)return `<small class="rule">Buổi này ban tổ chức tự nhập tỉ số. Tích “Trọng tài” để giao sân cho trọng tài nhập điểm.</small>`;
   if(legacy||!isAdm())return `<small class="rule">Chỉ chủ CLB và quản lý đăng nhập Google mới giao sân cho trọng tài được.</small>`;
   const link=absUrl("/"+CID+"/dang-nhap").replace(/^https?:\/\//,"");
-  return refRows()+`<div class="two" style="margin-top:8px"><button class="line" data-act="inv" data-v="scorer">+ Mời trọng tài (Google)</button><button class="line" data-act="cp" data-v="${esc(absUrl("/"+CID+"/dang-nhap"))}">Copy link vào bằng PIN</button></div>
-    ${S.invLink&&S.invLink.role==="scorer"?`<div class="sharebox"><span class="lbl">Link mời trọng tài · hết hạn sau 7 ngày</span><span class="url">${esc(S.invLink.url.replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="invshare">Gửi qua Zalo</button><button data-act="cp" data-v="${esc(S.invLink.url)}">Copy link</button></div></div>`:""}
-    <small class="rule">Trọng tài vào ${esc(link)}, nhập tên và PIN${CLUB&&CLUB.pinAt?"":" (chưa đặt PIN: đặt trong Cài đặt CLB)"}, hoặc mở link mời rồi đăng nhập Google. Vào xong tên hiện ở danh sách trên, chạm S1, S2… để giao sân.</small>`;
+  return refRows()+`<div class="two" style="margin-top:8px"><button class="line" data-act="inv" data-v="scorer">+ Mời trọng tài qua Zalo</button><button class="line" data-act="cp" data-v="${esc(absUrl("/"+CID+"/dang-nhap"))}">Copy link vào bằng PIN</button></div>
+    ${invBox("scorer")}
+    <small class="rule">Trọng tài vào ${esc(link)}, nhập tên và PIN${CLUB&&CLUB.pinAt?"":" (chưa đặt PIN: đặt trong Cài đặt CLB)"}, hoặc bấm link mời trong Zalo. Vào xong tên hiện ở danh sách trên, chạm S1, S2… để giao sân.</small>`;
 }
 const tick=(act,on,label)=>`<button class="tick${on?" on":""}" data-act="${act}" aria-pressed="${on}"><span class="box" aria-hidden="true">${on?"✓":""}</span>${label}</button>`;
 function moneyBlock(D){

@@ -163,8 +163,8 @@ document.addEventListener("click",async e=>{
   if(act==="mrm"&&isAdm()){if(!armOr("mrm:"+id))return;write(()=>FB.deleteDoc(FB.doc(FB.fs,PFX+"members/"+id)),"Đã gỡ khỏi ban tổ chức");return}
   if(act==="inv"&&isAdm()){const role=b.dataset.v==="admin"?"admin":"scorer",tok=Array.from(crypto.getRandomValues(new Uint8Array(9))).map(x=>x.toString(16).padStart(2,"0")).join("");
     await write(()=>FB.setDoc(FB.doc(FB.fs,PFX+"invites/"+tok),{role,exp:Date.now()+7*864e5,by:authUser.uid,at:Date.now()}),"Đã tạo link mời");
-    S.invLink={role,url:absUrl(`/${CID}/moi/${tok}`)};render();return}
-  if(act==="invshare"&&S.invLink){const t=`Mời bạn vào ban tổ chức ${CLUB?.name||""} (${ROLE_LB[S.invLink.role]}). Mở link bằng Chrome/Safari rồi đăng nhập Google:`;if(navigator.share){try{await navigator.share({title:"Lời mời",text:t,url:S.invLink.url})}catch(x){}}else{try{await navigator.clipboard.writeText(t+"\n"+S.invLink.url);toast("Đã copy lời mời")}catch(x){toast(S.invLink.url)}}return}
+    S.invLink={role,url:absUrl(`/${CID}/moi/${tok}`),zalo:miniLink(CID)+"&moi="+tok};render();return}
+  if(act==="invshare"&&S.invLink){const t=`Mời bạn làm ${ROLE_LB[S.invLink.role]} của ${CLUB?.name||"CLB"} trên Pikeco. Bấm link để mở trong Zalo và nhận quyền (hết hạn sau 7 ngày):`,u=S.invLink.zalo;if(navigator.share){try{await navigator.share({title:"Lời mời",text:t,url:u})}catch(x){}}else{try{await navigator.clipboard.writeText(t+"\n"+u);toast("Đã copy lời mời, dán vào Zalo")}catch(x){toast(u)}}return}
   if(await sessionAct(act,id,b,e))return;
   if(act==="cset"&&b.dataset.k!=="fmt"){const k=b.dataset.k,v=b.dataset.v;
     if(cfg()[k]===v)return;const patch={[k]:v};if(k==="gt"){patch.gtv=v==="trich"?30:v==="codinh"?200:v==="gop"?20:0;if(v==="hang"&&cfg().hang1==null)Object.assign(patch,{hang1:200,hang2:100,hang3:50})}if(k==="thu"&&v==="phi"&&!cfg().phi)patch.phi=50;

@@ -182,6 +182,14 @@ describe("người chơi Zalo", () => {
     await assertFails(setDoc(doc(zalo("zalo_1"), "clubs/aep/members/zalo_1"), { role: "owner" }));
     await assertFails(setDoc(doc(zalo("zalo_1"), "users/zalo_1"), { club: "aep", at: 1 }));
   });
+  test("nhận link mời quản lý/trọng tài bằng Zalo, không tự làm chủ, không dùng link hết hạn", async () => {
+    await seed({ "clubs/aep/invites/ok1": { role: "admin", exp: Date.now() + 864e5 }, "clubs/aep/invites/old": { role: "scorer", exp: 1 } });
+    await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/members/zalo_2"), { role: "scorer", invite: "ok1" }));
+    await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/members/zalo_2"), { role: "scorer", invite: "old" }));
+    await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/members/zalo_3"), { role: "admin", invite: "ok1" }));
+    await assertFails(setDoc(doc(anon("a9"), "clubs/aep/members/a9"), { role: "admin", invite: "ok1" }));
+    await assertSucceeds(setDoc(doc(zalo("zalo_2"), "clubs/aep/members/zalo_2"), { role: "admin", invite: "ok1", via: "zalo", name: "Z", email: "", at: 1 }));
+  });
   test("gửi yêu cầu nhận hồ sơ, chỉ quản lý duyệt", async () => {
     await assertSucceeds(setDoc(doc(zalo("zalo_1"), "clubs/aep/links/zalo_1"), { status: "pending", pid: "p1", zname: "A", at: 1 }));
     await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/links/zalo_2"), { status: "ok", pid: "p1", at: 1 }));

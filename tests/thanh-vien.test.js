@@ -21,11 +21,8 @@ test("người xem chọn tên mình: thấy đang đánh sân nào, hàng chờ
   expect(e.T()).not.toContain("Bạn là ai?");
   e.H.change({ target: { dataset: { me: "1" }, value: "p1" } }); await e.tick();
   expect(mem["pb-me-q7"]).toBe("p1");
-  expect(e.T()).toContain("Đang đánh sân 1");
-  expect(e.T()).toContain("Xin chào");
-
-  e.H.change({ target: { dataset: { me: "1" }, value: "p5" } }); await e.tick();
-  expect(e.T()).toContain("Thứ 1 trong hàng chờ");
+  // Bỏ thẻ "Bạn là ai"/Xin chào: quản trị viên ghép tài khoản Zalo thay cho người xem tự chọn
+  expect(e.T()).not.toContain("Xin chào");
   expect(e.mk("#hact").innerHTML).toContain('href="/q7/dang-nhap"');
 });
 

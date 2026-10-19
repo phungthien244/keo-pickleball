@@ -89,16 +89,8 @@ function waitQueue(D){
 function meBox(D,opt={}){
   const p=meP(D);
   if(!p)return "";
-  const s=D.st.get(p.id),all=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating),rank=all.findIndex(x=>x.id===p.id)+1;
-  const pm=D.playing.find(m=>[...m.a,...m.b].includes(p.id));
-  let st;
-  if(pm)st=`Đang đánh sân ${cName(pm.court)}`;
-  else if(p.active===false)st="Hôm nay chưa vào buổi";
-  else if(isG(D.c))st="Chờ lượt theo lịch giải";
-  else{const q=waitQueue(D).findIndex(x=>x.id===p.id);st=q>=0?`Thứ ${q+1} trong hàng chờ`:"Đang chờ"}
-  const today=s.g?`${s.w} thắng ${s.l} thua hôm nay`:"Chưa đánh trận nào hôm nay";
-  // Mini App: thanh "Lượt của tôi" phía trên đã thay thẻ chào này
-  let h=MINI?"":`<div class="mebox">${av(p,"md")}<span class="t"><small>Xin chào 👋</small><b>${esc(p.name)}</b><span class="st"><i class="${pm?"on":""}">${esc(st)}</i><i>${today}</i></span></span><span class="r"><b class="num">${r2(s.rating)}</b><small>hạng ${rank}/${all.length}</small></span><button class="lnk" data-act="meclr">Đổi</button></div>`;
+  // Bỏ chọn "Bạn là ai" và thẻ chào: quản trị viên ghép tài khoản Zalo; chỉ giữ phần chi phí
+  let h="";
   if(opt.pay!==false){const M=money(D);if(M.att.some(x=>x.id===p.id)){const k=payRow(D,M,p.id).pay;
     if(k>0)h+=`<div class="mepay"><span>Chi phí của bạn hôm nay <b class="num">${fmtK(k)}</b><small>tạm tính tới giờ</small></span>${BANK?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${k}">Chuyển tiền</button>`:""}</div>`}}
   return h;
