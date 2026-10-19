@@ -91,3 +91,37 @@ test("giải cặp ở bước Tùy chọn: ghép tự động cân trình, bả
   expect(e.store.get("app/config").giai.pairs.length).toBe(3);
   expect(e.T()).toContain("Tạo lịch thi đấu · 3 trận");
 });
+
+test("giải cặp: bốc thăm nhóm A/B, lẻ người phải chọn ngồi ngoài, mỗi cặp 1 người A + 1 người B, bốc lại", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF\nG"); await e.click("add");
+  await e.tab("san"); await e.click("cset", { k: "fmt", v: "giai" });
+  await e.click("gbopen"); expect(e.V()).toContain("gbsheet");
+  // 7 người: lẻ 1, nút bốc bị khoá cho tới khi chọn người ngồi ngoài
+  expect(e.V()).toMatch(/data-act="gbgo" disabled/);
+  const ids = e.docs("players/").map(([id]) => id);
+  const out = ids.find(id => e.V().includes(`data-act="gbout" data-id="${id}"`));
+  await e.click("gbout", { id: out });
+  await e.click("gblive");
+  await e.click("gbgo");
+  const G = e.store.get("app/config").giai;
+  expect(G.pairs.length).toBe(3);
+  expect(G.pairs.every(p => p.draw === 1)).toBe(true);
+  expect(G.draw.n).toBe(1);
+  expect(G.pairs.flatMap(p => [p.a, p.b])).not.toContain(out);
+  expect(e.V()).toContain("Bốc thăm lúc");
+  // Nam / Nữ: nhóm B toàn nữ
+  await e.click("gbclose");
+  await e.ok("gbredo");
+  expect(e.store.get("app/config").giai.pairs.length).toBe(0);
+  await e.click("gbmode", { v: "mf" });
+  const women = e.docs("players/").filter(([, p]) => p.gender === "F").map(([id]) => id);
+  expect(e.V()).toMatch(/data-act="gbgo" disabled/);
+  for (const id of ids.filter(id => !women.includes(id)).slice(0, 3)) await e.click("gbout", { id });
+  await e.click("gbgo");
+  const G2 = e.store.get("app/config").giai;
+  expect(G2.pairs.length).toBe(2);
+  expect(G2.pairs.every(p => women.includes(p.b) && !women.includes(p.a))).toBe(true);
+  expect(G2.draw.n).toBe(2);
+});

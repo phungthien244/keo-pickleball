@@ -181,6 +181,7 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="fmt"||(act==="cset"&&b.dataset.k==="fmt")){const v=b.dataset.v==="giai"?"giai":"xoay";if(derive().SM.length){toast("Giải đấu đã có trận, không đổi thể thức được.");return}
     if(cfg().fmt===v||(v==="xoay"&&!cfg().fmt))return;
     const keep=sheetOpen||phaseOf(derive())==="live";write(()=>saveCfg({fmt:v,giai:cfg().giai||{pairs:[],prizes:[0,0,0],out:{},locked:false},...(keep?{phase:"live"}:{})}),v==="giai"?"Đã chọn thể thức Cặp cố định xoay vòng":"Đã chọn thể thức Xoay cặp");return}
+  if(await gbAct(act,b,id))return;
   if(act==="gaddopen"){gAddOpen=true;delete drafts.gp1;delete drafts.gp2;delete drafts["gp-q"];delete errs.gadd;render();return}
   if(act==="gaddx"){gAddOpen=false;render();return}
   if(act==="gauto"){const D=derive(),P=cfg().giai?.pairs||[],used=new Set(P.flatMap(p=>[p.a,p.b])),rt=id=>D.st.get(id)?.rating??2.5;

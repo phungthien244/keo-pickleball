@@ -95,11 +95,14 @@ function gPairsBox(D,G){
   let h="";
   {const rec=Math.max(1,Math.floor(n/4));if(n>=3&&c.courts>rec)h+=`<div class="warnbox"><b>${n} cặp mà mở ${c.courts} sân:</b> nhiều cặp phải đánh liền, không kịp nghỉ. Nên dùng ${rec} sân. <button class="lnk" data-act="courts" data-d="${rec-c.courts}">Đổi ${rec} sân</button></div>`}
   h+=`<section class="gpbox"><div class="gph"><b>Các cặp · ${n}/${GMAX}</b><small>${n?"sắp theo thứ tự thêm":"mỗi cặp là 2 người"}</small></div>`;
-  h+=n?P.map((p,i)=>`<div class="prow2"><span class="no num">${i+1}</span>${pairAv(D,p,"md")}<span class="nm">${pairNm(D,p)}<small class="num">Rating TB ${r2(pairR(D,p))}</small></span><button class="ghost danger" data-act="gdel" data-id="${p.id}" aria-label="Bỏ cặp ${esc(pairTx(D,p))}">✕</button></div>`).join(""):`<p class="rule" style="padding:0 12px">Chưa có cặp nào. Thêm từng cặp, hoặc để app ghép tự động cho cân trình.</p>`;
+  h+=n?P.map((p,i)=>`<div class="prow2"><span class="no num">${i+1}</span>${pairAv(D,p,"md")}<span class="nm">${pairNm(D,p)}<small class="num">${p.draw?"🎲 bốc thăm · ":""}Rating TB ${r2(pairR(D,p))}</small></span><button class="ghost danger" data-act="gdel" data-id="${p.id}" aria-label="Bỏ cặp ${esc(pairTx(D,p))}">✕</button></div>`).join(""):`<p class="rule" style="padding:0 12px">Chưa có cặp nào. Thêm từng cặp, hoặc để app ghép tự động cho cân trình.</p>`;
   if(errs.gadd)h+=`<p class="err" style="padding:0 12px">${esc(errs.gadd)}</p>`;
-  if(n<GMAX)h+=`<div class="gpbt"><button class="primary" data-act="gaddopen" ${free.length<2?"disabled":""}>+ Thêm cặp</button><button class="line" data-act="gauto" ${free.length<2?"disabled":""}>Ghép tự động cân trình</button></div>${free.length<2?`<small class="rule" style="padding:0 12px 12px;display:block">Cần thêm người có mặt (mục Điểm danh) để ghép cặp mới.</small>`:""}`;
+  h+=gbInfo(D);
+  if(n<GMAX)h+=`<div class="gpbt"><button class="primary" data-act="gaddopen" ${free.length<2?"disabled":""}>+ Thêm cặp</button><button class="line" data-act="gauto" ${free.length<2?"disabled":""}>Ghép tự động cân trình</button><button class="gbbtn" data-act="gbopen" ${free.length<2?"disabled":""}>🎲 Bốc thăm A/B</button></div>${free.length<2?`<small class="rule" style="padding:0 12px 12px;display:block">Cần thêm người có mặt (mục Điểm danh) để ghép cặp mới.</small>`:""}`;
   h+=`</section><small class="rule">Xếp hạng: số trận thắng → đối đầu trực tiếp → hiệu số → tổng điểm ghi.</small>`;
   if(gAddOpen&&n<GMAX)h+=gAddSheet(D,free,n);
+  if(gbOpen&&n<GMAX)h+=gbSheet(D);
+  h+=gbScreen(D);
   return h;
 }
 function gAddSheet(D,free,n){
@@ -132,7 +135,7 @@ function gSetup(D,G,o={}){
   <div class="bar">${courtStep(c)}<span class="pill">${esc(ruleTxt(c))}</span><span class="pill">Vòng tròn · gặp nhau 1 lần</span></div>`;
   {const rec=Math.max(1,Math.floor(n/4));if(n>=3&&c.courts>rec)h+=`<div class="warnbox"><b>${n} cặp mà mở ${c.courts} sân thì nhiều cặp sẽ phải đánh liền, không kịp nghỉ.</b> Để cặp nào cũng có nghỉ giữa các trận, nên dùng ${rec} sân (khoảng 4 cặp cho mỗi sân).</div>`}
   h+=`<div class="panel"><div class="bar" style="margin-bottom:4px"><h2 class="grow">Các cặp</h2><span class="meta num">${n} cặp</span></div>`;
-  h+=n?P.map((p,i)=>`<div class="prow2"><span class="no num">${i+1}</span>${pairAv(D,p,"md")}<span class="nm">${pairNm(D,p)}<small class="num">Rating TB ${r2(pairR(D,p))}</small></span>${canWrite?`<button class="ghost danger" data-act="gdel" data-id="${p.id}" aria-label="Bỏ cặp ${esc(pairTx(D,p))}">✕</button>`:""}</div>`).join(""):`<p class="rule">Chưa có cặp nào. Mỗi cặp là 2 người tự chọn nhau, đánh chung từ đầu đến cuối giải.</p>`;
+  h+=n?P.map((p,i)=>`<div class="prow2"><span class="no num">${i+1}</span>${pairAv(D,p,"md")}<span class="nm">${pairNm(D,p)}<small class="num">${p.draw?"🎲 bốc thăm · ":""}Rating TB ${r2(pairR(D,p))}</small></span>${canWrite?`<button class="ghost danger" data-act="gdel" data-id="${p.id}" aria-label="Bỏ cặp ${esc(pairTx(D,p))}">✕</button>`:""}</div>`).join(""):`<p class="rule">Chưa có cặp nào. Mỗi cặp là 2 người tự chọn nhau, đánh chung từ đầu đến cuối giải.</p>`;
   if(canWrite&&n<GMAX){
     if(free.length<2)h+=`<p class="rule" style="margin-top:10px">Cần thêm người có mặt hôm nay ở tab Người chơi để ghép cặp mới.</p>`;
     else{const S2=[drafts.gp1,drafts.gp2].filter(Boolean),nmOf=id=>esc(D.pmap.get(id)?.name||"?");
