@@ -142,8 +142,8 @@ function gSetup(D,G,o={}){
   if(errs.gadd)h+=`<p class="err">${esc(errs.gadd)}</p>`;
   h+=`</div>`;
   if(canWrite&&n>=2)h+=gPresetBlock(D,G);
-  h+=`<p class="rule">Hạng 1, 2, 3 lấy từ bảng xếp hạng cuối cùng sau khi đánh hết vòng tròn. Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Tiền thưởng chỉnh ở khung Giải thưởng phía trên.</p>`;
-  if(canWrite)h+=`<div class="bar"><button class="ball" data-act="gstart" ${n<3?"disabled":""}>Tạo lịch thi đấu · ${tot} trận</button></div>${errs.giai?`<p class="err">${esc(errs.giai)}</p>`:""}<p class="rule">Tiền buổi và giải thưởng tính theo khung Thiết lập buổi. Rating cá nhân vẫn cập nhật theo từng trận như khi đánh xoay cặp. Sau khi tạo lịch, danh sách cặp được khoá.</p>`;
+  h+=`<p class="rule">Hạng 1, 2, 3 lấy từ bảng xếp hạng cuối cùng sau khi đánh hết vòng tròn. Bằng số trận thắng thì xét đối đầu trực tiếp, rồi hiệu số, rồi tổng điểm ghi. Giải thưởng chỉnh ở khung Giải thưởng phía trên.</p>`;
+  if(canWrite)h+=`<div class="bar"><button class="ball" data-act="gstart" ${n<3?"disabled":""}>Tạo lịch thi đấu · ${tot} trận</button></div>${errs.giai?`<p class="err">${esc(errs.giai)}</p>`:""}<p class="rule">Chi phí giải đấu và giải thưởng tính theo khung Thiết lập giải đấu. Rating cá nhân vẫn cập nhật theo từng trận như khi đánh xoay cặp. Sau khi tạo lịch, danh sách cặp được khoá.</p>`;
   else h+=`<div class="empty"><strong>Đang ghép cặp</strong>Người tổ chức đang ghép cặp cho giải. Lịch thi đấu sẽ hiện ở đây.</div>`;
   return h;
 }
@@ -282,7 +282,7 @@ function vGiaiSum(D,x,back){
   const R=[...(s.rows||[])].sort((a,b)=>(b.d||0)-(a.d||0));
   if(R.length)h+=`<div class="shd"><h2>Rating sau giải</h2></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Tên</th><th>T–B</th><th>Rating</th><th>Δ</th></tr></thead><tbody>${R.map((r,i)=>`<tr><td class="rank">${i+1}</td><td><span class="pn">${av(PP(r.id,r.name),"sm")}<b>${esc(r.name)}</b></span></td><td>${r.w}–${r.l}</td><td><b>${r2(r.rating)}</b></td><td class="${dCls(r.d)}">${dTxt(r.d)}</td></tr>`).join("")}</tbody></table></div>`;
   h+=moneySec(D,x.sid,s,s.rows||[],r=>PP(r.id,r.name),true);
-  h+=`<div class="sharebox"><span class="lbl">Link riêng của giải này</span><span class="url">${esc(shareUrl(x.sid).replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="share" data-id="${x.sid}">Chia sẻ</button><button data-act="copylink" data-id="${x.sid}">Copy tin nhắn</button></div></div>${canWrite?`<div class="bar"><span class="grow"></span>${delBtn("sdel",x.sid,"Xóa buổi này")}</div>`:""}`;
+  h+=`<div class="sharebox"><span class="lbl">Link riêng của giải này</span><span class="url">${esc(shareUrl(x.sid).replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="share" data-id="${x.sid}">Chia sẻ</button><button data-act="copylink" data-id="${x.sid}">Copy tin nhắn</button></div></div>${canWrite?`<div class="bar"><span class="grow"></span>${delBtn("sdel",x.sid,"Xóa giải đấu này")}</div>`:""}`;
   return h;
 }
 function giaiShare(D,x){

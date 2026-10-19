@@ -1,7 +1,7 @@
 import { test, expect } from "vitest";
 import { setup } from "./helpers/env.js";
 
-test("xoay cặp: 4 lượt, tiền kèo, chốt buổi", async () => {
+test("xoay cặp: 4 lượt, chi phí giải đấu, chốt giải đấu", async () => {
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ\nG\nH | nữ\nI\nJ | nữ");

@@ -12,10 +12,10 @@ test("link cũ ?clb=..&san=bxh đổi sang /clb/xep-hang", async () => {
   const e = setup({ search: "?clb=q7&san=bxh", data: club("q7") });
   await e.boot();
   expect(e.replaced).toBe("/q7/xep-hang");
-  expect(e.T()).toContain("Buổi #2 · hôm nay");
+  expect(e.T()).toContain("Giải đấu #2 · hôm nay");
 });
 
-test("link cũ ?buoi=1 trên rr.pikeco.app mở tổng kết buổi của AEP", async () => {
+test("link cũ ?buoi=1 trên rr.pikeco.app mở tổng kết giải đấu của AEP", async () => {
   const e = setup({ search: "?buoi=1", data: club("aep", { "clubs/aep/app/hist-1": { sid: 1, title: "AEP", startedAt: 1, endedAt: 2, matchCount: 0, rows: [], money: { gap: 0, cost: 0 } } }) });
   await e.boot();
   expect(e.replaced).toBe("/aep/buoi/1");
@@ -31,17 +31,17 @@ test("trang gốc pikeco.app là trang giới thiệu, không tải dữ liệu 
   expect(e.mk("#tabs").hidden).toBe(true);
 });
 
-test("đường dẫn CLB: tab đổi URL, buổi và cài đặt mở đúng trang", async () => {
+test("đường dẫn CLB: tab đổi URL, giải đấu và cài đặt mở đúng trang", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7", user: { uid: "own", isAnonymous: false, email: "o@x.vn" }, data: club("q7", { "clubs/q7/members/own": { role: "owner" } }) });
   await e.boot();
   await e.tab("bxh"); expect(e.url).toBe("/q7/xep-hang");
   await e.tab("nguoi"); expect(e.url).toBe("/q7/thanh-vien");
-  expect(e.T()).not.toContain("Ngân hàng nhận tiền");
+  expect(e.T()).not.toContain("Ngân hàng nhận phí");
   await e.tab("tien"); expect(e.url).toBe("/q7/quy");
   await e.tab("home"); expect(e.url).toBe("/q7");
   expect(e.mk("#hact").innerHTML).toContain('href="/q7/cai-dat"');
   await e.nav("caidat"); expect(e.url).toBe("/q7/cai-dat");
-  expect(e.T()).toContain("Ngân hàng nhận tiền");
+  expect(e.T()).toContain("Ngân hàng nhận phí");
   expect(e.T()).toContain("pikeco.app · quản lý CLB pickleball");
 });
 

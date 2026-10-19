@@ -39,7 +39,7 @@ test("quản lý nhận lời mời, đặt PIN, lưu ngân hàng", async () => 
   await e.boot(); await e.until(() => e.store.has("clubs/aep/members/u9"));
   expect(e.store.get("clubs/aep/members/u9")).toMatchObject({ role: "admin", invite: "tok1", email: "ql@x.vn" });
   await e.nav("caidat");
-  expect(e.T()).toContain("Ngân hàng nhận tiền");
+  expect(e.T()).toContain("Ngân hàng nhận phí");
   expect(e.V()).toContain('data-act="vgrp"');
   expect(e.V()).not.toContain('data-act="vtry"');
   await e.click("vgrp", { g: "M" });

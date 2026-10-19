@@ -1,7 +1,7 @@
 import { test, expect } from "vitest";
 import { setup } from "./helpers/env.js";
 
-test("bấm ảnh vận động viên mở hồ sơ: rating, buổi, đồng đội, đối thủ", async () => {
+test("bấm ảnh vận động viên mở hồ sơ: rating, giải đấu, đồng đội, đối thủ", async () => {
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "An\nBình\nChi | nữ\nDung | nữ"); await e.click("add");
@@ -18,7 +18,7 @@ test("bấm ảnh vận động viên mở hồ sơ: rating, buổi, đồng đ�
   await e.until(() => e.T().includes("Phong độ") || e.T().includes("Đồng đội hợp nhất"));
   expect(e.T()).toContain("Hồ sơ vận động viên");
   expect(e.T()).toContain("An");
-  expect(e.T()).toMatch(/1 Buổi 4 Trận/);
-  expect(e.T()).toContain("Các buổi đã đánh");
+  expect(e.T()).toMatch(/1 Giải đấu 4 Trận/);
+  expect(e.T()).toContain("Các giải đấu đã đánh");
   expect(e.T()).not.toContain("phải đóng ");
 });

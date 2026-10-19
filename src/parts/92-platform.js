@@ -4,7 +4,7 @@ const isPA=()=>isGoogle(authUser)&&authUser.email===PA_EMAIL;
 const RESERVED=["aep","admin","www","quantri","tao","start","api","app","pikeco","clb","login","help","tao-clb","dang-nhap","quan-tri","cai-dat","assets","moi","buoi"];
 const ST_LB={pending:"Chờ duyệt",active:"Đang hoạt động",locked:"Đã khoá",rejected:"Từ chối"};
 const clubSt=c=>(c&&c.status)||"active";
-const slugOf=t=>noAcc(t).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,20);
+const slugOf=t=>noAcc(t).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,20).replace(/-+$/,"");
 let clubsLoading=false,codesLoading=false;
 function loadClubs(force){
   if(!window.FB||clubsLoading||(S.clubs&&!force))return;clubsLoading=true;
@@ -15,7 +15,7 @@ function loadCodes(force){
   Promise.all([FB.getDocs(FB.collection(FB.fs,"codes")),FB.getDoc(FB.doc(FB.fs,"platform/config"))]).then(([q,p])=>{S.codes=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.at||0)-(a.at||0));S.pcfg=p.exists()?p.data():{};codesLoading=false;render()}).catch(()=>{S.codes=[];S.pcfg={};codesLoading=false;render()});
 }
 function loadMyClub(){
-  const u=authUser;S.myClub=undefined;if(!isGoogle(u)||!window.FB)return;
+  const u=authUser;S.myClub=undefined;if(!(isGoogle(u)||isZaloU(u))||!window.FB)return;
   FB.getDoc(FB.doc(FB.fs,"users/"+u.uid)).then(async s=>{S.myClub=s.exists()?s.data().club:null;
     if(S.myClub===null&&!legacy&&ROLE==="owner"&&CLUB&&CLUB.owner===u.uid){try{await FB.setDoc(FB.doc(FB.fs,"users/"+u.uid),{club:CID,at:Date.now()});S.myClub=CID}catch(e){}}
     render()}).catch(()=>{S.myClub=null;render()});
@@ -29,9 +29,9 @@ const pfoot=()=>`<footer class="pfoot2"><b>PIKECO.APP</b><span>Quản lý CLB pi
 function vStart(){
   loadClubs();
   const list=publicClubs();
-  const F=[["Xoay cặp theo trình","Tự ghép đôi cân trình, ai chờ lâu đánh trước, có nghỉ giữa trận."],["Cặp cố định xoay vòng","Vòng tròn đến 10 cặp, lịch tự xếp, bảng xếp hạng và đối đầu."],["Rating kiểu DUPR","So điểm thực tế với dự kiến, chốt rating sau mỗi buổi."],["Quỹ và giải thưởng","Kèo, chia đều hoặc lệ phí; trích quỹ trao giải; chuyển khoản QR."]];
+  const F=[["Xoay cặp theo trình","Tự ghép đôi cân trình, ai chờ lâu đánh trước, có nghỉ giữa trận."],["Cặp cố định xoay vòng","Vòng tròn đến 10 cặp, lịch tự xếp, bảng xếp hạng và đối đầu."],["Rating kiểu DUPR","So điểm thực tế với dự kiến, chốt rating sau mỗi giải đấu."],["Quỹ và giải thưởng","Thua góp, chia đều hoặc lệ phí; trích quỹ trao giải; chuyển khoản QR."]];
   let h=`<div class="hero"><span class="eyebrow y">Miễn phí cho CLB</span><h1>Quản lý CLB<br>pickleball<br><span style="color:var(--yellow)">trực tiếp</span></h1>
-    <p class="lead">Xếp sân, nhập tỉ số ngay tại sân, rating sau mỗi buổi, quỹ và giải thưởng. Một đường link cho cả CLB.</p>
+    <p class="lead">Xếp sân, nhập tỉ số ngay tại sân, rating sau mỗi giải đấu, quỹ và giải thưởng. Một đường link cho cả CLB.</p>
     <div class="ctas"><a class="cta y" href="/tao-clb" data-go="tao">Tạo CLB của bạn</a><a class="cta o" href="/clb" data-go="clb">Tìm CLB của bạn</a></div></div>`;
   h+=lab("Các CLB đang dùng");
   h+=!S.clubs?`<p class="rule">Đang tải…</p>`:list.length?`<div class="clist">${list.slice(0,6).map(clubCard).join("")}</div>${list.length>6?`<a class="btn-line" href="/clb" data-go="clb">Xem tất cả ${list.length} CLB</a>`:""}`:`<p class="rule">Chưa có CLB công khai nào. Hãy là CLB đầu tiên.</p>`;
@@ -43,7 +43,7 @@ function vClb(){
   loadClubs();
   const q=noAcc(String(val("cq",""))).toLowerCase().trim(),all=publicClubs(),list=all.filter(c=>!q||noAcc(`${c.name} ${c.city||""} ${c.id}`).toLowerCase().includes(q));
   const mine=MINI?myClubs():[];
-  let h=`<div class="dhead"><span class="eyebrow y">${MINI?"Khám phá":"pikeco.app"}</span><h1>${MINI?"Tìm CLB pickleball":"Các CLB"}</h1>${MINI?"":`<p class="rule">Thành viên đăng ký buổi chơi trong Zalo Mini App Pikeco. Mở CLB rồi bấm Đăng ký.</p>`}</div>
+  let h=`<div class="dhead"><span class="eyebrow y">${MINI?"Khám phá":"pikeco.app"}</span><h1>${MINI?"Tìm CLB pickleball":"Các CLB"}</h1>${MINI?"":`<p class="rule">Thành viên đăng ký giải đấu trong Zalo Mini App Pikeco. Mở CLB rồi bấm Đăng ký.</p>`}</div>
   ${mine.length?lab("CLB của bạn")+`<div class="clist">${mine.map(c=>clubCard({...(S.clubs||[]).find(x=>x.id===c.id)||{},id:c.id,name:c.name})).join("")}</div>`+lab("Tất cả CLB"):""}
   <label class="srch"><span class="sr">Tìm CLB</span><input id="cq" data-draft="cq" type="search" placeholder="Tên CLB hoặc tỉnh thành" value="${esc(val("cq",""))}"></label>`;
   h+=!S.clubs?`<p class="rule">Đang tải…</p>`:list.length?`<div class="clist">${list.map(clubCard).join("")}</div>`:`<p class="rule">${all.length?"Không có CLB nào khớp.":"Chưa có CLB công khai nào."}</p>`;
@@ -99,13 +99,18 @@ function vTao(){
   return h;
 }
 async function createClub(){
-  const u=authUser;if(!isGoogle(u)||S.creating)return;
+  if(S.creating)return;
+  // Mini App: chủ CLB là tài khoản Zalo đang dùng (đăng nhập lại nếu chưa có)
+  if(MINI&&!isZaloU(authUser)){S.creating=true;render();const ok=await miniLogin();S.creating=false;if(!ok){errs.tao="Chưa vào được bằng Zalo, thử lại.";render();return}}
+  const u=authUser;if(!(isGoogle(u)||(MINI&&isZaloU(u))))return;
+  const zl=isZaloU(u),meName=zl?String(zaloProf().n||val("nc-me","")).trim().slice(0,40):(u.displayName||"");
   const name=String(val("nc-name","")).trim(),slug=String(val("nc-slug","")||slugOf(name)).trim().toLowerCase(),city=String(val("nc-city","")).trim(),size=val("nc-size","20–50"),contact=String(val("nc-contact","")).replace(/\s/g,""),code=String(val("nc-code","")).trim().toUpperCase();
   const bad=m=>{errs.tao=m;render()};
   if(name.length<3)return bad("Tên CLB cần ít nhất 3 ký tự.");
   if(!/^[a-z0-9-]{3,20}$/.test(slug)||/^-|-$/.test(slug))return bad("Đường dẫn 3–20 ký tự, chỉ gồm chữ thường không dấu, số và gạch ngang.");
   if(RESERVED.includes(slug))return bad("Đường dẫn này đã được giữ, chọn tên khác.");
   if(!/^0\d{8,10}$/.test(contact))return bad("Nhập số Zalo liên hệ, ví dụ 0901234567.");
+  if(zl&&meName.length<2)return bad("Nhập tên của bạn (chủ CLB).");
   delete errs.tao;S.creating=true;render();
   try{
     if((await FB.getDoc(FB.doc(FB.fs,"clubs/"+slug))).exists()){S.creating=false;return bad("Đường dẫn đã có CLB dùng, chọn tên khác.")}
@@ -114,12 +119,15 @@ async function createClub(){
     if(code)club.code=code;
     b.set(FB.doc(FB.fs,"clubs/"+slug),club);
     b.set(FB.doc(FB.fs,"clubs/"+slug+"/private/info"),{contact,ownerEmail:u.email||""});
-    b.set(FB.doc(FB.fs,"clubs/"+slug+"/members/"+u.uid),{role:"owner",name:u.displayName||"",email:u.email||"",at:now});
+    b.set(FB.doc(FB.fs,"clubs/"+slug+"/members/"+u.uid),zl?{role:"owner",name:meName,via:"zalo",at:now}:{role:"owner",name:u.displayName||"",email:u.email||"",at:now});
     b.set(FB.doc(FB.fs,"users/"+u.uid),{club:slug,at:now});
     if(code)b.update(FB.doc(FB.fs,"codes/"+code),{used:true,club:slug,by:u.uid,at:now});
     await b.commit();
     await notifyEmail({club_name:name,club_link:clubUrl(slug),club_slug:slug,owner_email:u.email||"",city,size,contact,status:ST_LB[club.status],admin_link:absUrl("/quan-tri")});
-    ["nc-name","nc-slug","nc-city","nc-size","nc-contact","nc-code"].forEach(k=>delete drafts[k]);
+    ["nc-name","nc-slug","nc-city","nc-size","nc-contact","nc-code","nc-me"].forEach(k=>delete drafts[k]);
+    if(MINI){try{sessionStorage.setItem("pb-newclub",slug);localStorage.setItem("pb-mini-last",slug);
+      const L=myClubs().filter(x=>x.id!==slug);L.unshift({id:slug,name,role:"Chủ CLB"});localStorage.setItem("pb-mini-clubs",JSON.stringify(L.slice(0,10)))}catch(e){}
+      setPath("/"+slug,true);location.reload();return}
     location.href=`/${slug}/cai-dat`;
   }catch(x){S.creating=false;bad("Chưa tạo được CLB ("+((x&&x.code)||"lỗi")+"). Thử lại sau ít phút.")}
 }

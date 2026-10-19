@@ -1,9 +1,9 @@
 /* ---------- Lịch buổi: nhiều buổi sắp tới, mỗi buổi đăng ký riêng, lặp lại hằng tuần ----------
-   clubs/{c}/sched/{id}  một buổi: name, fmt, at, end, place, map, note, courts, target, max, lvMin, lvMax, guests,
+   clubs/{c}/sched/{id}  một giải đấu: name, fmt, at, end, place, map, note, courts, target, max, lvMin, lvMax, guests,
                          thu, fee, phi, feeG, pay, dlH, lockH, deadline, lockAt, hang, st, openAt, series, num
      st: draft (nháp) · open (đang nhận) · plan (tự mở lúc openAt) · done (đã chốt) · cancel (đã hủy)
-   clubs/{c}/series/{id} lịch lặp: days [0..6], time, end, tpl {các trường của buổi}, auto, openD, on
-   Đăng ký của buổi trong lịch: regs.sid = mã buổi (chuỗi). Buổi đang chuẩn bị ở tab Sân: app/config.schedId */
+   clubs/{c}/series/{id} lịch lặp: days [0..6], time, end, tpl {các trường của giải đấu}, auto, openD, on
+   Đăng ký của giải đấu trong lịch: regs.sid = mã giải đấu (chuỗi). Giải đấu đang chuẩn bị ở tab Sân: app/config.schedId */
 let RX=null,xNew=null,xEdit=null,xSEdit=null,xDay=null,xDoneOpen=false,xQr=null;
 const withX=(X,fn)=>{const o=RX;RX=X||null;try{return fn()}finally{RX=o}};
 const regKey=D=>RX?RX.id:D.sid;
@@ -27,7 +27,7 @@ const schedAll=()=>(S.sched||[]).slice().sort((a,b)=>(a.at||0)-(b.at||0));
 const schedUp=()=>schedAll().filter(xShown);
 const schedById=id=>(S.sched||[]).find(x=>x.id===id)||null;
 const xCur=()=>{const id=cfg().schedId;return id?schedById(id):null};
-const xName=x=>x.name||(x.fmt==="giai"?"Giải cặp cố định":"Buổi đánh");
+const xName=x=>x.name||(x.fmt==="giai"?"Giải cặp cố định":"Giải đấu");
 const xFmt=x=>x.fmt==="giai"?"Cặp cố định":"Xoay cặp";
 const xTime=x=>x.at?`${hm(x.at)}${x.end?`–${x.end}`:""}`:"Chưa đặt giờ";
 const xFee=x=>Math.max(0,(x.thu||"keo")==="phi"?+x.phi||0:+x.fee||0);
@@ -94,9 +94,9 @@ function vLichAdm(D){
   if(!isAdm())return vLichPlayer(D);
   xEnsure(D);
   if(xNew||xEdit||xSEdit)return xForm(D);
-  if(routeX){const X=schedById(routeX);if(X)return xAdminDetail(D,X);if(S.schedReady)return `<div class="empty"><strong>Không thấy buổi này</strong>Buổi đã bị xoá.</div><a class="line wide" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Về lịch buổi</a>`}
+  if(routeX){const X=schedById(routeX);if(X)return xAdminDetail(D,X);if(S.schedReady)return `<div class="empty"><strong>Không thấy giải đấu này</strong>Giải đấu đã bị xoá.</div><a class="line wide" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Về lịch giải đấu</a>`}
   let h=approvals(D);
-  h+=`<button class="xnewbtn" data-act="xnew">+ Tạo buổi mới</button>`;
+  h+=`<button class="xnewbtn" data-act="xnew">+ Tạo giải đấu mới</button>`;
   for(const s of (S.series||[]).filter(s=>s.on))h+=`<div class="xser"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>
     <span class="t"><b>Lặp hằng tuần: ${(s.days||[]).slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DOW[d]).join(" & ")} · ${esc(s.time||"")}</b><small>${esc(xName(s.tpl||{}))} · ${xFmt(s.tpl||{})} · ${s.auto?`tự mở đăng ký trước ${+s.openD||2} ngày`:"tự bấm mở đăng ký"}</small></span>
     <button class="lnk" data-act="xsedit" data-id="${s.id}">Sửa</button><button class="lnk" data-act="xsoff" data-id="${s.id}">${armed("xsoff:"+s.id)?"Tắt?":"Tắt"}</button></div>`;
@@ -104,9 +104,9 @@ function vLichAdm(D){
   h+=xStrip(U);
   const L=U.filter(x=>!xDay||sameDay(x.at,xDay));
   h+=`<span class="xsec">${xDay?`${dowVN(xDay)}, ${dmy(xDay).slice(0,5)}`:"Sắp tới"}</span>`;
-  h+=!S.schedReady?`<p class="rule">Đang tải…</p>`:L.length?L.map(x=>xAdminCard(D,x)).join(""):`<div class="xempty">${xDay?"Ngày này chưa có buổi.":"Chưa có buổi nào sắp tới. Bấm “Tạo buổi mới” để lên lịch và mở đăng ký."}</div>`;
+  h+=!S.schedReady?`<p class="rule">Đang tải…</p>`:L.length?L.map(x=>xAdminCard(D,x)).join(""):`<div class="xempty">${xDay?"Ngày này chưa có giải đấu.":"Chưa có giải đấu nào sắp tới. Bấm “Tạo giải đấu mới” để lên lịch và mở đăng ký."}</div>`;
   const done=schedAll().filter(x=>x.st==="done"||x.st==="cancel").reverse().slice(0,12);
-  if(done.length)h+=`<button class="xdonebtn" data-act="xdone" aria-expanded="${xDoneOpen}"><span>Đã xong · ${done.length} buổi gần đây</span><span>${xDoneOpen?"−":"›"}</span></button>`+(xDoneOpen?done.map(x=>xAdminCard(D,x)).join(""):"");
+  if(done.length)h+=`<button class="xdonebtn" data-act="xdone" aria-expanded="${xDoneOpen}"><span>Đã xong · ${done.length} giải đấu gần đây</span><span>${xDoneOpen?"−":"›"}</span></button>`+(xDoneOpen?done.map(x=>xAdminCard(D,x)).join(""):"");
   return h;
 }
 function xStrip(U){
@@ -123,24 +123,24 @@ function xAdminCard(D,x){
 function xAdminDetail(D,X){
   return withX(X,()=>{
     const s=xState(X),R=regList(D),fee=xFee(X),got=R.all.filter(x=>x.pay==="ok").reduce((a,x)=>a+feeOf(x),0),link=miniLink(CID,X.id),today=sameDay(X.at,Date.now());
-    let h=`<a class="xback" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">‹ Lịch buổi</a>`;
+    let h=`<a class="xback" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">‹ Lịch giải đấu</a>`;
     h+=`<section class="xhero"><span class="k">${X.at?`${esc(dowVN(X.at))} · ${esc(dmy(X.at))} · `:""}${esc(xTime(X))}</span><h1>${esc(xName(X))}</h1>
       <span class="sub">${esc([xFmt(X),X.courts&&`${X.courts} sân`,X.target&&`chạm ${X.target}`,fee&&fmtK(fee),X.place].filter(Boolean).join(" · "))}</span>
-      <span class="xrow">${xChip(X)}${X.series?`<span class="xchip dk">↻ hằng tuần</span>`:""}${X.guests?`<span class="xchip dk">Nhận khách</span>`:""}</span>
+      <span class="xrow">${xChip(X)}${X.series?`<span class="xchip dk">↻ hằng tuần</span>`:""}${X.guests?`<span class="xchip dk">Nhận VĐV ngoài CLB</span>`:""}</span>
       ${+X.max?`<span class="xprog big"><i><b style="width:${Math.min(100,Math.round(R.conf.length/X.max*100))}%"></b></i><b class="num">${R.conf.length}/${X.max}</b></span>`:`<b class="num" style="font-size:20px">${R.conf.length} người đã đăng ký</b>`}
       <small>${[R.wait.length&&`${R.wait.length} người chờ chỗ`,payOn()&&`đã nhận ${kVND(got)}`,X.deadline&&`đóng đăng ký ${hm(X.deadline)} ${dowVN(X.deadline)}`].filter(Boolean).join(" · ")}</small></section>`;
     if(s==="draft"||s==="plan")h+=`<button class="primary wide" data-act="xopen" data-id="${X.id}">Mở đăng ký ngay</button>`;
-    if(today&&s!=="live"&&s!=="done"&&s!=="cancel")h+=`<a class="dkban" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san"><span class="t"><b>Buổi hôm nay</b><small>Vào tab Sân để điểm danh và bắt đầu</small></span><span aria-hidden="true">›</span></a>`;
+    if(today&&s!=="live"&&s!=="done"&&s!=="cancel")h+=`<a class="dkban" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san"><span class="t"><b>Giải đấu hôm nay</b><small>Vào tab Sân để điểm danh và bắt đầu</small></span><span aria-hidden="true">›</span></a>`;
     if(s==="open"||s==="plan"||s==="live")h+=`<div class="two"><button class="primary" data-act="regshare" data-id="${X.id}">Gửi link vào Zalo</button><button class="line" data-act="xqr" data-id="${X.id}">${xQr===X.id?"Ẩn mã QR":"Mã QR"}</button></div>
       <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="line" data-act="cp" data-v="${esc(link)}">Copy</button></div>
-      ${xQr===X.id?`<div class="dkqr"><img alt="Mã QR mở trang đăng ký buổi" width="180" height="180" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&data=${encodeURIComponent(link)}"><button class="line" data-act="cp" data-v="${esc(link)}">Copy link</button></div>`:""}`;
+      ${xQr===X.id?`<div class="dkqr"><img alt="Mã QR mở trang đăng ký giải đấu" width="180" height="180" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&data=${encodeURIComponent(link)}"><button class="line" data-act="cp" data-v="${esc(link)}">Copy link</button></div>`:""}`;
     h+=xPeople(D,X);
     h+=`<div class="xlist">
-      <button class="xli" data-act="xedit" data-id="${X.id}"><span>Sửa cài đặt buổi</span><span>›</span></button>
+      <button class="xli" data-act="xedit" data-id="${X.id}"><span>Sửa cài đặt giải đấu</span><span>›</span></button>
       ${s==="open"?`<button class="xli" data-act="xpause" data-id="${X.id}"><span>Tạm dừng đăng ký</span><span>›</span></button>`:""}
-      ${s!=="cancel"&&s!=="done"&&s!=="live"?`<button class="xli danger" data-act="xcancel" data-id="${X.id}"><span>${armed("xcancel:"+X.id)?"Bấm lần nữa để hủy buổi":"Hủy buổi này"}</span><span>›</span></button>`:""}
-      ${!R.all.length&&s!=="live"?`<button class="xli danger" data-act="xdel" data-id="${X.id}"><span>${armed("xdel:"+X.id)?"Bấm lần nữa để xoá":"Xoá buổi"}</span><span>›</span></button>`:""}</div>`;
-    if(s==="cancel"&&R.all.length)h+=`<small class="rule">Buổi đã hủy: nhắn người đã đăng ký trong nhóm Zalo, hoàn tiền người đã chuyển ở danh sách trên.</small>`;
+      ${s!=="cancel"&&s!=="done"&&s!=="live"?`<button class="xli danger" data-act="xcancel" data-id="${X.id}"><span>${armed("xcancel:"+X.id)?"Bấm lần nữa để hủy giải đấu":"Hủy giải đấu này"}</span><span>›</span></button>`:""}
+      ${!R.all.length&&s!=="live"?`<button class="xli danger" data-act="xdel" data-id="${X.id}"><span>${armed("xdel:"+X.id)?"Bấm lần nữa để xoá":"Xoá giải đấu"}</span><span>›</span></button>`:""}</div>`;
+    if(s==="cancel"&&R.all.length)h+=`<small class="rule">Giải đấu đã hủy: nhắn người đã đăng ký trong nhóm Zalo, hoàn phí người đã chuyển ở danh sách trên.</small>`;
     return h;
   });
 }
@@ -151,19 +151,19 @@ function xPeople(D,X){
   const R=regList(D),po=payOn(),cancel=(S.regs||[]).filter(r=>r.sid===X.id&&r.cancel);
   const nm=x=>x.guest?x.name:(D.pmap.get(x.pid)?.name||x.name||"?");
   const row=(x,i,wait)=>{const p=D.pmap.get(x.pid),pay=x.pay||"none",k=feeOf(x),s=p&&D.st.get(p.id);
-    const sub=[x.guest?`khách${x.lv?" · "+x.lv:""}`:s?`${r2(s.rating)} · thành viên`:"thành viên",x.by?`thêm bởi ${x.by}`:`${hm(x.at)} ${dmy(x.at).slice(0,5)}`].filter(Boolean).join(" · ");
+    const sub=[x.guest?`VĐV ngoài CLB${x.lv?" · "+x.lv:""}`:s?`${r2(s.rating)} · thành viên`:"thành viên",x.by?`thêm bởi ${x.by}`:`${hm(x.at)} ${dmy(x.at).slice(0,5)}`].filter(Boolean).join(" · ");
     const chip=po&&k?`<span class="paychip ${pay}">${pay==="ok"?`Đã nhận ${kVND(k)}`:pay==="sent"?"Báo đã chuyển":"Chưa trả"}</span>`:"";
     return `<div class="xp${wait?" wt":""}"><span class="no num">${i+1}</span>${av(p||{name:nm(x)},"sm",1)}<span class="t"><b>${esc(nm(x))}${x.arrived?` <small class="atag q">✓ đã đến</small>`:""}</b><small>${esc(sub)}</small>${chip}</span>
-      <span class="b">${po&&k&&pay!=="ok"?`<button class="${pay==="sent"?"primary":"line"} sm" data-act="regpayok" data-id="${x.id}">✓ Nhận</button>`:""}${po&&pay==="ok"?`<button class="ghost sm" data-act="regpayundo" data-id="${x.id}" aria-label="Bỏ xác nhận tiền">↺</button>`:""}<button class="ghost danger sm" data-act="regdel" data-id="${x.id}" aria-label="Bỏ khỏi danh sách">${armed("regdel:"+x.id)?"Bỏ?":"✕"}</button></span></div>`};
+      <span class="b">${po&&k&&pay!=="ok"?`<button class="${pay==="sent"?"primary":"line"} sm" data-act="regpayok" data-id="${x.id}">✓ Nhận</button>`:""}${po&&pay==="ok"?`<button class="ghost sm" data-act="regpayundo" data-id="${x.id}" aria-label="Bỏ xác nhận phí">↺</button>`:""}<button class="ghost danger sm" data-act="regdel" data-id="${x.id}" aria-label="Bỏ khỏi danh sách">${armed("regdel:"+x.id)?"Bỏ?":"✕"}</button></span></div>`};
   const tb=(k,l)=>`<button data-act="xptab" data-v="${k}" aria-pressed="${xPTab===k}">${l}</button>`;
   let h=`<section class="xppl"><div class="xptabs">${tb("dk",`Đã đăng ký ${R.conf.length}`)}${tb("wait",`Chờ chỗ ${R.wait.length}`)}${tb("huy",`Đã hủy ${cancel.length}`)}</div><div class="xpl">`;
   if(xPTab==="dk")h+=R.conf.length?R.conf.map((x,i)=>row(x,i)).join(""):`<p class="rule">Chưa ai đăng ký.</p>`;
   else if(xPTab==="wait")h+=R.wait.length?R.wait.map((x,i)=>row(x,i,1)).join(""):`<p class="rule">Không có ai chờ chỗ.</p>`;
-  else h+=cancel.length?cancel.map(x=>`<div class="xp"><span class="t"><b>${esc(nm(x))}</b><small>hủy lúc ${hm(x.cancelAt)} ${dmy(x.cancelAt||0).slice(0,5)}${po&&feeOf(x)?` · ${kVND(feeOf(x))} · ${x.pay==="refund"?"đã hoàn tiền":x.pay==="sent"||x.pay==="ok"?"cần hoàn tiền":"chưa trả"}`:""}</small></span><span class="b">${(x.pay==="sent"||x.pay==="ok")?`<button class="line sm" data-act="regrefund" data-id="${x.id}">Đã hoàn</button>`:""}<button class="ghost danger sm" data-act="regdel" data-id="${x.id}" aria-label="Xoá">${armed("regdel:"+x.id)?"Xoá?":"✕"}</button></span></div>`).join(""):`<p class="rule">Không có ai hủy.</p>`;
+  else h+=cancel.length?cancel.map(x=>`<div class="xp"><span class="t"><b>${esc(nm(x))}</b><small>hủy lúc ${hm(x.cancelAt)} ${dmy(x.cancelAt||0).slice(0,5)}${po&&feeOf(x)?` · ${kVND(feeOf(x))} · ${x.pay==="refund"?"đã hoàn phí":x.pay==="sent"||x.pay==="ok"?"cần hoàn phí":"chưa trả"}`:""}</small></span><span class="b">${(x.pay==="sent"||x.pay==="ok")?`<button class="line sm" data-act="regrefund" data-id="${x.id}">Đã hoàn</button>`:""}<button class="ghost danger sm" data-act="regdel" data-id="${x.id}" aria-label="Xoá">${armed("regdel:"+x.id)?"Xoá?":"✕"}</button></span></div>`).join(""):`<p class="rule">Không có ai hủy.</p>`;
   h+=`</div>`;
   if(R.expired.length)h+=`<small class="rule" style="padding:0 14px">${R.expired.length} người giữ chỗ quá 30 phút chưa chuyển khoản, đã nhường chỗ.</small>`;
   if(R.all.length&&cfg().schedId===X.id)h+=`<button class="xaddp" data-act="regatt">${armed("regatt:x")?"Bấm lần nữa":"Điểm danh theo danh sách đăng ký"}</button>`;
-  h+=`<button class="xaddp" data-act="regadd">${regAddOpen?"Đóng":"+ Thêm người vào buổi"}</button>${regAddOpen?`<div class="gadd" style="padding:0 12px 12px">${pplPick(D,D.players.filter(p=>!R.all.some(x=>x.pid===p.id)),{act:"regaddp",key:"rga"})}</div>`:""}</section>`;
+  h+=`<button class="xaddp" data-act="regadd">${regAddOpen?"Đóng":"+ Thêm người vào giải đấu"}</button>${regAddOpen?`<div class="gadd" style="padding:0 12px 12px">${pplPick(D,D.players.filter(p=>!R.all.some(x=>x.pid===p.id)),{act:"regaddp",key:"rga"})}</div>`:""}</section>`;
   return h;
 }
 
@@ -200,27 +200,27 @@ function xForm(D){
   const opt=(k,title,sum,body)=>{const o=on(k);return `<div class="xopt${o?" on":""}"><div class="xoh"><span class="t"><b>${title}</b><small>${esc(o?sum:"Tắt")}</small></span><button class="xsw${o?" on":""}" data-act="xfset" data-k="${k}" data-v="${o?"0":"1"}" role="switch" aria-checked="${o}" aria-label="${esc(title)}"><i></i></button></div>${o&&body?`<div class="xob">${body}</div>`:""}</div>`};
   const thu=v("thu"),days=String(v("days")).split(",").filter(Boolean).map(Number),gt=v("gt"),top3=G||gt==="hang"||v("trao")==="top3";
   const fee=thu==="phi"?+v("phi")||0:+v("fee")||0;
-  let h=`<div class="xfhead"><span class="k">${xEdit?"Sửa buổi":xSEdit?"Sửa lịch lặp":"Tạo buổi · bước 2/2"}</span><div class="xrow2"><h1>${G?"Cặp cố định, vòng tròn":"Xoay cặp"}</h1>${xNew?`<span class="xhl"><button data-act="xnew">Đổi thể thức</button><button data-act="xclose">Đóng</button></span>`:""}</div>${xNew?`<span class="xsteps"><i class="on"></i><i class="on"></i></span>`:""}</div>`;
-  h+=`<section class="xsecbox"><span class="xsech">${G?"Giải này":"Buổi này"}</span>${inp("name",G?"Tên giải":"Tên buổi",`maxlength="60" placeholder="${G?"Giải cặp tháng này":"Kèo tối thứ 5"}"`)}
+  let h=`<div class="xfhead"><span class="k">${xEdit?"Sửa giải đấu":xSEdit?"Sửa lịch lặp":"Tạo giải đấu · bước 2/2"}</span><div class="xrow2"><h1>${G?"Cặp cố định, vòng tròn":"Xoay cặp"}</h1>${xNew?`<span class="xhl"><button data-act="xnew">Đổi thể thức</button><button data-act="xclose">Đóng</button></span>`:""}</div>${xNew?`<span class="xsteps"><i class="on"></i><i class="on"></i></span>`:""}</div>`;
+  h+=`<section class="xsecbox"><span class="xsech">${G?"Giải này":"Giải đấu này"}</span>${inp("name",G?"Tên giải":"Tên giải đấu",`maxlength="60" placeholder="${G?"Giải cặp tháng này":"Giải đấu tối thứ 5"}"`)}
     <div class="form">${xSEdit?"":inp("date","Ngày",'type="date"')}${inp("time","Bắt đầu",'type="time"')}${inp("end","Kết thúc",'type="time"')}</div>
     ${inp("place","Sân",'maxlength="60" placeholder="Sân Kỳ Hòa, Q10"')}${inp("map","Link Google Maps (không bắt buộc)",'type="url" maxlength="300" placeholder="https://maps.app.goo.gl/…"')}
     ${stp("courts","Số sân","",1,30)}${stp("target","Chạm điểm","",5,31)}</section>`;
   h+=`<span class="xsec">Tùy chọn · bật cái nào dùng cái đó</span><div class="xopts">`;
   if(!xEdit)h+=opt("rep","Lặp lại hằng tuần",`${days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DOW[d]).join(" & ")||"Chưa chọn ngày"} · ${v("auto")==="1"?`tự mở đăng ký trước ${v("openD")} ngày`:"tự bấm mở đăng ký"}`,
     `<div class="xdays">${[1,2,3,4,5,6,0].map(d=>`<button data-act="xfday" data-v="${d}" aria-pressed="${days.includes(d)}">${DOW[d]}</button>`).join("")}</div>
-      <div class="fld"><span class="lbl">Mở đăng ký cho các buổi lặp</span>${seg("auto",[["1","Tự mở"],["0","Tôi tự bấm mở"]])}</div>
-      ${v("auto")==="1"?stp("openD","Tự mở trước buổi"," ngày",1,7):""}<small class="rule">App tạo sẵn các buổi của 2 tuần tới theo đúng cài đặt này.</small>`);
-  else if(inS)h+=`<small class="rule">Buổi này thuộc lịch lặp hằng tuần. Sửa ở đây chỉ đổi buổi này.</small>`;
-  h+=opt("reg","Đăng ký qua Zalo",[+v("max")?`${v("max")} ${G?"người":"chỗ"}`:"không giới hạn",(v("lvMin")||v("lvMax"))&&`trình ${v("lvMin")||"…"}–${v("lvMax")||"…"}`,v("guests")==="1"?"nhận khách":"chỉ thành viên"].filter(Boolean).join(" · "),
+      <div class="fld"><span class="lbl">Mở đăng ký cho các giải đấu lặp</span>${seg("auto",[["1","Tự mở"],["0","Tôi tự bấm mở"]])}</div>
+      ${v("auto")==="1"?stp("openD","Tự mở trước giải đấu"," ngày",1,7):""}<small class="rule">App tạo sẵn các giải đấu của 2 tuần tới theo đúng cài đặt này.</small>`);
+  else if(inS)h+=`<small class="rule">Giải đấu này thuộc lịch lặp hằng tuần. Sửa ở đây chỉ đổi giải đấu này.</small>`;
+  h+=opt("reg","Đăng ký qua Zalo",[+v("max")?`${v("max")} ${G?"người":"chỗ"}`:"không giới hạn",(v("lvMin")||v("lvMax"))&&`trình ${v("lvMin")||"…"}–${v("lvMax")||"…"}`,v("guests")==="1"?"nhận VĐV ngoài CLB":"chỉ thành viên"].filter(Boolean).join(" · "),
     `${stp("max",G?"Số người tối đa":"Số chỗ (0 là không giới hạn)","",0,200)}${G?`<small class="rule">Đăng ký từng người, bạn ghép cặp ở bước Tùy chọn của tab Sân.</small>`:""}
      <div class="form">${inp("lvMin","Trình từ",'type="number" step="0.5" min="1" max="8" inputmode="decimal" placeholder="2.5"')}${inp("lvMax","đến",'type="number" step="0.5" min="1" max="8" inputmode="decimal" placeholder="4.0"')}</div>
-     <div class="fld"><span class="lbl">Đối tượng</span>${seg("guests",[["0","Chỉ thành viên"],["1","Cả khách vãng lai"]])}</div>
-     ${stp("dlH","Đóng đăng ký trước buổi"," giờ",0,72)}${stp("lockH","Khóa hủy trước buổi"," giờ",0,72)}`);
+     <div class="fld"><span class="lbl">Đối tượng</span>${seg("guests",[["0","Chỉ thành viên"],["1","Cả VĐV ngoài CLB"]])}</div>
+     ${stp("dlH","Đóng đăng ký trước giải đấu"," giờ",0,72)}${stp("lockH","Khóa hủy trước giải đấu"," giờ",0,72)}`);
   h+=opt("cp",G?"Lệ phí":"Thu chi phí",`${THU[thu]||""}${fee?` · ${fmtK(fee)}`:""}${v("pay")!=="off"?` · chuyển khoản ${v("pay")==="req"?"bắt buộc":"tùy chọn"}`:""}`,
-    `<div class="fld"><span class="lbl">Cách thu</span>${seg("thu",[["keo","Kèo thua góp"],["deu","Chia đều"],["phi","Phí cố định"]])}</div>
-     <div class="form">${thu==="phi"?inp("phi","Mỗi người (k)",'type="number" min="0" inputmode="numeric"'):inp("fee","Dự kiến mỗi người (k)",'type="number" min="0" inputmode="numeric" placeholder="0"')}${v("guests")==="1"?inp("feeG","Khách (k)",'type="number" min="0" inputmode="numeric" placeholder="như thành viên"'):""}</div>
+    `<div class="fld"><span class="lbl">Cách thu</span>${seg("thu",[["keo","Thua góp"],["deu","Chia đều"],["phi","Phí cố định"]])}</div>
+     <div class="form">${thu==="phi"?inp("phi","Mỗi người (k)",'type="number" min="0" inputmode="numeric"'):inp("fee","Dự kiến mỗi người (k)",'type="number" min="0" inputmode="numeric" placeholder="0"')}${v("guests")==="1"?inp("feeG","VĐV ngoài CLB (k)",'type="number" min="0" inputmode="numeric" placeholder="như thành viên"'):""}</div>
      <div class="fld"><span class="lbl">Chuyển khoản lúc đăng ký</span>${seg("pay",[["off","Không"],["opt","Tùy chọn"],["req","Bắt buộc"]])}</div>
-     ${v("pay")!=="off"&&!(BANK&&BANK.acc)?`<small class="rule" style="color:var(--lose)">Cần khai ngân hàng nhận tiền ở Cài đặt CLB.</small>`:""}`);
+     ${v("pay")!=="off"&&!(BANK&&BANK.acc)?`<small class="rule" style="color:var(--lose)">Cần khai ngân hàng nhận phí ở Cài đặt CLB.</small>`:""}`);
   h+=opt("gton","Giải thưởng",gt==="hang"?`Nhất ${fmtK(+v("h1")||0)} · Nhì ${fmtK(+v("h2")||0)} · Ba ${fmtK(+v("h3")||0)}`:`${GT[gt]||""}${G||top3?" · hạng 1, 2, 3":" · Số 1 nam & nữ"}`,
     `<div class="fld"><span class="lbl">Lập quỹ giải</span>${seg("gt",(G?["hang","trich","gop"]:["hang","trich","codinh","gop"]).map(x=>[x,GT[x]]))}</div>
      ${!G&&gt!=="hang"?`<div class="fld"><span class="lbl">Trao cho</span>${seg("trao",[["namnu","Số 1 nam & Số 1 nữ"],["top3","Hạng 1, 2, 3"]])}</div>`:""}
@@ -236,15 +236,15 @@ function xForm(D){
   h+=`</div>`;
   if(errs.xf)h+=`<p class="err">${esc(errs.xf)}</p>`;
   const reg=on("reg");
-  h+=`<div class="xfbar">${xEdit||xSEdit?`<button class="line" data-act="xclose">Hủy</button><button class="primary" data-act="xsave" data-v="save">Lưu</button>`:`<button class="line" data-act="xsave" data-v="draft">Lưu nháp</button><button class="primary" data-act="xsave" data-v="open">${reg?"Tạo và mở đăng ký":"Tạo buổi"}</button>`}</div>`;
+  h+=`<div class="xfbar">${xEdit||xSEdit?`<button class="line" data-act="xclose">Hủy</button><button class="primary" data-act="xsave" data-v="save">Lưu</button>`:`<button class="line" data-act="xsave" data-v="draft">Lưu nháp</button><button class="primary" data-act="xsave" data-v="open">${reg?"Tạo và mở đăng ký":"Tạo giải đấu"}</button>`}</div>`;
   return h;
 }
 function xPickFmt(D){
   const L=schedAll().filter(x=>x.st!=="cancel").pop();
-  return `<div class="xfhead"><span class="k">Tạo buổi · bước 1/2</span><div class="xrow2"><h1>Chọn thể thức</h1><button class="lnk" data-act="xclose">Đóng</button></div><span class="xsteps"><i class="on"></i><i></i></span></div>
-    ${L?`<button class="xreuse" data-act="xfmt" data-v="${L.fmt==="giai"?"giai":"xoay"}"><b>Dùng lại buổi trước:</b> ${esc(xName(L))} · ${xFmt(L)}<span>›</span></button>`:""}
+  return `<div class="xfhead"><span class="k">Tạo giải đấu · bước 1/2</span><div class="xrow2"><h1>Chọn thể thức</h1><button class="lnk" data-act="xclose">Đóng</button></div><span class="xsteps"><i class="on"></i><i></i></span></div>
+    ${L?`<button class="xreuse" data-act="xfmt" data-v="${L.fmt==="giai"?"giai":"xoay"}"><b>Dùng lại giải đấu trước:</b> ${esc(xName(L))} · ${xFmt(L)}<span>›</span></button>`:""}
     <button class="xfmt on" data-act="xfmt" data-v="xoay"><span class="ic"><svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="14" cy="14" r="5"/><circle cx="34" cy="14" r="5"/><circle cx="14" cy="34" r="5"/><circle cx="34" cy="34" r="5"/><path d="M20 14h8M34 20v8M28 34h-8M14 28v-8"/></svg></span>
-      <span class="t"><b>Xoay cặp</b><span>Kèo thường ngày. Đổi cặp liên tục, ai cũng đánh với nhiều người, tính rating. Ai thua góp tiền.</span><span class="rgchips"><span>8–40 người</span><span>Phổ biến nhất</span></span></span></button>
+      <span class="t"><b>Xoay cặp</b><span>Giải đấu thường ngày. Đổi cặp liên tục, ai cũng đánh với nhiều người, tính rating. Ai thua góp.</span><span class="rgchips"><span>8–40 người</span><span>Phổ biến nhất</span></span></span></button>
     <button class="xfmt" data-act="xfmt" data-v="giai"><span class="ic"><svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M14 12h10M24 12v8M14 28h10M24 28v-8M24 20h10M14 36h20"/><circle cx="40" cy="20" r="4"/></svg></span>
       <span class="t"><b>Cặp cố định, vòng tròn</b><span>Giải nhỏ trong CLB. Mỗi cặp gặp tất cả các cặp còn lại. Có giải nhất, nhì, ba.</span><span class="rgchips"><span>4–12 cặp</span><span>Có giải thưởng</span></span></span></button>
     <span class="xsec">Sắp có</span><div class="xsoon"><b>Vua sân (King of the court)</b><small>Thắng ở lại sân, thua xuống chờ</small></div><div class="xsoon"><b>Chia bảng + loại trực tiếp</b><small>Cho giải đông cặp</small></div>`;
@@ -283,14 +283,14 @@ async function xSave(D,mode){
   if(rep&&!days.length){errs.xf="Chọn ít nhất một ngày trong tuần để lặp.";render();return}
   delete errs.xf;
   if(xEdit){const X=schedById(xEdit);if(!X)return;
-    await write(()=>db.collection("sched").doc(X.id).set(xBuild({...f,at},{st:X.st,openAt:X.openAt||0,series:X.series||null,num:X.num??null,createdAt:X.createdAt||Date.now()})),"Đã lưu buổi");
+    await write(()=>db.collection("sched").doc(X.id).set(xBuild({...f,at},{st:X.st,openAt:X.openAt||0,series:X.series||null,num:X.num??null,createdAt:X.createdAt||Date.now()})),"Đã lưu giải đấu");
     xEdit=null;xClearDraft();render();return}
   const id=db.collection("sched").doc().id;let sid=null;
   await write(async()=>{
     if(rep){sid=db.collection("series").doc().id;await db.collection("series").doc(sid).set({days,time:t,end:f.end,tpl:f,auto,openD,on:true,from:dayStart(at),at:Date.now()})}
     await db.collection("sched").doc(rep?sid+"-"+ymd(at):id).set(xBuild({...f,at},{st:mode==="open"?"open":"draft",openAt:0,series:sid}));
     if(rep)await xMaterialize({id:sid,days,time:t,end:f.end,tpl:f,auto,openD,from:dayStart(at)});
-  },mode==="open"?"Đã tạo buổi và mở đăng ký":"Đã lưu nháp");
+  },mode==="open"?"Đã tạo giải đấu và mở đăng ký":"Đã lưu nháp");
   xNew=null;xClearDraft();go("app",{tab:"dk",x:rep?sid+"-"+ymd(at):id});
 }
 const xClearDraft=()=>{for(const k of XF_KEYS)delete drafts["xf-"+k];xSrcCache=null};
@@ -299,7 +299,7 @@ const xClearDraft=()=>{for(const k of XF_KEYS)delete drafts["xf-"+k];xSrcCache=n
 function xPlayerCards(D,o={}){
   const U=schedUp().filter(x=>x.st!=="draft"&&(o.all||xState(x)!=="plan"||x.openAt-Date.now()<7*864e5));
   return U.slice(0,o.max||99).map(x=>{const mine=authUser&&(S.regs||[]).find(r=>r.sid===x.id&&r.uid===authUser.uid&&!r.cancel),s=xState(x),n=xRegN(x),m=+x.max||0,fee=xFee(x);
-    const st=s==="live"?`<span class="xchip ok">Đang đánh</span>`:x.reg===false?xChip(x):mine?`<span class="xchip ok">✓ Bạn đã đăng ký${mine.pay==="ok"?" · đã trả":mine.pay==="sent"?" · chờ xác nhận tiền":""}</span>`:s==="plan"?xChip(x):xOpen(x)?(m&&n>=m?`<span class="xchip warn">Hết chỗ · vào danh sách chờ</span>`:`<span class="xchip ok">Đang nhận đăng ký${m?` · còn ${m-n} chỗ`:""}</span>`):`<span class="xchip">Đã đóng đăng ký</span>`;
+    const st=s==="live"?`<span class="xchip ok">Đang đánh</span>`:x.reg===false?xChip(x):mine?`<span class="xchip ok">✓ Bạn đã đăng ký${mine.pay==="ok"?" · đã trả":mine.pay==="sent"?" · chờ xác nhận phí":""}</span>`:s==="plan"?xChip(x):xOpen(x)?(m&&n>=m?`<span class="xchip warn">Hết chỗ · vào danh sách chờ</span>`:`<span class="xchip ok">Đang nhận đăng ký${m?` · còn ${m-n} chỗ`:""}</span>`):`<span class="xchip">Đã đóng đăng ký</span>`;
     return `<a class="xcard pl${mine?" mine":""}" href="${s==="live"?pathOf("app",{tab:"san"}):pathOf("app",{tab:"dk",x:x.id})}" ${s==="live"?`data-go="app" data-t="san"`:`data-go="app" data-t="dk" data-x="${esc(x.id)}"`}>${xDate(x.at,!!mine||s==="live")}
       <span class="t"><b>${esc(xName(x))}</b><small>${esc([xTime(x),xFmt(x),fee&&fmtK(fee),m&&`${n}/${m}`].filter(Boolean).join(" · "))}</small><span class="xrow">${st}</span>${!mine&&xOpen(x)?`<span class="xgo">${m&&n>=m?"Vào danh sách chờ":"Đăng ký"} ›</span>`:""}</span></a>`}).join("");
 }
@@ -308,7 +308,7 @@ function vLichPlayer(D){
   const X=routeX?schedById(routeX):null;
   if(X)return withX(X,()=>dkPlayer(D));
   const c=xPlayerCards(D,{all:true});
-  if(c)return `<span class="xsec">Buổi sắp tới</span>${c}`+(PLAYER_ON()?linkCard(D):"");
+  if(c)return `<span class="xsec">Giải đấu sắp tới</span>${c}`+(PLAYER_ON()?linkCard(D):"");
   return dkPlayer(D);
 }
 // Tab Sân · Sẵn sàng: buổi hôm nay theo lịch được chọn sẵn
@@ -327,10 +327,10 @@ function xAutoPrep(D){
 function xPrepHead(D){
   const X=xCur(),c=D.c,thu=c.thu||"keo",T=isAdm()?xToday():[];
   let h="";
-  if(T.length>1&&phaseOf(D)!=="live"&&!D.SM.length)h+=`<div class="xpick" role="group" aria-label="Chọn buổi hôm nay">${T.slice().sort((a,b)=>a.at-b.at).map(x=>`<button data-act="xprep" data-id="${x.id}" aria-pressed="${X&&X.id===x.id}"><b>${hm(x.at)}</b>${esc(xName(x))}</button>`).join("")}</div>`;
+  if(T.length>1&&phaseOf(D)!=="live"&&!D.SM.length)h+=`<div class="xpick" role="group" aria-label="Chọn giải đấu hôm nay">${T.slice().sort((a,b)=>a.at-b.at).map(x=>`<button data-act="xprep" data-id="${x.id}" aria-pressed="${X&&X.id===x.id}"><b>${hm(x.at)}</b>${esc(xName(x))}</button>`).join("")}</div>`;
   h+=`<section class="xhero prephd"><span class="k">${esc(sessTitle(c,D.sid))} · chuẩn bị${X&&X.at?` · ${esc(xTime(X))}`:""}</span>
-    <div class="xrow2"><h1>${esc(X?xName(X):(c.sname||"Buổi nhanh"))}</h1>${X?`<a class="xedit" href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}">Sửa buổi ›</a>`:""}</div>
-    <span class="sub">${esc([fmtTxt(c),c.cphi===false?"không thu tiền":THU[thu]+(thu==="phi"?` ${fmtK(+c.phi||0)}`:"")].filter(Boolean).join(" · "))}</span>${xStats(D)}</section>`;
+    <div class="xrow2"><h1>${esc(X?xName(X):(c.sname||"Giải đấu nhanh"))}</h1>${X?`<a class="xedit" href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}">Sửa giải đấu ›</a>`:""}</div>
+    <span class="sub">${esc([fmtTxt(c),c.cphi===false?"không thu phí":THU[thu]+(thu==="phi"?` ${fmtK(+c.phi||0)}`:"")].filter(Boolean).join(" · "))}</span>${xStats(D)}</section>`;
   return h;
 }
 // 4 con số đầu trang Tùy chọn
@@ -344,7 +344,7 @@ function xStats(D){
 function xNoSched(D){
   if(legacy||!isAdm()||phaseOf(D)==="live")return "";
   const nx=schedUp().find(x=>x.at>Date.now()&&x.st!=="draft");
-  return `<a class="dkban" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk"><span class="t"><b>Hôm nay chưa có buổi theo lịch</b><small>${nx?`Buổi tới: ${esc(dowVN(nx.at))} ${esc(dmy(nx.at).slice(0,5))} · ${esc(xTime(nx))} · ${esc(xName(nx))}`:"Lên lịch buổi để người chơi đăng ký trước"}</small></span><span aria-hidden="true">›</span></a>`;
+  return `<a class="dkban" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk"><span class="t"><b>Hôm nay chưa có giải đấu theo lịch</b><small>${nx?`Giải đấu tới: ${esc(dowVN(nx.at))} ${esc(dmy(nx.at).slice(0,5))} · ${esc(xTime(nx))} · ${esc(xName(nx))}`:"Lên lịch giải đấu để người chơi đăng ký trước"}</small></span><span aria-hidden="true">›</span></a>`;
 }
 // Áp cài đặt buổi trong lịch vào buổi hiện tại (tab Sân), điểm danh theo đăng ký
 async function xApply(D,X,quiet){
@@ -387,11 +387,11 @@ async function xAct(act,b,id,D){
   if(act==="xqr"){xQr=xQr===id?null:id;render();return true}
   if(act==="xopen"){await write(()=>db.collection("sched").doc(id).update({st:"open",openAt:0}),"Đã mở đăng ký");return true}
   if(act==="xpause"){if(!armOr("xpause:"+id))return true;await write(()=>db.collection("sched").doc(id).update({st:"draft"}),"Đã tạm dừng đăng ký");return true}
-  if(act==="xcancel"){if(!armOr("xcancel:"+id))return true;await write(()=>db.collection("sched").doc(id).update({st:"cancel"}),"Đã hủy buổi");return true}
-  if(act==="xdel"){if(!armOr("xdel:"+id))return true;await write(()=>db.collection("sched").doc(id).delete(),"Đã xoá buổi");go("app",{tab:"dk"});return true}
+  if(act==="xcancel"){if(!armOr("xcancel:"+id))return true;await write(()=>db.collection("sched").doc(id).update({st:"cancel"}),"Đã hủy giải đấu");return true}
+  if(act==="xdel"){if(!armOr("xdel:"+id))return true;await write(()=>db.collection("sched").doc(id).delete(),"Đã xoá giải đấu");go("app",{tab:"dk"});return true}
   if(act==="xsoff"){if(!armOr("xsoff:"+id))return true;
     await write(async()=>{await db.collection("series").doc(id).update({on:false});
-      for(const x of (S.sched||[]).filter(x=>x.series===id&&(x.st==="plan"||x.st==="draft")&&x.at>Date.now()&&!xRegN(x)))await db.collection("sched").doc(x.id).delete()},"Đã tắt lặp lại. Các buổi đã có người đăng ký vẫn giữ.");return true}
+      for(const x of (S.sched||[]).filter(x=>x.series===id&&(x.st==="plan"||x.st==="draft")&&x.at>Date.now()&&!xRegN(x)))await db.collection("sched").doc(x.id).delete()},"Đã tắt lặp lại. Các giải đấu đã có người đăng ký vẫn giữ.");return true}
   if(act==="xprep"){const X=schedById(id);if(X)await xApply(D,X);return true}
   return false;
 }

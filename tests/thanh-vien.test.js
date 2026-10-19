@@ -36,7 +36,7 @@ test("trang đăng nhập CLB: vào bằng PIN rồi chuyển sang Sân", async 
   expect(e.T()).toContain("Chưa được giao sân");
 });
 
-test("đang có buổi đánh: người xem không vào được Quỹ và Lịch sử, có nút chia sẻ trực tiếp", async () => {
+test("đang có giải đấu: người xem không vào được Quỹ và Lịch sử, có nút chia sẻ trực tiếp", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7/san", data: { ...club, "clubs/q7/app/config": { title: "Q7", courts: 1, session: 1, phase: "live" } } });
   let shared = null;
   globalThis.navigator.clipboard = { writeText: async t => { shared = t; } };
@@ -49,6 +49,6 @@ test("đang có buổi đánh: người xem không vào được Quỹ và Lịc
   await e.click("lshare"); await e.until(() => shared);
   expect(shared).toMatch(/^📣 Q7: .+ đang diễn ra! 🔴 𝗟𝗜𝗩𝗘\n1 sân · \d+ người\. Mời cả nhà vào xem trực tiếp:/);
   expect(shared).toContain("👉 Bấm link (không cần đăng nhập):");
-  expect(shared).not.toContain("Buổi #");
+  expect(shared).not.toContain("Giải đấu #");
   expect(shared).toContain("/q7/san");
 });

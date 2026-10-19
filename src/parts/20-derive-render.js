@@ -45,7 +45,7 @@ function render(){
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:"";
   if(!splashGone&&(S.offline||S.noClub||(S.live&&S.mReady&&S.hReady)))hideSplash();
   if(!MINI&&autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
-  {const tb=document.querySelector('#tabs [data-tab="dk"]');if(tb){const n=pendCount();tb.hidden=!(isAdm()&&!legacy);tb.textContent=n?`Lịch buổi (${n})`:"Lịch buổi"}}
+  {const tb=document.querySelector('#tabs [data-tab="dk"]');if(tb){const n=pendCount();tb.hidden=!(isAdm()&&!legacy);tb.textContent=n?`Lịch giải đấu (${n})`:"Lịch giải đấu"}}
   if(MINI){rememberClub();if(ME&&ME!==myPid())ME=myPid();const cu=document.getElementById("curl");if(cu)cu.textContent="";const tb=document.getElementById("tabs");if(tb)tb.hidden=true;const tk=document.querySelector(".tkwrap");if(tk)tk.hidden=true;
     $("#hact").innerHTML=miniHact(D)}
   const selTab=route==="home"?"home":route==="buoi"?"ls":route==="chot"?"san":route==="vdv"?"bxh":(route==="caidat"||route==="clogin")?"":tab;
@@ -55,7 +55,7 @@ function render(){
   if(hideV&&route==="app"&&(tab==="tien"||tab==="ls"))tab="san";
   {const tb=document.querySelector('#tabs [data-tab="tien"]');if(tb)tb.style.display=hideV||(isG(c)&&(c.thu||"keo")==="khong"&&(c.gt||"khong")==="khong")?"none":""}
   {const tb=document.querySelector('#tabs [data-tab="ls"]');if(tb)tb.style.display=hideV?"none":""}
-  document.title=MINI?"pikeco.app":route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:route==="caidat"?`Cài đặt · ${c.title}`:route==="chot"?`Chốt buổi #${D.sid} · ${c.title}`:route==="vdv"?`${D.pmap.get(routePid)?.name||"Hồ sơ"} · ${c.title}`:c.title;
+  document.title=MINI?"pikeco.app":route==="buoi"?`Tổng kết giải đấu #${routeSid} · ${c.title}`:route==="caidat"?`Cài đặt · ${c.title}`:route==="chot"?`Chốt giải đấu #${D.sid} · ${c.title}`:route==="vdv"?`${D.pmap.get(routePid)?.name||"Hồ sơ"} · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="clogin"?vClubLogin:route==="chot"?vChot:route==="vdv"?(D=>vHoSo(D,routePid)):route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs,dk:vDk,toi:vToi}[tab]||vSan);
   const loading=!S.offline&&!S.noClub&&!S.priv&&!(S.mReady&&S.hReady&&S.pReady);
@@ -77,7 +77,7 @@ let lastAnim="",mxAnimUntil=0,mxAnimT=null,seenReady=false,bxF="all";const seen=
 const isNew=k=>seenReady&&!seen.has(k);
 const today=()=>{const d=new Date();return `${d.getDate()}/${d.getMonth()+1}`};
 function pageHead(D){
-  const H={dk:[(CLUB?.name||D.c.title),"Lịch buổi"],toi:["Mini App Pikeco","CLB của bạn"],san:[sessTitle(D.c,D.sid)+" · "+today(),"Sân đấu"],bxh:[sessTitle(D.c,D.sid)+" · hôm nay","Xếp hạng"],nguoi:[(CLUB?.name||D.c.title),"Thành viên"],tien:[sessTitle(D.c,D.sid)+" · "+today(),"Quỹ"],ls:["Các buổi đã đánh","Lịch sử"],...(MINI?{bxh:[(CLUB?.name||D.c.title),"Bảng xếp hạng"]}:{})}[tab]||["",""];
+  const H={dk:[(CLUB?.name||D.c.title),"Lịch giải đấu"],toi:["Mini App Pikeco","CLB của bạn"],san:[sessTitle(D.c,D.sid)+" · "+today(),"Sân đấu"],bxh:[sessTitle(D.c,D.sid)+" · hôm nay","Xếp hạng"],nguoi:[(CLUB?.name||D.c.title),"Thành viên"],tien:[sessTitle(D.c,D.sid)+" · "+today(),"Quỹ"],ls:["Các giải đấu đã đánh","Lịch sử"],...(MINI?{bxh:[(CLUB?.name||D.c.title),"Bảng xếp hạng"]}:{})}[tab]||["",""];
   if(isG(D.c)){if(tab==="san"||tab==="tien")H[1]="Cặp cố định xoay vòng";if(tab==="bxh"){H[0]=D.c.sname?sessTitle(D.c,D.sid):"Cặp cố định xoay vòng";H[1]="Xếp hạng cặp"}}
   return `<div class="phead"><span class="eyebrow">${esc(H[0])}</span><h2 class="ptitle">${esc(H[1])}</h2></div>`;
 }
@@ -86,7 +86,7 @@ function ticker(D){
   let label,items;
   if(D.playing.length){label="Đang đánh";items=D.playing.map(m=>`Sân ${mName(m)} · ${m.a.map(id=>D.pmap.get(id)?.name||"?").join(" & ")} vs ${m.b.map(id=>D.pmap.get(id)?.name||"?").join(" & ")}`)}
   else if(D.done.length){label="Vừa xong";items=[...D.done].reverse().slice(0,4).map(m=>`Sân ${mName(m)} · ${m.a.map(id=>D.pmap.get(id)?.name||"?").join(" & ")} ${m.sa}–${m.sb} ${m.b.map(id=>D.pmap.get(id)?.name||"?").join(" & ")}`)}
-  else{label=S.live?"Trực tiếp":"Kết nối";items=[S.offline?"Không kết nối được dữ liệu chung":S.live?`Buổi #${D.sid} · chưa có trận nào`:"Đang kết nối…"]}
+  else{label=S.live?"Trực tiếp":"Kết nối";items=[S.offline?"Không kết nối được dữ liệu chung":S.live?`Giải đấu #${D.sid} · chưa có trận nào`:"Đang kết nối…"]}
   const k=label+"|"+items.join("||");if(k===tkKey)return;tkKey=k;tkItems=items;if(tkI>=items.length)tkI=0;
   $("#tkl").textContent=label;tkShow();
 }

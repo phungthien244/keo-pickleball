@@ -13,19 +13,19 @@ function paySheet(){
   if(!payOpen)return "";const {name,k,sid}=payOpen,amt=Math.round(k*1000),note=payNote(sid,name);
   return `<div class="sheetbg" data-act="payx"><div class="sheet" role="dialog" aria-modal="true" aria-label="Chuyển khoản cho ${esc(name)}" data-stop="1">
     <div class="sh"><h2>Chuyển khoản · ${esc(name)}</h2><button class="x" data-act="payx" aria-label="Đóng">✕ Đóng</button></div>
-    <div><span class="lbl">Số tiền buổi #${sid}</span><div class="amt num">${amt.toLocaleString("vi-VN")}đ</div></div>
+    <div><span class="lbl">Chi phí giải đấu #${sid}</span><div class="amt num">${amt.toLocaleString("vi-VN")}đ</div></div>
     <div class="qr"><img src="${esc(qrUrl(amt,note))}" alt="Mã QR chuyển ${amt.toLocaleString("vi-VN")}đ tới ${esc(BANK.holder)}"></div>
-    <p class="rule" style="text-align:center">Quét bằng app ngân hàng bất kỳ: số tiền và nội dung đã điền sẵn.</p>
+    <p class="rule" style="text-align:center">Quét bằng app ngân hàng bất kỳ: chi phí và nội dung đã điền sẵn.</p>
     <button class="primary" data-act="saveqr" data-v="${esc(qrUrl(amt,note))}" data-n="${esc(note)}">Lưu mã QR vào máy</button>
     <p class="rule" style="text-align:center;margin-top:-6px">Chỉ có 1 điện thoại? Lưu mã QR, mở app ngân hàng, chọn Quét QR rồi chọn ảnh vừa lưu.</p>
     <div class="kv"><span>Ngân hàng</span><b>${esc(BANK.name)}</b><i></i>
       <span>Số TK</span><b class="num">${esc(BANK.acc)}</b><button data-act="cp" data-v="${esc(BANK.acc)}">Copy</button>
       <span>Chủ TK</span><b>${esc(BANK.holder)}</b><i></i>
       <span>Nội dung</span><b>${esc(note)}</b><button data-act="cp" data-v="${esc(note)}">Copy</button>
-      <span>Số tiền</span><b class="num">${amt.toLocaleString("vi-VN")}</b><button data-act="cp" data-v="${amt}">Copy</button></div>
+      <span>Chi phí</span><b class="num">${amt.toLocaleString("vi-VN")}</b><button data-act="cp" data-v="${amt}">Copy</button></div>
     <span class="lbl">Mở thẳng app ngân hàng</span>
     <div class="apps">${BANK_APPS.map(([a,l])=>`<a href="${esc(appUrl(a,amt,note,sid))}" target="_blank" rel="noopener"><img src="https://cdn.vietqr.io/bank-app-icon/${a}-android.webp" alt="" width="40" height="40" loading="lazy"><span>${l}</span></a>`).join("")}</div>
-    <p class="rule">Nếu app mở lên mà chưa có số tiền, bấm Lưu mã QR ở trên rồi quét ảnh trong app.</p>
+    <p class="rule">Nếu app mở lên mà chưa có chi phí, bấm Lưu mã QR ở trên rồi quét ảnh trong app.</p>
   </div></div>`;
 }
 let splashGone=false;
@@ -39,7 +39,7 @@ const armed=k=>false;
 const delBtn=(act,id,label)=>armed(act+":"+id)?`<button class="danger" data-act="${act}" data-id="${id}">Bấm lần nữa để xóa</button>`:`<button class="ghost danger" data-act="${act}" data-id="${id}">${label}</button>`;
 const logoOk=c=>c&&typeof c.logo==="string"&&/^data:image\//.test(c.logo);
 const logoHtml=(c,name)=>logoOk(c)?`<img src="${c.logo}" alt="">`:esc(String(name||"P").trim().charAt(0).toUpperCase()||"P");
-const sessTitle=(c,sid)=>c.sname?String(c.sname):`Buổi #${sid}`;
+const sessTitle=(c,sid)=>c.sname?String(c.sname):`Giải đấu #${sid}`;
 // Tên dùng trong tin nhắn chia sẻ: không kèm số buổi
 const shareName=(sname,fallback)=>String(sname||"").trim()||fallback;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -92,7 +92,7 @@ function meBox(D,opt={}){
   // Bỏ chọn "Bạn là ai" và thẻ chào: quản trị viên ghép tài khoản Zalo; chỉ giữ phần chi phí
   let h="";
   if(opt.pay!==false){const M=money(D);if(M.att.some(x=>x.id===p.id)){const k=payRow(D,M,p.id).pay;
-    if(k>0)h+=`<div class="mepay"><span>Chi phí của bạn hôm nay <b class="num">${fmtK(k)}</b><small>tạm tính tới giờ</small></span>${BANK?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${k}">Chuyển tiền</button>`:""}</div>`}}
+    if(k>0)h+=`<div class="mepay"><span>Chi phí của bạn hôm nay <b class="num">${fmtK(k)}</b><small>tạm tính tới giờ</small></span>${BANK?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${k}">Chuyển khoản</button>`:""}</div>`}}
   return h;
 }
 

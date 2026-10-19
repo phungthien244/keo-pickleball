@@ -109,7 +109,7 @@ document.addEventListener("click",onAct=async e=>{
     const keepPos=()=>{if(barY!=null){const nY=natY();try{scrollTo({top:y0>=barY&&nY!=null?nY:Math.min(y0,nY??y0)})}catch(e){}}repaint()};
     noAnimOnce=true;
     if(v==="chot"){stepView=null;sheetOpen=false;go("chot",{keep:1});keepPos();return}
-    if(v==="live"&&phaseOf(D)!=="live"){toast("Buổi chưa bắt đầu. Bấm “Bắt đầu buổi” ở cuối trang Chuẩn bị.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san",keep:1});keepPos()}return}
+    if(v==="live"&&phaseOf(D)!=="live"){toast("Giải đấu chưa bắt đầu. Bấm “Bắt đầu giải đấu” ở cuối trang Chuẩn bị.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san",keep:1});keepPos()}return}
     stepView=v==="prep"?"prep":null;sheetOpen=false;
     if(route!=="app"||tab!=="san")go("app",{tab:"san",keep:1});else render();keepPos();return}
   if(act==="cnopen"){cnOpen=!cnOpen;render();return}
@@ -131,9 +131,9 @@ document.addEventListener("click",onAct=async e=>{
     catch(x){window.open(b.dataset.v,"_blank")}return}
   if(act==="cp"){try{await navigator.clipboard.writeText(b.dataset.v);toast("Đã copy: "+b.dataset.v)}catch(x){toast(b.dataset.v)}return}
   if(act==="paid"){if(!canWrite)return;const sid=Number(id),h=S.hist.find(z=>z.sid===sid);if(!h)return;const pd={...(h.paid||{})};pd[b.dataset.p]=!pd[b.dataset.p];
-    write(()=>db.doc("app/hist-"+sid).update({paid:pd}),pd[b.dataset.p]?"Đã đánh dấu đã nhận tiền":"Đã bỏ đánh dấu");return}
-  if(act==="share"||act==="copylink"){const u=shareUrl(id),D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id)),txt=x?(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x)):"Tổng kết buổi đánh";
-    if(act==="share"&&navigator.share){try{await navigator.share({title:"Tổng kết buổi đánh",text:txt+"\n",url:u})}catch(x){}return}
+    write(()=>db.doc("app/hist-"+sid).update({paid:pd}),pd[b.dataset.p]?"Đã đánh dấu đã nhận phí":"Đã bỏ đánh dấu");return}
+  if(act==="share"||act==="copylink"){const u=shareUrl(id),D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id)),txt=x?(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x)):"Tổng kết giải đấu";
+    if(act==="share"&&navigator.share){try{await navigator.share({title:"Tổng kết giải đấu",text:txt+"\n",url:u})}catch(x){}return}
     try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy tin nhắn kèm link, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
   if(act==="sess"){const k="s-"+id;editing.has(k)?editing.delete(k):editing.add(k);render();return}
   if(act==="copysess"){const D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id));if(!x)return;
@@ -174,7 +174,7 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="cset"&&b.dataset.k!=="fmt"){const k=b.dataset.k,v=b.dataset.v;
     if(cfg()[k]===v)return;const patch={[k]:v};if(k==="gt"){patch.gtv=v==="trich"?30:v==="codinh"?200:v==="gop"?20:0;if(v==="hang"&&cfg().hang1==null)Object.assign(patch,{hang1:200,hang2:100,hang3:50})}if(k==="thu"&&v==="phi"&&!cfg().phi)patch.phi=50;
     ["cf-gtv","cf-phi"].forEach(x=>delete drafts[x]);write(()=>saveCfg(patch));return}
-  if(act==="fmt"||(act==="cset"&&b.dataset.k==="fmt")){const v=b.dataset.v==="giai"?"giai":"xoay";if(derive().SM.length){toast("Buổi đã có trận, không đổi thể thức được.");return}
+  if(act==="fmt"||(act==="cset"&&b.dataset.k==="fmt")){const v=b.dataset.v==="giai"?"giai":"xoay";if(derive().SM.length){toast("Giải đấu đã có trận, không đổi thể thức được.");return}
     if(cfg().fmt===v||(v==="xoay"&&!cfg().fmt))return;
     const keep=sheetOpen||phaseOf(derive())==="live";write(()=>saveCfg({fmt:v,giai:cfg().giai||{pairs:[],prizes:[0,0,0],out:{},locked:false},...(keep?{phase:"live"}:{})}),v==="giai"?"Đã chọn thể thức Cặp cố định xoay vòng":"Đã chọn thể thức Xoay cặp");return}
   if(act==="gaddopen"){gAddOpen=true;delete drafts.gp1;delete drafts.gp2;delete drafts["gp-q"];delete errs.gadd;render();return}
@@ -221,7 +221,7 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="picktoggle"){pickOpen=!pickOpen;render();return}
   if(act==="pickall"){const away=S.players.filter(p=>p.active===false);if(pickSel.size===away.length)pickSel.clear();else away.forEach(p=>pickSel.add(p.id));render();return}
   if(act==="pickadd"){const ids=[...pickSel];if(!ids.length){toast("Chọn ít nhất một người.");return}
-    await write(async()=>{for(const i of ids)await db.collection("players").doc(i).update({active:true});S.everWrote=true;pickSel.clear();pickOpen=false},`Đã thêm ${ids.length} người vào buổi`);return}
+    await write(async()=>{for(const i of ids)await db.collection("players").doc(i).update({active:true});S.everWrote=true;pickSel.clear();pickOpen=false},`Đã thêm ${ids.length} người vào giải đấu`);return}
   if(act==="courts"){const n=Math.min(12,Math.max(1,cfg().courts+Number(b.dataset.d)));write(()=>saveCfg({courts:n}))}
   else if(act==="gen")generate();
   else if(act==="add"){
@@ -239,12 +239,12 @@ document.addEventListener("click",onAct=async e=>{
         const doc={name:nmv,rating0:lvl,gender:gd,active:true,createdAt:t++,code:"PB-"+String(n++).padStart(3,"0")};if(du)doc.duprId=du;
         await db.collection("players").doc().set(doc);have.set(nmv.toLowerCase(),doc);added++}
       S.everWrote=true;delete drafts.bulk},null);
-    toast(added||back?`Đã thêm ${added} người mới${back?`, ${back} người cũ vào buổi`:""}`:"Các tên này đã có mặt.")}
+    toast(added||back?`Đã thêm ${added} người mới${back?`, ${back} người cũ vào giải đấu`:""}`:"Các tên này đã có mặt.")}
   else if(act==="codes"){
     const lock=await db.doc("app/lock").acquire({holder,ttlMs:8000});
     if(!lock.acquired){toast("Có người khác đang cập nhật, thử lại sau vài giây.");return}
     write(()=>assignCodes().then(()=>S.everWrote=true),"Đã cấp mã")}
-  else if(act==="checkin")write(()=>db.collection("players").doc(id).update({active:true}),"Đã thêm vào buổi")
+  else if(act==="checkin")write(()=>db.collection("players").doc(id).update({active:true}),"Đã thêm vào giải đấu")
   else if(act==="checkout"){if(derive().playing.some(m=>[...m.a,...m.b].includes(id))){toast("Người này đang trên sân, lưu tỉ số trước.");return}
     write(()=>db.collection("players").doc(id).update({active:false}),"Đã cho nghỉ")}
   else if(act==="pedit"){editing.add("p-"+id);render()}
@@ -272,7 +272,7 @@ document.addEventListener("click",onAct=async e=>{
       for(const x of B)await db.collection("batches").doc(x.id).delete();delete S.pm[sid];
       for(const [pid,nw] of upd)await db.collection("players").doc(pid).update({rating0:nw});
       if(h)await db.doc("app/hist-"+sid).delete();
-      delList=null;editing.delete("s-"+sid)},`Đã xóa buổi #${sid}, rating đã tự trừ lại. Chủ CLB khôi phục được trong Cài đặt.`)}
+      delList=null;editing.delete("s-"+sid)},`Đã xóa giải đấu #${sid}, rating đã tự trừ lại. Chủ CLB khôi phục được trong Cài đặt.`)}
   else if(act==="toggle"){const p=S.players.find(p=>p.id===id);write(()=>db.collection("players").doc(id).update({active:p.active===false}))}
   else if(act==="del"){if(!armOr("del:"+id))return;write(()=>db.collection("players").doc(id).delete(),"Đã xóa")}
   else if(act==="cancel"){if(!armOr("cancel:"+id))return;pendSave.delete(id);pendCancel.delete(id);const m=S.matches.find(x=>x.id===id);if(!m)return;write(()=>trashMatches([m],"cancel"),"Đã hủy trận · bấm Hoàn tác nếu nhầm")}

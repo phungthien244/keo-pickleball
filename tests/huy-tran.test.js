@@ -39,7 +39,7 @@ test("thanh 3 bước bấm chuyển qua lại, hàng chờ chia nam nữ, thêm
   await e.tab("san");
   expect(e.V()).toContain('data-act="step"');
   await e.click("step", { v: "live" });
-  expect(e.T()).toContain("Buổi #1 · chuẩn bị");
+  expect(e.T()).toContain("Giải đấu #1 · chuẩn bị");
   await e.ok("start"); await e.click("gen");
   await e.click("lseg", { v: "cho" });
   expect(e.T()).toContain("Hàng chờ (2)");
@@ -57,5 +57,5 @@ test("thanh 3 bước bấm chuyển qua lại, hàng chờ chia nam nữ, thêm
   await e.click("lseg", { v: "san" });
   expect(e.T()).toContain("Sân đang đánh");
   await e.click("step", { v: "chot" });
-  expect(e.T()).toContain("Chốt buổi #1");
+  expect(e.T()).toContain("Chốt giải đấu #1");
 });

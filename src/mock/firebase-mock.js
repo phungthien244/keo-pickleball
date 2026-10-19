@@ -27,7 +27,7 @@ store.set("clubs/aep/members/u2",{role:"admin",name:"Minh",email:"minh@demo.vn",
 store.set("clubs/aep/editors/pin1",{pin:"x",at:Date.now()});
 store.set("clubs/aep/invites/demo-ql",{role:"admin",exp:Date.now()+3650*864e5,by:"demo",at:Date.now()});
 store.set("clubs/aep/invites/demo-tt",{role:"scorer",exp:Date.now()+3650*864e5,by:"demo",at:Date.now()});
-{const T=new Date();T.setDate(T.getDate()+1);T.setHours(19,0,0,0);const at=T.getTime(),tpl={name:"Kèo tối",fmt:"xoay",end:"21:30",place:"Sân AEP, Q7",courts:2,target:11,max:16,guests:true,thu:"keo",fee:60,feeG:80,pay:"opt",lockH:2,dlH:0,note:"Mang nước, sân có bóng."};
+{const T=new Date();T.setDate(T.getDate()+1);T.setHours(19,0,0,0);const at=T.getTime(),tpl={name:"Giải đấu tối",fmt:"xoay",end:"21:30",place:"Sân AEP, Q7",courts:2,target:11,max:16,guests:true,thu:"keo",fee:60,feeG:80,pay:"opt",lockH:2,dlH:0,note:"Mang nước, sân có bóng."};
 store.set("clubs/aep/series/w1",{days:[2,4],time:"19:00",end:"21:30",tpl,auto:true,openD:2,on:true,at:Date.now()});
 store.set("clubs/aep/sched/s-mai",{...tpl,at,deadline:at,lockAt:at-2*3600e3,st:"open",openAt:0,series:"w1",createdAt:Date.now()});
 ["d0","d2","d4","d6","d8"].forEach((pid,i)=>store.set("clubs/aep/regs/s-mai_p_"+pid,{sid:"s-mai",pid,name:store.get("clubs/aep/players/"+pid)?.name||"",at:Date.now()-(9-i)*36e5,pay:i<2?"ok":i===2?"sent":"none",by:"Bạn (demo)"}));
@@ -37,7 +37,7 @@ window.PA_OVERRIDE="ban@demo.vn";
 store.set("users/demo",{club:"aep",at:Date.now()});
 store.set("clubs/q7-smash",{name:"Q7 Smash Pickleball",public:true,owner:"u7",status:"pending",city:"TP.HCM",size:"20–50",createdAt:Date.now()-36e5});
 store.set("clubs/hanoi-dinks",{name:"Hà Nội Dinks",public:true,owner:"u8",status:"active",city:"Hà Nội",size:"50–100",createdAt:Date.now()-864e5*3});
-Object.assign(store.get("clubs/aep"),{city:"TP.HCM · Quận 10",about:"CLB vui vẻ, chơi đều mỗi tuần, kèo cân trình. Người mới được hướng dẫn tận tình.",sched:"Tối thứ 3, 5 · 19:00–21:30",venue:"Sân Kỳ Hòa, Q10",level:"2.5–3.5, nhận người mới",feeTxt:"50k/buổi, khách 70k",zalo:"0901234567"});
+Object.assign(store.get("clubs/aep"),{city:"TP.HCM · Quận 10",about:"CLB vui vẻ, chơi đều mỗi tuần, chấp cân trình. Người mới được hướng dẫn tận tình.",sched:"Tối thứ 3, 5 · 19:00–21:30",venue:"Sân Kỳ Hòa, Q10",level:"2.5–3.5, nhận người mới",feeTxt:"50k/giải đấu, VĐV ngoài CLB 70k",zalo:"0901234567"});
 store.set("clubs/hanoi-dinks/app/config",{title:"Hà Nội Dinks",session:1,sname:"Sáng thứ 7",thu:"phi",phi:60,courts:2,reg:{on:true,sid:1,guests:true,max:12,feeG:80,at:Date.now()+3*864e5,place:"Sân Cầu Giấy"}});
 store.set("clubs/hanoi-dinks/regs/1_a",{sid:1,uid:"x",pid:"z",at:1});
 store.set("clubs/q7-smash/private/info",{contact:"0901234567",ownerEmail:"q7smash@demo.vn"});store.set("clubs/hanoi-dinks/private/info",{contact:"0912345678",ownerEmail:"dinks@demo.vn"});

@@ -1,13 +1,13 @@
 import { test, expect } from "vitest";
 import { setup } from "./helpers/env.js";
 
-test("luồng buổi: chuẩn bị → đang đánh → chốt, quỹ buổi, còn nợ, sổ quỹ, sửa sau khi chốt", async () => {
+test("luồng giải đấu: chuẩn bị → đang đánh → chốt, quỹ giải đấu, còn nợ, sổ quỹ, sửa sau khi chốt", async () => {
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "An\nBình\nChi | nữ\nDung | nữ\nEm\nPhương | nữ\nGiang\nHà | nữ"); await e.click("add");
   await e.tab("san");
   // ① Chuẩn bị: thấy điểm danh, thể thức, tiền, nút bắt đầu; chưa có ô xếp trận
-  expect(e.T()).toContain("Buổi #1 · chuẩn bị");
+  expect(e.T()).toContain("Giải đấu #1 · chuẩn bị");
   expect(e.T()).toContain("Điểm danh");
   expect(e.V()).toContain('data-act="start"');
   expect(e.V()).not.toContain('data-act="gen"');
@@ -22,7 +22,7 @@ test("luồng buổi: chuẩn bị → đang đánh → chốt, quỹ buổi, c�
   await e.ok("start");
   expect(e.store.get("app/config").phase).toBe("live");
   // ② Đang đánh: dải tóm tắt + nút Sửa, bảng sửa mở được
-  expect(e.T()).toContain("Buổi #1 · đang đánh");
+  expect(e.T()).toContain("Giải đấu #1 · đang đánh");
   await e.click("sheet");
   await e.click("courts", { d: "1" }); expect(e.store.get("app/config").courts).toBe(3);
   await e.click("sheetx");
@@ -45,7 +45,7 @@ test("luồng buổi: chuẩn bị → đang đánh → chốt, quỹ buổi, c�
   // ③ Chốt: người chưa đóng ghi vào Còn nợ
   await e.nav("chot");
   expect(e.url).toBe("/aep/chot-buoi");
-  expect(e.T()).toContain("Chốt buổi #1");
+  expect(e.T()).toContain("Chốt giải đấu #1");
   expect(e.T()).toContain("Vào quỹ ngay");
   await e.cfg("water", 30);
   await e.click("chot"); await e.click("chot"); await e.until(() => e.store.has("app/hist-1"));
@@ -71,43 +71,43 @@ test("luồng buổi: chuẩn bị → đang đánh → chốt, quỹ buổi, c�
   expect(e.T()).toContain("Quỹ CLB hiện có −230k");
   // sau buổi: mở lại để sửa chi phí
   await e.nav("buoi", { id: "1" });
-  expect(e.T()).toContain("Buổi #1 · đã chốt");
+  expect(e.T()).toContain("Giải đấu #1 · đã chốt");
   await e.click("hopen", { id: "1" }); e.input("hc-court-1", "250"); await e.click("hsave", { id: "1" });
   expect(e.store.get("app/hist-1").money.club).toBe(450 - 280);
   expect(e.store.get("app/hist-1").editedAt).toBeGreaterThan(0);
   // buổi mới bắt đầu ở bước chuẩn bị
   await e.tab("san");
-  expect(e.T()).toContain("Buổi #2 · chuẩn bị");
+  expect(e.T()).toContain("Giải đấu #2 · chuẩn bị");
 });
 
-test("thành viên xem tab Sân: không thấy cài đặt, thấy trạng thái buổi", async () => {
+test("thành viên xem tab Sân: không thấy cài đặt, thấy trạng thái giải đấu", async () => {
   const players = { "players/a": { name: "An", active: true, createdAt: 1 }, "players/b": { name: "Bình", active: true, createdAt: 2 } };
   const e = setup({ path: "/aep/san", data: { "app/config": { session: 3, courts: 2 }, ...players } });
   await e.boot();
-  expect(e.T()).toContain("Buổi #3 sắp bắt đầu");
+  expect(e.T()).toContain("Giải đấu #3 sắp bắt đầu");
   expect(e.V()).not.toContain('data-act="cset"');
   expect(e.V()).not.toContain('data-act="gen"');
   const e2 = setup({ path: "/aep/san", data: { "app/config": { session: 3, courts: 2, phase: "live" }, ...players } });
   await e2.boot();
-  expect(e2.T()).toContain("Buổi #3 · đang đánh");
+  expect(e2.T()).toContain("Giải đấu #3 · đang đánh");
   expect(e2.V()).not.toContain('data-act="sheet"');
 });
 
-test("luật điểm: chạm, cách 2, điểm trần; tên buổi; tắt chi phí", async () => {
+test("luật điểm: chạm, cách 2, điểm trần; tên giải đấu; tắt chi phí", async () => {
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ"); await e.click("add");
   await e.tab("san");
-  e.H.change({ target: { dataset: { save: "cfg", key: "sname" }, value: "Kèo tối thứ 5" } }); await e.tick();
-  expect(e.store.get("app/config").sname).toBe("Kèo tối thứ 5");
-  expect(e.T()).toContain("Kèo tối thứ 5 · chuẩn bị");
-  expect(e.T()).not.toContain("Kèo tối thứ 5 · Buổi #1");
+  e.H.change({ target: { dataset: { save: "cfg", key: "sname" }, value: "Giải đấu tối thứ 5" } }); await e.tick();
+  expect(e.store.get("app/config").sname).toBe("Giải đấu tối thứ 5");
+  expect(e.T()).toContain("Giải đấu tối thứ 5 · chuẩn bị");
+  expect(e.T()).not.toContain("Giải đấu tối thứ 5 · Giải đấu #1");
   await e.click("ptmax", { v: "1" });
   expect(e.store.get("app/config").ptMax).toBe(15);
   await e.click("prow", { v: "tien" });
   await e.click("cphi");
   expect(e.store.get("app/config").cphi).toBe(false);
-  expect(e.T()).toContain("Buổi này không thu tiền");
+  expect(e.T()).toContain("Giải đấu này không thu phí");
   await e.ok("start"); await e.click("gen");
   const [id] = e.docs("matches/", m => m.status === "playing")[0];
   const tryScore = async (a, b) => { e.input("sa-" + id, a); e.input("sb-" + id, b); await e.click("save", { id }); return e.store.get("matches/" + id).status; };
@@ -115,7 +115,7 @@ test("luật điểm: chạm, cách 2, điểm trần; tên buổi; tắt chi ph
   expect(e.V()).toContain("Tối đa 15");
   expect(await tryScore("15", "14")).toBe("done");        // chạm trần trước
   await e.tab("tien");
-  expect(e.T()).toContain("Buổi này không thu tiền");
+  expect(e.T()).toContain("Giải đấu này không thu phí");
   await e.tab("san");
   await e.click("win2", { v: "0" });
   expect(e.store.get("app/config").win2).toBe(false);
@@ -149,7 +149,7 @@ test("giải vòng tròn: giải thưởng nhất nhì ba tuỳ chỉnh", async 
   expect(e.T()).toContain("Tổng 100%");
 });
 
-test("buổi không tích Chi phí và Giải thưởng: trang tổng kết không hiện phần tiền", async () => {
+test("giải đấu không tích Chi phí và Giải thưởng: trang tổng kết không hiện phần chi phí", async () => {
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ"); await e.click("add");
@@ -158,14 +158,14 @@ test("buổi không tích Chi phí và Giải thưởng: trang tổng kết khô
   await e.click("chot"); await e.click("chot"); await e.until(() => e.store.has("app/hist-1"));
   expect(e.store.get("app/hist-1").money.on).toBe(false);
   expect(e.T()).toContain("Kết quả các trận");
-  expect(e.T()).not.toContain("Tiền quỹ");
+  expect(e.T()).not.toContain("Quỹ");
   expect(e.T()).not.toContain("Phải đóng");
   await e.tab("ls");
   expect(e.T()).not.toContain("Quỹ +");
-  expect(e.T()).not.toContain("Chưa có bảng tiền");
+  expect(e.T()).not.toContain("Chưa có bảng chi phí");
 });
 
-test("xoay cặp: giải thưởng tiền từng hạng hoặc chia % cho hạng 1, 2, 3 như cặp cố định", async () => {
+test("xoay cặp: giải thưởng chi phí từng hạng hoặc chia % cho hạng 1, 2, 3 như cặp cố định", async () => {
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF"); await e.click("add");

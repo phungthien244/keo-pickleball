@@ -19,7 +19,7 @@ import "../miniapp/src/mini.css";
   window.ZMP = {
     getUserID: async () => zid,
     getAccessToken: async () => "",
-    getUserInfo: async () => ({ userInfo: { id: zid, name: zid === "demo" ? "Người chơi Zalo" : "Khách " + zid.slice(1, 4).toUpperCase(), avatar: "" } }),
+    getUserInfo: async () => ({ userInfo: { id: zid, name: zid === "demo" ? "Người chơi Zalo" : "Người chơi " + zid.slice(1, 4).toUpperCase(), avatar: "" } }),
     openWebview: async ({ url }) => { window.open(url, "_blank"); },
     openShareSheet: async () => ({})
   };

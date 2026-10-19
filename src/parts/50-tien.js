@@ -1,5 +1,5 @@
-const THU={keo:"Kèo thua góp",deu:"Chia đều chi phí",phi:"Lệ phí cố định",khong:"Quỹ CLB trả"};
-const GT={khong:"Không có giải",trich:"Trích % phần dư",codinh:"Số tiền cố định",gop:"Góp thêm vào giải",hang:"Tiền từng hạng"};
+const THU={keo:"Thua góp",deu:"Chia đều chi phí",phi:"Lệ phí cố định",khong:"Quỹ CLB trả"};
+const GT={khong:"Không có giải",trich:"Trích % phần dư",codinh:"Mức cố định",gop:"Góp thêm vào giải",hang:"Thưởng từng hạng"};
 const hangOf=c=>[+c.hang1||0,+c.hang2||0,+c.hang3||0];
 const chiaOf=c=>{const a=c.chia1!=null?[+c.chia1||0,+c.chia2||0,+c.chia3||0]:String(c.chia||"50,30,20").split(",").map(Number);while(a.length<3)a.push(0);return a.slice(0,3)};
 function money(D,extra){
@@ -47,10 +47,10 @@ function prizeCards(D,list){
 }
 function payTable(D,sid,list,paid,live){
   const pr=list.filter(r=>r.pay>0||r.base>0).sort((a,b)=>b.pay-a.pay),tot=pr.reduce((s,r)=>s+r.pay,0);
-  if(!pr.length)return `<p class="rule">Buổi này không ai phải đóng tiền.</p>`;
+  if(!pr.length)return `<p class="rule">Giải đấu này không ai phải đóng phí.</p>`;
   const n=pr.filter(r=>r.pay>0).length,p=pr.filter(r=>r.pay>0&&paid[r.id]).length;
-  const bd=r=>[r.base?`${r.kind||"tiền buổi"} ${fmtK(r.base)}${r.capped?" (trần)":""}`:"",r.bu?`bù ${fmtK(r.bu)}`:"",r.gop?`giải ${fmtK(r.gop)}`:""].filter(Boolean).join(" + ");
-  return `<div class="tbl-wrap"><table class="payt"><thead><tr><th>Tên</th><th>Phải đóng</th></tr></thead><tbody>${pr.map(r=>`<tr><td><span class="pn">${av(r.P,"sm")}<span><b>${esc(r.name)}</b><span class="meta" style="display:block">${r.g} trận · thua ${r.l}</span><span class="meta" style="display:block">${bd(r)}</span></span></span></td><td><div class="paycell"><b>${fmtK(r.pay)}</b>${paid[r.id]?`<span class="paidpill">✓ Đã nhận</span>`:r.pay>0&&BANK?`<button class="paybtn" data-act="pay" data-sid="${sid}" data-n="${esc(r.name)}" data-k="${r.pay}">Chuyển tiền</button>`:""}${canWrite&&!live&&r.pay>0?`<button class="ghost paidtg" data-act="paid" data-id="${sid}" data-p="${r.id}">${paid[r.id]?"Bỏ dấu":"Đã nhận?"}</button>`:""}</div></td></tr>`).join("")}</tbody><tfoot><tr><td>TỔNG THU${n&&!live?` · ĐÃ NHẬN ${p}/${n}`:""}</td><td><b class="num">${fmtK(tot)}</b></td></tr></tfoot></table></div>`;
+  const bd=r=>[r.base?`${r.kind||"chi phí giải đấu"} ${fmtK(r.base)}${r.capped?" (trần)":""}`:"",r.bu?`bù ${fmtK(r.bu)}`:"",r.gop?`giải ${fmtK(r.gop)}`:""].filter(Boolean).join(" + ");
+  return `<div class="tbl-wrap"><table class="payt"><thead><tr><th>Tên</th><th>Phải đóng</th></tr></thead><tbody>${pr.map(r=>`<tr><td><span class="pn">${av(r.P,"sm")}<span><b>${esc(r.name)}</b><span class="meta" style="display:block">${r.g} trận · thua ${r.l}</span><span class="meta" style="display:block">${bd(r)}</span></span></span></td><td><div class="paycell"><b>${fmtK(r.pay)}</b>${paid[r.id]?`<span class="paidpill">✓ Đã nhận</span>`:r.pay>0&&BANK?`<button class="paybtn" data-act="pay" data-sid="${sid}" data-n="${esc(r.name)}" data-k="${r.pay}">Chuyển khoản</button>`:""}${canWrite&&!live&&r.pay>0?`<button class="ghost paidtg" data-act="paid" data-id="${sid}" data-p="${r.id}">${paid[r.id]?"Bỏ dấu":"Đã nhận?"}</button>`:""}</div></td></tr>`).join("")}</tbody><tfoot><tr><td>TỔNG THU${n&&!live?` · ĐÃ NHẬN ${p}/${n}`:""}</td><td><b class="num">${fmtK(tot)}</b></td></tr></tfoot></table></div>`;
 }
 function moneySec(D,sid,snap,rows,P,noPrize){
   const M=snap?.money;if(!M)return "";
@@ -59,10 +59,10 @@ function moneySec(D,sid,snap,rows,P,noPrize){
   const nw=M.club!=null,cs=M.costs||{},paid=snap.paid||{};
   const CC=[["court","Sân","var(--navy)"],["water","Nước","var(--blue)"],["ball","Bóng","var(--blue-2)"],["other","Khác","var(--line-2)"]].filter(z=>+cs[z[0]]>0);
   const club=nw?M.club:M.gap,coll=nw?M.collected:M.fund;
-  let h=`<div class="shd"><h2>Tiền quỹ</h2></div><div class="k3"><div class="kpi"><div class="lbl">${nw?esc(THU[M.thu]||"Thu"):"Quỹ kèo"}</div><div class="v num">${fmtK(coll)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(M.cost)}</div></div><div class="kpi hl"><div class="lbl">${club>=0?"Vào quỹ CLB":"Quỹ CLB bù"}</div><div class="v num">${fmtK(Math.abs(club))}</div></div></div>`;
-  if(CC.length)h+=`<div class="panel"><div class="cbar">${CC.map(z=>`<span style="flex:${+cs[z[0]]};background:${z[2]}"></span>`).join("")}</div><div class="bar" style="gap:8px 16px">${CC.map(z=>`<span class="meta" style="display:inline-flex;align-items:center;gap:6px"><i style="width:9px;height:9px;background:${z[2]};display:block"></i>${z[1]} ${fmtK(+cs[z[0]])}</span>`).join("")}</div>${M.perGame?`<p class="rule" style="margin-top:8px">Quỹ kèo thiếu ${fmtK(-M.gap)} so với chi phí, chia theo số trận mỗi người đã đánh: khoảng ${fmtK(M.perGame)}/trận.</p>`:""}</div>`;
+  let h=`<div class="shd"><h2>Quỹ</h2></div><div class="k3"><div class="kpi"><div class="lbl">${nw?esc(THU[M.thu]||"Thu"):"Quỹ thua góp"}</div><div class="v num">${fmtK(coll)}</div></div><div class="kpi"><div class="lbl">Chi phí</div><div class="v num">${fmtK(M.cost)}</div></div><div class="kpi hl"><div class="lbl">${club>=0?"Vào quỹ CLB":"Quỹ CLB bù"}</div><div class="v num">${fmtK(Math.abs(club))}</div></div></div>`;
+  if(CC.length)h+=`<div class="panel"><div class="cbar">${CC.map(z=>`<span style="flex:${+cs[z[0]]};background:${z[2]}"></span>`).join("")}</div><div class="bar" style="gap:8px 16px">${CC.map(z=>`<span class="meta" style="display:inline-flex;align-items:center;gap:6px"><i style="width:9px;height:9px;background:${z[2]};display:block"></i>${z[1]} ${fmtK(+cs[z[0]])}</span>`).join("")}</div>${M.perGame?`<p class="rule" style="margin-top:8px">Quỹ thua góp thiếu ${fmtK(-M.gap)} so với chi phí, chia theo số trận mỗi người đã đánh: khoảng ${fmtK(M.perGame)}/trận.</p>`:""}</div>`;
   if(!noPrize&&nw&&M.prizes&&M.prizes.length)h+=`<div class="shd"><h2>Giải thưởng</h2></div>${prizeCards(D,M.prizes)}<p class="rule">Quỹ giải ${fmtK(M.pot)} · ${esc(GT[M.gt]||"")}${M.gt==="trich"?` ${M.gtv}% phần dư`:""}.</p>`;
-  h+=payTable(D,sid,rows.map(r=>({id:r.id,name:r.name,P:P(r),kind:{keo:"kèo",deu:"chia đều",phi:"lệ phí"}[M.thu]||"kèo",g:r.w+r.l,l:r.l,capped:r.capped,base:r.base!=null?r.base:(r.charged||0),bu:r.bu!=null?r.bu:Math.max(0,(r.pay||0)-(r.charged||0)),gop:r.gop||0,pay:r.pay||0})),paid,false);
+  h+=payTable(D,sid,rows.map(r=>({id:r.id,name:r.name,P:P(r),kind:{keo:"thua góp",deu:"chia đều",phi:"lệ phí"}[M.thu]||"thua góp",g:r.w+r.l,l:r.l,capped:r.capped,base:r.base!=null?r.base:(r.charged||0),bu:r.bu!=null?r.bu:Math.max(0,(r.pay||0)-(r.charged||0)),gop:r.gop||0,pay:r.pay||0})),paid,false);
   return h;
 }
 const pmLoading=new Set();

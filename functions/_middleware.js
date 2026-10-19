@@ -23,12 +23,12 @@ export async function meta(url) {
   const club = await getDoc(project, `clubs/${cid}`);
   if (!club || !club.name) return null;
   const name = club.name;
-  let title = `${name} · pikeco.app`, desc = `Bảng rating, kết quả từng trận và tổng kết mỗi buổi của ${name}. Xem trực tiếp, không cần đăng nhập.`;
+  let title = `${name} · pikeco.app`, desc = `Bảng rating, kết quả từng trận và tổng kết mỗi giải đấu của ${name}. Xem trực tiếp, không cần đăng nhập.`;
   if (seg[1] === "buoi" && /^\d+$/.test(seg[2] || "") && club.public !== false) {
     const h = await getDoc(project, `clubs/${cid}/app/hist-${seg[2]}`);
     if (h) {
       const sn = h.sname ? `${h.sname} · ` : "";
-      title = `${sn}Tổng kết buổi #${seg[2]} · ${name}`;
+      title = `${sn}Tổng kết giải đấu #${seg[2]} · ${name}`;
       if (h.type === "giai") {
         const T = ((h.giai || {}).table || []).filter(t => !t.out);
         desc = [`Giải vòng tròn ${((h.giai || {}).table || []).length} cặp · ${dmy(h.startedAt)}`, T[0] && `Nhất: ${T[0].na} & ${T[0].nb}`, T[1] && `Nhì: ${T[1].na} & ${T[1].nb}`, T[2] && `Ba: ${T[2].na} & ${T[2].nb}`].filter(Boolean).join(" · ");

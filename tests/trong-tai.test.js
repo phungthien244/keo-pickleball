@@ -17,7 +17,7 @@ const club = {
   "clubs/q7/matches/m2": { session: 1, seq: 2, court: 2, a: ["p5", "p7"], b: ["p6", "p8"], status: "playing", createdAt: 1 }
 };
 
-test("trọng tài chỉ nhập điểm sân được giao, không sửa buổi, không xếp trận, không điểm danh", async () => {
+test("trọng tài chỉ nhập điểm sân được giao, không sửa giải đấu, không xếp trận, không điểm danh", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7/san", data: club, user: { uid: "ref1", isAnonymous: true } });
   await e.boot(); await e.until(() => e.T().includes("Bạn là trọng tài"));
   expect(e.T()).toContain("sân 1");
@@ -56,7 +56,7 @@ test("Chuẩn bị: mục Trọng tài mặc định tắt, bật lên giao sân
   await e.boot(); await e.until(() => e.T().includes("Trọng tài"));
   expect(e.T()).toContain("ban tổ chức tự nhập");
   await e.click("prow", { v: "tt" });
-  expect(e.T()).toContain("Buổi này ban tổ chức tự nhập tỉ số");
+  expect(e.T()).toContain("Giải đấu này ban tổ chức tự nhập tỉ số");
   expect(e.V()).not.toContain('data-act="refct"');
   await e.click("refon");
   expect(e.store.get("clubs/q7/app/config").refOn).toBe(true);

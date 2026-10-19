@@ -10,16 +10,16 @@ const docs = {
 globalThis.fetch = vi.fn(async u => { const p = decodeURIComponent(u).split("/documents/")[1]; const d = docs[p];
   return d ? { ok: true, json: async () => ({ fields: Object.fromEntries(Object.entries(d).map(([k, v]) => [k, S(v)])) }) } : { ok: false }; });
 
-test("xem trước link: tên CLB, buổi xoay cặp, buổi giải", async () => {
+test("xem trước link: tên CLB, giải đấu xoay cặp, giải đấu giải", async () => {
   expect(await meta(new URL("https://pikeco.app/"))).toBe(null);
   expect(await meta(new URL("https://pikeco.app/clb"))).toBe(null);
   expect((await meta(new URL("https://pikeco.app/aep"))).title).toBe("AEP Pickleball · pikeco.app");
   expect((await meta(new URL("https://pikeco.app/aep/xep-hang"))).title).toBe("Xếp hạng · AEP Pickleball");
   const b1 = await meta(new URL("https://pikeco.app/aep/buoi/1"));
-  expect(b1.title).toBe("Tổng kết buổi #1 · AEP Pickleball");
+  expect(b1.title).toBe("Tổng kết giải đấu #1 · AEP Pickleball");
   expect(b1.desc).toBe("6 trận · 4 người · 10/10/2026 · Top 3: Mai, Đức, Hà");
   const b2 = await meta(new URL("https://pikeco.app/aep/buoi/2"));
-  expect(b2.title).toBe("Giải tháng 10 · Tổng kết buổi #2 · AEP Pickleball");
+  expect(b2.title).toBe("Giải tháng 10 · Tổng kết giải đấu #2 · AEP Pickleball");
   expect(b2.desc).toContain("Nhất: Đức & Chi");
   expect(await meta(new URL("https://pikeco.app/khong-co"))).toBe(null);
   expect(fetch.mock.calls[2][0]).toContain("/projects/keo-pickleball/");

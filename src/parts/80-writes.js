@@ -4,7 +4,7 @@ async function write(fn,okMsg){
   try{await fn(); if(okMsg)toast(okMsg)}
   catch(e){
     if(e&&e.code==="permission-denied"){canWrite=false;toast("Phiên sửa đã hết quyền, nhập lại PIN.")}
-    else if(e&&e.code==="quota_exceeded")toast("Dữ liệu đã đầy, hãy bắt đầu buổi mới.");
+    else if(e&&e.code==="quota_exceeded")toast("Dữ liệu đã đầy, hãy bắt đầu giải đấu mới.");
     else toast("Chưa lưu được, thử lại.");
   }
   render();

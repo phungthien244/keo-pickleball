@@ -32,10 +32,10 @@ service cloud.firestore {
     match /deleted/{docId} { allow read, write: if rootEditor(); }
 
     // ===== Nền tảng =====
-    // Mỗi tài khoản Google một CLB: users/{uid} = { club, at }
+    // Mỗi tài khoản (Google hoặc Zalo) một CLB: users/{uid} = { club, at }
     match /users/{uid} {
       allow read: if (signedIn() && request.auth.uid == uid) || isPA();
-      allow create: if google() && request.auth.uid == uid
+      allow create: if (google() || zalo()) && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['club', 'at'])
         && request.resource.data.club is string
         && getAfter(/databases/$(database)/documents/clubs/$(request.resource.data.club)).data.owner == uid;
@@ -49,7 +49,7 @@ service cloud.firestore {
       allow create: if isPA() && request.resource.data.used == false;
       allow delete: if isPA();
       allow update: if isPA() || (
-        google() && resource.data.used == false
+        (google() || zalo()) && resource.data.used == false
         && request.resource.data.used == true
         && request.resource.data.by == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'club', 'by', 'at'])
@@ -105,7 +105,7 @@ service cloud.firestore {
 
       // Tên CLB, ngân hàng nhận tiền, trạng thái: ai cũng đọc được
       allow read: if true;
-      allow create: if google() && request.resource.data.owner == request.auth.uid && (
+      allow create: if (google() || zalo()) && request.resource.data.owner == request.auth.uid && (
           newClubOk()
           // Đường cũ: chuyển CLB AEP từ dữ liệu PIN chung
           || (rootEditor() && request.resource.data.keys().hasOnly(['name', 'public', 'owner', 'bank', 'createdAt']))
@@ -120,7 +120,7 @@ service cloud.firestore {
       // Liên hệ của chủ CLB: chỉ quản trị nền tảng và ban quản lý CLB xem
       match /private/{doc} {
         allow read: if isPA() || isAdmin();
-        allow create: if google() && doc == 'info'
+        allow create: if (google() || zalo()) && doc == 'info'
           && getAfter(/databases/$(database)/documents/clubs/$(c)).data.owner == request.auth.uid
           && !exists(/databases/$(database)/documents/clubs/$(c))
           && request.resource.data.keys().hasOnly(['contact', 'ownerEmail']);
@@ -132,7 +132,7 @@ service cloud.firestore {
         allow read: if isMember() || (signedIn() && request.auth.uid == uid) || isPA();
         // Chủ CLB: Google. Quản lý/trọng tài nhận link mời bằng Google (web) hoặc Zalo (Mini App)
         allow create: if request.auth.uid == uid && (
-            (google() && request.resource.data.role == 'owner'
+            ((google() || zalo()) && request.resource.data.role == 'owner'
               && getAfter(/databases/$(database)/documents/clubs/$(c)).data.owner == uid)
             || ((google() || zalo()) && request.resource.data.role in ['admin', 'scorer']
                 && request.resource.data.invite is string

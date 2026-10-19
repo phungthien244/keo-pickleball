@@ -12,7 +12,7 @@ async function session(e, sa, sb) {
 }
 const ratings = e => Object.fromEntries(e.docs("players/").map(([id, p]) => [id, p.rating0]));
 
-test("xoá buổi thì rating trừ lại về như trước buổi đó", async () => {
+test("xoá giải đấu thì rating trừ lại về như trước giải đấu đó", async () => {
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ\nG\nH | nữ"); await e.click("add");
@@ -38,7 +38,7 @@ test("xoá buổi thì rating trừ lại về như trước buổi đó", async
   expect(e.docs("deleted/").length).toBe(0);
 });
 
-test("công cụ tính lại: rating sửa lệch được kéo về đúng theo các buổi đã lưu", async () => {
+test("công cụ tính lại: rating sửa lệch được kéo về đúng theo các giải đấu đã lưu", async () => {
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ\nG\nH | nữ"); await e.click("add");

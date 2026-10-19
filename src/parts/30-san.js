@@ -1,5 +1,5 @@
 let liveSeg="san";
-const lsegBar=(L,cur)=>`<nav class="lseg" aria-label="Phần của buổi">${L.map(([k,l])=>`<button data-act="lseg" data-v="${k}" aria-pressed="${cur===k}">${l}</button>`).join("")}</nav>`;
+const lsegBar=(L,cur)=>`<nav class="lseg" aria-label="Phần của giải đấu">${L.map(([k,l])=>`<button data-act="lseg" data-v="${k}" aria-pressed="${cur===k}">${l}</button>`).join("")}</nav>`;
 function vSan(D){
   if(!canWrite)return vSanView(D);
   if(phaseOf(D)==="prep"||stepView==="prep")return steps3(1,D)+vPrep(D);
@@ -13,7 +13,7 @@ function vSan(D){
   h+=lsegBar([["san",`Sân · ${D.playing.length}`],["cho",`Hàng chờ · ${waitQueue(D).length}`],["xong",`Đã xong · ${D.done.length}`],["ql","Quản lý"]],sg);
   if(sg==="cho")return h+queueBox(D,true)+genB+undoBar();
   if(sg==="xong")return h+doneBox(D)+undoBar();
-  if(sg==="ql")return h+moneyMini(D)+`<a class="btn-line" href="${pathOf("chot")}" data-go="chot">Kết thúc &amp; chốt buổi →</a><p class="rule" style="text-align:center;margin-top:-6px">Chưa chốt thì vẫn đánh tiếp được. Chốt rồi vẫn mở lại để sửa được.</p>`+undoBar();
+  if(sg==="ql")return h+moneyMini(D)+`<a class="btn-line" href="${pathOf("chot")}" data-go="chot">Kết thúc &amp; chốt giải đấu →</a><p class="rule" style="text-align:center;margin-top:-6px">Chưa chốt thì vẫn đánh tiếp được. Chốt rồi vẫn mở lại để sửa được.</p>`+undoBar();
   if(!D.playing.length)h+=`<div class="lab"><span class="lbl">Sân</span><span class="bar">${courtStep(c)}</span></div><div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; ưu tiên đôi nam nữ hoặc cùng giới theo cài đặt; không bao giờ đôi nam gặp đôi nữ.</div>`;
   else h+=`<div class="lab"><span class="lbl">Sân đang đánh</span><span class="bar">${courtStep(c)}</span></div><div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;
   h+=genB;
@@ -38,8 +38,8 @@ function vSanView(D){
   const c=D.c,act=D.players.filter(p=>p.active!==false);
   if(phaseOf(D)==="prep"){
     const last=[...S.hist].sort((a,b)=>b.sid-a.sid)[0],meIn=ME&&act.some(p=>p.id===ME),thu=c.thu||"keo";
-    const box=act.length?`<div class="soon"><span class="lbl">Sắp bắt đầu</span><b>${esc(sessTitle(c,D.sid))} sắp bắt đầu</b><span>${fmtTxt(c)} · ${c.courts} sân · ${act.length} người đã điểm danh${c.cphi===false?" · không thu tiền":thu==="phi"?` · ${fmtK(+c.phi||0)}/người`:` · ${esc(THU[thu])}`} · ${esc(ruleTxt(c))}</span>${ME?`<span class="${meIn?"in":""}">${meIn?"Có bạn trong danh sách hôm nay.":"Bạn chưa có trong danh sách hôm nay."}</span>`:""}</div>`
-      :`<div class="soon"><b>Hôm nay chưa có buổi</b><span>${last?`Buổi gần nhất: #${last.sid} · ${dmy(last.endedAt||last.startedAt)}. <a href="${pathOf("buoi",{sid:last.sid})}" data-go="buoi" data-id="${last.sid}">Xem kết quả</a>`:"Ban tổ chức sẽ mở buổi ở đây. Trang tự cập nhật."}</span></div>`;
+    const box=act.length?`<div class="soon"><span class="lbl">Sắp bắt đầu</span><b>${esc(sessTitle(c,D.sid))} sắp bắt đầu</b><span>${fmtTxt(c)} · ${c.courts} sân · ${act.length} người đã điểm danh${c.cphi===false?" · không thu phí":thu==="phi"?` · ${fmtK(+c.phi||0)}/người`:` · ${esc(THU[thu])}`} · ${esc(ruleTxt(c))}</span>${ME?`<span class="${meIn?"in":""}">${meIn?"Có bạn trong danh sách hôm nay.":"Bạn chưa có trong danh sách hôm nay."}</span>`:""}</div>`
+      :`<div class="soon"><b>Hôm nay chưa có giải đấu</b><span>${last?`Giải đấu gần nhất: #${last.sid} · ${dmy(last.endedAt||last.startedAt)}. <a href="${pathOf("buoi",{sid:last.sid})}" data-go="buoi" data-id="${last.sid}">Xem kết quả</a>`:"Ban tổ chức sẽ mở giải đấu ở đây. Trang tự cập nhật."}</span></div>`;
     return regCard(D)+meBox(D,{pay:false})+box;
   }
   let h=refNote()+`<div class="liveln"><span class="dot"></span><span class="grow">${esc(sessTitle(c,D.sid))} · đang đánh · ${D.playing.length} sân · ${act.length} người</span>${liveShareBtn()}</div>`+meBox(D);
@@ -76,7 +76,7 @@ function teamLine(D,ids){
 }
 function keoPill(c,pA){
   const fav=Math.max(pA,1-pA);
-  if(c.keo&&fav>=c.thr)return `<span class="pill keo">Kèo lệch: đội mạnh thua ${c.hi}k, đội yếu thua ${c.lo}k</span>`;
+  if(c.keo&&fav>=c.thr)return `<span class="pill keo">Chấp trình: đội mạnh thua ${c.hi}k, đội yếu thua ${c.lo}k</span>`;
   return `<span class="pill">Thua ${c.fee}k/người</span>`;
 }
 function courtCard(D,m){
@@ -107,8 +107,8 @@ function histRow(D,m){
 
 
 /* ----- Chia sẻ buổi đang đánh vào nhóm ----- */
-const liveShareBtn=()=>`<button class="lshare" data-act="lshare" aria-label="Chia sẻ buổi đang đánh">📤 Chia sẻ</button>`;
+const liveShareBtn=()=>`<button class="lshare" data-act="lshare" aria-label="Chia sẻ giải đấu đang đánh">📤 Chia sẻ</button>`;
 function liveShareText(D){
   const c=D.c,act=D.players.filter(p=>p.active!==false).length,club=(CLUB&&CLUB.name)||c.title||"CLB";
-  return `📣 ${club}: ${shareName(c.sname,"Buổi đánh hôm nay")} đang diễn ra! 🔴 𝗟𝗜𝗩𝗘\n${Math.max(1,+c.courts||D.playing.length)} sân · ${act} người. Mời cả nhà vào xem trực tiếp:\n• Lượt trận đang đánh và ai sắp tới lượt\n• Tỉ số, kết quả từng trận cập nhật ngay\n• Bảng xếp hạng buổi hôm nay\n\n👉 Bấm link (không cần đăng nhập):`;
+  return `📣 ${club}: ${shareName(c.sname,"Giải đấu hôm nay")} đang diễn ra! 🔴 𝗟𝗜𝗩𝗘\n${Math.max(1,+c.courts||D.playing.length)} sân · ${act} người. Mời cả nhà vào xem trực tiếp:\n• Lượt trận đang đánh và ai sắp tới lượt\n• Tỉ số, kết quả từng trận cập nhật ngay\n• Bảng xếp hạng giải đấu hôm nay\n\n👉 Bấm link (không cần đăng nhập):`;
 }

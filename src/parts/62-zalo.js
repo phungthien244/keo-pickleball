@@ -12,14 +12,16 @@ async function miniLogin(quiet){
     const id=await Z.getUserID();
     if(window.FB_TARGET==="mock"){await FB.signInWithCustomToken(FB.auth,String(id||"demo"));authUser={uid:"zalo_"+String(id||"demo"),isAnonymous:false};await refreshRole();render();return true}
     let at="";try{at=await Z.getAccessToken()}catch(e){}
-    try{const ui=await Z.getUserInfo({autoRequestPermission:false}),u=ui&&ui.userInfo;if(u&&u.name)localStorage.setItem("pb-zprof",JSON.stringify({n:u.name,p:u.avatar||""}))}catch(e){}
+    try{const ui=await Z.getUserInfo({autoRequestPermission:false}),u=ui&&ui.userInfo;if(u&&u.name)saveZProf({n:u.name,p:u.avatar||""})}catch(e){}
     const r=await fetch(API+"/api/zalo-mini",{method:"POST",headers:{"content-type":"text/plain"},body:JSON.stringify({id:String(id||""),at})});
     const j=await r.json().catch(()=>({}));if(!j.token)throw new Error(j.error||"no token");
     await FB.signInWithCustomToken(FB.auth,j.token);return true;
   }catch(e){if(!quiet)toast("Chưa vào được bằng Zalo, thử lại.");return false}
 }
 let unsubLink=null;
-function zaloProf(){try{return JSON.parse(localStorage.getItem("pb-zprof")||"{}")}catch(e){return {}}}
+let ZPROF=null;
+function zaloProf(){if(ZPROF)return ZPROF;try{return JSON.parse(localStorage.getItem("pb-zprof")||"{}")||{}}catch(e){return {}}}
+function saveZProf(o){ZPROF=o;try{localStorage.setItem("pb-zprof",JSON.stringify(o))}catch(e){}}
 async function zaloStart(){
   if(!PLAYER_ON())return;
   if(ZALO_ON){if(window.FB_TARGET==="mock"){FB.signInWithCustomToken(FB.auth,"demo").then(()=>location.reload());return}
@@ -48,7 +50,7 @@ function watchLink(){
     if(S.link)rememberClub();
     render()},()=>{S.link=null;render()})}catch(e){}
 }
-const zaloBtn=(label)=>window.ZMP?`<button class="zalobtn" data-act="zlogin"><b>Z</b>${label&&!/Đăng nhập Zalo/.test(label)?label:"Vào bằng Zalo để đăng ký"}</button>`:PLAYER_ON()?`<button class="primary wide" data-act="zlogin">${label?label.replace("Đăng nhập Zalo để đăng ký","Tham gia để đăng ký"):"Tham gia để đăng ký buổi"}</button>`:`<small class="rule">Người chơi đăng ký trong Zalo Mini App của CLB.</small>`;
+const zaloBtn=(label)=>window.ZMP?`<button class="zalobtn" data-act="zlogin"><b>Z</b>${label&&!/Đăng nhập Zalo/.test(label)?label:"Vào bằng Zalo để đăng ký"}</button>`:PLAYER_ON()?`<button class="primary wide" data-act="zlogin">${label?label.replace("Đăng nhập Zalo để đăng ký","Tham gia để đăng ký"):"Tham gia để đăng ký giải đấu"}</button>`:`<small class="rule">Người chơi đăng ký trong Zalo Mini App của CLB.</small>`;
 
 /* ----- Tham gia CLB: người chơi chỉ gửi tên, quản trị viên ghép với hồ sơ cũ hoặc tạo mới ----- */
 function linkCard(D){
@@ -56,7 +58,7 @@ function linkCard(D){
   const L=S.link,zp=zaloProf();
   if(L===undefined)return "";
   if(L&&L.status==="ok")return "";
-  if(L&&L.status==="pending")return `<div class="lnkcard wait"><b>Đã gửi yêu cầu tham gia</b><span>Chủ CLB sẽ xác nhận bạn là <b>${esc(L.newName||L.zname||"")}</b>: ghép với hồ sơ cũ nếu bạn đã chơi ở CLB, hoặc tạo hồ sơ mới. Xong là bạn tự đăng ký buổi được.</span><button class="lnk" data-act="lnkcancel">Huỷ yêu cầu</button></div>`;
+  if(L&&L.status==="pending")return `<div class="lnkcard wait"><b>Đã gửi yêu cầu tham gia</b><span>Chủ CLB sẽ xác nhận bạn là <b>${esc(L.newName||L.zname||"")}</b>: ghép với hồ sơ cũ nếu bạn đã chơi ở CLB, hoặc tạo hồ sơ mới. Xong là bạn tự đăng ký giải đấu được.</span><button class="lnk" data-act="lnkcancel">Huỷ yêu cầu</button></div>`;
   return `<div class="lnkcard"><b>Tham gia ${esc(CLUB?.name||"CLB")}</b><span>Nhập tên mọi người ở CLB hay gọi bạn. Chủ CLB sẽ ghép với hồ sơ cũ của bạn (rating, lịch sử) hoặc tạo hồ sơ mới.</span>
     <label class="fld"><span class="lbl">Tên của bạn</span><input id="lnk-name" data-draft="lnk-name" maxlength="30" placeholder="VD: Dũng" value="${esc(val("lnk-name",zp.n||""))}"></label>
     <button class="primary wide" data-act="lnksend">Gửi yêu cầu tham gia</button></div>`;
@@ -74,9 +76,9 @@ function vToi(D){
   const L=S.link,p=L&&L.status==="ok"&&D.pmap.get(L.pid),R=regList(D),mine=authUser&&R.all.find(x=>x.uid===authUser.uid);
   let h="";
   if(p){const s=D.st.get(p.id),A=D.all.get(p.id);
-    h+=`<a class="mebox" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">${av(p,"md",1)}<span class="t"><small>${esc(CLUB?.name||"")}</small><b>${esc(p.name)}</b><span class="st"><i>Rating ${r2(s.rating)}</i><i>${A.ses.size} buổi</i></span></span><span aria-hidden="true">›</span></a>`;
-    h+=`<section class="card2"><h2>Buổi tới</h2><div class="cb">${regOpen()?`<p class="rule">${esc(D.c.sname||"Buổi đánh tới")} · ${esc(regWhen(regCfg().at))}</p><p><b>${mine?(R.all.indexOf(mine)<R.max?"✓ Bạn đã đăng ký":"Bạn đang trong danh sách chờ"):"Bạn chưa đăng ký"}</b></p>`:`<p class="rule">Chưa mở đăng ký buổi tới.</p>`}<a class="line wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">Mở trang đăng ký</a></div></section>`;
-  }else h+=`<section class="card2"><div class="cb"><p class="rule">${L&&L.status==="pending"?"Bạn đang chờ chủ CLB duyệt.":mine&&mine.guest?"Bạn đã đăng ký làm khách buổi tới. Muốn thành thành viên CLB thì bấm Tham gia CLB.":"Bạn chưa tham gia CLB này."}</p><a class="primary wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">${L?"Xem trạng thái":"Tham gia CLB"}</a></div></section>`;
+    h+=`<a class="mebox" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">${av(p,"md",1)}<span class="t"><small>${esc(CLUB?.name||"")}</small><b>${esc(p.name)}</b><span class="st"><i>Rating ${r2(s.rating)}</i><i>${A.ses.size} giải đấu</i></span></span><span aria-hidden="true">›</span></a>`;
+    h+=`<section class="card2"><h2>Giải đấu tới</h2><div class="cb">${regOpen()?`<p class="rule">${esc(D.c.sname||"Giải đấu tới")} · ${esc(regWhen(regCfg().at))}</p><p><b>${mine?(R.all.indexOf(mine)<R.max?"✓ Bạn đã đăng ký":"Bạn đang trong danh sách chờ"):"Bạn chưa đăng ký"}</b></p>`:`<p class="rule">Chưa mở đăng ký giải đấu tới.</p>`}<a class="line wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">Mở trang đăng ký</a></div></section>`;
+  }else h+=`<section class="card2"><div class="cb"><p class="rule">${L&&L.status==="pending"?"Bạn đang chờ chủ CLB duyệt.":mine&&mine.guest?"Bạn đã đăng ký làm vận động viên ngoài CLB giải đấu tới. Muốn thành thành viên CLB thì bấm Tham gia CLB.":"Bạn chưa tham gia CLB này."}</p><a class="primary wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">${L?"Xem trạng thái":"Tham gia CLB"}</a></div></section>`;
   const C=myClubs();
   h+=`<section class="card2"><h2>CLB đã vào</h2><div class="cb">${C.map(c=>`<button class="clubrow${c.id===CID?" on":""}" data-act="miniclub" data-id="${esc(c.id)}"><b>${esc(c.name)}</b><small>${c.id===CID?"Đang xem":"Chuyển sang"}</small></button>`).join("")}<button class="line wide" data-act="miniexplore">Khám phá CLB khác</button></div></section>`;
   return h;

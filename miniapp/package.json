@@ -2,7 +2,7 @@
   "name": "pikeco-miniapp",
   "private": true,
   "type": "module",
-  "description": "Zalo Mini App của pikeco.app: người chơi đăng ký buổi bằng Zalo",
+  "description": "Zalo Mini App của pikeco.app: người chơi đăng ký giải đấu bằng Zalo",
   "scripts": {
     "start": "vite",
     "build": "vite build",

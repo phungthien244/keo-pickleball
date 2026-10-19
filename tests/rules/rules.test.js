@@ -182,6 +182,13 @@ describe("người chơi Zalo", () => {
     await assertFails(setDoc(doc(zalo("zalo_1"), "clubs/aep/members/zalo_1"), { role: "owner" }));
     await assertFails(setDoc(doc(zalo("zalo_1"), "users/zalo_1"), { club: "aep", at: 1 }));
   });
+  test("tài khoản Zalo tạo CLB mới (chờ duyệt hoặc có mã mời), mỗi tài khoản một CLB", async () => {
+    await assertSucceeds(newClub(zalo("zalo_7"), "zalo_7", "q7-zalo"));
+    await assertFails(newClub(zalo("zalo_7"), "zalo_7", "q7-zalo2"));
+    await assertFails(newClub(zalo("zalo_8"), "zalo_9", "q8-zalo"));
+    await assertFails(newClub(zalo("zalo_8"), "zalo_8", "q8-zalo", { status: "active" }));
+    await assertSucceeds(newClub(zalo("zalo_8"), "zalo_8", "q8-zalo", {}, "GOOD1234"));
+  });
   test("nhận link mời quản lý/trọng tài bằng Zalo, không tự làm chủ, không dùng link hết hạn", async () => {
     await seed({ "clubs/aep/invites/ok1": { role: "admin", exp: Date.now() + 864e5 }, "clubs/aep/invites/old": { role: "scorer", exp: 1 } });
     await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/members/zalo_2"), { role: "scorer", invite: "ok1" }));

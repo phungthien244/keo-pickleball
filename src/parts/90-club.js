@@ -3,6 +3,7 @@ const BANKS=[["mb","970422","MB Bank"],["vcb","970436","Vietcombank"],["tcb","97
 const ROLE_LB={owner:"Chủ CLB",admin:"Quản lý",scorer:"Trọng tài",pin:"Trọng tài (PIN)"};
 const isAdm=()=>ROLE==="owner"||ROLE==="admin";
 const isGoogle=u=>!!u&&!u.isAnonymous&&!/^zalo_/.test(String(u.uid||""));
+const isZaloU=u=>!!u&&/^zalo_/.test(String(u.uid||""));
 const inApp=()=>/Zalo|FBAN|FBAV|Instagram|Line\//i.test(navigator.userAgent||"");
 let unsubAdm=[],unsubRef=null;
 // Trọng tài: theo dõi sân được giao (ban tổ chức đổi là máy trọng tài cập nhật ngay)
@@ -61,7 +62,7 @@ function clubAdmin(D){
     if(CID!=="aep")return "";
     if(!isGoogle(authUser))return `<div class="panel clubp"><h2>Tài khoản CLB</h2><p class="rule">Dữ liệu CLB đang ở chế độ cũ (PIN chung). Để chuyển sang tài khoản riêng, chủ CLB đăng nhập Google rồi nhập PIN một lần.</p><div class="bar" style="margin-top:10px"><button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button></div></div>`;
     return `<div class="panel clubp"><h2>Chuyển sang tài khoản CLB</h2><p class="rule">Bạn đang đăng nhập ${esc(authUser.email||"")}. Bấm nút dưới để tạo không gian riêng cho CLB với bạn là chủ CLB, rồi chép toàn bộ thành viên, các trận, lịch sử và quỹ sang. Dữ liệu cũ vẫn được giữ nguyên làm bản sao lưu.</p>
-      <p class="rule" style="margin-top:6px"><b>Nên làm khi không có buổi nào đang đánh.</b> Sau khi chuyển, mọi máy đang mở trang cần tải lại.</p>
+      <p class="rule" style="margin-top:6px"><b>Nên làm khi không có giải đấu nào đang đánh.</b> Sau khi chuyển, mọi máy đang mở trang cần tải lại.</p>
       <div class="bar" style="margin-top:10px"><button class="ball" data-act="migrate">${armed("migrate:x")?"Bấm lần nữa để bắt đầu chuyển":"Chuyển dữ liệu sang tài khoản CLB"}</button></div>${S.migMsg?`<p class="rule" style="margin-top:8px">${esc(S.migMsg)}</p>`:""}</div>`;
   }
   if(!isAdm())return `<div class="panel clubp"><h2>Tài khoản</h2><p class="rule">Bạn đang có quyền ${esc(ROLE_LB[ROLE]||"")} ở ${esc(CLUB?.name||"CLB")}. Chỉ chủ CLB và quản lý mới đổi được cài đặt CLB.</p></div>`;
@@ -73,11 +74,11 @@ function clubAdmin(D){
       <button class="wide" data-act="cname">Lưu tên CLB</button>
       <div class="fld"><span class="lbl">Ai được xem</span><span class="seg segw"><button data-act="pub" data-v="1" aria-pressed="${CLUB?.public!==false}">Ai có link</button><button data-act="pub" data-v="0" aria-pressed="${CLUB?.public===false}">Chỉ ban tổ chức</button></span></div>
       <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="cp" data-v="${esc(link)}">Copy link</button></div></div></section>
-    ${introCard()}${voiceCard()}<section class="card2"><h2>Ngân hàng nhận tiền</h2><div class="cb">
+    ${introCard()}${voiceCard()}<section class="card2"><h2>Ngân hàng nhận phí</h2><div class="cb">
       <label class="fld"><span class="lbl">Ngân hàng</span><select id="bk-code" data-draft="bk-code">${BANKS.map(([c,,n])=>`<option value="${c}" ${val("bk-code",b.code||"mb")===c?"selected":""}>${n}</option>`).join("")}</select></label>
       <label class="fld"><span class="lbl">Số tài khoản</span><input id="bk-acc" data-draft="bk-acc" inputmode="numeric" value="${esc(val("bk-acc",b.acc||""))}"></label>
       <label class="fld"><span class="lbl">Chủ tài khoản (không dấu)</span><input id="bk-holder" data-draft="bk-holder" value="${esc(val("bk-holder",b.holder||""))}"></label>
-      <span class="meta">${b.acc?`Đang dùng: ${esc(bankName(b))} · ${esc(b.acc)} · ${esc(b.holder||"")}`:"Chưa khai ngân hàng: nút Chuyển tiền sẽ bị ẩn."}</span>
+      <span class="meta">${b.acc?`Đang dùng: ${esc(bankName(b))} · ${esc(b.acc)} · ${esc(b.holder||"")}`:"Chưa khai ngân hàng: nút Chuyển khoản sẽ bị ẩn."}</span>
       <button class="wide" data-act="bsave">Lưu ngân hàng</button></div></section>
     <section class="card2"><h2>PIN trọng tài</h2><div class="cb">
       <p class="rule">Trọng tài mở ${esc(link.replace(/^https?:\/\//,""))}/dang-nhap, nhập PIN là nhập được tỉ số, không cần tài khoản. Đổi PIN không làm mất quyền của các máy đã vào.</p>
@@ -116,7 +117,7 @@ function vCaiDat(D){
   h+=`</div>`;
   if(REF)return h+`<section class="card2"><h2>Quyền trọng tài</h2><div class="cb"><p class="rule">${MYCT.length?`Bạn được giao sân ${MYCT.join(", ")}. Chỉ nhập được tỉ số ở các sân này.`:"Bạn chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào sân</a></div></section>`;
   if(!canWrite)return h+clubLoginBody();
-  if(!legacy&&isAdm()){const T=[["Khai ngân hàng nhận tiền",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
+  if(!legacy&&isAdm()){const T=[["Khai ngân hàng nhận phí",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
     if(ok<T.length)h+=`<div class="todo"><b>Bắt đầu · ${ok}/${T.length} việc đã xong</b><div class="bar2x"><i style="width:${Math.round(ok/T.length*100)}%"></i></div>${T.map(([l,d])=>`<div class="it${d?" ok":""}"><span class="ck" aria-hidden="true">${d?"✓":""}</span>${l}</div>`).join("")}</div>`}
   return h+clubAdmin(D);
 }
@@ -124,8 +125,8 @@ const clubFoot=()=>`<footer class="pfoot"><a href="/">pikeco.app</a> · quản l
 function clubLoginBody(){
   const u=authUser,tok=inviteTok();
   let h="";
-  if(MINI)return PLAYER_ON()?`<section class="card2"><h2>Người chơi</h2><div class="cb">${isPlayer(u)?`<p class="rule">Bạn đã vào bằng Zalo. Đăng ký buổi ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a>`:zaloBtn("Vào bằng Zalo")}</div></section><p class="rule">Ban tổ chức quản lý CLB trên pikeco.app.</p>`:"";
-  if(!tok&&!legacy&&PLAYER_ON())h+=`<section class="card2"><h2>Người chơi</h2><div class="cb">${isPlayer(u)?`<p class="rule">Máy này đã tham gia. Bạn đăng ký buổi ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a>`:`<p class="rule">Tự đăng ký buổi chơi, không cần tài khoản. Chạm vào tên mình, chủ CLB duyệt một lần là xong. Mở được ngay trong Zalo.</p>${zaloBtn()}`}</div></section>`;
+  if(MINI)return PLAYER_ON()?`<section class="card2"><h2>Người chơi</h2><div class="cb">${isPlayer(u)?`<p class="rule">Bạn đã vào bằng Zalo. Đăng ký giải đấu ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a>`:zaloBtn("Vào bằng Zalo")}</div></section><p class="rule">Ban tổ chức quản lý CLB trên pikeco.app.</p>`:"";
+  if(!tok&&!legacy&&PLAYER_ON())h+=`<section class="card2"><h2>Người chơi</h2><div class="cb">${isPlayer(u)?`<p class="rule">Máy này đã tham gia. Bạn đăng ký giải đấu ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a>`:`<p class="rule">Tự đăng ký giải đấu, không cần tài khoản. Chạm vào tên mình, chủ CLB duyệt một lần là xong. Mở được ngay trong Zalo.</p>${zaloBtn()}`}</div></section>`;
   h+=`<section class="card2"><h2>${tok?"Nhận lời mời ban tổ chức":"Chủ CLB, quản lý"}</h2><div class="cb">`;
   if(isGoogle(u)&&!canWrite)h+=`<p class="rule">Đang đăng nhập ${esc(u.email||"")} nhưng tài khoản này chưa có quyền ở CLB. Nhờ chủ CLB gửi link mời, hoặc đổi tài khoản.</p><button class="line" data-act="logout">Đổi tài khoản Google</button>`;
   else h+=`<p class="rule">${tok?"Bạn được mời vào ban tổ chức. Đăng nhập Google để nhận quyền.":"Đăng nhập Google để sửa cài đặt, xếp sân và quản lý thành viên."}</p><button class="gwide" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập bằng Google</button>`;
@@ -149,34 +150,34 @@ function refRows(){
   return R.length?R.map(r=>`<div class="refrow"><span class="t"><b>${esc(r.nm)}</b><small>${esc(r.sub)}</small></span><span class="refct">${Array.from({length:n},(_,i)=>i+1).map(c=>{const on=r.ct.map(Number).includes(c);return `<button class="${on?"on":""}" data-act="refct" data-k="${r.k}" data-c="${c}" aria-pressed="${on}" style="--cc:${cColor(c)}">S${esc(cName(c))}</button>`}).join("")}</span></div>`).join(""):`<p class="rule">Chưa có trọng tài nào vào. Mời bằng link Google hoặc gửi link vào bằng PIN bên dưới.</p>`;
 }
 function refCard(){
-  return `<section class="card2"><h2>Giao sân cho trọng tài</h2><div class="cb"><p class="rule">Trọng tài chỉ nhập được tỉ số ở sân được tick. Không sửa buổi, không xếp trận, không điểm danh, không xóa được gì. Giao sân nhanh hơn ở mục Trọng tài trong trang Chuẩn bị của buổi.</p>${refRows()}</div></section>`;
+  return `<section class="card2"><h2>Giao sân cho trọng tài</h2><div class="cb"><p class="rule">Trọng tài chỉ nhập được tỉ số ở sân được tick. Không sửa giải đấu, không xếp trận, không điểm danh, không xóa được gì. Giao sân nhanh hơn ở mục Trọng tài trong trang Chuẩn bị của giải đấu.</p>${refRows()}</div></section>`;
 }
 /* ----- Buổi đã xóa: chủ CLB khôi phục ----- */
 let delList=null;
 function delCard(){
   if(delList===null){delList=[];db.collection("deleted").get().then(q=>{delList=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.at||0)-(a.at||0));render()}).catch(()=>{delList=[];})}
-  return `<section class="card2"><h2>Buổi đã xóa</h2><div class="cb">${delList.length?delList.map(x=>`<div class="refrow"><span class="t"><b>${esc(x.hist&&x.hist.sname?x.hist.sname+" · ":"")}Buổi #${x.sid}</b><small>${x.matches?.length||0} trận${x.hist&&x.hist.endedAt?" · đánh "+dmy(x.hist.endedAt):""} · xóa ${dhm(x.at)}${x.by?" bởi "+esc(x.by):""}</small></span><button class="${armed("srestore:"+x.id)?"primary":"line"}" data-act="srestore" data-id="${x.id}">${armed("srestore:"+x.id)?"Bấm lần nữa":"Khôi phục"}</button></div>`).join(""):`<p class="rule">Chưa có buổi nào bị xóa.</p>`}
-    <p class="rule">Khôi phục sẽ đưa lại trận, kết quả, tiền buổi đó và cộng lại rating cho từng người.</p></div></section>`;
+  return `<section class="card2"><h2>Giải đấu đã xóa</h2><div class="cb">${delList.length?delList.map(x=>`<div class="refrow"><span class="t"><b>${esc(x.hist&&x.hist.sname?x.hist.sname+" · ":"")}Giải đấu #${x.sid}</b><small>${x.matches?.length||0} trận${x.hist&&x.hist.endedAt?" · đánh "+dmy(x.hist.endedAt):""} · xóa ${dhm(x.at)}${x.by?" bởi "+esc(x.by):""}</small></span><button class="${armed("srestore:"+x.id)?"primary":"line"}" data-act="srestore" data-id="${x.id}">${armed("srestore:"+x.id)?"Bấm lần nữa":"Khôi phục"}</button></div>`).join(""):`<p class="rule">Chưa có giải đấu nào bị xóa.</p>`}
+    <p class="rule">Khôi phục sẽ đưa lại trận, kết quả, chi phí giải đấu đó và cộng lại rating cho từng người.</p></div></section>`;
 }
 async function restoreSession(id){
-  const ref=db.collection("deleted").doc(id),snap=await ref.get();if(!snap.exists)return "Không tìm thấy buổi này.";
+  const ref=db.collection("deleted").doc(id),snap=await ref.get();if(!snap.exists)return "Không tìm thấy giải đấu này.";
   const x=snap.data(),sid=x.sid;
-  if(S.hist.some(h=>h.sid===sid))return `Buổi #${sid} đang có trong Lịch sử, không khôi phục chồng lên được.`;
+  if(S.hist.some(h=>h.sid===sid))return `Giải đấu #${sid} đang có trong Lịch sử, không khôi phục chồng lên được.`;
   for(const {id:mid,...d} of x.matches||[])await db.collection("matches").doc(mid).set(d);
   for(const {id:bid,...d} of x.batches||[])await db.collection("batches").doc(bid).set(d);
   if(x.hist)await db.doc("app/hist-"+sid).set(x.hist);
   // Cộng lại đúng phần rating đã trừ khi xóa
   for(const [pid,d] of Object.entries(x.adj||{})){const p=S.players.find(q=>q.id===pid);if(p&&d)await db.collection("players").doc(pid).update({rating0:Math.round(Math.min(8,Math.max(1,(Number(p.rating0)||3)+Number(d)))*100)/100})}
   await ref.delete();delList=null;delete S.pm[sid];
-  return `Đã khôi phục buổi #${sid}, rating đã tự cộng lại.`;
+  return `Đã khôi phục giải đấu #${sid}, rating đã tự cộng lại.`;
 }
 
 /* ----- Giới thiệu CLB: hiện trong Zalo Mini App cho người mới ----- */
-const INTRO=[["city","Khu vực","TP.HCM · Quận 10",40],["sched","Lịch đánh cố định","Tối thứ 3, 5 · 19:00–21:30",80],["venue","Sân","Sân Kỳ Hòa, 3 Cao Thắng, Q10",100],["level","Trình độ","2.5–3.5, nhận người mới",60],["feeTxt","Chi phí","50k/buổi, khách 70k",60],["zalo","Số Zalo liên hệ (công khai)","0901234567",15]];
+const INTRO=[["city","Khu vực","TP.HCM · Quận 10",40],["sched","Lịch đánh cố định","Tối thứ 3, 5 · 19:00–21:30",80],["venue","Sân","Sân Kỳ Hòa, 3 Cao Thắng, Q10",100],["level","Trình độ","2.5–3.5, nhận người mới",60],["feeTxt","Chi phí","50k/giải đấu, VĐV ngoài CLB 70k",60],["zalo","Số Zalo liên hệ (công khai)","0901234567",15]];
 function introCard(){
   const c=CLUB||{};
   return `<section class="card2"><h2>Giới thiệu CLB</h2><div class="cb"><p class="rule">Hiện ở trang giới thiệu CLB trong Zalo Mini App, giúp người mới quyết định tham gia.</p>
-    <label class="fld"><span class="lbl">Giới thiệu ngắn</span><textarea id="ci-about" data-draft="ci-about" maxlength="500" rows="3" placeholder="CLB vui vẻ, chơi đều mỗi tuần, có kèo cân trình">${esc(val("ci-about",c.about||""))}</textarea></label>
+    <label class="fld"><span class="lbl">Giới thiệu ngắn</span><textarea id="ci-about" data-draft="ci-about" maxlength="500" rows="3" placeholder="CLB vui vẻ, chơi đều mỗi tuần, có chấp cân trình">${esc(val("ci-about",c.about||""))}</textarea></label>
     ${INTRO.map(([k,l,ph,mx])=>`<label class="fld"><span class="lbl">${l}</span><input id="ci-${k}" data-draft="ci-${k}" maxlength="${mx}" ${k==="zalo"?'inputmode="tel"':""} placeholder="${ph}" value="${esc(val("ci-"+k,c[k]||""))}"></label>`).join("")}
     <button class="wide" data-act="cintro">Lưu giới thiệu</button></div></section>`;
 }
