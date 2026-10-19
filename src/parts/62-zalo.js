@@ -1,10 +1,15 @@
 /* ---------- Người chơi: đăng nhập Zalo, nhận hồ sơ, đăng ký buổi ---------- */
-const isZalo=u=>!!u&&/^zalo_/.test(String(u.uid||""));
+// Zalo chặn lấy thông tin người dùng từ máy chủ ngoài Việt Nam → tạm tắt, người chơi vào bằng tài khoản ẩn danh trên máy mình, chủ CLB duyệt
+const ZALO_ON=false;
+const isPlayer=u=>!!u&&(/^zalo_/.test(String(u.uid||""))||(u.isAnonymous&&!REF&&!canWrite));
 let unsubLink=null;
 function zaloProf(){try{return JSON.parse(localStorage.getItem("pb-zprof")||"{}")}catch(e){return {}}}
-function zaloStart(){
-  if(window.FB_TARGET==="mock"){FB.signInWithCustomToken(FB.auth,"demo").then(()=>location.reload());return}
-  location.href="/api/zalo?start=1&back="+encodeURIComponent(location.pathname);
+async function zaloStart(){
+  if(ZALO_ON){if(window.FB_TARGET==="mock"){FB.signInWithCustomToken(FB.auth,"demo").then(()=>location.reload());return}
+    location.href="/api/zalo?start=1&back="+encodeURIComponent(location.pathname);return}
+  try{if(!authUser){const r=await FB.signInAnonymously(FB.auth);authUser=r.user}
+    await refreshRole();if(route==="clogin")go("app",{tab:"san"});else render();toast("Chạm vào tên của bạn để chủ CLB duyệt")}
+  catch(e){toast("Chưa vào được, thử lại.")}
 }
 // Trang vừa được Zalo trả về: #zt=<token>&zn=<tên>&zp=<ảnh> hoặc #zerr=<lỗi>
 async function zaloHash(){
@@ -18,17 +23,17 @@ async function zaloHash(){
 // Theo dõi yêu cầu nhận hồ sơ của chính mình
 function watchLink(){
   if(unsubLink){try{unsubLink()}catch(e){}unsubLink=null}S.link=undefined;
-  if(legacy||!isZalo(authUser))return;
+  if(legacy||!isPlayer(authUser))return;
   try{unsubLink=FB.onSnapshot(FB.doc(FB.fs,PFX+"links/"+authUser.uid),{},s=>{S.link=s.exists()?s.data():null;
     if(S.link&&S.link.status==="ok"&&S.link.pid&&ME!==S.link.pid){ME=S.link.pid;try{localStorage.setItem("pb-me-"+CID,ME)}catch(e){}}
     render()},()=>{S.link=null;render()})}catch(e){}
 }
-const zaloBtn=(label="Đăng nhập với Zalo")=>`<button class="zalobtn" data-act="zlogin"><b>Z</b>${label}</button>`;
+const zaloBtn=(label)=>ZALO_ON?`<button class="zalobtn" data-act="zlogin"><b>Z</b>${label||"Đăng nhập với Zalo"}</button>`:`<button class="primary wide" data-act="zlogin">${label?label.replace("Đăng nhập Zalo để đăng ký","Tham gia để đăng ký"):"Tham gia để đăng ký buổi"}</button>`;
 
 /* ----- Thẻ cho người chơi đăng nhập Zalo nhưng chưa có hồ sơ ----- */
 let lnkPick=null,lnkNew=false;
 function linkCard(D){
-  if(MODE!=="club"||legacy||!isZalo(authUser)||canWrite||REF)return "";
+  if(MODE!=="club"||legacy||!isPlayer(authUser)||canWrite||REF)return "";
   const L=S.link,zp=zaloProf();
   if(L===undefined)return "";
   if(L&&L.status==="ok")return "";
@@ -64,7 +69,7 @@ function regCard(D){
   const face=x=>{const p=D.pmap.get(x.pid);return `<span class="rgp">${av(p||{name:x.name},"sm",1)}<small>${esc(p?.name||x.name||"?")}</small></span>`};
   let act="";
   if(canWrite)act=`<small class="rule">Bạn là ban tổ chức: thêm hoặc bỏ người ở mục Mở đăng ký trong Chuẩn bị.</small>`;
-  else if(!isZalo(u))act=zaloBtn("Đăng nhập Zalo để đăng ký");
+  else if(!isPlayer(u))act=zaloBtn("Đăng nhập Zalo để đăng ký");
   else if(!S.link||S.link.status!=="ok")act=`<small class="rule">Chọn hồ sơ của bạn ở trên và chờ chủ CLB duyệt để đăng ký.</small>`;
   else if(mine)act=`<div class="rgme ${pos<R.max?"in":"wt"}"><b>${pos<R.max?"✓ Bạn đã đăng ký":`Bạn đang chờ · thứ ${pos-R.max+1}`}</b>${locked?`<small>Đã khóa hủy (${r.lockH} tiếng trước giờ đánh)</small>`:`<button class="ghost danger" data-act="regout">Hủy đăng ký</button>`}</div>`;
   else act=`<button class="primary wide" data-act="regin">${R.conf.length>=R.max?"Vào danh sách chờ":"Đăng ký tham gia"}</button>`;
@@ -104,7 +109,7 @@ async function zaloAct(act,b,id){
   if(act==="lnknew"){lnkNew=!lnkNew;render();return true}
   if(act==="lnkg"){drafts["lnk-g"]=b.dataset.v;render();return true}
   if(act==="lnkcancel"){try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid))}catch(e){}lnkPick=null;return true}
-  if(act==="lnksend"){if(!isZalo(authUser))return true;const zp=zaloProf();
+  if(act==="lnksend"){if(!isPlayer(authUser))return true;const zp=zaloProf();
     const el=document.getElementById&&document.getElementById("lnk-name"),nn=String((el&&el.value)||drafts["lnk-name"]||zp.n||"").trim().slice(0,30);
     if(!lnkNew&&!lnkPick){toast("Chạm vào tên của bạn trước.");return true}
     if(lnkNew&&!nn){toast("Nhập tên của bạn.");return true}
@@ -112,7 +117,7 @@ async function zaloAct(act,b,id){
     if(lnkNew){d.newName=nn;d.gender=drafts["lnk-g"]==="F"?"F":"M"}else d.pid=lnkPick;
     try{await FB.setDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid),d);toast("Đã gửi, chờ chủ CLB duyệt")}catch(e){toast("Chưa gửi được, thử lại.")}
     return true}
-  if(act==="regin"){const D=derive(),L=S.link;if(!isZalo(authUser)||!L||L.status!=="ok")return true;
+  if(act==="regin"){const D=derive(),L=S.link;if(!isPlayer(authUser)||!L||L.status!=="ok")return true;
     if(regList(D).all.some(x=>x.pid===L.pid)){toast("Bạn đã có trong danh sách.");return true}
     if(regCfg().at&&Date.now()>regCfg().at){toast("Buổi này đã qua giờ đăng ký.");return true}
     try{await FB.setDoc(FB.doc(FB.fs,PFX+"regs/"+D.sid+"_"+authUser.uid),{sid:D.sid,uid:authUser.uid,pid:L.pid,name:D.pmap.get(L.pid)?.name||"",at:Date.now()});toast("Đã đăng ký")}catch(e){toast("Chưa đăng ký được, thử lại.")}

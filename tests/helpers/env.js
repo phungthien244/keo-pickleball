@@ -47,7 +47,7 @@ export function setup({ search = "", path = "/", host = "rr.pikeco.app", user = 
       return () => { const i = subs.indexOf(f); if (i >= 0) subs.splice(i, 1); };
     },
     runTransaction: async (fs, fn) => fn({ get: FB.getDoc, set: (r, d) => FB.setDoc(r, d), update: (r, d) => FB.updateDoc(r, d) }),
-    signInAnonymously: async () => ({ user: { uid: "anon" } }),
+    signInAnonymously: async () => ({ user: { uid: "anon", isAnonymous: true } }),
     signOut: async () => {},
     onAuthStateChanged: (a, f) => { env.authCb = f; f(env.user); },
     GoogleAuthProvider: function () {},

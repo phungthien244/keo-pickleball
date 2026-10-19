@@ -7,6 +7,8 @@ service cloud.firestore {
     function google() { return signedIn() && request.auth.token.firebase.sign_in_provider == 'google.com'; }
     // Người chơi đăng nhập Zalo (máy chủ pikeco.app cấp tài khoản zalo_<id>)
     function zalo() { return signedIn() && request.auth.token.firebase.sign_in_provider == 'custom' && request.auth.uid.matches('^zalo_[0-9A-Za-z]+$'); }
+    // Người chơi: Zalo, hoặc tài khoản ẩn danh trên máy mình (chủ CLB duyệt từng người)
+    function player() { return zalo() || (signedIn() && request.auth.token.firebase.sign_in_provider == 'anonymous'); }
     function rootEditor() { return signedIn() && exists(/databases/$(database)/documents/editors/$(request.auth.uid)); }
     // Quản trị nền tảng pikeco.app
     function isPA() {
@@ -178,7 +180,7 @@ service cloud.firestore {
       // Người chơi Zalo xin nhận hồ sơ VĐV, chủ CLB hoặc quản lý duyệt
       match /links/{uid} {
         allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();
-        allow create: if active() && zalo() && request.auth.uid == uid
+        allow create: if active() && player() && request.auth.uid == uid
           && request.resource.data.status == 'pending'
           && request.resource.data.keys().hasOnly(['status', 'zname', 'photo', 'at', 'pid', 'newName', 'gender']);
         allow update: if canEdit();
@@ -191,7 +193,7 @@ service cloud.firestore {
       match /regs/{id} {
         allow read: if canRead();
         allow create: if canEdit() || (
-          active() && zalo()
+          active() && player()
           && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at'])
           && request.resource.data.uid == request.auth.uid
           && id == string(request.resource.data.sid) + '_' + request.auth.uid
@@ -202,7 +204,7 @@ service cloud.firestore {
         );
         allow update: if canEdit();
         allow delete: if canEdit() || (
-          zalo() && resource.data.uid == request.auth.uid
+          player() && resource.data.uid == request.auth.uid
           && (cfgDoc().get('reg', {}).get('lockAt', 0) == 0
               || request.time.toMillis() < cfgDoc().get('reg', {}).get('lockAt', 0))
         );

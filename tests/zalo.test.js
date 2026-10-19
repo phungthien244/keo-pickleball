@@ -60,9 +60,11 @@ test("chủ CLB duyệt người mới: tạo hồ sơ gắn tài khoản Zalo",
   expect(e.store.get("clubs/q7/players/" + pid)).toMatchObject({ name: "Dũng", zuid: "zalo_5" });
 });
 
-test("trang đăng nhập có nút Zalo cho người chơi", async () => {
+test("người chơi không cần tài khoản: vào bằng máy mình, chọn tên, chờ duyệt", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7/dang-nhap", data: base() });
   await e.boot(); await e.until(() => e.V().includes('data-act="zlogin"'));
   await e.click("zlogin");
-  expect(String(e.href || e.url || "")).toContain("/api/zalo?start=1");
+  await e.until(() => e.T().includes("Bạn là ai trong CLB"));
+  await e.click("lnkpick", { id: "p2" }); await e.click("lnksend");
+  await e.until(() => e.store.get("clubs/q7/links/anon")?.pid === "p2");
 });

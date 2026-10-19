@@ -186,7 +186,8 @@ describe("người chơi Zalo", () => {
     await assertSucceeds(setDoc(doc(zalo("zalo_1"), "clubs/aep/links/zalo_1"), { status: "pending", pid: "p1", zname: "A", at: 1 }));
     await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/links/zalo_2"), { status: "ok", pid: "p1", at: 1 }));
     await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/links/zalo_1"), { status: "pending", at: 1 }));
-    await assertFails(setDoc(doc(anon("an"), "clubs/aep/links/an"), { status: "pending", at: 1 }));
+    await assertSucceeds(setDoc(doc(anon("an"), "clubs/aep/links/an"), { status: "pending", pid: "p1", at: 1 }));
+    await assertFails(setDoc(doc(guest(), "clubs/aep/links/gg"), { status: "pending", at: 1 }));
     await assertFails(updateDoc(doc(zalo("zalo_1"), "clubs/aep/links/zalo_1"), { status: "ok" }));
     await assertFails(getDoc(doc(zalo("zalo_2"), "clubs/aep/links/zalo_1")));
     await assertSucceeds(updateDoc(doc(google("ad"), "clubs/aep/links/zalo_1"), { status: "ok" }));

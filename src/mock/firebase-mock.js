@@ -53,6 +53,6 @@ window.FB={fs:{},auth:{},
  query:(c,w)=>({isCol:true,path:c.path,flt:w}),where:(f,op,v)=>({f,v}),getDocs:async r=>({docs:[...store].filter(([k,v])=>k.startsWith(r.path+"/")&&k.split("/").length===r.path.split("/").length+1&&(!r.flt||v[r.flt.f]===r.flt.v)).map(([k,v])=>({id:k.split("/").pop(),data:()=>v}))}),
  onSnapshot:(r,o,n)=>{const f=()=>{if(r.isCol){const docs=[...store].filter(([k,v])=>k.startsWith(r.path+"/")&&k.split("/").length===r.path.split("/").length+1&&(!r.flt||v[r.flt.f]===r.flt.v)).map(([k,v])=>({id:k.split("/").pop(),data:()=>v}));n({docs,metadata:{fromCache:false}})}else n({id:r.id,exists:()=>store.has(r.path),data:()=>store.get(r.path),metadata:{fromCache:false}})};subs.push(f);f();return()=>{}},
  runTransaction:async(fs,fn)=>fn({get:window.FB.getDoc,set:(r,d)=>window.FB.setDoc(r,d)}),
- signInAnonymously:async()=>({user:{uid:"demo"}}),signOut:async()=>{},signInWithCustomToken:async()=>{try{sessionStorage.setItem("pb-mock-zalo","1")}catch(e){}return{user:ZALO_USER}},onAuthStateChanged:(a,f)=>setTimeout(()=>f(isZaloDemo()?ZALO_USER:isGuest()?null:DEMO_USER),0)};
+ signInAnonymously:async()=>({user:{uid:"demo",isAnonymous:true}}),signOut:async()=>{},signInWithCustomToken:async()=>{try{sessionStorage.setItem("pb-mock-zalo","1")}catch(e){}return{user:ZALO_USER}},onAuthStateChanged:(a,f)=>setTimeout(()=>f(isZaloDemo()?ZALO_USER:isGuest()?null:DEMO_USER),0)};
 })();
 window.FB_TARGET="mock";

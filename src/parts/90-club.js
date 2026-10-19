@@ -105,7 +105,7 @@ function vCaiDat(D){
   const u=authUser;
   let h=`<div class="dhead"><a class="bk" href="${pathOf("home")}" data-go="home">‹ ${esc(CLUB?.name||D.c.title)}</a><h1>Cài đặt CLB</h1>`;
   if(u&&u.isAnonymous&&(canWrite||REF))h+=`<div class="acct"><span class="t"><b>Trọng tài (PIN)</b><small>${REF?(MYCT.length?"Nhập tỉ số sân "+MYCT.join(", "):"Chưa được giao sân"):"Máy này đang nhập được tỉ số"}</small></span><button data-act="logout">Thoát</button></div>`;
-  else if(isZalo(u))h+=`<div class="acct">${av({name:zaloProf().n||"Zalo"},"sm")}<span class="t"><b>${esc(zaloProf().n||"Tài khoản Zalo")}</b><small>Người chơi · Zalo</small></span><button data-act="logout">Thoát</button></div>`;
+  else if(isPlayer(u)){const pn=S.link&&S.link.status==="ok"&&D.pmap.get(S.link.pid)?.name;h+=`<div class="acct">${av({name:pn||"?"},"sm")}<span class="t"><b>${esc(pn||"Người chơi")}</b><small>${pn?"Người chơi · máy này":"Chưa được chủ CLB duyệt"}</small></span>${u.isAnonymous?"":`<button data-act="logout">Thoát</button>`}</div>`}
   else if(isGoogle(u))h+=`<div class="acct">${av({name:u.displayName||u.email||"?"},"sm")}<span class="t"><b>${esc(u.email||u.displayName||"")}</b><small>${esc(ROLE_LB[ROLE]||"Chưa có quyền ở CLB này")}</small></span><button data-act="logout">Thoát</button></div>`;
   h+=`</div>`;
   if(REF)return h+`<section class="card2"><h2>Quyền trọng tài</h2><div class="cb"><p class="rule">${MYCT.length?`Bạn được giao sân ${MYCT.join(", ")}. Chỉ nhập được tỉ số ở các sân này.`:"Bạn chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào sân</a></div></section>`;
@@ -118,7 +118,7 @@ const clubFoot=()=>`<footer class="pfoot"><a href="/">pikeco.app</a> · quản l
 function clubLoginBody(){
   const u=authUser,tok=inviteTok();
   let h="";
-  if(!tok&&!legacy)h+=`<section class="card2"><h2>Người chơi</h2><div class="cb">${isZalo(u)?`<p class="rule">Đang đăng nhập Zalo: <b>${esc(zaloProf().n||"")}</b>. Bạn đăng ký buổi ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a><button class="line" data-act="logout">Thoát Zalo</button>`:`<p class="rule">Đăng nhập Zalo để tự đăng ký buổi chơi. Dùng được ngay trong Zalo.</p>${zaloBtn()}`}</div></section>`;
+  if(!tok&&!legacy)h+=`<section class="card2"><h2>Người chơi</h2><div class="cb">${isPlayer(u)?`<p class="rule">Máy này đã tham gia. Bạn đăng ký buổi ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a>`:`<p class="rule">Tự đăng ký buổi chơi, không cần tài khoản. Chạm vào tên mình, chủ CLB duyệt một lần là xong. Mở được ngay trong Zalo.</p>${zaloBtn()}`}</div></section>`;
   h+=`<section class="card2"><h2>${tok?"Nhận lời mời ban tổ chức":"Chủ CLB, quản lý"}</h2><div class="cb">`;
   if(isGoogle(u)&&!canWrite)h+=`<p class="rule">Đang đăng nhập ${esc(u.email||"")} nhưng tài khoản này chưa có quyền ở CLB. Nhờ chủ CLB gửi link mời, hoặc đổi tài khoản.</p><button class="line" data-act="logout">Đổi tài khoản Google</button>`;
   else h+=`<p class="rule">${tok?"Bạn được mời vào ban tổ chức. Đăng nhập Google để nhận quyền.":"Đăng nhập Google để sửa cài đặt, xếp sân và quản lý thành viên."}</p><button class="gwide" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập bằng Google</button>`;
