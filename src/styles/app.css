@@ -1349,3 +1349,55 @@ html.cfmon,html.cfmon body{overflow:hidden}
 .mxfoot button{min-height:52px;margin:0}
 .mxx{font-size:14px;font-weight:600;text-decoration:none;color:var(--blue);padding:8px 4px}
 .mxsm{min-height:34px;padding:0 12px;border:1px solid var(--line-2);display:flex;align-items:center;font-size:12px;font-weight:600;color:var(--ink);text-decoration:none;white-space:nowrap}
+/* ===== Làm mượt: bo góc toàn app, avatar CLB, khung chờ, hiệu ứng ===== */
+:root{--r:12px;--rc:10px}
+button,input,select,textarea{border-radius:var(--rc)}
+.panel,.court,.kpi,.sescard,.mcard,.sharebox,.h2h,.setup,.tile,.todo,.ccard,.card2,.mebox,.why,.pstats,.undo,.lnkcard,.regcard,.dkban,.mxcard,.mxtile,.xcard,.xsecbox,.xfmt,.xppl,.xopt,.xstrip,.pxrow,.nextq,.empty,.mvp,.champ,.no1,.lb,.rnd,.pick,.ro,.prel,.ulist,.qcol,.vhead,.grl,.cgrp,.zlk,.apps a,.feat>div,.feat2>div,.bsteps,.rkl,.ptit,.pmc,.cfm,.adjf,.gpbox,.xstats>*,.mxhero,.mxowner,.mxwarn,.mxinv,.acct,.lead{border-radius:var(--r)}
+.court,.mcard,.sescard,.card2,.mvp,.champ,.no1,.xcard,.mxhero{overflow:hidden}
+.seg,.mxseg{border-radius:var(--rc);overflow:hidden}
+.seg button,.mxseg button{border-radius:0}
+.seg.segw,.seg.segw button{border-radius:var(--rc)}
+.pill,.tag,.mvptag,.chip,.xchip,.gtag,.rtag,.tagl,.mxtag,.mxbadge{border-radius:999px}
+.mxsheet,.gsheet{border-radius:18px 18px 0 0}
+.cfmbox{border-radius:16px}
+.mxdate,.date,.mxfoot button,.mxsm{border-radius:var(--rc)}
+.xlist{border-radius:var(--r);overflow:hidden}.xlist .xli{border-radius:0}
+.dkqr img,.qrbox img{border-radius:var(--rc)}
+/* Avatar CLB */
+.clogo.cav{background:var(--c,var(--navy));color:#fff;border-radius:10px;font-family:var(--display);font-weight:800;letter-spacing:.02em;box-shadow:inset 0 0 0 1px rgba(12,43,68,.08)}
+.clogo.cav.img{background:var(--surface)}
+.clogo.cav.big{border-radius:16px}
+.cav.s20{width:20px;height:20px;font-size:8px;border-radius:6px}
+.cav.s40{width:40px;height:40px;font-size:14px;border-radius:10px}
+.cav.s48{width:48px;height:48px;font-size:17px;border-radius:12px}
+.mxclub .clogo.cav{width:32px;height:32px;font-size:12px;border-radius:9px}
+.mxrow .clogo.cav{width:40px;height:40px;font-size:14px;border-radius:10px}
+#clogo.cav{border-radius:10px;font-size:15px}
+.cav img{width:100%;height:100%;object-fit:cover;display:block}
+/* Thẻ CLB mới */
+.ccard{display:flex;align-items:center;gap:12px;padding:12px;min-height:0;border-radius:14px}
+.ccard .b{padding:0;gap:2px}
+.ccard .b b{font-family:var(--body);font-weight:600;font-size:15px;letter-spacing:0;text-transform:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ccard .b span{font-size:12px}
+.ccard .c{color:#8a99a6;font-size:20px;font-weight:400;width:auto}
+.chipg{align-self:flex-start;font-style:normal;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--win-bg);color:var(--win);margin-top:3px}
+.mxorg{display:flex;align-items:center;gap:6px}.mxorg small{font-size:12px;color:var(--muted);font-weight:600}
+.mxli>.clogo.cav{margin-right:2px}
+/* Khung chờ */
+.sk{display:block;border-radius:8px;background:linear-gradient(90deg,var(--sunk) 0%,#f4f6f8 50%,var(--sunk) 100%);background-size:200% 100%;animation:skw 1.2s ease-in-out infinite}
+@keyframes skw{from{background-position:100% 0}to{background-position:-100% 0}}
+.sk-card{pointer-events:none}
+.skel i{border-radius:8px}
+/* Bấm có phản hồi */
+button,.ccard,.mxcard,.sescard,.tile,a.cc,.mxli,.mxrow{transition:transform .12s var(--ease),border-color .15s,background-color .15s}
+button:active:not(:disabled),a.ccard:active,a.mxcard:active,a.sescard:active,a.tile:active{transform:scale(.98)}
+.ccard:active,.mxcard[data-act]:active{border-color:var(--navy)}
+/* Kết quả tìm mờ dần vào */
+.mfade{animation:mfade .18s ease both}
+@keyframes mfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .sk{animation:none}.mfade{animation:mfade2 .15s ease both}
+  .mxanim .mxbody > *,.anim > *{animation-name:mfade2!important}
+  button:active:not(:disabled),a.ccard:active,a.mxcard:active,a.sescard:active,a.tile:active{transform:none}
+}
+@keyframes mfade2{from{opacity:0}to{opacity:1}}

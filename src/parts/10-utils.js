@@ -47,8 +47,8 @@ function setView(html){
 function morphKids(a,b,keep){
   const A=[...a.childNodes],B=[...b.childNodes];
   for(let i=0;i<B.length;i++){const x=A[i],y=B[i];
-    if(!x){a.appendChild(y);continue}
-    if(x.nodeType!==y.nodeType||x.nodeName!==y.nodeName||(x.id||"")!==(y.id||"")){a.replaceChild(y,x);continue}
+    if(!x){if(y.classList)y.classList.add("mfade");a.appendChild(y);continue}
+    if(x.nodeType!==y.nodeType||x.nodeName!==y.nodeName||(x.id||"")!==(y.id||"")){if(y.classList)y.classList.add("mfade");a.replaceChild(y,x);continue}
     if(x.nodeType!==1){if(x.nodeValue!==y.nodeValue)x.nodeValue=y.nodeValue;continue}
     if(x===keep)continue;
     if(x.isEqualNode(y)&&!(x.contains&&x.contains(keep)))continue;
@@ -63,6 +63,17 @@ function morphKids(a,b,keep){
 const armed=k=>false;
 const delBtn=(act,id,label)=>armed(act+":"+id)?`<button class="danger" data-act="${act}" data-id="${id}">Bấm lần nữa để xóa</button>`:`<button class="ghost danger" data-act="${act}" data-id="${id}">${label}</button>`;
 const logoOk=c=>c&&typeof c.logo==="string"&&/^data:image\//.test(c.logo);
+// Avatar CLB dùng chung: logo nếu có, không thì 2 chữ đầu tên (bỏ "CLB", "Pickleball"…) trên màu cố định theo CLB
+const CAVC=["#1f8fe5","#1a7f45","#c97a16","#6b4fa0","#b33a6b","#3a7a8a","#0c2b44","#a23b2a"];
+const clubCol=c=>{const k=String((c&&(c.id||c.name))||"");let h=0;for(const ch of k)h=(h*31+ch.charCodeAt(0))>>>0;return CAVC[h%CAVC.length]};
+function clubIni(name){
+  const W=String(name||"").trim().split(/\s+/).filter(Boolean),skip=["clb","cau","lac","bo","pickleball","club","pb"];
+  let L=W.filter(w=>!skip.includes(noAcc(w).toLowerCase()));if(!L.length)L=W;if(!L.length)return "P";
+  const f=w=>{const x=noAcc(w);return x?x.charAt(0):w.charAt(0)};
+  return (L.length===1?noAcc(L[0]).slice(0,2)||L[0].slice(0,2):f(L[0])+f(L[1])).toUpperCase();
+}
+const clubInner=(c,name)=>logoOk(c)?`<img src="${c.logo}" alt="" loading="lazy" decoding="async">`:esc(clubIni(name||(c&&c.name)||(c&&c.id)));
+const clubAv=(c,cls="",name)=>`<span class="clogo cav${logoOk(c)?" img":""}${cls?" "+cls:""}" style="--c:${clubCol(c)}" aria-hidden="true">${clubInner(c,name)}</span>`;
 const logoHtml=(c,name)=>logoOk(c)?`<img src="${c.logo}" alt="">`:esc(String(name||"P").trim().charAt(0).toUpperCase()||"P");
 const sessTitle=(c,sid)=>c.sname?String(c.sname):`Giải đấu #${sid}`;
 // Tên dùng trong tin nhắn chia sẻ: không kèm số buổi

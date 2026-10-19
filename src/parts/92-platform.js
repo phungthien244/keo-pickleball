@@ -22,7 +22,10 @@ function loadMyClub(){
 }
 const gBtn=`<button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button>`;
 const clubUrl=id=>absUrl("/"+id);
-const clubCard=c=>MINI?`<button class="ccard" data-act="miniclub" data-id="${esc(c.id)}"><span class="i">${logoHtml(c,c.name||c.id)}</span><span class="b"><b>${esc(c.name||c.id)}</b><span>${esc(c.city||"Pickleball")}${c.size?" · "+esc(c.size)+" người":""}</span></span><span class="c" aria-hidden="true">›</span></button>`:`<a class="ccard" href="/${esc(c.id)}"><span class="i">${logoHtml(c,c.name||c.id)}</span><span class="b"><b>${esc(c.name||c.id)}</b><span>pikeco.app/${esc(c.id)}${c.city?" · "+esc(c.city):""}</span></span><span class="c" aria-hidden="true">›</span></a>`;
+const clubOpenN=id=>(typeof mxOpen!=="undefined"&&mxOpen||[]).filter(x=>x.club&&x.club.id===id).length;
+const clubCard=c=>{const op=MINI&&clubOpenN(c.id),sub=MINI?`${esc(c.city||"Pickleball")}${c.size?" · "+esc(c.size)+" người":""}`:`pikeco.app/${esc(c.id)}${c.city?" · "+esc(c.city):""}`,
+  inner=`${clubAv(c,"s48")}<span class="b"><b>${esc(c.name||c.id)}</b><span>${sub}</span>${op?`<em class="chipg">Đang mở giải đấu</em>`:""}</span><span class="c" aria-hidden="true">›</span>`;
+  return MINI?`<button class="ccard" id="cc-${esc(c.id)}" data-act="miniclub" data-id="${esc(c.id)}">${inner}</button>`:`<a class="ccard" href="/${esc(c.id)}">${inner}</a>`};
 const publicClubs=()=>(S.clubs||[]).filter(c=>c.public!==false&&clubSt(c)==="active").sort((a,b)=>String(a.name).localeCompare(String(b.name),"vi"));
 const lab=(t,more="")=>`<div class="lab"><span class="eyebrow">${t}</span>${more}</div>`;
 const pfoot=()=>`<footer class="pfoot2"><b>PIKECO.APP</b><span>Quản lý CLB pickleball · miễn phí cho CLB${isPA()?` · <a href="/quan-tri" data-go="qt">Quản trị nền tảng</a>`:""}</span></footer>`;

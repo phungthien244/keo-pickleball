@@ -16,7 +16,7 @@ function mxCur(){if(route==="vdv"||route==="cmp")return "rank";if(route==="buoi"
 function mxShell(D,body,cta=""){
   const p=mxMe(D),nm=(CLUB&&CLUB.name)||D.c.title;
   const R0=mxAs||{cw:canWrite,rf:REF},ql=mxMode()==="ql",sw=!legacy&&(R0.cw||R0.rf)?`<span class="mxsw" role="group" aria-label="Chế độ"><button data-act="mxmode" data-v="choi" aria-pressed="${!ql}">Chơi</button><button data-act="mxmode" data-v="ql" aria-pressed="${ql}">${R0.cw?"Quản lý":"Trọng tài"}</button></span>`:"";
-  let h=`<div class="mxbar"><button class="mxclub" data-act="mxsheet"><span class="clogo">${logoHtml(CLUB,nm)}</span><b>${esc(nm)}</b><span aria-hidden="true">▾</span></button>${sw}<a class="mxme" href="${pathOf("app",{tab:"toi"})}" data-go="app" data-t="toi" aria-label="Tôi">${p?av(p,"sm",1):mxSvg("me")}</a></div>`;
+  let h=`<div class="mxbar"><button class="mxclub" data-act="mxsheet">${clubAv(CLUB||{id:CID},"",nm)}<b>${esc(nm)}</b><span aria-hidden="true">▾</span></button>${sw}<a class="mxme" href="${pathOf("app",{tab:"toi"})}" data-go="app" data-t="toi" aria-label="Tôi">${p?av(p,"sm",1):mxSvg("me")}</a></div>`;
   h+=(ql?"":mxTurn(D))+`<div class="mxbody">${body}</div>`;
   if(cta)h+=`<div class="mxcta">${cta}</div>`;
   h+=ql?mxMgrNav():mxNav();
@@ -29,7 +29,7 @@ function mxNav(){
 // Đang nạp CLB (vừa chuyển CLB): dựng sẵn khung Mini App, không lộ giao diện web
 function mxLoading(){
   const k=myClubs().find(x=>x.id===CID),nm=(CLUB&&CLUB.name)||(k&&k.name)||"";
-  return `<div class="mxbar"><span class="mxclub"><span class="clogo">${esc((nm||CID).charAt(0).toUpperCase())}</span><b>${esc(nm)}</b></span><span class="mxme">${mxSvg("me")}</span></div><div class="mxbody">${skeleton()}</div>${mxNav()}`;
+  return `<div class="mxbar"><span class="mxclub">${clubAv({id:CID,name:nm},"",nm)}<b>${esc(nm)}</b></span><span class="mxme">${mxSvg("me")}</span></div><div class="mxbody">${skeleton()}</div>${mxNav()}`;
 }
 // Thanh "Lượt của tôi": ghim khi buổi đang diễn ra và mình có mặt
 function mxTurn(D){
@@ -46,7 +46,7 @@ function mxTurn(D){
 // Bảng chuyển CLB
 function mxSheetHtml(){
   if(mxSheet!=="club")return "";
-  const C=myClubs(),row=c=>`<button class="mxrow${c.id===CID&&MODE==="club"?" cur":""}" data-act="miniclub" data-id="${esc(c.id)}"><span class="clogo">${esc(String(c.name||c.id).charAt(0).toUpperCase())}</span><span class="t"><b>${esc(c.name||c.id)}</b><small>${esc(c.role||"Đã xem")}</small></span>${c.id===CID&&MODE==="club"?`<span class="ck">✓</span>`:""}</button>`;
+  const C=myClubs(),row=c=>`<button class="mxrow${c.id===CID&&MODE==="club"?" cur":""}" data-act="miniclub" data-id="${esc(c.id)}">${clubAv(c)}<span class="t"><b>${esc(c.name||c.id)}</b><small>${esc(c.role||"Đã xem")}</small></span>${c.id===CID&&MODE==="club"?`<span class="ck">✓</span>`:""}</button>`;
   const man=C.filter(c=>/Chủ|Quản lý|Trọng tài/.test(c.role||"")),join=C.filter(c=>!man.includes(c));
   return `<div class="mxdim" data-act="mxsheetx"></div><div class="mxsheet" role="dialog" aria-label="Chuyển CLB"><span class="grab"></span><b class="mxh">Chuyển CLB</b>
     ${man.length?`<span class="mxsec">Đang quản lý</span>${man.map(row).join("")}`:""}
@@ -227,7 +227,7 @@ function mxMeTab(D){
 function mxIntro(D){
   const c=CLUB||{},n=D.players.filter(x=>!x.guest).length,top=[...D.players].filter(x=>!x.guest).sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating).slice(0,3);
   const kv=(k,v)=>v?`<div class="mxkv"><span>${k}</span><b>${esc(v)}</b></div>`:"";
-  let h=mxBack("home","Trang chủ")+`<div class="mxcard prof"><span class="clogo big">${logoHtml(c,c.name)}</span><span class="t"><b>${esc(c.name||"")}</b><small>${esc(c.city||"")}${n?` · ${n} thành viên`:""}</small></span></div>`;
+  let h=mxBack("home","Trang chủ")+`<div class="mxcard prof">${clubAv(c,"big")}<span class="t"><b>${esc(c.name||"")}</b><small>${esc(c.city||"")}${n?` · ${n} thành viên`:""}</small></span></div>`;
   if(c.about)h+=`<div class="mxcard"><p style="margin:0;white-space:pre-line">${esc(c.about)}</p></div>`;
   h+=`<div class="mxcard">${kv("Lịch đánh",c.sched)}${kv("Sân",c.venue)}${kv("Trình độ",c.level)}${kv("Chi phí",c.feeTxt||(D.c.thu==="phi"?`${fmtK(+D.c.phi||0)}/giải đấu`:THU[D.c.thu||"keo"]))}${kv("Thể thức",fmtTxt(D.c))}</div>`;
   {const XC=(S.sched||[]).length?xPlayerCards(D):"";if(XC)h+=`<span class="mxsec">Giải đấu sắp tới</span>${XC}`;else if(regOpen())h+=mxSessCard(D,true)}
@@ -318,6 +318,8 @@ const mxSteps=()=>`<span class="mxsec">Dùng pikeco thế nào</span><div class=
   <div class="mxli"><i>1</i><span class="t"><b>Tìm giải đấu hoặc CLB</b><small>Đăng ký làm vận động viên, giữ chỗ trước</small></span></div>
   <div class="mxli"><i>2</i><span class="t"><b>Đến sân, app tự xếp trận</b><small>Xem sân nào, đánh với ai, điểm trực tiếp</small></span></div>
   <div class="mxli"><i>3</i><span class="t"><b>Xem rating và chi phí của bạn</b><small>Tự cập nhật sau mỗi giải đấu</small></span></div></div>`;
+const skSess=()=>`<div class="mxcard sess sk-card" aria-hidden="true"><div class="mxsess"><span class="sk" style="width:52px;height:60px"></span><span class="t" style="gap:8px"><span class="sk" style="height:10px;width:35%"></span><span class="sk" style="height:14px;width:70%"></span><span class="sk" style="height:10px;width:55%"></span></span></div></div>`;
+const skClub=()=>`<div class="ccard sk-card" aria-hidden="true"><span class="sk" style="width:48px;height:48px"></span><span class="b" style="gap:8px"><span class="sk" style="height:14px;width:62%"></span><span class="sk" style="height:10px;width:40%"></span></span></div>`;
 function mxExplore(){
   exCacheLoad();if(S.clubsStale&&!clubsLoading){S.clubsStale=false;loadClubs(true)}else loadClubs();loadOpenSess();
   try{if(sessionStorage.getItem("pb-mxtao")){sessionStorage.removeItem("pb-mxtao");mxSeg.exTab="tao";setTimeout(mxAskName,300)}}catch(e){}
@@ -332,10 +334,10 @@ function mxExplore(){
   if(!mine.length)h+=mxHero();
   h+=`<label class="srch"><span class="sr">Tìm CLB</span><input id="cq" data-draft="cq" data-live="1" type="search" placeholder="Tìm CLB, khu vực, sân…" value="${esc(val("cq",""))}"></label>`;
   h+=`<span class="mxsec" id="mxopen">Giải đấu đang nhận vận động viên</span><div class="mxseg sm">${fb("all","Tất cả")}${fb("nay","Hôm nay")}${fb("tuan","Cuối tuần")}</div>`;
-  h+=!mxOpen?`<p class="rule">Đang tìm giải đấu…</p>`:O.length?O.map(x=>`<button class="mxcard sess" data-act="miniclub" data-id="${esc(x.club.id)}"${x.x?` data-x="${esc(x.x)}"`:""}><div class="mxsess">${x.r.at?mxDate(x.r.at):`<span class="mxdate"><b>?</b></span>`}<span class="t"><b>${esc(x.club.name)} · ${esc(x.cf.sname||"Giải đấu")}</b><span>${x.r.at?hm(x.r.at):""}${x.r.place?` · ${esc(x.r.place)}`:""}${x.r.feeG||x.cf.phi?` · ${fmtK(+(x.r.feeG||((x.cf.thu==="phi")?x.cf.phi:x.r.fee)||0))}`:""}</span></span>${x.n==null?(+x.r.max?`<span class="tagl">${+x.r.max} chỗ</span>`:""):`<span class="tagl">${+x.r.max?`còn ${Math.max(0,+x.r.max-x.n)}`:`${x.n} người`}</span>`}</div></button>`).join("")
+  h+=!mxOpen?skSess()+skSess():O.length?O.map(x=>`<button class="mxcard sess" id="os-${esc(x.club.id)}-${esc(String(x.x||x.sid||""))}" data-act="miniclub" data-id="${esc(x.club.id)}"${x.x?` data-x="${esc(x.x)}"`:""}><div class="mxsess">${x.r.at?mxDate(x.r.at):`<span class="mxdate"><b>?</b></span>`}<span class="t"><span class="mxorg">${clubAv(x.club,"s20")}<small>${esc(x.club.name)}</small></span><b>${esc(x.cf.sname||"Giải đấu")}</b><span>${x.r.at?hm(x.r.at):""}${x.r.place?` · ${esc(x.r.place)}`:""}${x.r.feeG||x.cf.phi?` · ${fmtK(+(x.r.feeG||((x.cf.thu==="phi")?x.cf.phi:x.r.fee)||0))}`:""}</span></span>${x.n==null?(+x.r.max?`<span class="tagl">${+x.r.max} chỗ</span>`:""):`<span class="tagl">${+x.r.max?`còn ${Math.max(0,+x.r.max-x.n)}`:`${x.n} người`}</span>`}</div></button>`).join("")
     :`<div class="mxcard mxempty"><b>${f==="all"?"Chưa có giải đấu nào đang mở":"Không có giải đấu nào trong thời gian này"}</b><span>Giải đấu của các CLB sẽ hiện ở đây khi mở đăng ký nhận vận động viên.</span></div>`+(mine.length||f!=="all"?"":mxSteps());
   if(mine.length)h+=`<span class="mxsec">CLB của bạn</span>`+mine.map(c=>clubCard({...(S.clubs||[]).find(x=>x.id===c.id)||{},id:c.id,name:c.name})).join("");
-  h+=`<span class="mxsec">${mine.length?"CLB khác":"Câu lạc bộ"}</span>`+(!S.clubs?`<p class="rule">Đang tải…</p>`:others.length?others.map(clubCard).join(""):`<p class="rule">Không có CLB nào khớp.</p>`);
+  h+=`<span class="mxsec">${mine.length?"CLB khác":"Câu lạc bộ"}</span>`+(!S.clubs?skClub()+skClub()+skClub():others.length?others.map(clubCard).join(""):`<p class="rule">Không có CLB nào khớp.</p>`);
   if(mine.length)h+=`<button class="btn-line" data-act="mxtao">＋ Tạo CLB của bạn</button>`;
   h+=`</div><nav class="mxnav"><a class="on" href="#" data-act="mxexfind">${mxSvg("find")}<span>Khám phá</span></a><a href="#" data-act="mxexme">${mxSvg("me")}<span>Tôi</span></a></nav>`;
   return h+mxSheetHtml();
@@ -346,7 +348,7 @@ function mxExploreMe(){
   return `<div class="mxbar"><span class="mxclub"><b>Tôi</b></span></div><div class="mxbody">
     <div class="mxcard prof">${P.p?`<img class="mxav" src="${esc(P.p)}" alt="">`:`<span class="mxav">${nm?esc(nm.charAt(0).toUpperCase()):mxSvg("me")}</span>`}<span class="t"><b>${esc(nm||"Người dùng Zalo")}</b><small>Tài khoản Zalo · ${mine.length?`${mine.length} CLB`:"chưa tham gia CLB nào"}</small></span></div>
     <span class="mxsec">CLB của bạn</span>
-    ${mine.length?`<div class="mxcard list">${mine.map(c=>`<button class="mxli" data-act="miniclub" data-id="${esc(c.id)}"><span class="t">${esc(c.name)}<small>${esc(c.role||"")}</small></span><span>›</span></button>`).join("")}</div>`
+    ${mine.length?`<div class="mxcard list">${mine.map(c=>`<button class="mxli" data-act="miniclub" data-id="${esc(c.id)}">${clubAv(c,"s40")}<span class="t">${esc(c.name)}<small>${esc(c.role||"")}</small></span><span>›</span></button>`).join("")}</div>`
       :`<div class="mxcard mxempty"><span>Bạn chưa ở CLB nào. Đăng ký một giải đấu đang mở, hoặc vào trang CLB và chọn tên của bạn để ban tổ chức duyệt.</span><button class="primary wide" data-act="mxexgo">Tìm giải đấu đang mở</button></div>`}
     ${own?"":`<div class="mxcard mxown"><b>Bạn quản lý một CLB?</b><span class="rule">Tạo CLB ngay trong Zalo: mở đăng ký giải đấu, xếp sân tự động, thu lệ phí, chia chi phí, rating từng người.</span><button class="line wide" data-act="mxtao">＋ Tạo CLB miễn phí</button></div>`}
     <div class="mxcard list">${mxInvBtn()}<button class="mxli" data-act="openurl" data-v="https://mini.zalo.me/legal/terms-preview/${MINI_APP_ID}"><span class="t">Điều khoản sử dụng</span><span>↗</span></button></div></div>
