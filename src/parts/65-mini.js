@@ -6,7 +6,8 @@ const mxMe=D=>{const id=mxPid();return id?D.pmap.get(id):null};
 const mxIco={home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',live:'<circle cx="12" cy="12" r="3"/><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/>',rank:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/>',hist:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',me:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',find:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'};
 const mxSvg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${mxIco[k]}</svg>`;
 const mxDate=t=>{const d=new Date(t);return `<span class="mxdate"><small>${["CN","T2","T3","T4","T5","T6","T7"][d.getDay()]}</small><b>${d.getDate()}</b><small>THG ${d.getMonth()+1}</small></span>`};
-const mxBack=(go,label="")=>`<a class="mxback" href="#" data-go="${go}">‹ ${esc(label||"Quay lại")}</a>`;
+// Thanh tiêu đề Zalo đã có nút quay lại: không vẽ nút quay lại trong trang
+const mxBack=()=>"";
 
 /* ----- Khung chung: dòng CLB, thanh lượt của tôi, nội dung, nút cố định, thanh dưới ----- */
 function mxCur(){if(route==="vdv"||route==="cmp")return "rank";if(route==="buoi")return "hist";if(route==="home")return "home";
@@ -240,7 +241,7 @@ function mxCompare(D,id){
     if(inA(me)===inA(id)){with_.g++;if(meWin)with_.w++}else{vs.g++;if(meWin)vs.w++;last.push({m,meWin})}}
   last=last.sort((x,y)=>(y.m.doneAt||0)-(x.m.doneAt||0)).slice(0,5);
   const sa=D.st.get(me),sb=D.st.get(id);
-  let h=`<a class="mxback" href="#" data-go="vdv" data-pid="${id}">‹ Hồ sơ ${esc(b.name)}</a>
+  let h=`
     <div class="mxcard vs"><span class="p">${av(a,"lg",1)}<b>${esc(a.name)}</b><small class="num">${r2(sa.rating)}</small></span><span class="sc"><b class="num">${vs.w}–${vs.g-vs.w}</b><small>đối đầu</small></span><span class="p">${av(b,"lg",1)}<b>${esc(b.name)}</b><small class="num">${r2(sb.rating)}</small></span></div>
     <div class="mxcard"><div class="mxkv"><span>Gặp nhau</span><b>${vs.g} trận · bạn thắng ${vs.w}</b></div><div class="mxkv"><span>Đánh cặp chung</span><b>${with_.g} trận · thắng ${with_.w}</b></div><div class="mxkv"><span>Chênh rating</span><b class="num">${(sa.rating-sb.rating>=0?"+":"")+(sa.rating-sb.rating).toFixed(2)}</b></div></div>`;
   if(!allM)h+=`<p class="rule">Đang tải các trận…</p>`;
@@ -304,7 +305,7 @@ function mxExploreMe(){
 
 /* ----- Vẽ Mini App ----- */
 function renderMini(D){
-  const v=route==="home"?mxHome:route==="vdv"?(D=>mxShell(D,`<a class="mxback" href="#" data-go="app" data-t="bxh">‹ Xếp hạng</a>`+vHoSo(D,routePid)+(mxPid()&&routePid!==mxPid()?`<button class="primary wide" data-act="mxcmp" data-id="${esc(routePid)}">⚔ So kè với tôi</button>`:""))):route==="cmp"?(D=>mxCompare(D,routePid)):route==="buoi"?(D=>mxShell(D,mxBack("app","Lịch sử").replace('data-go="app"','data-go="app" data-t="ls"')+vBuoi(D,routeSid)+mxAchBtn(D,routeSid))):
+  const v=route==="home"?mxHome:route==="vdv"?(D=>mxShell(D,vHoSo(D,routePid)+(mxPid()&&routePid!==mxPid()?`<button class="primary wide" data-act="mxcmp" data-id="${esc(routePid)}">⚔ So kè với tôi</button>`:""))):route==="cmp"?(D=>mxCompare(D,routePid)):route==="buoi"?(D=>mxShell(D,mxBack("app","Lịch sử").replace('data-go="app"','data-go="app" data-t="ls"')+vBuoi(D,routeSid)+mxAchBtn(D,routeSid))):
     ({san:mxLive,bxh:mxRank,ls:mxHist,tien:mxHist,toi:mxMeTab,dk:mxSession,gt:mxIntro,nguoi:mxMembers}[tab]||mxHome);
   return v(D);
 }

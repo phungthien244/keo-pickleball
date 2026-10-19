@@ -97,7 +97,8 @@ function meBox(D,opt={}){
   else if(isG(D.c))st="Chờ lượt theo lịch giải";
   else{const q=waitQueue(D).findIndex(x=>x.id===p.id);st=q>=0?`Thứ ${q+1} trong hàng chờ`:"Đang chờ"}
   const today=s.g?`${s.w} thắng ${s.l} thua hôm nay`:"Chưa đánh trận nào hôm nay";
-  let h=`<div class="mebox">${av(p,"md")}<span class="t"><small>Xin chào 👋</small><b>${esc(p.name)}</b><span class="st"><i class="${pm?"on":""}">${esc(st)}</i><i>${today}</i></span></span><span class="r"><b class="num">${r2(s.rating)}</b><small>hạng ${rank}/${all.length}</small></span><button class="lnk" data-act="meclr">Đổi</button></div>`;
+  // Mini App: thanh "Lượt của tôi" phía trên đã thay thẻ chào này
+  let h=MINI?"":`<div class="mebox">${av(p,"md")}<span class="t"><small>Xin chào 👋</small><b>${esc(p.name)}</b><span class="st"><i class="${pm?"on":""}">${esc(st)}</i><i>${today}</i></span></span><span class="r"><b class="num">${r2(s.rating)}</b><small>hạng ${rank}/${all.length}</small></span><button class="lnk" data-act="meclr">Đổi</button></div>`;
   if(opt.pay!==false){const M=money(D);if(M.att.some(x=>x.id===p.id)){const k=payRow(D,M,p.id).pay;
     if(k>0)h+=`<div class="mepay"><span>Chi phí của bạn hôm nay <b class="num">${fmtK(k)}</b><small>tạm tính tới giờ</small></span>${BANK?`<button class="paybtn" data-act="pay" data-sid="${D.sid}" data-n="${esc(p.name)}" data-k="${k}">Chuyển tiền</button>`:""}</div>`}}
   return h;
