@@ -1039,9 +1039,9 @@ div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
 .mx .mxbody > .hero:first-child,.mx .mxbody > .phero:first-child{margin-top:-12px;margin-left:-12px;margin-right:-12px}
 .mini a.bk,.mini .mxback{display:none!important}
 /* Chuyển trang trong Mini App: nội dung trượt lên lần lượt như bản web, thanh CLB và thanh dưới đứng yên */
-.mxanim .mxbody > *{animation:up .45s var(--ease) both}
-.mxanim .mxbody > *:nth-child(2){animation-delay:.05s}.mxanim .mxbody > *:nth-child(3){animation-delay:.1s}.mxanim .mxbody > *:nth-child(4){animation-delay:.15s}.mxanim .mxbody > *:nth-child(n+5){animation-delay:.2s}
-.mxanim .mxbody tbody tr,.mxanim .mxbody .mrow,.mxanim .mxbody .hrow{animation:up .4s var(--ease) both}
+@keyframes mxin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.mxanim .mxbody > *{animation:mxin .3s var(--ease) both;will-change:transform,opacity}
+.mxanim .mxbody > *:nth-child(2){animation-delay:.04s}.mxanim .mxbody > *:nth-child(3){animation-delay:.08s}.mxanim .mxbody > *:nth-child(n+4){animation-delay:.12s}
 .mini main#view{padding:0}
 .mx{font-size:15px}
 .mxbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}

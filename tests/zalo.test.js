@@ -235,6 +235,8 @@ test("link mời quản lý mở bằng Zalo: nhận quyền trong Mini App, có
 });
 
 test("trang Cài đặt: link mời gửi qua Zalo mở Mini App", async () => {
+  delete globalThis.window.ZMINI;
+  await new Promise(r => setTimeout(r, 700)); // chờ hẹn giờ vẽ lại của bài Mini App trước chạy xong
   const e = setup({ host: "pikeco.app", path: "/q7/cai-dat", user: OWNER, data: base() });
   await e.boot(); await e.until(() => e.V().includes('data-act="inv"'));
   await e.click("inv", { v: "admin" });

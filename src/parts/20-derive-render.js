@@ -59,7 +59,11 @@ function render(){
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="clogin"?vClubLogin:route==="chot"?vChot:route==="vdv"?(D=>vHoSo(D,routePid)):route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs,dk:vDk,toi:vToi}[tab]||vSan);
   const loading=!S.offline&&!S.noClub&&!S.priv&&!(S.mReady&&S.hReady&&S.pReady);
-  const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim&&!noAnimOnce; if(!(MINI&&loading))lastAnim=akey; noAnimOnce=false;
+  // Mini App: chỉ chạy hiệu ứng khi đổi trang (không chạy lại khi dữ liệu về hay mạng đổi trạng thái)
+  const akey=MINI?route+"|"+routeSid+"|"+tab+"|"+(typeof mxMode==="function"?mxMode():""):route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim&&!noAnimOnce&&!(MINI&&loading);
+  // Đang chạy hiệu ứng mà dữ liệu cập nhật: chờ hiệu ứng xong mới vẽ lại, tránh giật/chạy lại 2 lần
+  if(MINI&&!doAnim&&!loading&&akey===lastAnim&&mxAnimUntil>Date.now()){clearTimeout(mxAnimT);mxAnimT=setTimeout(render,mxAnimUntil-Date.now()+30);return}
+  if(!(MINI&&loading))lastAnim=akey; noAnimOnce=false; if(MINI&&doAnim)mxAnimUntil=Date.now()+520;
   if(MINI&&MODE==="club"&&!S.noClub&&!clubChecked){if(!splashGone)hideSplash();$("#view").innerHTML=`<section class="mx">${mxLoading()}</section>`;return}
   if(MINI&&MODE==="club"&&!legacy&&!S.noClub){if(!splashGone)hideSplash();$("#view").innerHTML=`<section class="mx${doAnim&&!loading?" mxanim":""}">${loading?mxLoading():renderMini(D)}</section>`;mxCheckin(D);if(!loading&&mxMode()==="ql")syncSheet(D);
     if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}return}
@@ -69,7 +73,7 @@ function render(){
   if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}
 }
 const val=(key,def)=>drafts[key]!==undefined?drafts[key]:def;
-let lastAnim="",seenReady=false,bxF="all";const seen=new Set();
+let lastAnim="",mxAnimUntil=0,mxAnimT=null,seenReady=false,bxF="all";const seen=new Set();
 const isNew=k=>seenReady&&!seen.has(k);
 const today=()=>{const d=new Date();return `${d.getDate()}/${d.getMonth()+1}`};
 function pageHead(D){
