@@ -127,9 +127,8 @@ const flexNote=`<div class="flexnote"><b>Không khoá cứng.</b> Mọi mục tr
 function vPrep(D){
   const c=D.c,G=isG(c);
   let h=`<div class="phead2"><h2>${esc(sessTitle(c,D.sid))} · chuẩn bị</h2><p class="rule">${phaseOf(D)==="live"?"Buổi đang đánh. Sửa ở đây áp dụng từ trận kế tiếp, mọi thay đổi lưu ngay.":`Chỉ ban tổ chức thấy phần này. Thành viên thấy “Buổi #${D.sid} sắp bắt đầu”. Mọi thay đổi lưu ngay.`}</p></div>`;
-  h+=approvals(D);
   h+=card("Buổi này",buoiBlock(D));
-  if(!legacy)h+=card(tick("regon",regOpen(),"Mở đăng ký"),regAdmin(D));
+  if(!legacy&&isAdm())h+=dkBanner(D)||`<a class="dkban" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk"><span class="t"><b>Đăng ký buổi</b><small>Cho người chơi tự đăng ký trong Zalo</small></span><span aria-hidden="true">›</span></a>`;
   h+=card("Điểm danh",attChips(D));
   h+=card("Sân và luật điểm",fmtBlock(D));
   h+=card(tick("cphi",c.cphi!==false,"Chi phí"),moneyBlock(D));
@@ -297,7 +296,8 @@ async function sessionAct(act,id,b,e){
   if(act.startsWith("rr"))return rrAct(act);
   if(act==="sheet"){sheetOpen=true;render();return true}
   if(act==="sheetx"){if(b.classList&&b.classList.contains("sheetbg")&&e.target!==b)return true;sheetOpen=false;render();return true}
-  if(act==="start"){await write(()=>saveCfg({phase:"live"}),`Đã bắt đầu buổi #${derive().sid}`);return true}
+  if(act==="start"){const D=derive(),R=regOpen()?regList(D):null,add=R?D.players.filter(p=>p.active===false&&R.conf.some(x=>x.pid===p.id)):[];
+    await write(async()=>{for(const p of add)await db.collection("players").doc(p.id).update({active:true});await saveCfg(R?{phase:"live",reg:{...regCfg(),on:false}}:{phase:"live"})},`Đã bắt đầu buổi #${D.sid}${add.length?` · điểm danh thêm ${add.length} người đã đăng ký`:""}`);return true}
   if(act==="win2"){const on=b.dataset.v==="1";write(()=>saveCfg({win2:on}),on?"Thắng phải cách 2":"Chạm là thắng");return true}
   if(act==="ptmax"){const c=cfg(),on=b.dataset.v==="1";write(()=>saveCfg({ptMax:on?Math.max(c.target+2,+c.ptMax||c.target+4):0}));return true}
   if(act==="ptmaxd"){const c=cfg(),n=Math.min(40,Math.max(c.target+1,(+c.ptMax||c.target+4)+Number(b.dataset.d)));write(()=>saveCfg({ptMax:n}));return true}

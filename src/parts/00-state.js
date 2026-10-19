@@ -12,7 +12,7 @@ let routePid="",route="home",routeSid=0,autoRoute=true,hF="all";
              /aep/buoi/5  /aep/chot-buoi  /aep/cai-dat  /aep/moi/<mã mời>                              */
 const RSEG={start:"",clb:"clb",tao:"tao-clb",login:"dang-nhap",qt:"quan-tri"};
 const PSEG=Object.fromEntries(Object.entries(RSEG).map(([k,v])=>[v,k]));
-const SEGT={san:"san",bxh:"xep-hang",nguoi:"thanh-vien",tien:"quy",ls:"lich-su"};
+const SEGT={san:"san",bxh:"xep-hang",nguoi:"thanh-vien",tien:"quy",ls:"lich-su",dk:"dang-ky",toi:"cua-toi"};
 const TSEG=Object.fromEntries(Object.entries(SEGT).map(([k,v])=>[v,k]));
 // Trọng tài (tài khoản Trọng tài hoặc máy vào bằng PIN): chỉ nhập điểm sân được giao
 let REF=false,MYCT=[];
@@ -21,7 +21,14 @@ let MODE="platform",CID="aep",PFX="",CLUB=null,ROLE=null,legacy=true,INVITE=null
 // Bản Zalo Mini App: đường dẫn trong app nằm sau dấu #, mở thẳng CLB (?clb=… hoặc mặc định aep)
 const MINI=typeof window!=="undefined"&&!!window.ZMINI;
 const API=MINI?"https://pikeco.app":"";
-const curPath=()=>MINI?(String(location.hash||"").slice(1)||"/"+(String(new URLSearchParams(location.search||"").get("clb")||"aep").toLowerCase().replace(/[^a-z0-9-]/g,"")||"aep")):location.pathname;
+// Mini App mở: link CLB (?clb=) → trang Đăng ký CLB đó; đã từng vào CLB → CLB đó; chưa có → Khám phá CLB
+function miniStart(){
+  const q=String(new URLSearchParams(location.search||"").get("clb")||"").toLowerCase().replace(/[^a-z0-9-]/g,"");
+  let last="";try{last=localStorage.getItem("pb-mini-last")||""}catch(e){}
+  const c=q||String(last).replace(/[^a-z0-9-]/g,"");
+  return c?"/"+c+"/dang-ky":"/clb";
+}
+const curPath=()=>MINI?(String(location.hash||"").slice(1)||miniStart()):location.pathname;
 const setPath=(p,rep)=>{try{history[rep?"replaceState":"pushState"](null,"",MINI?location.pathname+location.search+"#"+p:p)}catch(e){}};
 const slugClean=x=>String(x||"").toLowerCase().replace(/[^a-z0-9-]/g,"");
 // Link cũ dạng ?clb=..&san=..&buoi=.. vẫn mở được, đổi sang đường dẫn mới
@@ -53,7 +60,7 @@ function readPath(path){
   return r}
 function applyPath(r){route=r.route;if(r.mode==="club"){if(r.tab)tab=r.tab;if(r.route==="buoi")routeSid=r.sid;if(r.route==="vdv")routePid=r.pid;if(r.route!=="home")autoRoute=false}}
 {const lp=legacyPath();if(lp)setPath(lp,1);
-  let r=readPath(lp||curPath());if(MINI&&r.mode!=="club")r=readPath("/aep");MODE=r.mode;if(r.mode==="club"){CID=r.cid;INVITE=r.invite||null}applyPath(r)}
+  let r=readPath(lp||curPath());if(MINI&&r.mode!=="club"&&r.route!=="clb")r=readPath("/clb");MODE=r.mode;if(r.mode==="club"){CID=r.cid;INVITE=r.invite||null}applyPath(r)}
 function pathOf(r,opt={}){
   if(RSEG[r]!==undefined)return "/"+RSEG[r];
   const c="/"+CID;
@@ -66,7 +73,7 @@ function pathOf(r,opt={}){
   return c}
 const absUrl=p=>(MINI?"https://pikeco.app":location.origin)+p;
 function go(r,opt={}){
-  if((RSEG[r]!==undefined?"platform":"club")!==MODE){if(MINI)return;location.href=pathOf(r,opt);return}
+  if((RSEG[r]!==undefined?"platform":"club")!==MODE){if(MINI){if(r==="clb"){setPath("/clb");location.reload()}return}location.href=pathOf(r,opt);return}
   route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="vdv")routePid=String(opt.pid||"");if(r==="app"&&opt.tab)tab=opt.tab;
   setPath(pathOf(r));
   if(!opt.keep)try{scrollTo({top:0})}catch(e){}

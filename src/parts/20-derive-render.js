@@ -45,6 +45,10 @@ function render(){
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:"";
   if(!splashGone&&(S.offline||S.noClub||(S.live&&S.mReady&&S.hReady)))hideSplash();
   if(autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
+  if(MINI&&route==="home"){route="app";tab="dk"}
+  {const tb=document.querySelector('#tabs [data-tab="dk"]');if(tb){const n=pendCount();tb.hidden=!(isAdm()&&!legacy);tb.textContent=n?`Đăng ký (${n})`:"Đăng ký"}}
+  if(MINI){const tb=document.getElementById("tabs");if(tb)tb.hidden=true;const tk=document.querySelector(".tkwrap");if(tk)tk.hidden=true;
+    $("#hact").innerHTML=`<button class="ghost" data-act="miniexplore">Khám phá</button>`}
   const selTab=route==="home"?"home":route==="buoi"?"ls":route==="chot"?"san":route==="vdv"?"bxh":(route==="caidat"||route==="clogin")?"":tab;
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===selTab));
   // Đang có buổi đánh: người xem qua link không thấy tab Quỹ và Lịch sử
@@ -54,10 +58,10 @@ function render(){
   {const tb=document.querySelector('#tabs [data-tab="ls"]');if(tb)tb.style.display=hideV?"none":""}
   document.title=route==="buoi"?`Tổng kết buổi #${routeSid} · ${c.title}`:route==="caidat"?`Cài đặt · ${c.title}`:route==="chot"?`Chốt buổi #${D.sid} · ${c.title}`:route==="vdv"?`${D.pmap.get(routePid)?.name||"Hồ sơ"} · ${c.title}`:c.title;
   const ae=document.activeElement, aid=ae&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
-  const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="clogin"?vClubLogin:route==="chot"?vChot:route==="vdv"?(D=>vHoSo(D,routePid)):route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs}[tab]||vSan);
+  const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="clogin"?vClubLogin:route==="chot"?vChot:route==="vdv"?(D=>vHoSo(D,routePid)):route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs,dk:vDk,toi:vToi}[tab]||vSan);
   const loading=!S.offline&&!S.noClub&&!S.priv&&!(S.mReady&&S.hReady&&S.pReady);
   const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim&&!noAnimOnce; lastAnim=akey; noAnimOnce=false;
-  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${loading?skeleton():v(D)}${clubFoot()}</section>`;
+  $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${loading?skeleton():v(D)}${MINI?"":clubFoot()}</section>${miniNav()}`;
   syncSheet(D);
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
   if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}
@@ -67,7 +71,7 @@ let lastAnim="",seenReady=false,bxF="all";const seen=new Set();
 const isNew=k=>seenReady&&!seen.has(k);
 const today=()=>{const d=new Date();return `${d.getDate()}/${d.getMonth()+1}`};
 function pageHead(D){
-  const H={san:[sessTitle(D.c,D.sid)+" · "+today(),"Sân đấu"],bxh:[sessTitle(D.c,D.sid)+" · hôm nay","Xếp hạng"],nguoi:[(CLUB?.name||D.c.title),"Thành viên"],tien:[sessTitle(D.c,D.sid)+" · "+today(),"Quỹ"],ls:["Các buổi đã đánh","Lịch sử"]}[tab]||["",""];
+  const H={dk:[(CLUB?.name||D.c.title),"Đăng ký buổi"],toi:[(CLUB?.name||D.c.title),"Của tôi"],san:[sessTitle(D.c,D.sid)+" · "+today(),"Sân đấu"],bxh:[sessTitle(D.c,D.sid)+" · hôm nay","Xếp hạng"],nguoi:[(CLUB?.name||D.c.title),"Thành viên"],tien:[sessTitle(D.c,D.sid)+" · "+today(),"Quỹ"],ls:["Các buổi đã đánh","Lịch sử"]}[tab]||["",""];
   if(isG(D.c)){if(tab==="san"||tab==="tien")H[1]="Cặp cố định xoay vòng";if(tab==="bxh"){H[0]=D.c.sname?sessTitle(D.c,D.sid):"Cặp cố định xoay vòng";H[1]="Xếp hạng cặp"}}
   return `<div class="phead"><span class="eyebrow">${esc(H[0])}</span><h2 class="ptitle">${esc(H[1])}</h2></div>`;
 }

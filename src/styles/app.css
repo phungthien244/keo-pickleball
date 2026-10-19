@@ -981,3 +981,27 @@ button.zalobtn b{display:inline-grid;place-items:center;width:22px;height:22px;b
 .rgme.wt{background:var(--warn-bg);color:var(--warn)}
 .rgme b{flex:1}
 .rgme small{font-size:12px}
+/* ----- Đăng ký: banner chủ CLB, QR, Mini App ----- */
+.dkban{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--win);padding:12px 14px;margin-bottom:12px;color:inherit;text-decoration:none}
+.dkban .t{flex:1;display:flex;flex-direction:column}
+.dkban small{color:var(--muted);font-size:13px}
+.dkban>span:last-child{font-size:22px;color:var(--muted)}
+.dkqr{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:8px}
+.dkqr img{background:#fff;border:1px solid var(--line)}
+.regcard.mini{opacity:.85}
+a.zalobtn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:44px;background:#0068ff;color:#fff;font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.12em;text-transform:uppercase;text-decoration:none}
+a.zalobtn b{display:inline-grid;place-items:center;width:22px;height:22px;background:#fff;color:#0068ff;border-radius:50%;font-size:13px;letter-spacing:0}
+a.primary.wide,a.line.wide{display:flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+a.primary.wide{background:var(--blue);color:#fff}
+a.line.wide{border:1px solid var(--line-2);color:inherit;margin-top:8px}
+.clubrow{display:flex;justify-content:space-between;align-items:center;width:100%;text-transform:none;letter-spacing:0;font-family:var(--body);font-size:15px;margin-bottom:6px}
+.clubrow small{color:var(--muted);font-size:12px}
+.clubrow.on{border-color:var(--win)}
+button.ccard{width:100%;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:400;font-size:15px}
+.mnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.mnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;min-height:56px;font-size:10px;color:var(--muted)}
+.mnav button span{font-size:18px;letter-spacing:0}
+.mnav button[aria-selected="true"]{color:var(--ink)}
+.mini .wrap{padding-bottom:80px}
+.linkrow span{word-break:break-all}
+.linkrow button{white-space:nowrap}

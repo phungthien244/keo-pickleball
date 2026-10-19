@@ -22,7 +22,7 @@ function loadMyClub(){
 }
 const gBtn=`<button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button>`;
 const clubUrl=id=>absUrl("/"+id);
-const clubCard=c=>`<a class="ccard" href="/${esc(c.id)}"><span class="i">${logoHtml(c,c.name||c.id)}</span><span class="b"><b>${esc(c.name||c.id)}</b><span>pikeco.app/${esc(c.id)}${c.city?" · "+esc(c.city):""}</span></span><span class="c" aria-hidden="true">›</span></a>`;
+const clubCard=c=>MINI?`<button class="ccard" data-act="miniclub" data-id="${esc(c.id)}"><span class="i">${logoHtml(c,c.name||c.id)}</span><span class="b"><b>${esc(c.name||c.id)}</b><span>${esc(c.city||"Pickleball")}${c.size?" · "+esc(c.size)+" người":""}</span></span><span class="c" aria-hidden="true">›</span></button>`:`<a class="ccard" href="/${esc(c.id)}"><span class="i">${logoHtml(c,c.name||c.id)}</span><span class="b"><b>${esc(c.name||c.id)}</b><span>pikeco.app/${esc(c.id)}${c.city?" · "+esc(c.city):""}</span></span><span class="c" aria-hidden="true">›</span></a>`;
 const publicClubs=()=>(S.clubs||[]).filter(c=>c.public!==false&&clubSt(c)==="active").sort((a,b)=>String(a.name).localeCompare(String(b.name),"vi"));
 const lab=(t,more="")=>`<div class="lab"><span class="eyebrow">${t}</span>${more}</div>`;
 const pfoot=()=>`<footer class="pfoot2"><b>PIKECO.APP</b><span>Quản lý CLB pickleball · miễn phí cho CLB${isPA()?` · <a href="/quan-tri" data-go="qt">Quản trị nền tảng</a>`:""}</span></footer>`;
@@ -42,9 +42,12 @@ function vStart(){
 function vClb(){
   loadClubs();
   const q=noAcc(String(val("cq",""))).toLowerCase().trim(),all=publicClubs(),list=all.filter(c=>!q||noAcc(`${c.name} ${c.city||""} ${c.id}`).toLowerCase().includes(q));
-  let h=`<div class="dhead"><span class="eyebrow y">pikeco.app</span><h1>Các CLB</h1></div>
+  const mine=MINI?myClubs():[];
+  let h=`<div class="dhead"><span class="eyebrow y">${MINI?"Khám phá":"pikeco.app"}</span><h1>${MINI?"Tìm CLB pickleball":"Các CLB"}</h1>${MINI?"":`<p class="rule">Thành viên đăng ký buổi chơi trong Zalo Mini App Pikeco. Mở CLB rồi bấm Đăng ký.</p>`}</div>
+  ${mine.length?lab("CLB của bạn")+`<div class="clist">${mine.map(c=>clubCard({...(S.clubs||[]).find(x=>x.id===c.id)||{},id:c.id,name:c.name})).join("")}</div>`+lab("Tất cả CLB"):""}
   <label class="srch"><span class="sr">Tìm CLB</span><input id="cq" data-draft="cq" type="search" placeholder="Tên CLB hoặc tỉnh thành" value="${esc(val("cq",""))}"></label>`;
   h+=!S.clubs?`<p class="rule">Đang tải…</p>`:list.length?`<div class="clist">${list.map(clubCard).join("")}</div>`:`<p class="rule">${all.length?"Không có CLB nào khớp.":"Chưa có CLB công khai nào."}</p>`;
+  if(MINI)return h+`<button class="btn-line" data-act="openweb" data-v="/tao-clb">Bạn quản lý CLB? Tạo CLB miễn phí</button>`;
   return h+`<a class="btn-line" href="/tao-clb" data-go="tao">CLB của bạn chưa có ở đây? Tạo CLB</a>`+pfoot();
 }
 function vLogin(){
@@ -64,7 +67,7 @@ function vLogin(){
 function renderPlatform(){
   const u=authUser,t=$(".tkwrap"),tb=$("#tabs"),lg=$("#clogo");if(t)t.hidden=true;if(tb)tb.hidden=true;if(lg)lg.hidden=true;
   $("#title").innerHTML=`pikeco<span class="dotapp">.app</span>`;$("#curl").textContent="";
-  $("#hact").innerHTML=isGoogle(u)?`${S.myClub?`<a href="/${esc(S.myClub)}">CLB của tôi</a>`:""}<button data-act="logout">Thoát</button>`:`<a href="/dang-nhap" data-go="login">Đăng nhập</a>`;
+  $("#hact").innerHTML=MINI?"":isGoogle(u)?`${S.myClub?`<a href="/${esc(S.myClub)}">CLB của tôi</a>`:""}<button data-act="logout">Thoát</button>`:`<a href="/dang-nhap" data-go="login">Đăng nhập</a>`;
   $("#sub").innerHTML="";
   if(!splashGone)hideSplash();
   document.title={start:"pikeco.app · Quản lý CLB pickleball",clb:"Các CLB · pikeco.app",tao:"Tạo CLB · pikeco.app",login:"Đăng nhập · pikeco.app",qt:"Quản trị · pikeco.app"}[route]||"pikeco.app";
