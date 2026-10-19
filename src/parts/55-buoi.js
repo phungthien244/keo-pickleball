@@ -296,8 +296,8 @@ async function sessionAct(act,id,b,e){
   if(act.startsWith("rr"))return rrAct(act);
   if(act==="sheet"){sheetOpen=true;render();return true}
   if(act==="sheetx"){if(b.classList&&b.classList.contains("sheetbg")&&e.target!==b)return true;sheetOpen=false;render();return true}
-  if(act==="start"){const D=derive(),R=regOpen()?regList(D):null,add=R?D.players.filter(p=>p.active===false&&R.conf.some(x=>x.pid===p.id)):[];
-    await write(async()=>{for(const p of add)await db.collection("players").doc(p.id).update({active:true});await saveCfg(R?{phase:"live",reg:{...regCfg(),on:false}}:{phase:"live"})},`Đã bắt đầu buổi #${D.sid}${add.length?` · điểm danh thêm ${add.length} người đã đăng ký`:""}`);return true}
+  if(act==="start"){const D=derive(),ro=regOpen();let n=0;
+    await write(async()=>{n=await regStart(D);await saveCfg(ro?{phase:"live",reg:{...regCfg(),on:false}}:{phase:"live"})},`Đã bắt đầu buổi #${D.sid}`);if(n)toast(`Đã bắt đầu · điểm danh thêm ${n} người đã đăng ký`);return true}
   if(act==="win2"){const on=b.dataset.v==="1";write(()=>saveCfg({win2:on}),on?"Thắng phải cách 2":"Chạm là thắng");return true}
   if(act==="ptmax"){const c=cfg(),on=b.dataset.v==="1";write(()=>saveCfg({ptMax:on?Math.max(c.target+2,+c.ptMax||c.target+4):0}));return true}
   if(act==="ptmaxd"){const c=cfg(),n=Math.min(40,Math.max(c.target+1,(+c.ptMax||c.target+4)+Number(b.dataset.d)));write(()=>saveCfg({ptMax:n}));return true}

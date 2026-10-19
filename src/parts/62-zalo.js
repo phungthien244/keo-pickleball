@@ -70,108 +70,6 @@ function linkCard(D){
   return h+`</div>`;
 }
 
-/* ----- Đăng ký buổi ----- */
-const MINI_APP_ID="180913816434821856";
-const miniLink=(cid=CID)=>`https://zalo.me/s/${MINI_APP_ID}/?clb=${encodeURIComponent(cid)}`;
-const regCfg=()=>cfg().reg||{};
-// Mỗi CLB mở đăng ký cho 1 buổi sắp tới (buổi hiện tại đang chuẩn bị)
-const regOpen=()=>{const r=regCfg();return r.on===true&&(r.sid==null||r.sid===(cfg().session||1))};
-function regList(D){
-  const max=Math.max(1,+regCfg().max||999);
-  const L=[...(S.regs||[])].filter(r=>r.sid===D.sid).sort((a,b)=>(a.at||0)-(b.at||0));
-  return {all:L,conf:L.slice(0,max),wait:L.slice(max),max};
-}
-const regLockAt=()=>{const r=regCfg();return r.at?r.at-(+r.lockH||0)*3600e3:0};
-const dowVN=t=>["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"][new Date(t).getDay()];
-const regWhen=t=>t?`${dowVN(t)} ${hm(t)} · ${dmy(t)}`:"";
-const pendCount=()=>(S.links||[]).filter(x=>x.status==="pending").length;
-// Thông tin buổi tới: tên, giờ, sân, số chỗ
-function sessBox(D,R){
-  const r=regCfg();R=R||regList(D);
-  return `<div class="rh"><span class="lbl">Đăng ký buổi</span><b>${esc(D.c.sname||"Buổi đánh tới")}</b><span>${esc(regWhen(r.at))}${r.place?` · ${esc(r.place)}`:""}</span></div>
-    <div class="rgn"><b class="num">${R.conf.length}/${R.max<999?R.max:"∞"}</b><span>đã đăng ký${R.wait.length?` · ${R.wait.length} người chờ`:""}${r.lockH&&r.at?` · hủy được tới ${hm(regLockAt())} ${dowVN(regLockAt())}`:""}</span></div>`;
-}
-function regFaces(D,R){
-  const face=x=>{const p=D.pmap.get(x.pid);return `<span class="rgp">${av(p||{name:x.name},"sm",1)}<small>${esc(p?.name||x.name||"?")}</small></span>`};
-  return `${R.conf.length?`<div class="rgl">${R.conf.map(face).join("")}</div>`:""}${R.wait.length?`<span class="lbl" style="margin-top:6px">Danh sách chờ</span><div class="rgl wt">${R.wait.map(face).join("")}</div>`:""}`;
-}
-// Nút chính cho người chơi: Đăng ký / Vào danh sách chờ / Hủy / Đã khóa hủy
-function regAction(D,R){
-  const r=regCfg(),u=authUser,mine=R.all.find(x=>x.uid&&u&&x.uid===u.uid),pos=mine?R.all.indexOf(mine):-1,locked=r.at&&Date.now()>regLockAt();
-  if(canWrite)return `<a class="lnk" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">Quản lý đăng ký ›</a>`;
-  if(!PLAYER_ON())return `<a class="zalobtn" href="${miniLink()}"><b>Z</b>Mở trong Zalo để đăng ký</a>`;
-  if(!isPlayer(u))return zaloBtn("Vào bằng Zalo để đăng ký");
-  if(!S.link||S.link.status!=="ok")return `<a class="primary wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">Chọn tên của bạn để đăng ký</a>`;
-  if(mine)return `<div class="rgme ${pos<R.max?"in":"wt"}"><b>${pos<R.max?"✓ Bạn đã đăng ký":`Bạn đang chờ · thứ ${pos-R.max+1}`}</b>${locked?`<small>Đã khóa hủy</small>`:`<button class="ghost danger" data-act="regout">${armed("regout:x")?"Bấm lần nữa để hủy":"Hủy đăng ký"}</button>`}</div>`;
-  if(r.at&&Date.now()>r.at)return `<small class="rule">Đã qua giờ đánh, không đăng ký thêm được.</small>`;
-  return `<button class="primary wide" data-act="regin">${R.conf.length>=R.max?"Vào danh sách chờ":"Đăng ký tham gia"}</button>`;
-}
-function regCard(D){
-  if(MODE!=="club"||legacy||!regOpen()||phaseOf(D)==="live")return "";
-  const R=regList(D);
-  return `<section class="regcard">${sessBox(D,R)}${regAction(D,R)}${regFaces(D,R)}</section>`;
-}
-// Chủ CLB ở trang Tổng quan / Chuẩn bị: một dòng tóm tắt dẫn tới trang Đăng ký
-function dkBanner(D){
-  if(!isAdm()||legacy)return "";
-  const n=pendCount(),R=regList(D);
-  if(!n&&!regOpen())return "";
-  return `<a class="dkban" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk"><span class="t"><b>Đăng ký buổi${regOpen()?` · ${R.conf.length}/${R.max<999?R.max:"∞"}`:""}</b><small>${n?`${n} người chờ duyệt`:regOpen()?"Đang mở đăng ký":""}</small></span><span aria-hidden="true">›</span></a>`;
-}
-
-/* ----- Trang Đăng ký (tab dk) ----- */
-function vDk(D){
-  if(legacy)return `<div class="empty"><strong>Chưa dùng được</strong>CLB cần chuyển sang tài khoản CLB trước.</div>`;
-  if(isAdm())return dkAdmin(D);
-  return dkPlayer(D);
-}
-function dkPlayer(D){
-  const live=phaseOf(D)==="live",R=regList(D),u=authUser;
-  let h="";
-  if(PLAYER_ON()&&!isPlayer(u))return h+`<section class="regcard"><b>Đang vào bằng Zalo…</b><span class="rule">Nếu chờ lâu, bấm nút dưới.</span>${zaloBtn("Vào lại bằng Zalo")}</section>`;
-  if(PLAYER_ON()&&S.link===undefined)return h+`<p class="rule">Đang tải…</p>`;
-  if(PLAYER_ON()&&(!S.link||S.link.status!=="ok")){
-    h+=linkCard(D);
-    if(regOpen()&&!live)h+=`<section class="regcard mini">${sessBox(D,R)}</section>`;
-    return h;
-  }
-  if(live)return h+`<section class="regcard"><span class="lbl">Buổi đang diễn ra</span><b>${esc(sessTitle(D.c,D.sid))}</b><span class="rule">${D.playing.length} sân đang đánh · ${D.done.length} trận xong</span><a class="primary wide" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Xem trực tiếp</a></section>`;
-  if(!regOpen())return h+`<section class="regcard"><span class="lbl">Đăng ký buổi</span><b>Chưa mở đăng ký buổi tới</b><span class="rule">Chủ CLB mở đăng ký là bạn thấy ở đây.</span></section>`;
-  return h+regCard(D);
-}
-function dkAdmin(D){
-  const R=regList(D),r=regCfg(),open=regOpen();
-  let h=approvals(D);
-  h+=card(tick("regon",open,"Mở đăng ký buổi tới"),open?regAdmin(D):`<small class="rule">Người chơi đăng ký trong Zalo Mini App: giới hạn chỗ, danh sách chờ, khóa hủy trước giờ đánh. Tích để mở cho ${esc(sessTitle(D.c,D.sid))}.</small>`);
-  if(open){
-    const link=miniLink();
-    h+=card("Gửi link đăng ký",`<p class="rule">Link mở thẳng trang đăng ký trong Zalo. Dán vào nhóm hoặc in mã QR dán ở sân.</p>
-      <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="cp" data-v="${esc(link)}">Copy</button></div>
-      <div class="dkqr"><img alt="Mã QR mở trang đăng ký" width="180" height="180" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&data=${encodeURIComponent(link)}"><button class="primary" data-act="regshare">📤 Gửi tin mở đăng ký</button></div>`);
-  }
-  if(phaseOf(D)==="prep"&&R.all.length)h+=`<p class="rule" style="text-align:center">Bấm “Bắt đầu buổi” ở trang Sân, những người đã đăng ký được tự điểm danh.</p>`;
-  return h;
-}
-function regAdmin(D){
-  const r=regCfg(),R=regList(D);
-  const dt=r.at?new Date(r.at-new Date(r.at).getTimezoneOffset()*6e4).toISOString().slice(0,16):"";
-  const nm=x=>esc(D.pmap.get(x.pid)?.name||x.name||"?");
-  return `<label class="fld"><span class="lbl">Giờ đánh</span><input type="datetime-local" data-save="reg" data-key="at" value="${dt}"></label>
-    <label class="fld"><span class="lbl">Địa điểm (không bắt buộc)</span><input data-save="reg" data-key="place" maxlength="60" value="${esc(r.place||"")}" placeholder="Sân Kỳ Hòa"></label>
-    <div class="form f3"><label class="fld"><span class="lbl">Số chỗ</span><input type="number" min="1" inputmode="numeric" data-save="reg" data-key="max" value="${+r.max||""}" placeholder="∞"></label>
-    <label class="fld"><span class="lbl">Khóa hủy trước (giờ)</span><input type="number" min="0" inputmode="numeric" data-save="reg" data-key="lockH" value="${r.lockH??2}"></label></div>
-    <div class="lab" style="margin:8px 0 4px"><span class="lbl">Đã đăng ký ${R.conf.length}${R.wait.length?` · chờ ${R.wait.length}`:""}</span>${R.all.length?`<button class="lnk" data-act="regatt">${armed("regatt:x")?"Bấm lần nữa":"Điểm danh theo đăng ký"}</button>`:""}</div>
-    ${R.all.length?`<div class="prel">${R.all.map((x,i)=>`<div class="prer${i>=R.max?" done":""}"><b class="no num">${i+1}</b><span class="pm">${nm(x)}${i>=R.max?` <small>· chờ</small>`:""}<small>${hm(x.at)} ${dmy(x.at)}${x.by?" · "+esc(x.by):""}</small></span><span class="pb"><button class="ghost danger" data-act="regdel" data-id="${x.id}" aria-label="Bỏ">${armed("regdel:"+x.id)?"Bỏ?":"✕"}</button></span></div>`).join("")}</div>`:`<small class="rule">Chưa ai đăng ký.</small>`}
-    <button class="line wide" data-act="regadd" style="margin-top:8px">${regAddOpen?"Đóng":"+ Thêm người vào danh sách"}</button>
-    ${regAddOpen?`<div class="gadd">${pplPick(D,D.players.filter(p=>!R.all.some(x=>x.pid===p.id)),{act:"regaddp",key:"rga"})}</div>`:""}`;
-}
-let regAddOpen=false;
-function approvals(D){
-  if(!isAdm()||legacy)return "";
-  const L=(S.links||[]).filter(x=>x.status==="pending");if(!L.length)return "";
-  return `<section class="card2 apv"><h2>Người chơi chờ duyệt (${L.length})</h2><div class="cb">${L.map(x=>`<div class="refrow"><span class="t"><b>${esc(x.zname||"Người dùng Zalo")}</b><small>${x.pid?`Nhận hồ sơ: <b>${esc(D.pmap.get(x.pid)?.name||"?")}</b>${D.pmap.get(x.pid)?.zuid?" (đã có người nhận)":""}`:`Người mới: <b>${esc(x.newName||"")}</b> · ${x.gender==="F"?"Nữ":"Nam"}`}</small></span><button class="primary" data-act="lnkok" data-id="${x.id}">Duyệt</button><button class="ghost danger" data-act="lnkno" data-id="${x.id}">${armed("lnkno:"+x.id)?"Từ chối?":"Từ chối"}</button></div>`).join("")}</div></section>`;
-}
-
 /* ----- Mini App: Của tôi, các CLB đã tham gia, thanh dưới ----- */
 function myClubs(){try{return JSON.parse(localStorage.getItem("pb-mini-clubs")||"[]").filter(x=>x&&x.id)}catch(e){return []}}
 function rememberClub(){
@@ -215,29 +113,12 @@ async function zaloAct(act,b,id){
     if(lnkNew){d.newName=nn;d.gender=drafts["lnk-g"]==="F"?"F":"M"}else d.pid=lnkPick;
     try{await FB.setDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid),d);toast("Đã gửi, chờ chủ CLB duyệt")}catch(e){toast("Chưa gửi được, thử lại.")}
     return true}
-  if(act==="regin"){const D=derive(),L=S.link;if(!isPlayer(authUser)||!L||L.status!=="ok")return true;
-    if(regList(D).all.some(x=>x.pid===L.pid)){toast("Bạn đã có trong danh sách.");return true}
-    if(regCfg().at&&Date.now()>regCfg().at){toast("Buổi này đã qua giờ đăng ký.");return true}
-    try{await FB.setDoc(FB.doc(FB.fs,PFX+"regs/"+D.sid+"_"+authUser.uid),{sid:D.sid,uid:authUser.uid,pid:L.pid,name:D.pmap.get(L.pid)?.name||"",at:Date.now()});toast("Đã đăng ký")}catch(e){toast("Chưa đăng ký được, thử lại.")}
-    return true}
-  if(act==="regout"){const D=derive();if(!armOr("regout:x"))return true;
-    const mine=regList(D).all.find(x=>x.uid===authUser.uid);if(!mine)return true;
-    try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"regs/"+mine.id));toast("Đã hủy đăng ký")}catch(e){toast("Đã quá giờ hủy hoặc chưa hủy được.")}
-    return true}
+  if(await regAct(act,b,id))return true;
   return false;
 }
 async function zaloAdminAct(act,b,id){
   const D=derive();
-  if(act==="regon"){const on=!regOpen();await write(()=>saveCfg({reg:{lockH:2,...regCfg(),on,sid:D.sid}}),on?"Đã mở đăng ký":"Đã đóng đăng ký");return true}
-  if(act==="regadd"){regAddOpen=!regAddOpen;render();return true}
-  if(act==="regaddp"){const p=D.pmap.get(id);if(!p)return true;await write(()=>db.collection("regs").doc(D.sid+"_p_"+id).set({sid:D.sid,uid:p.zuid||null,pid:id,name:p.name,at:Date.now(),by:who()}),`Đã thêm ${p.name}`);return true}
-  if(act==="regdel"){if(!armOr("regdel:"+id))return true;await write(()=>db.collection("regs").doc(id).delete(),"Đã bỏ khỏi danh sách");return true}
-  if(act==="regatt"){const R=regList(D),inS=new Set(R.conf.map(x=>x.pid));if(!armOr("regatt:x"))return true;
-    await write(async()=>{for(const p of D.players){const on=inS.has(p.id);if((p.active!==false)!==on)await db.collection("players").doc(p.id).update({active:on})}},`Điểm danh ${inS.size} người theo danh sách đăng ký`);return true}
-  if(act==="regshare"){const r=regCfg(),R=regList(D),u=miniLink(),club=(CLUB&&CLUB.name)||D.c.title,left=+r.max?Math.max(0,+r.max-R.conf.length):null;
-    const txt=`📣 ${club}: mở đăng ký ${D.c.sname||"buổi đánh tới"}\n🗓 ${regWhen(r.at)}${r.place?`\n📍 ${r.place}`:""}\n✅ Đã đăng ký ${R.conf.length}${+r.max?`/${r.max}`:""} người${left===0?" · hết chỗ, vẫn vào danh sách chờ được":left?` · còn ${left} chỗ`:""}${r.lockH&&r.at?`\n⏰ Hủy được tới ${hm(regLockAt())} ${dowVN(regLockAt())}`:""}\n👉 Bấm link, đăng ký ngay trong Zalo:`;
-    if(navigator.share){try{await navigator.share({title:"Mở đăng ký",text:txt+"\n",url:u})}catch(x){}return true}
-    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return true}
+  if(await regAdminAct(act,b,id,D))return true;
   if(act==="lnkok"){const x=(S.links||[]).find(z=>z.id===id);if(!x)return true;
     await write(async()=>{let pid=x.pid;
       if(!pid){const ref=db.collection("players").doc();pid=ref.id;await ref.set({name:x.newName||x.zname||"Người chơi",gender:x.gender==="F"?"F":"M",rating0:2.5,active:false,createdAt:Date.now(),code:"PB-"+String(nextCode()).padStart(3,"0"),zuid:id})}

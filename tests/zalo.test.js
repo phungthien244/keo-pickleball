@@ -126,3 +126,53 @@ test("Zalo Mini App: tự vào bằng ID Zalo, mở thẳng CLB, chọn tên", a
   await e.until(() => e.store.get("clubs/q7/links/zalo_9")?.pid === "p3");
   delete globalThis.window.ZMP;
 });
+
+test("thu tiền trước: người chơi chuyển khoản lúc đăng ký, chủ CLB xác nhận, trang Quỹ đánh dấu đã trả", async () => {
+  const data = base({ "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1, bank: { code: "mb", bin: "970422", name: "MB Bank", acc: "0123456789", holder: "NGUYEN A" } },
+    "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep", thu: "phi", phi: 60, reg: { on: true, sid: 1, max: 8, pay: "opt" } },
+    "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
+  MINI(e, "#/q7/dang-ky");
+  await e.boot(); await e.until(() => e.V().includes('data-act="regin" data-v="sent"'));
+  expect(e.V()).toContain("img.vietqr.io");
+  expect(e.T()).toContain("60.000đ");
+  expect(e.T()).toContain("trả tiền tại sân");
+  await e.click("regin", { v: "sent" });
+  await e.until(() => e.store.get("clubs/q7/regs/1_zalo_9")?.pay === "sent");
+  await e.until(() => e.T().includes("Chờ xác nhận tiền"));
+  // chủ CLB xác nhận
+  const o = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data: Object.fromEntries(e.store) });
+  await o.boot(); await o.until(() => o.V().includes('data-act="regpayok"'));
+  await o.click("regpayok", { id: "1_zalo_9" });
+  await o.until(() => o.store.get("clubs/q7/regs/1_zalo_9").pay === "ok");
+  await o.until(() => o.store.get("clubs/q7/app/pay-1")?.paid?.p1 === true);
+});
+
+test("khách vãng lai đăng ký không cần duyệt, bắt đầu buổi thì có hồ sơ và được điểm danh", async () => {
+  const data = base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep", reg: { on: true, sid: 1, max: 8, guests: true, feeG: 80 } } });
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
+  MINI(e, "#/q7/dang-ky");
+  await e.boot(); await e.until(() => e.V().includes('data-act="guestopen"'));
+  await e.click("guestopen"); await e.until(() => e.V().includes('id="gs-name"'));
+  e.input("gs-name", "Tuấn khách"); await e.click("gsg", { v: "M" });
+  await e.click("guestin", { v: "none" });
+  await e.until(() => e.store.get("clubs/q7/regs/1_zalo_9")?.guest === true);
+  expect(e.store.get("clubs/q7/regs/1_zalo_9").name).toBe("Tuấn khách");
+  const o = setup({ host: "pikeco.app", path: "/q7/san", user: OWNER, data: Object.fromEntries(e.store) });
+  await o.boot(); await o.until(() => o.V().includes('data-act="start"'));
+  await o.click("start");
+  await o.until(() => o.store.get("clubs/q7/app/config").phase === "live");
+  await o.until(() => o.store.get("clubs/q7/regs/1_zalo_9").pid);
+  const pid = o.store.get("clubs/q7/regs/1_zalo_9").pid;
+  expect(o.store.get("clubs/q7/players/" + pid)).toMatchObject({ name: "Tuấn khách", guest: true, active: true, rating0: 3 });
+});
+
+test("bắt buộc thu trước: giữ chỗ quá 30 phút chưa chuyển thì nhường chỗ", async () => {
+  const old = Date.now() - 31 * 60e3;
+  const data = base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep", thu: "phi", phi: 50, reg: { on: true, sid: 1, max: 1, pay: "req" } },
+    "clubs/q7/regs/1_p_p1": { sid: 1, pid: "p1", at: old, pay: "none" }, "clubs/q7/regs/1_p_p2": { sid: 1, pid: "p2", at: old + 1000, pay: "sent" } });
+  const e = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data });
+  await e.boot(); await e.until(() => e.T().includes("đã nhường chỗ"));
+  expect(e.T()).toContain("Đã đăng ký 1");
+  expect(e.T()).not.toContain("chờ 1");
+});

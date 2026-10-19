@@ -194,15 +194,36 @@ service cloud.firestore {
         allow read: if canRead();
         allow create: if canEdit() || (
           active() && player()
-          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at'])
+          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv'])
           && request.resource.data.uid == request.auth.uid
           && id == string(request.resource.data.sid) + '_' + request.auth.uid
           && cfgDoc().get('reg', {}).get('on', false) == true
           && request.resource.data.sid == cfgDoc().get('session', 1)
-          && myLink().status == 'ok'
-          && myLink().pid == request.resource.data.pid
+          && request.resource.data.get('pay', 'none') in ['none', 'sent']
+          && (cfgDoc().get('reg', {}).get('deadline', 0) == 0
+              || request.time.toMillis() < cfgDoc().get('reg', {}).get('deadline', 0))
+          && (
+            (myLink().status == 'ok' && myLink().pid == request.resource.data.pid
+              && request.resource.data.get('guest', false) == false)
+            || (cfgDoc().get('reg', {}).get('guests', false) == true
+              && request.resource.data.get('guest', false) == true
+              && request.resource.data.get('pid', null) == null
+              && request.resource.data.name is string && request.resource.data.name.size() > 0)
+          )
         );
-        allow update: if canEdit();
+        // Người chơi: báo đã chuyển khoản (chưa trả → đã chuyển), hoặc hủy trước giờ khóa hủy
+        function beforeLock() {
+          return cfgDoc().get('reg', {}).get('lockAt', 0) == 0
+            || request.time.toMillis() < cfgDoc().get('reg', {}).get('lockAt', 0);
+        }
+        allow update: if canEdit() || (
+          player() && resource.data.uid == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pay', 'paidAt', 'cancel', 'cancelAt'])
+          && (request.resource.data.get('pay', 'none') == resource.data.get('pay', 'none')
+              || (resource.data.get('pay', 'none') == 'none' && request.resource.data.get('pay', 'none') == 'sent'))
+          && (!('cancel' in request.resource.data.diff(resource.data).affectedKeys())
+              || (request.resource.data.cancel == true && beforeLock()))
+        );
         allow delete: if canEdit() || (
           player() && resource.data.uid == request.auth.uid
           && (cfgDoc().get('reg', {}).get('lockAt', 0) == 0

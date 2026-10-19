@@ -216,3 +216,36 @@ describe("người chơi Zalo", () => {
     await assertSucceeds(setDoc(doc(google("own"), "clubs/aep/regs/3_p_p1"), { sid: 3, pid: "p1", at: 2 }));
   });
 });
+
+describe("đăng ký: khách vãng lai và chuyển khoản", () => {
+  const zalo = uid => env.authenticatedContext(uid, { firebase: { sign_in_provider: "custom" } }).firestore();
+  const cfg = (reg) => seed({ "clubs/aep/app/config": { session: 3, reg: { on: true, ...reg } } });
+  const g = { sid: 3, uid: "zalo_7", guest: true, name: "Khách A", gender: "M", lv: "3.0", at: 1, pay: "none" };
+  test("khách đăng ký được khi CLB nhận khách, không được khi chỉ thành viên", async () => {
+    await cfg({ guests: false });
+    await assertFails(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), g));
+    await cfg({ guests: true });
+    await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), g));
+    await assertFails(setDoc(doc(zalo("zalo_8"), "clubs/aep/regs/3_zalo_8"), { ...g, uid: "zalo_8", pid: "p1" }));
+  });
+  test("không tự đánh dấu đã trả, chỉ báo đã chuyển; chủ CLB xác nhận", async () => {
+    await cfg({ guests: true });
+    await assertFails(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), { ...g, pay: "ok" }));
+    await seed({ "clubs/aep/regs/3_zalo_7": g });
+    await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), { pay: "ok" }));
+    await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), { name: "Khác" }));
+    await assertSucceeds(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), { pay: "sent", paidAt: 2 }));
+    await assertSucceeds(updateDoc(doc(google("ad"), "clubs/aep/regs/3_zalo_7"), { pay: "ok" }));
+    await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), { pay: "none" }));
+  });
+  test("hủy khi đã trả: trước giờ khóa được, sau giờ khóa không; hết hạn đăng ký không tạo mới", async () => {
+    await seed({ "clubs/aep/regs/3_zalo_7": { ...g, pay: "ok" } });
+    await cfg({ guests: true, lockAt: 4102444800000 });
+    await assertSucceeds(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), { cancel: true, cancelAt: 3 }));
+    await seed({ "clubs/aep/regs/3_zalo_7": { ...g, pay: "ok" } });
+    await cfg({ guests: true, lockAt: 1000 });
+    await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), { cancel: true, cancelAt: 3 }));
+    await cfg({ guests: true, deadline: 1000 });
+    await assertFails(setDoc(doc(zalo("zalo_9"), "clubs/aep/regs/3_zalo_9"), { ...g, uid: "zalo_9" }));
+  });
+});

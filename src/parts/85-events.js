@@ -15,8 +15,13 @@ document.addEventListener("change",e=>{
     write(()=>saveCfg({cnames:L}).then(()=>delete drafts["cn-"+i]),L[i-1]?`Đã đặt tên sân ${L[i-1]}`:`Sân thứ ${i} dùng tên mặc định`);return}
   if(s==="gprize"){if(!canWrite)return;const i=+t.dataset.i,pz=[...(cfg().giai?.prizes||[0,0,0])];pz[i]=Math.max(0,Number(t.value)||0);write(()=>saveG({prizes:pz}).then(()=>delete drafts["gz-"+i]));return}
   if(s==="reg"){if(!canWrite)return;const k=t.dataset.key,r={...regCfg()};let v=t.value;
-    if(k==="at"){const ms=v?new Date(v).getTime():0;r.at=Number.isFinite(ms)?ms:0}
+    if(k==="at"||k==="deadline"){const ms=v?new Date(v).getTime():0;r[k]=Number.isFinite(ms)?ms:0}
+    else if(k==="end")r.end=/^\d{1,2}:\d{2}$/.test(v)?v:"";
     else if(k==="place")r.place=String(v||"").trim().slice(0,60);
+    else if(k==="note")r.note=String(v||"").trim().slice(0,300);
+    else if(k==="map"){v=String(v||"").trim();if(v&&!/^https:\/\/[^\s]+$/.test(v)){toast("Link bản đồ cần bắt đầu bằng https://");return}r.map=v.slice(0,300)}
+    else if(k==="lvMin"||k==="lvMax"){const n=Math.round((Number(v)||0)*2)/2;r[k]=n?String(Math.min(8,Math.max(1,n))):""}
+    else if(k==="feeG"&&String(v).trim()==="")r.feeG="";
     else r[k]=Math.max(0,Math.floor(Number(v)||0));
     r.lockAt=r.at?r.at-(+r.lockH||0)*3600e3:0;write(()=>saveCfg({reg:r}));return}
   if(s==="name"){const v=t.value.trim();if(!v){toast("Tên không được để trống.");return}

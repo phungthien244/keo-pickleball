@@ -1005,3 +1005,22 @@ button.ccard{width:100%;text-align:left;text-transform:none;letter-spacing:0;fon
 .mini .wrap{padding-bottom:80px}
 .linkrow span{word-break:break-all}
 .linkrow button{white-space:nowrap}
+.rgchips{display:flex;flex-wrap:wrap;gap:6px}
+.rgchips span{font-size:12px;padding:3px 8px;background:var(--sunk);color:var(--muted)}
+.rgnote{margin:0;font-size:13px;color:var(--muted);border-left:3px solid var(--line-2);padding-left:8px}
+.rgpay{display:flex;gap:12px;align-items:center;background:var(--sunk);padding:10px}
+.rgpay img{background:#fff;flex:none}
+.kv2{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:13px;flex:1;min-width:0}
+.kv2 span{color:var(--muted)}
+.kv2 b{word-break:break-all}
+.kv2 button{grid-column:1/-1;margin-top:4px;min-height:36px}
+.paychip{display:inline-block;font-size:11px;padding:2px 7px;font-weight:600}
+.paychip.none{background:var(--sunk);color:var(--muted)}
+.paychip.sent{background:var(--warn-bg);color:var(--warn)}
+.paychip.ok{background:var(--win-bg);color:var(--win)}
+.paychip.refund{background:var(--sunk);color:var(--muted)}
+div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
+.gtag{background:var(--sunk);padding:1px 5px;font-size:11px}
+.rgsec{display:block;margin:14px 0 2px;padding-top:10px;border-top:1px solid var(--line);color:var(--ink)}
+.prer .pb{display:flex;gap:4px;align-items:center}
+.prer .pb .line{min-height:34px;padding:0 8px;font-size:10px}
