@@ -958,3 +958,26 @@ button.mebox.mtog{padding:14px 16px;min-height:0}
 .gnow .gcts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 .gnow .gcts .primary{min-height:44px;color:#fff}
 .gnow>.primary{margin-bottom:10px}.gnow .gsel{margin-bottom:8px}
+/* ----- Zalo: đăng nhập, nhận hồ sơ, đăng ký buổi ----- */
+button.zalobtn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#0068ff;border-color:#0068ff;color:#fff;font-size:12px}
+button.zalobtn b{display:inline-grid;place-items:center;width:22px;height:22px;background:#fff;color:#0068ff;border-radius:50%;font-size:13px;letter-spacing:0}
+.lnkcard{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-left:4px solid #0068ff;padding:14px;margin-bottom:12px}
+.lnkcard>span{color:var(--muted);font-size:14px}
+.lnkcard.wait{border-left-color:var(--warn);background:var(--warn-bg)}
+.lnkcard.wait>span{color:var(--warn)}
+.lnkcard .lnk{align-self:flex-start}
+.regcard{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--win);padding:14px;margin-bottom:12px}
+.regcard .rh{display:flex;flex-direction:column;gap:2px}
+.regcard .rh b{font-family:var(--display);font-size:18px;font-weight:900}
+.regcard .rh>span:last-child{color:var(--muted);font-size:14px}
+.regcard .rgn{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.regcard .rgn b{font-family:var(--display);font-size:26px;font-weight:900;color:var(--win)}
+.regcard .rgn span{color:var(--muted);font-size:13px}
+.rgl{display:flex;flex-wrap:wrap;gap:10px}
+.rgl.wt{opacity:.7}
+.rgp{display:flex;flex-direction:column;align-items:center;gap:2px;width:56px;text-align:center}
+.rgp small{font-size:11px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:56px}
+.rgme{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;background:var(--win-bg);color:var(--win)}
+.rgme.wt{background:var(--warn-bg);color:var(--warn)}
+.rgme b{flex:1}
+.rgme small{font-size:12px}

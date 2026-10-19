@@ -36,14 +36,16 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
   db=makeDb(PFX);
   hideSplash();
   fromRedirect();
+  if(!legacy)zaloHash();
   FB.onAuthStateChanged(FB.auth,async u=>{authUser=u;S.codes=null;await refreshRole();loadMyClub();if(S.priv&&canWrite){location.reload();return}render();acceptInvite()});
   if(!legacy)FB.onSnapshot(FB.doc(FB.fs,"clubs/"+CID),{},s=>{if(s.exists()){CLUB=s.data();BANK=clubBank();render()}},()=>{});
   const fail=()=>{if(!legacy&&CLUB&&CLUB.public===false)S.priv=true;S.offline=true;hideSplash();render()};
   const live=meta=>{S.live=!meta.fromCache;render()};
-  let unsubM=null,unsubB=null,subSid=null;
+  let unsubM=null,unsubB=null,unsubR=null,subSid=null;
   const subSession=sid=>{if(sid===subSid)return;if(subSid!=null)S.pm[subSid]=S.matches;subSid=sid;if(unsubM)unsubM();if(unsubB)unsubB();S.mReady=false;S.matches=[];S.batches=[];
     unsubM=db.collection("matches").where("session",sid).onSnapshot(q=>{S.matches=q.docs.map(d=>({id:d.id,...d.data()}));S.mReady=true;live(q.metadata);autoGFill()},fail);
-    unsubB=db.collection("batches").where("session",sid).onSnapshot(q=>{S.batches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail)};
+    unsubB=db.collection("batches").where("session",sid).onSnapshot(q=>{S.batches=q.docs.map(d=>({id:d.id,...d.data()}));live(q.metadata)},fail)
+    if(!legacy){if(unsubR)unsubR();S.regs=[];unsubR=db.collection("regs").where("sid",sid).onSnapshot(q=>{S.regs=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{})}};
   db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;subSession(cfg().session||1);live(s.metadata)},fail);
   db.collection("app").onSnapshot(q=>{const A=q.docs.map(d=>({id:d.id,...d.data()}));
     S.hist=A.filter(d=>d.id.startsWith("hist-"));S.pays=Object.fromEntries(A.filter(d=>d.id.startsWith("pay-")).map(d=>[d.id,d]));S.led=A.filter(d=>d.id.startsWith("led-"));S.trash=A.find(d=>d.id==="trash")||null;

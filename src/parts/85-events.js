@@ -14,6 +14,11 @@ document.addEventListener("change",e=>{
   if(s==="cname"){if(!canWrite)return;const i=+t.dataset.i,c=cfg(),L=[...(c.cnames||[])];while(L.length<i)L.push("");L[i-1]=String(t.value||"").trim().slice(0,12);
     write(()=>saveCfg({cnames:L}).then(()=>delete drafts["cn-"+i]),L[i-1]?`Đã đặt tên sân ${L[i-1]}`:`Sân thứ ${i} dùng tên mặc định`);return}
   if(s==="gprize"){if(!canWrite)return;const i=+t.dataset.i,pz=[...(cfg().giai?.prizes||[0,0,0])];pz[i]=Math.max(0,Number(t.value)||0);write(()=>saveG({prizes:pz}).then(()=>delete drafts["gz-"+i]));return}
+  if(s==="reg"){if(!canWrite)return;const k=t.dataset.key,r={...regCfg()};let v=t.value;
+    if(k==="at"){const ms=v?new Date(v).getTime():0;r.at=Number.isFinite(ms)?ms:0}
+    else if(k==="place")r.place=String(v||"").trim().slice(0,60);
+    else r[k]=Math.max(0,Math.floor(Number(v)||0));
+    r.lockAt=r.at?r.at-(+r.lockH||0)*3600e3:0;write(()=>saveCfg({reg:r}));return}
   if(s==="name"){const v=t.value.trim();if(!v){toast("Tên không được để trống.");return}
     write(()=>db.collection("players").doc(t.dataset.id).update({name:v}).then(()=>{delete drafts[t.dataset.draft];S.everWrote=true}))}
   else if(s==="rating0")write(()=>db.collection("players").doc(t.dataset.id).update({rating0:Number(t.value)}).then(()=>S.everWrote=true));
@@ -60,7 +65,7 @@ document.addEventListener("click",async e=>{
   if(act==="meall"){meAll=true;render();return}
   if(act==="meopen"){meOpen=!meOpen;if(!meOpen){meAll=false;delete drafts["me-q"]}render();return}
   if(act==="gpick"){const L=[drafts.gp1,drafts.gp2].filter(Boolean);const k=L.indexOf(id);if(k>=0)L.splice(k,1);else{if(L.length>=2)L.shift();L.push(id)}drafts.gp1=L[0]||"";drafts.gp2=L[1]||"";delete errs.gadd;render();return}
-  if(act==="logout"){try{await FB.signOut(FB.auth)}catch(x){}canWrite=false;ROLE=null;S.rootEditor=false;watchAdmin();render();return}
+  if(act==="logout"){try{await FB.signOut(FB.auth)}catch(x){}canWrite=false;ROLE=null;S.rootEditor=false;S.link=undefined;watchAdmin();watchLink();render();return}
   if(act==="glogin"){if(inApp()){toast("Mở trang bằng Chrome hoặc Safari để đăng nhập Google.");return}
     const pr=new FB.GoogleAuthProvider();try{await FB.signInWithPopup(FB.auth,pr)}catch(x){const c=(x&&x.code)||"";if(/popup-blocked|operation-not-supported|web-storage/.test(c)){try{try{sessionStorage.setItem("pb-rd","1")}catch(z){}await FB.signInWithRedirect(FB.auth,pr)}catch(y){toast("Chưa đăng nhập được, thử lại.")}}else if(!/popup-closed|cancelled-popup/.test(c))toast("Chưa đăng nhập được: "+c)}return}
   if(act==="copy"){const txt=summaryText(derive());
@@ -121,6 +126,7 @@ document.addEventListener("click",async e=>{
   if(act==="copysess"){const D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id));if(!x)return;
     const txt=(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x))+"\n"+shareUrl(x.sid);try{await navigator.clipboard.writeText(txt);toast("Đã copy tin nhắn, dán vào nhóm Zalo nhé.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
   if(await platformAct(act,id,b))return;
+  if(await zaloAct(act,b,id))return;
   if(act==="pinset"){if(!isAdm()){toast("Chỉ chủ CLB và quản lý đăng nhập Google mới đặt được PIN.");return}
     const el=document.getElementById&&document.getElementById("newpin"),p=String((el&&el.value)||drafts.newpin||"").trim();
     if(!/^\S{4,12}$/.test(p)){errs.pinset="PIN cần 4–12 ký tự, không có khoảng trắng.";render();return}
@@ -133,6 +139,7 @@ document.addEventListener("click",async e=>{
   // Trọng tài chỉ được lưu tỉ số ở sân được giao
   const REF_ACTS=["savechk","savex","save","cancelx"];
   if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
+  if(canWrite&&!legacy&&await zaloAdminAct(act,b,id))return;
   if(act==="migrate"){if(!legacy||!isGoogle(authUser)||!S.rootEditor){toast("Cần đăng nhập Google và nhập PIN trước.");return}if(!armOr("migrate:x"))return;try{await migrate()}catch(x){S.migMsg="Chuyển chưa xong ("+((x&&x.code)||"lỗi")+"). Kiểm tra luật Firestore mới đã xuất bản chưa rồi thử lại.";render()}return}
   if(act==="bsave"&&isAdm()){const code=val("bk-code",CLUB?.bank?.code||"mb"),bk=BANKS.find(z=>z[0]===code)||BANKS[0],acc=String(val("bk-acc",CLUB?.bank?.acc||"")).replace(/\s/g,""),hd=noAcc(val("bk-holder",CLUB?.bank?.holder||""));
     if(!/^\d{6,19}$/.test(acc)){toast("Số tài khoản chỉ gồm 6–19 chữ số.");return}if(!hd){toast("Nhập tên chủ tài khoản.");return}

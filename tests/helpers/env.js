@@ -53,7 +53,8 @@ export function setup({ search = "", path = "/", host = "rr.pikeco.app", user = 
     GoogleAuthProvider: function () {},
     signInWithPopup: async () => ({ user: env.user }),
     signInWithRedirect: async () => {},
-    getRedirectResult: async () => null
+    getRedirectResult: async () => null,
+    signInWithCustomToken: async (a, t) => { env.user = { uid: "zalo_" + t, isAnonymous: false }; env.authCb && env.authCb(env.user); return { user: env.user }; }
   };
   const els = {};
   const mk = id => els[id] || (els[id] = { id, innerHTML: "", textContent: "", hidden: false, value: "", setAttribute() {}, focus() {}, select() {}, classList: { add() {}, remove() {}, toggle() {} }, offsetWidth: 0, style: {} });

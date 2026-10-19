@@ -127,7 +127,9 @@ const flexNote=`<div class="flexnote"><b>Không khoá cứng.</b> Mọi mục tr
 function vPrep(D){
   const c=D.c,G=isG(c);
   let h=`<div class="phead2"><h2>${esc(sessTitle(c,D.sid))} · chuẩn bị</h2><p class="rule">${phaseOf(D)==="live"?"Buổi đang đánh. Sửa ở đây áp dụng từ trận kế tiếp, mọi thay đổi lưu ngay.":`Chỉ ban tổ chức thấy phần này. Thành viên thấy “Buổi #${D.sid} sắp bắt đầu”. Mọi thay đổi lưu ngay.`}</p></div>`;
+  h+=approvals(D);
   h+=card("Buổi này",buoiBlock(D));
+  if(!legacy)h+=card(tick("regon",regOpen(),"Mở đăng ký"),regAdmin(D));
   h+=card("Điểm danh",attChips(D));
   h+=card("Sân và luật điểm",fmtBlock(D));
   h+=card(tick("cphi",c.cphi!==false,"Chi phí"),moneyBlock(D));

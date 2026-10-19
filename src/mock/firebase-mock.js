@@ -37,6 +37,10 @@ store.set("codes/K7MX2Q9P",{used:false,at:Date.now()});store.set("codes/A2B3C4D5
   const raw=localStorage.getItem(KEY);if(raw){store.clear();for(const [k,v] of JSON.parse(raw))store.set(k,v)}}catch(e){}})();
 const isGuest=()=>{try{return sessionStorage.getItem("pb-mock-khach")==="1"}catch(e){return /khach/.test(location.search)}};
 const DEMO_USER={uid:"demo",isAnonymous:false,email:"ban@demo.vn",displayName:"Bạn (demo)"};
+// Bản thử: ?zalo giả lập người chơi đăng nhập bằng Zalo
+const ZALO_USER={uid:"zalo_demo",isAnonymous:false,displayName:"Người chơi Zalo"};
+(function(){try{if(/[?&]zalo\b/.test(location.search))sessionStorage.setItem("pb-mock-zalo","1");if(/[?&](chu|khach)\b/.test(location.search))sessionStorage.removeItem("pb-mock-zalo")}catch(e){}})();
+const isZaloDemo=()=>{try{return sessionStorage.getItem("pb-mock-zalo")==="1"}catch(e){return false}};
 window.FB={fs:{},auth:{},
  GoogleAuthProvider:function(){},signInWithPopup:async()=>({user:DEMO_USER}),signInWithRedirect:async()=>{},getRedirectResult:async()=>null,
  doc:(a,b)=>{if(a&&a.isCol){const id="x"+(++idc);return{id,path:a.path+"/"+id}}return{id:b.split("/").pop(),path:b}},
@@ -49,6 +53,6 @@ window.FB={fs:{},auth:{},
  query:(c,w)=>({isCol:true,path:c.path,flt:w}),where:(f,op,v)=>({f,v}),getDocs:async r=>({docs:[...store].filter(([k,v])=>k.startsWith(r.path+"/")&&k.split("/").length===r.path.split("/").length+1&&(!r.flt||v[r.flt.f]===r.flt.v)).map(([k,v])=>({id:k.split("/").pop(),data:()=>v}))}),
  onSnapshot:(r,o,n)=>{const f=()=>{if(r.isCol){const docs=[...store].filter(([k,v])=>k.startsWith(r.path+"/")&&k.split("/").length===r.path.split("/").length+1&&(!r.flt||v[r.flt.f]===r.flt.v)).map(([k,v])=>({id:k.split("/").pop(),data:()=>v}));n({docs,metadata:{fromCache:false}})}else n({id:r.id,exists:()=>store.has(r.path),data:()=>store.get(r.path),metadata:{fromCache:false}})};subs.push(f);f();return()=>{}},
  runTransaction:async(fs,fn)=>fn({get:window.FB.getDoc,set:(r,d)=>window.FB.setDoc(r,d)}),
- signInAnonymously:async()=>({user:{uid:"demo"}}),signOut:async()=>{},onAuthStateChanged:(a,f)=>setTimeout(()=>f(isGuest()?null:DEMO_USER),0)};
+ signInAnonymously:async()=>({user:{uid:"demo"}}),signOut:async()=>{},signInWithCustomToken:async()=>{try{sessionStorage.setItem("pb-mock-zalo","1")}catch(e){}return{user:ZALO_USER}},onAuthStateChanged:(a,f)=>setTimeout(()=>f(isZaloDemo()?ZALO_USER:isGuest()?null:DEMO_USER),0)};
 })();
 window.FB_TARGET="mock";

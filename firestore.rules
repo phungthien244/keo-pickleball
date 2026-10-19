@@ -4,7 +4,9 @@ service cloud.firestore {
 
     // ===== Chung =====
     function signedIn() { return request.auth != null; }
-    function google() { return signedIn() && request.auth.token.firebase.sign_in_provider != 'anonymous'; }
+    function google() { return signedIn() && request.auth.token.firebase.sign_in_provider == 'google.com'; }
+    // Người chơi đăng nhập Zalo (máy chủ pikeco.app cấp tài khoản zalo_<id>)
+    function zalo() { return signedIn() && request.auth.token.firebase.sign_in_provider == 'custom' && request.auth.uid.matches('^zalo_[0-9A-Za-z]+$'); }
     function rootEditor() { return signedIn() && exists(/databases/$(database)/documents/editors/$(request.auth.uid)); }
     // Quản trị nền tảng pikeco.app
     function isPA() {
@@ -172,6 +174,39 @@ service cloud.firestore {
         allow delete: if isMember() && myRole() == 'owner';
       }
       match /batches/{docId} { allow read: if canRead(); allow write: if canEdit(); }
+
+      // Người chơi Zalo xin nhận hồ sơ VĐV, chủ CLB hoặc quản lý duyệt
+      match /links/{uid} {
+        allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();
+        allow create: if active() && zalo() && request.auth.uid == uid
+          && request.resource.data.status == 'pending'
+          && request.resource.data.keys().hasOnly(['status', 'zname', 'photo', 'at', 'pid', 'newName', 'gender']);
+        allow update: if canEdit();
+        allow delete: if (signedIn() && request.auth.uid == uid) || isAdmin();
+      }
+
+      // Đăng ký buổi: người chơi đã được duyệt tự đăng ký, tự hủy trước giờ khóa hủy
+      function cfgDoc() { return get(/databases/$(database)/documents/clubs/$(c)/app/config).data; }
+      function myLink() { return get(/databases/$(database)/documents/clubs/$(c)/links/$(request.auth.uid)).data; }
+      match /regs/{id} {
+        allow read: if canRead();
+        allow create: if canEdit() || (
+          active() && zalo()
+          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at'])
+          && request.resource.data.uid == request.auth.uid
+          && id == string(request.resource.data.sid) + '_' + request.auth.uid
+          && cfgDoc().get('reg', {}).get('on', false) == true
+          && request.resource.data.sid == cfgDoc().get('session', 1)
+          && myLink().status == 'ok'
+          && myLink().pid == request.resource.data.pid
+        );
+        allow update: if canEdit();
+        allow delete: if canEdit() || (
+          zalo() && resource.data.uid == request.auth.uid
+          && (cfgDoc().get('reg', {}).get('lockAt', 0) == 0
+              || request.time.toMillis() < cfgDoc().get('reg', {}).get('lockAt', 0))
+        );
+      }
     }
   }
 }

@@ -174,3 +174,44 @@ describe("nhập tỉ số", () => {
     await assertFails(setDoc(doc(anon("zz"), "players/p3"), { name: "C" }));
   });
 });
+
+describe("người chơi Zalo", () => {
+  const zalo = uid => env.authenticatedContext(uid, { zalo: true, firebase: { sign_in_provider: "custom" } }).firestore();
+  const openReg = (extra = {}) => seed({ "clubs/aep/app/config": { session: 3, reg: { on: true, ...extra } } });
+  test("Zalo không được coi là tài khoản Google", async () => {
+    await assertFails(setDoc(doc(zalo("zalo_1"), "clubs/aep/members/zalo_1"), { role: "owner" }));
+    await assertFails(setDoc(doc(zalo("zalo_1"), "users/zalo_1"), { club: "aep", at: 1 }));
+  });
+  test("gửi yêu cầu nhận hồ sơ, chỉ quản lý duyệt", async () => {
+    await assertSucceeds(setDoc(doc(zalo("zalo_1"), "clubs/aep/links/zalo_1"), { status: "pending", pid: "p1", zname: "A", at: 1 }));
+    await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/links/zalo_2"), { status: "ok", pid: "p1", at: 1 }));
+    await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/links/zalo_1"), { status: "pending", at: 1 }));
+    await assertFails(setDoc(doc(anon("an"), "clubs/aep/links/an"), { status: "pending", at: 1 }));
+    await assertFails(updateDoc(doc(zalo("zalo_1"), "clubs/aep/links/zalo_1"), { status: "ok" }));
+    await assertFails(getDoc(doc(zalo("zalo_2"), "clubs/aep/links/zalo_1")));
+    await assertSucceeds(updateDoc(doc(google("ad"), "clubs/aep/links/zalo_1"), { status: "ok" }));
+    await assertFails(updateDoc(doc(zalo("zalo_1"), "clubs/aep/players/p1"), { zuid: "zalo_1" }));
+  });
+  test("đăng ký buổi: cần được duyệt, đúng buổi, đang mở", async () => {
+    await seed({ "clubs/aep/links/zalo_1": { status: "ok", pid: "p1" }, "clubs/aep/links/zalo_2": { status: "pending", pid: "p2" } });
+    const r = { sid: 3, uid: "zalo_1", pid: "p1", name: "A", at: 1 };
+    await seed({ "clubs/aep/app/config": { session: 3, reg: { on: false } } });
+    await assertFails(setDoc(doc(zalo("zalo_1"), "clubs/aep/regs/3_zalo_1"), r));
+    await openReg();
+    await assertFails(setDoc(doc(zalo("zalo_1"), "clubs/aep/regs/2_zalo_1"), { ...r, sid: 2 }));
+    await assertFails(setDoc(doc(zalo("zalo_1"), "clubs/aep/regs/3_zalo_1"), { ...r, pid: "p9" }));
+    await assertFails(setDoc(doc(zalo("zalo_2"), "clubs/aep/regs/3_zalo_2"), { ...r, uid: "zalo_2", pid: "p2" }));
+    await assertSucceeds(setDoc(doc(zalo("zalo_1"), "clubs/aep/regs/3_zalo_1"), r));
+    await assertSucceeds(getDocs(collection(guest(), "clubs/aep/regs")));
+    await assertFails(deleteDoc(doc(zalo("zalo_2"), "clubs/aep/regs/3_zalo_1")));
+    await assertSucceeds(deleteDoc(doc(zalo("zalo_1"), "clubs/aep/regs/3_zalo_1")));
+  });
+  test("qua giờ khóa hủy thì người chơi không tự hủy, quản lý vẫn bỏ được", async () => {
+    await seed({ "clubs/aep/links/zalo_1": { status: "ok", pid: "p1" } });
+    await openReg({ lockAt: 1000 });
+    await seed({ "clubs/aep/regs/3_zalo_1": { sid: 3, uid: "zalo_1", pid: "p1", at: 1 } });
+    await assertFails(deleteDoc(doc(zalo("zalo_1"), "clubs/aep/regs/3_zalo_1")));
+    await assertSucceeds(deleteDoc(doc(google("ad"), "clubs/aep/regs/3_zalo_1")));
+    await assertSucceeds(setDoc(doc(google("own"), "clubs/aep/regs/3_p_p1"), { sid: 3, pid: "p1", at: 2 }));
+  });
+});

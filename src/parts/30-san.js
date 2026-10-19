@@ -35,7 +35,7 @@ function vSanView(D){
     const last=[...S.hist].sort((a,b)=>b.sid-a.sid)[0],meIn=ME&&act.some(p=>p.id===ME),thu=c.thu||"keo";
     const box=act.length?`<div class="soon"><span class="lbl">Sắp bắt đầu</span><b>${esc(sessTitle(c,D.sid))} sắp bắt đầu</b><span>${fmtTxt(c)} · ${c.courts} sân · ${act.length} người đã điểm danh${c.cphi===false?" · không thu tiền":thu==="phi"?` · ${fmtK(+c.phi||0)}/người`:` · ${esc(THU[thu])}`} · ${esc(ruleTxt(c))}</span>${ME?`<span class="${meIn?"in":""}">${meIn?"Có bạn trong danh sách hôm nay.":"Bạn chưa có trong danh sách hôm nay."}</span>`:""}</div>`
       :`<div class="soon"><b>Hôm nay chưa có buổi</b><span>${last?`Buổi gần nhất: #${last.sid} · ${dmy(last.endedAt||last.startedAt)}. <a href="${pathOf("buoi",{sid:last.sid})}" data-go="buoi" data-id="${last.sid}">Xem kết quả</a>`:"Ban tổ chức sẽ mở buổi ở đây. Trang tự cập nhật."}</span></div>`;
-    return meBox(D,{pay:false})+box;
+    return linkCard(D)+regCard(D)+meBox(D,{pay:false})+box;
   }
   let h=refNote()+`<div class="liveln"><span class="dot"></span><span class="grow">${esc(sessTitle(c,D.sid))} · đang đánh · ${D.playing.length} sân · ${act.length} người</span>${liveShareBtn()}</div>`+meBox(D);
   const PL=D.playing.filter(myCourt);
