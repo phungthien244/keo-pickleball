@@ -172,7 +172,7 @@ function xPeople(D,X){
 const XF_KEYS=["pairReg","name","date","time","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","h1","h2","h3","rep","days","auto","openD","reg","cp","gton","gt","gtv","trao","c1","c2","c3","adv","win2","ptMax","gmode","refOn","preOn","noteOn","incl"];
 // Các trường của buổi được chép từ buổi trước (Dùng lại) và lưu vào lịch lặp
 const XCOPY=["ko","pairReg","name","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","reg","cp","gton","gt","gtv","trao","adv","win2","ptMax","gmode","refOn","preOn","incl"];
-function xFmtLast(f){return schedAll().filter(x=>x.fmt===f&&x.st!=="cancel").pop()||null}
+function xFmtLast(f,ko){return schedAll().filter(x=>x.fmt===f&&x.st!=="cancel"&&(f!=="giai"||!!x.ko===!!ko)).pop()||null}
 // Giá trị phẳng cho form từ một buổi (hang, chia → ô riêng)
 const xFlat=X=>{const r={};for(const k of XCOPY)if(X[k]!==undefined)r[k]=X[k];const h=X.hang||[],ch=X.chia||[];
   if(h.length)Object.assign(r,{h1:h[0]||0,h2:h[1]||0,h3:h[2]||0});if(ch.length)Object.assign(r,{c1:ch[0],c2:ch[1],c3:ch[2]});if(X.note)r.noteOn=true;return r};
@@ -180,7 +180,7 @@ function xSrc(D){
   const c=D.c,now=Date.now();
   if(xEdit){const X=schedById(xEdit)||{};return {...xDef(c,X.fmt),...xFlat(X),date:X.at?isoDay(X.at):"",time:X.at?hm(X.at):"",rep:"0"}}
   if(xSEdit){const s=(S.series||[]).find(z=>z.id===xSEdit)||{tpl:{}},t=s.tpl||{};return {...xDef(c,t.fmt),...xFlat(t),time:s.time||"19:00",end:s.end||t.end||"",date:"",rep:"1",days:(s.days||[]).join(","),auto:s.auto?"1":"0",openD:+s.openD||2}}
-  const f=xNew==="giai"||xNew==="bang"?"giai":"xoay",L=xFmtLast(f),tm=new Date(now+864e5);tm.setHours(19,0,0,0);
+  const f=xNew==="giai"||xNew==="bang"?"giai":"xoay",L=xFmtLast(f,xNew==="bang"),tm=new Date(now+864e5);tm.setHours(19,0,0,0);
   const at=L&&L.at?(()=>{const d=new Date(L.at);const t=new Date(now+864e5);t.setHours(d.getHours(),d.getMinutes(),0,0);return t.getTime()})():tm.getTime();
   return {...xDef(c,f),...(L?xFlat(L):{}),date:isoDay(at),time:hm(at),rep:"0",days:String(new Date(at).getDay()),auto:"1",openD:2};
 }

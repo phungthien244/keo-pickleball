@@ -153,7 +153,7 @@ function regForm(D){
     ${rIn("at","Bắt đầu",dtLocal(r.at),'type="datetime-local"')}<div class="form">${rIn("end","Kết thúc",r.end,'type="time"')}${cfIn("courts","Số sân",c.courts)}</div>
     ${rIn("place","Sân",r.place,'maxlength="60" placeholder="Sân Kỳ Hòa, Q10"')}
     ${rIn("map","Link Google Maps (không bắt buộc)",r.map,'type="url" maxlength="300" placeholder="https://maps.app.goo.gl/…"')}
-    <div class="fld"><span class="lbl">Thể thức</span><span class="seg segw">${sgB("fmt","xoay",G?"giai":"xoay","Xoay cặp",D.SM.length)}${sgB("fmt","giai",G?"giai":"xoay","Cặp cố định xoay vòng",D.SM.length)}</span></div>`;
+    <div class="fld"><span class="lbl">Thể thức</span><span class="seg segw">${(()=>{const cur=G?(isKO(D.c.giai)?"bang":"giai"):"xoay";return sgB("fmt","xoay",cur,"Xoay cặp",D.SM.length)+sgB("fmt","giai",cur,"Cặp cố định vòng tròn",D.SM.length)+sgB("fmt","bang",cur,"Vòng bảng → Knockout",D.SM.length)})()}</span></div>`;
   h+=sec("Ai được đăng ký");
   h+=`<div class="form f3">${rIn("max","Số chỗ",+r.max||"",'type="number" min="1" inputmode="numeric" placeholder="∞"')}${rIn("lvMin","Trình từ",r.lvMin,'type="number" step="0.5" min="1" max="8" inputmode="decimal" placeholder="2.5"')}${rIn("lvMax","đến",r.lvMax,'type="number" step="0.5" min="1" max="8" inputmode="decimal" placeholder="3.5"')}</div>
     <div class="fld"><span class="lbl">Đối tượng</span><span class="seg segw"><button data-act="regguest" data-v="0" aria-pressed="${!r.guests}">Chỉ thành viên</button><button data-act="regguest" data-v="1" aria-pressed="${!!r.guests}">Cả VĐV ngoài CLB</button></span></div>

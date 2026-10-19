@@ -177,9 +177,11 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="cset"&&b.dataset.k!=="fmt"){const k=b.dataset.k,v=b.dataset.v;
     if(cfg()[k]===v)return;const patch={[k]:v};if(k==="gt"){patch.gtv=v==="trich"?30:v==="codinh"?200:v==="gop"?20:0;if(v==="hang"&&cfg().hang1==null)Object.assign(patch,{hang1:200,hang2:100,hang3:50})}if(k==="thu"&&v==="phi"&&!cfg().phi)patch.phi=50;
     ["cf-gtv","cf-phi"].forEach(x=>delete drafts[x]);write(()=>saveCfg(patch));return}
-  if(act==="fmt"||(act==="cset"&&b.dataset.k==="fmt")){const v=b.dataset.v==="giai"?"giai":"xoay";if(derive().SM.length){toast("Giải đấu đã có trận, không đổi thể thức được.");return}
-    if(cfg().fmt===v||(v==="xoay"&&!cfg().fmt))return;
-    const keep=sheetOpen||phaseOf(derive())==="live";write(()=>saveCfg({fmt:v,giai:cfg().giai||{pairs:[],prizes:[0,0,0],out:{},locked:false},...(keep?{phase:"live"}:{})}),v==="giai"?"Đã chọn thể thức Cặp cố định xoay vòng":"Đã chọn thể thức Xoay cặp");return}
+  if(act==="fmt"||(act==="cset"&&b.dataset.k==="fmt")){const raw=b.dataset.v,ko=raw==="bang",v=raw==="giai"||ko?"giai":"xoay";if(derive().SM.length){toast("Giải đấu đã có trận, không đổi thể thức được.");return}
+    const G0c=cfg().giai||{pairs:[],prizes:[0,0,0],out:{},locked:false},curKo=isKO(G0c);
+    if((cfg().fmt===v||(v==="xoay"&&!cfg().fmt))&&(v==="xoay"||curKo===ko))return;
+    const keep=sheetOpen||phaseOf(derive())==="live",G1={...G0c,ko:ko?{...koDef(),...(G0c.ko||{})}:null};
+    write(()=>saveCfg({fmt:v,giai:G1,...(keep?{phase:"live"}:{})}),ko?"Đã chọn thể thức Vòng bảng → Knockout":v==="giai"?"Đã chọn thể thức Cặp cố định vòng tròn":"Đã chọn thể thức Xoay cặp");return}
   if(act==="capadd"&&await capAct(act,b,id))return;
   if(await gbAct(act,b,id))return;
   if(await koAct(act,b,id))return;

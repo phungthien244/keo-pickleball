@@ -130,8 +130,8 @@ test("vòng bảng → knockout: chia bảng có hạt giống, vòng bảng, b�
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK\nL\nM\nN\nO\nP"); await e.click("add");
-  await e.tab("san"); await e.click("cset", { k: "fmt", v: "giai" });
-  await e.click("komode", { v: "1" });
+  await e.tab("san"); await e.click("cset", { k: "fmt", v: "bang" });
+  expect(e.store.get("app/config").fmt).toBe("giai");
   expect(e.store.get("app/config").giai.ko.n).toBe(4);
   await e.click("koset", { k: "n", v: "2" });
   await e.click("gauto");

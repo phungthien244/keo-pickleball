@@ -42,7 +42,7 @@ function attChips(D){
 function buoiBlock(D){
   const c=D.c,G=isG(c),lockF=D.SM.length>0;
   return `<label class="fld"><span class="lbl">Tên giải đấu / tên giải · không bắt buộc</span><input id="cf-sname" data-draft="cf-sname" data-save="cfg" data-key="sname" maxlength="60" placeholder="Ví dụ: Giải đấu tối thứ 5" value="${esc(val("cf-sname",c.sname||""))}"></label>
-  <div class="fld"><span class="lbl">Thể thức</span><span class="seg segf">${sgB("fmt","xoay",G?"giai":"xoay","Xoay cặp",lockF)}${sgB("fmt","giai",G?"giai":"xoay","Cặp cố định xoay vòng",lockF)}</span>${lockF?`<small class="rule">Đã có trận nên giữ nguyên thể thức.</small>`:""}</div>`;
+  <div class="fld"><span class="lbl">Thể thức</span><span class="seg segf">${(()=>{const cur=G?(isKO(c.giai)?"bang":"giai"):"xoay";return sgB("fmt","xoay",cur,"Xoay cặp",lockF)+sgB("fmt","giai",cur,"Cặp cố định vòng tròn",lockF)+sgB("fmt","bang",cur,"Vòng bảng → Knockout",lockF)})()}</span>${lockF?`<small class="rule">Đã có trận nên giữ nguyên thể thức.</small>`:""}</div>`;
 }
 // Tên sân (để loa đọc đúng) và màu thẻ sân. Ví dụ thuê sân 2, 3, 4 thì đặt tên 2, 3, 4.
 let cnOpen=false;
