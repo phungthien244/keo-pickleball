@@ -15,7 +15,7 @@ function mxCur(){if(route==="vdv"||route==="cmp")return "rank";if(route==="buoi"
   return {san:"live",bxh:"rank",ls:"hist",tien:"hist",toi:"me",dk:"home",gt:"home",nguoi:"rank"}[tab]||"home"}
 function mxShell(D,body,cta=""){
   const p=mxMe(D),nm=(CLUB&&CLUB.name)||D.c.title;
-  const ql=mxMode()==="ql",sw=mxMgr()?`<span class="mxsw" role="group" aria-label="Chế độ"><button data-act="mxmode" data-v="choi" aria-pressed="${!ql}">Chơi</button><button data-act="mxmode" data-v="ql" aria-pressed="${ql}">${canWrite?"Quản lý":"Trọng tài"}</button></span>`:"";
+  const R0=mxAs||{cw:canWrite,rf:REF},ql=mxMode()==="ql",sw=!legacy&&(R0.cw||R0.rf)?`<span class="mxsw" role="group" aria-label="Chế độ"><button data-act="mxmode" data-v="choi" aria-pressed="${!ql}">Chơi</button><button data-act="mxmode" data-v="ql" aria-pressed="${ql}">${R0.cw?"Quản lý":"Trọng tài"}</button></span>`:"";
   let h=`<div class="mxbar"><button class="mxclub" data-act="mxsheet"><span class="clogo">${logoHtml(CLUB,nm)}</span><b>${esc(nm)}</b><span aria-hidden="true">▾</span></button>${sw}<a class="mxme" href="${pathOf("app",{tab:"toi"})}" data-go="app" data-t="toi" aria-label="Tôi">${p?av(p,"sm",1):mxSvg("me")}</a></div>`;
   h+=(ql?"":mxTurn(D))+`<div class="mxbody">${body}</div>`;
   if(cta)h+=`<div class="mxcta">${cta}</div>`;
@@ -335,7 +335,7 @@ function parseInv(x){
 }
 /* ----- Quản lý trong Mini App (chủ CLB, quản lý, trọng tài): dùng lại các trang quản lý của bản web ----- */
 const mxMgr=()=>!legacy&&(canWrite||REF);
-let mxModeV=null;
+let mxModeV=null,mxAs=null;
 function mxMode(){if(!mxMgr())return "choi";if(mxModeV)return mxModeV;let m=null;try{m=localStorage.getItem("pb-mxm-"+CID)}catch(e){}return m==="choi"?"choi":"ql"}
 function mxSetMode(m){mxModeV=m==="choi"?"choi":"ql";try{localStorage.setItem("pb-mxm-"+CID,mxModeV)}catch(e){}}
 function mxMgrCur(){
@@ -367,6 +367,8 @@ function mxMgrView(D){
 }
 function renderMini(D){
   if(mxMode()==="ql"&&!(route==="cmp"||(route==="app"&&(tab==="gt"||tab==="toi"))))return mxShell(D,mxMgrView(D));
+  // Quản lý đang ở chế độ Chơi: xem đúng như người chơi (không hiện nút nhập điểm, quản lý giải)
+  if(mxMgr()){const cw=canWrite,rf=REF;mxAs={cw,rf};canWrite=false;REF=false;try{return renderMini(D)}finally{canWrite=cw;REF=rf;mxAs=null}}
   const v=route==="home"?mxHome:route==="vdv"?(D=>mxShell(D,vHoSo(D,routePid)+(mxPid()&&routePid!==mxPid()?`<button class="primary wide" data-act="mxcmp" data-id="${esc(routePid)}">⚔ So kè với tôi</button>`:""))):route==="cmp"?(D=>mxCompare(D,routePid)):route==="buoi"?(D=>mxShell(D,mxBack("app","Lịch sử").replace('data-go="app"','data-go="app" data-t="ls"')+vBuoi(D,routeSid)+mxAchBtn(D,routeSid))):
     ({san:mxLive,bxh:mxRank,ls:mxHist,tien:mxHist,toi:mxMeTab,dk:mxSession,gt:mxIntro,nguoi:mxMembers}[tab]||mxHome);
   return v(D);

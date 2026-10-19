@@ -1,3 +1,5 @@
+let liveSeg="san";
+const lsegBar=(L,cur)=>`<nav class="lseg" aria-label="Phần của buổi">${L.map(([k,l])=>`<button data-act="lseg" data-v="${k}" aria-pressed="${cur===k}">${l}</button>`).join("")}</nav>`;
 function vSan(D){
   if(!canWrite)return vSanView(D);
   if(phaseOf(D)==="prep"||stepView==="prep")return steps3(1,D)+vPrep(D);
@@ -6,14 +8,17 @@ function vSan(D){
   const free=Math.max(0,c.courts-D.playing.length), can=Math.min(free,Math.floor(waiting.length/4));
   let h=steps3(2,D)+cfgChip(D);
   if(!D.players.length)return h+`<div class="empty"><strong>Chưa có người chơi</strong>Vào tab Thành viên thêm người, hoặc bấm Sửa để điểm danh.</div>`;
+  // Đang đánh chia 4 phần: Sân · Hàng chờ · Đã xong · Quản lý
+  const sg=["san","cho","xong","ql"].includes(liveSeg)?liveSeg:"san",genB=`<button class="ball wide" data-act="gen">${can?`Xếp trận cho ${can} sân trống`:"Xếp trận tiếp"}</button>${errs.gen?`<p class="err">${esc(errs.gen)}</p>`:""}`;
+  h+=lsegBar([["san",`Sân · ${D.playing.length}`],["cho",`Hàng chờ · ${waitQueue(D).length}`],["xong",`Đã xong · ${D.done.length}`],["ql","Quản lý"]],sg);
+  if(sg==="cho")return h+queueBox(D,true)+genB+undoBar();
+  if(sg==="xong")return h+doneBox(D)+undoBar();
+  if(sg==="ql")return h+moneyMini(D)+`<a class="btn-line" href="${pathOf("chot")}" data-go="chot">Kết thúc &amp; chốt buổi →</a><p class="rule" style="text-align:center;margin-top:-6px">Chưa chốt thì vẫn đánh tiếp được. Chốt rồi vẫn mở lại để sửa được.</p>`+undoBar();
   if(!D.playing.length)h+=`<div class="lab"><span class="lbl">Sân</span><span class="bar">${courtStep(c)}</span></div><div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; ưu tiên đôi nam nữ hoặc cùng giới theo cài đặt; không bao giờ đôi nam gặp đôi nữ.</div>`;
   else h+=`<div class="lab"><span class="lbl">Sân đang đánh</span><span class="bar">${courtStep(c)}</span></div><div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;
-  h+=queueBox(D,true);
-  h+=`<button class="ball wide" data-act="gen">${can?`Xếp trận cho ${can} sân trống`:"Xếp trận tiếp"}</button>`;
-  if(errs.gen)h+=`<p class="err">${esc(errs.gen)}</p>`;
-  h+=moneyMini(D);
-  h+=`<a class="btn-line" href="${pathOf("chot")}" data-go="chot">Kết thúc &amp; chốt buổi →</a><p class="rule" style="text-align:center;margin-top:-6px">Chưa chốt thì vẫn đánh tiếp được. Chốt rồi vẫn mở lại để sửa được.</p>`;
-  return h+doneBox(D)+undoBar();
+  h+=genB;
+  {const Q=waitQueue(D).slice(0,8);if(Q.length)h+=`<button class="nextq" data-act="lseg" data-v="cho"><span class="lbl">Vào sân tiếp theo</span><span class="t">${Q.map(p=>esc(p.name)).join(", ")}</span><span aria-hidden="true">›</span></button>`}
+  return h+undoBar();
 }
 function queueBox(D,org){
   const Q=waitQueue(D),pos=new Map(Q.map((p,i)=>[p.id,i+1]));

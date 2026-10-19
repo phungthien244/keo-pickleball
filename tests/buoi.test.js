@@ -164,3 +164,23 @@ test("buổi không tích Chi phí và Giải thưởng: trang tổng kết khô
   expect(e.T()).not.toContain("Quỹ +");
   expect(e.T()).not.toContain("Chưa có bảng tiền");
 });
+
+test("xoay cặp: giải thưởng tiền từng hạng hoặc chia % cho hạng 1, 2, 3 như cặp cố định", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF"); await e.click("add");
+  await e.tab("san"); await e.click("gton"); await e.click("prow", { v: "giai" });
+  await e.click("cset", { k: "gt", v: "hang" });
+  expect(e.store.get("app/config")).toMatchObject({ gt: "hang", hang1: 200, hang2: 100, hang3: 50 });
+  expect(e.T()).toContain("Quỹ CLB trả tổng 350k");
+  await e.click("cset", { k: "gt", v: "trich" });
+  expect(e.T()).toContain("Số 1 nam & Số 1 nữ");
+  await e.click("cset", { k: "trao", v: "top3" });
+  expect(e.store.get("app/config").trao).toBe("top3");
+  expect(e.T()).toContain("Chia quỹ giải");
+  await e.click("cset", { k: "gt", v: "hang" });
+  await e.click("start"); await e.click("gen");
+  for (const [id] of e.docs("matches/", m => m.status === "playing")) { e.input("sa-" + id, "11"); e.input("sb-" + id, "4"); await e.click("save", { id }); }
+  await e.tab("tien");
+  expect(e.T()).toContain("Hạng nhất");
+});

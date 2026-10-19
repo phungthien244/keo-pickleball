@@ -87,7 +87,44 @@ function vGiaiSan(D){
   if(canWrite)return steps3(2,D)+cfgChip(D)+gRun(D,gDerive(D))+undoBar();
   return refNote()+(G.locked&&phaseOf(D)==="live"?`<div class="lsrow">${liveShareBtn()}</div>`:"")+(G.locked?gRun(D,gDerive(D)):gSetup(D,G));
 }
-function gSetup(D,G){
+// Tab Sân · Tùy chọn của giải: danh sách cặp gọn, thêm cặp bằng bảng trượt, ghép tự động cân trình
+let gAddOpen=false;
+function gPairsBox(D,G){
+  const c=D.c,P=G.pairs||[],n=P.length,used=new Set(P.flatMap(p=>[p.a,p.b]));
+  const free=D.players.filter(p=>p.active!==false&&!used.has(p.id));
+  let h="";
+  {const rec=Math.max(1,Math.floor(n/4));if(n>=3&&c.courts>rec)h+=`<div class="warnbox"><b>${n} cặp mà mở ${c.courts} sân:</b> nhiều cặp phải đánh liền, không kịp nghỉ. Nên dùng ${rec} sân. <button class="lnk" data-act="courts" data-d="${rec-c.courts}">Đổi ${rec} sân</button></div>`}
+  h+=`<section class="gpbox"><div class="gph"><b>Các cặp · ${n}/${GMAX}</b><small>${n?"sắp theo thứ tự thêm":"mỗi cặp là 2 người"}</small></div>`;
+  h+=n?P.map((p,i)=>`<div class="prow2"><span class="no num">${i+1}</span>${pairAv(D,p,"md")}<span class="nm">${pairNm(D,p)}<small class="num">Rating TB ${r2(pairR(D,p))}</small></span><button class="ghost danger" data-act="gdel" data-id="${p.id}" aria-label="Bỏ cặp ${esc(pairTx(D,p))}">✕</button></div>`).join(""):`<p class="rule" style="padding:0 12px">Chưa có cặp nào. Thêm từng cặp, hoặc để app ghép tự động cho cân trình.</p>`;
+  if(errs.gadd)h+=`<p class="err" style="padding:0 12px">${esc(errs.gadd)}</p>`;
+  if(n<GMAX)h+=`<div class="gpbt"><button class="primary" data-act="gaddopen" ${free.length<2?"disabled":""}>+ Thêm cặp</button><button class="line" data-act="gauto" ${free.length<2?"disabled":""}>Ghép tự động cân trình</button></div>${free.length<2?`<small class="rule" style="padding:0 12px 12px;display:block">Cần thêm người có mặt (mục Điểm danh) để ghép cặp mới.</small>`:""}`;
+  h+=`</section><small class="rule">Xếp hạng: số trận thắng → đối đầu trực tiếp → hiệu số → tổng điểm ghi.</small>`;
+  if(gAddOpen&&n<GMAX)h+=gAddSheet(D,free,n);
+  return h;
+}
+function gAddSheet(D,free,n){
+  const S2=[drafts.gp1,drafts.gp2].filter(Boolean),q=noAcc(String(val("gp-q",""))).toLowerCase().trim(),rt=id=>D.st.get(id)?.rating??2.5;
+  const all=D.players.filter(p=>p.active!==false),avg=all.reduce((a,p)=>a+rt(p.id),0)/(all.length||1);
+  // Đã chọn 1 người: gợi ý người làm cặp có rating trung bình gần mức chung của buổi
+  const tgt=S2.length===1?2*avg-rt(S2[0]):null;
+  let L=free.filter(p=>!q||noAcc(p.name).toLowerCase().includes(q));
+  L=tgt!=null?L.sort((a,b)=>(S2.includes(b.id)-S2.includes(a.id))||Math.abs(rt(a.id)-tgt)-Math.abs(rt(b.id)-tgt)):L.sort((a,b)=>a.name.localeCompare(b.name,"vi"));
+  const sug=tgt!=null?new Set(L.filter(p=>!S2.includes(p.id)).slice(0,2).map(p=>p.id)):new Set();
+  const slot=i=>S2[i]?`<span class="gs on">${av(D.pmap.get(S2[i]),"sm",1)}${esc(D.pmap.get(S2[i])?.name||"")}</span>`:`<span class="gs">Chọn người ${i+1}</span>`;
+  return `<div class="gsdim" data-act="gaddx"></div><div class="gsheet" role="dialog" aria-label="Thêm cặp"><span class="grab"></span>
+    <div class="gsh"><b>Thêm cặp · còn ${GMAX-n} chỗ</b><button class="lnk" data-act="gaddx">Đóng</button></div>
+    <div class="gsel2">${slot(0)}<b>&amp;</b>${slot(1)}</div>
+    <label class="ppq"><span class="sr">Tìm tên</span><input id="gp-q" data-draft="gp-q" data-live="1" type="search" placeholder="Tìm tên…" value="${esc(val("gp-q",""))}" autocomplete="off"></label>
+    ${tgt!=null?`<small class="rule">Gợi ý cân trình cho ${esc(D.pmap.get(S2[0])?.name||"")} (${r2(rt(S2[0]))}) lên đầu</small>`:""}
+    <div class="gsl">${L.map(p=>`<button class="gsp${S2.includes(p.id)?" on":""}" data-act="gpick" data-id="${p.id}" aria-pressed="${S2.includes(p.id)}"><span class="ck">${S2.includes(p.id)?"✓":""}</span>${av(p,"sm",1)}<span class="t">${esc(p.name)}<small>${p.gender==="F"?"Nữ":"Nam"}${sug.has(p.id)?" · gợi ý cân trình":""}</small></span><b class="num">${r2(rt(p.id))}</b></button>`).join("")||`<p class="rule">Không có tên phù hợp.</p>`}</div>
+    <div class="gsf"><button class="line" data-act="gadd" data-v="more" ${S2.length<2?"disabled":""}>Thêm và ghép tiếp</button><button class="primary" data-act="gadd" ${S2.length<2?"disabled":""}>Thêm cặp</button></div></div>`;
+}
+function gStartBar(D,G){
+  const n=(G.pairs||[]).length,tot=n*(n-1)/2;
+  return `<div class="prepgo"><button class="ball wide" data-act="gstart" ${n<3?"disabled":""}>Tạo lịch thi đấu · ${tot} trận →</button>${errs.giai?`<p class="err">${esc(errs.giai)}</p>`:""}<p class="rule">${n<3?"Cần ít nhất 3 cặp.":"Sau khi tạo lịch, danh sách cặp được khóa. Hủy lịch để ghép lại khi chưa có trận nào xong."}</p></div>`;
+}
+function gSetup(D,G,o={}){
+  if(o.prep&&canWrite)return gPairsBox(D,G);
   const c=D.c,P=G.pairs||[],n=P.length,tot=n*(n-1)/2,mins=Math.ceil(tot/Math.max(1,c.courts))*GSLOT,pz=G.prizes||[0,0,0];
   const used=new Set(P.flatMap(p=>[p.a,p.b]));
   const free=D.players.filter(p=>p.active!==false&&!used.has(p.id)).sort((a,b)=>a.name.localeCompare(b.name,"vi"));
@@ -115,19 +152,25 @@ function gRun(D,GD){
   const live=D.playing.filter(m=>m.giai),liveV=live.filter(myCourt);
   let h=`<div class="gprog"><div class="t"><span class="num">Lượt ${GD.curR}/${GD.rounds} · xong ${GD.resolved}/${GD.total} trận</span><span class="num">${left?`Còn ~${dur(est)}`:"Đã xong"}</span></div><div class="b"><i style="width:${pc}%"></i></div></div>`;
   if(GD.complete){const t=GD.table[0];h+=`<div class="champ"><div class="k"><span>ĐÃ ĐÁNH XONG VÒNG TRÒN · DẪN ĐẦU</span><span>${(()=>{const p=prizes(D,money(D))[0];return p?fmtK(p.k):""})()}</span></div><div class="p">${pairAv(D,t.p,"lg")}<span><span class="n">${pairNm(D,t.p)}</span><span class="s num" style="display:block">${t.w} thắng · ${t.l} thua · HS ${t.pf-t.pa>0?"+":""}${t.pf-t.pa}</span></span></div>${canWrite?`<div class="champb">${champBtn("champ:live")}<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để lưu giải":"Kết thúc giải và lưu"}</button></div>`:""}</div>`}
+  const top=h;h="";
   h+=`<div class="bar">${courtStep(c)}<span class="grow"></span>${canWrite&&!GD.complete&&live.length<c.courts&&gPick(D,GD,new Set(live.flatMap(m=>[m.pa,m.pb])),new Set())?`<button class="ball" data-act="gfill">Đưa trận kế vào sân trống</button>`:""}</div>`;
   if(liveV.length)h+=`<div class="courts">${liveV.map(m=>gCourt(D,GD,m)).join("")}</div>`;
   if(canWrite&&!GD.complete)h+=gPickNow(D,GD,live);
   else if(REF&&!GD.complete)h+=`<div class="empty"><strong>Sân của bạn đang trống</strong>Trận kế tiếp của sân ${MYCT.join(", ")||"được giao"} sẽ hiện ở đây.</div>`;
   else if(!GD.complete&&!REF)h+=`<div class="empty"><strong>Sân đang trống</strong>${canWrite?"Bấm “Đưa trận kế vào sân trống” để gọi trận tiếp theo theo lịch.":"Chờ người tổ chức gọi trận tiếp theo."}</div>`;
+  const sanP=h;h="";
   h+=`<div class="shd"><h2>Lịch thi đấu</h2>${REF?"":`<span class="seg segs"><button data-act="gview" data-v="san" aria-pressed="${gView!=="luot"}">Theo sân</button><button data-act="gview" data-v="luot" aria-pressed="${gView==="luot"}">Theo lượt</button></span>`}</div>${REF||gView!=="luot"?gCourts(D,GD):gRounds(D,GD)}`;
+  const lichP=h;h="";
   if(canWrite){
     h+=gPresetBlock(D,G0());
     h+=`<div class="panel"><h2>Quản lý giải</h2><p class="rule" style="margin-bottom:6px">Cặp bỏ về: các trận chưa đánh của họ tính thắng cho đối thủ nhưng không cộng điểm vào hiệu số, rating không đổi. Trận đã đánh giữ nguyên. Cặp mệt cần nghỉ thì bấm “Cho nghỉ”: app tạm không xếp trận cho cặp đó đến khi bấm “Cho vào lại”.</p>${(()=>{const lt=gLast(D),onC=new Set(live.flatMap(m=>[m.pa,m.pb])),rs=GD.G.rest||{};return GD.pairs.map(p=>{const o=!!GD.out[p.id],st=o?"Đã bỏ giải":onC.has(p.id)?"Đang trên sân":rs[p.id]?"BTC cho nghỉ, chưa xếp trận":lt.has(p.id)?`Đã nghỉ ${Math.max(0,Math.floor((Date.now()-lt.get(p.id))/60000))} phút`:"Chưa đánh trận nào";
     return `<div class="prow2 m"><span class="no num">${GD.T.get(p.id).no}</span>${pairAv(D,p,"sm")}<span class="nm">${pairNm(D,p)}<small>${st}</small></span><span class="bt">${!o&&!onC.has(p.id)?`<button class="ghost" data-act="grest" data-id="${p.id}">${rs[p.id]?"Cho vào lại":"Cho nghỉ"}</button>`:""}${o?`<button class="ghost" data-act="gin" data-id="${p.id}">Cho quay lại</button>`:armed("gout:"+p.id)?`<button class="danger" data-act="gout" data-id="${p.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="gout" data-id="${p.id}">Bỏ giải</button>`}</span></div>`}).join("")})()}
     <div class="bar" style="margin-top:12px">${!GD.complete?`<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để kết thúc sớm":"Kết thúc giải sớm"}</button>`:""}${!D.done.some(m=>m.giai)?`<button class="ghost danger" data-act="gcancel">${armed("gcancel:x")?"Bấm lần nữa để hủy":"Hủy lịch, ghép lại cặp"}</button>`:""}</div>
     ${!GD.complete?`<p class="rule" style="margin-top:8px">Kết thúc sớm: các trận chưa đánh không tính, xếp hạng theo kết quả hiện có.</p>`:""}</div>`}
-  return h;
+  // Quản lý: chia thành 4 phần Sân · Lịch · Bảng · Quản lý cho đỡ dài
+  if(canWrite){const sg=["san","lich","bang","ql"].includes(liveSeg)?liveSeg:"san";
+    return top+lsegBar([["san",`Sân · ${live.length}`],["lich","Lịch"],["bang","Bảng"],["ql","Quản lý"]],sg)+({san:sanP,lich:lichP,bang:vGiaiBxh(D,GD),ql:h})[sg]}
+  return top+sanP+lichP+h;
 }
 function gCourt(D,GD,m){
   const X=GD.T.get(m.pa),Y=GD.T.get(m.pb),ka=`sa-${m.id}`,kb=`sb-${m.id}`;

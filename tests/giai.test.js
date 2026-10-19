@@ -17,6 +17,7 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   const playing = () => e.docs("matches/", m => m.status === "playing");
   expect(playing().length).toBe(2);
   // lịch theo sân: mỗi sân có trận đang đánh và các trận dự kiến, đủ hết số trận còn lại
+  await e.click("lseg", { v: "lich" });
   expect(e.T()).toContain("SÂN 1");
   expect(e.T()).toContain("SÂN 2");
   expect(e.T()).toContain("Sắp tới · dự kiến");
@@ -26,6 +27,7 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   expect(e.T()).toContain("LƯỢT 1");
   expect((e.V().match(/class="m vs"/g) || []).length).toBe(vsSan);
   await e.click("gview", { v: "san" });
+  await e.click("lseg", { v: "san" });
   const [id0] = playing()[0];
   e.input("sa-" + id0, "11"); e.input("sb-" + id0, "11"); await e.click("save", { id: id0 });
   expect(e.V()).toContain("không được hòa"); expect(e.V()).toContain("Chạm 11, không cần cách 2");
@@ -71,4 +73,21 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   expect(sv).toContain('data-act="champsay"');
   await e.tab("home");
   expect(e.V()).toContain("vô địch");
+});
+
+test("giải cặp ở bước Tùy chọn: ghép tự động cân trình, bảng thêm cặp gợi ý người cân trình", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF"); await e.click("add");
+  await e.tab("san"); await e.click("cset", { k: "fmt", v: "giai" });
+  expect(e.V()).toContain('data-act="gauto"');
+  await e.click("gaddopen"); expect(e.V()).toContain('class="gsheet"');
+  const [a, b] = e.docs("players/").map(([id]) => id);
+  await e.click("gpick", { id: a }); expect(e.T()).toContain("gợi ý cân trình");
+  await e.click("gpick", { id: b }); await e.click("gadd");
+  expect(e.store.get("app/config").giai.pairs.length).toBe(1);
+  expect(e.V()).not.toContain('class="gsheet"');
+  await e.click("gauto");
+  expect(e.store.get("app/config").giai.pairs.length).toBe(3);
+  expect(e.T()).toContain("Tạo lịch thi đấu · 3 trận");
 });

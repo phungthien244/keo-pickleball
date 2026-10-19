@@ -40,6 +40,7 @@ test("thanh 3 bước bấm chuyển qua lại, hàng chờ chia nam nữ, thêm
   await e.click("step", { v: "live" });
   expect(e.T()).toContain("Buổi #1 · chuẩn bị");
   await e.click("start"); await e.click("gen");
+  await e.click("lseg", { v: "cho" });
   expect(e.T()).toContain("Hàng chờ (2)");
   expect(e.V()).toContain('class="qgrid"');
   expect(e.T()).toMatch(/Nam · 1.+Nữ · 1/);
@@ -52,6 +53,7 @@ test("thanh 3 bước bấm chuyển qua lại, hàng chờ chia nam nữ, thêm
   expect(e.docs("players/", p => p.name === "Bình" && p.active).length).toBe(1);
   expect(e.url).not.toContain("nguoi");
   await e.click("step", { v: "live" });
+  await e.click("lseg", { v: "san" });
   expect(e.T()).toContain("Sân đang đánh");
   await e.click("step", { v: "chot" });
   expect(e.T()).toContain("Chốt buổi #1");

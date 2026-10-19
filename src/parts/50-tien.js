@@ -27,6 +27,9 @@ function prizes(D,M){
   if(isG(D.c)){const GD=gDerive(D);if(!GD)return [];const T=GD.table.filter(t=>!t.out),ks=M.gt==="hang"?hangOf(D.c):chiaOf(D.c).map(p=>Math.round(M.pot*p/100));
     return ks.map((k,i)=>k>0&&T[i]?{label:["Giải nhất","Giải nhì","Giải ba"][i],ids:[T[i].p.a,T[i].p.b],k}:null).filter(Boolean)}
   const st=standings(D).filter(r=>r.s.g),avg=st.reduce((a,r)=>a+r.s.g,0)/(st.length||1),ok=st.filter(r=>r.s.g>=0.7*avg);
+  // Xoay cặp trao theo hạng 1, 2, 3 cá nhân: tiền từng hạng, hoặc chia % quỹ giải
+  if(M.gt==="hang"||D.c.trao==="top3"){const ks=M.gt==="hang"?hangOf(D.c):chiaOf(D.c).map(p=>Math.round(M.pot*p/100));
+    return ks.map((k,i)=>k>0&&ok[i]?{label:["Hạng nhất","Hạng nhì","Hạng ba"][i],ids:[ok[i].p.id],k}:null).filter(Boolean)}
   const m=ok.find(r=>r.p.gender!=="F"),f=ok.find(r=>r.p.gender==="F"),w=[m&&{label:"Số 1 nam",ids:[m.p.id]},f&&{label:"Số 1 nữ",ids:[f.p.id]}].filter(Boolean);
   w.forEach(x=>x.k=Math.round(M.pot/w.length));return w;
 }

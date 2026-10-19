@@ -320,3 +320,23 @@ test("tab Sân: hôm nay 2 buổi theo lịch thì tự chọn buổi gần gi�
   await e.until(() => e.store.get("clubs/q7/players/p2").active === true);
   expect(e.T()).toContain("QR");
 });
+
+test("tạo buổi: tùy chọn bật/tắt (chi phí, giải thưởng hạng 1-2-3, luật nâng cao, trọng tài) được áp vào buổi khi chuẩn bị", async () => {
+  const e = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data: base() });
+  await e.boot(); await e.click("xnew"); await e.click("xfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-k="gton"'));
+  const d = new Date(); d.setMinutes(d.getMinutes() + 30);
+  e.input("xf-date", iso(d)); e.input("xf-time", `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`);
+  await e.click("xfset", { k: "gton", v: "1" }); await e.until(() => e.V().includes('data-k="gt"'));
+  await e.click("xfset", { k: "gt", v: "hang" }); e.input("xf-h1", "300");
+  await e.click("xfset", { k: "adv", v: "1" }); await e.click("xfset", { k: "win2", v: "0" });
+  await e.click("xfset", { k: "refOn", v: "1" });
+  await e.click("xfset", { k: "cp", v: "0" });
+  await e.click("xsave", { v: "open" });
+  await e.until(() => [...e.store.keys()].some(k => k.startsWith("clubs/q7/sched/")));
+  const X = [...e.store].find(([k]) => k.startsWith("clubs/q7/sched/"))[1];
+  expect(X).toMatchObject({ gton: true, gt: "hang", adv: true, win2: false, refOn: true, cp: false, reg: true });
+  expect(X.hang[0]).toBe(300);
+  await e.nav("app", { t: "san" });
+  await e.until(() => e.store.get("clubs/q7/app/config").schedId);
+  expect(e.store.get("clubs/q7/app/config")).toMatchObject({ gt: "hang", hang1: 300, win2: false, refOn: true, cphi: false });
+});
