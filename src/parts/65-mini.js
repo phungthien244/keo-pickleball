@@ -203,7 +203,7 @@ function mxMeTab(D){
     <button class="mxli" data-act="mxsheet"><span class="t">CLB của tôi</span><span class="t2">${C.length}</span><span>›</span></button>
     <button class="mxli" data-act="miniexplore"><span class="t">Khám phá CLB khác</span><span>›</span></button>
     <a class="mxli" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><span class="t">Giới thiệu ${esc(CLUB?.name||"CLB")}</span><span>›</span></a>
-    <button class="mxli" data-act="mute"><span class="t">Loa gọi vào sân</span><span class="t2">${loaMuted()?"Đang tắt":"Đang bật"}</span></button></div>`;
+    <button class="mxli" data-act="mute"><span class="t">Loa gọi vào sân</span><span class="t2">${loaMuted()?"Đang tắt":"Đang bật"}</span></button>${mxMgr()?"":mxInvBtn()}</div>`;
   h+=`<div class="mxcard list"><span class="mxsec">Quyền riêng tư</span>
     ${L?`<button class="mxli" data-act="mxleave"><span class="t" style="color:var(--lose)">${armed("mxleave:x")?"Bấm lần nữa: rời CLB và xoá thông tin của tôi":"Rời CLB, xoá thông tin của tôi"}</span></button>`:""}
     <button class="mxli" data-act="openurl" data-v="https://mini.zalo.me/legal/terms-preview/${MINI_APP_ID}"><span class="t">Điều khoản sử dụng</span><span>↗</span></button>
@@ -301,11 +301,20 @@ function mxExploreMe(){
   return `<div class="mxbar"><span class="mxclub"><b>Tôi</b></span></div><div class="mxbody"><div class="mxcard prof">${mxSvg("me")}<span class="t"><b>${esc(zaloProf().n||"Người dùng Zalo")}</b><small>${mine.length?`${mine.length} CLB`:"Chưa tham gia CLB nào"}</small></span></div>
     ${mine.length?`<div class="mxcard list">${mine.map(c=>`<button class="mxli" data-act="miniclub" data-id="${esc(c.id)}"><span class="t">${esc(c.name)}<small>${esc(c.role||"")}</small></span><span>›</span></button>`).join("")}</div>`:`<div class="mxcard"><b>Bắt đầu thế nào?</b><ol class="mxol"><li>Đăng ký làm khách một kèo đang mở</li><li>Hoặc vào CLB, chọn tên của bạn, chủ CLB duyệt</li><li>Có CLB rồi: xem trực tiếp, rating, tiền của bạn</li></ol><button class="primary wide" data-act="mxexfind">Tìm kèo đang mở</button></div>`}
     <div class="mxcard"><b>Bạn quản lý một CLB?</b><span class="rule">Xếp sân, rating, quỹ, đăng ký buổi. Miễn phí.</span><button class="line wide" data-act="openweb" data-v="/tao-clb">Tạo CLB trên pikeco.app ↗</button></div>
-    <div class="mxcard list"><button class="mxli" data-act="openurl" data-v="https://mini.zalo.me/legal/terms-preview/${MINI_APP_ID}"><span class="t">Điều khoản sử dụng</span><span>↗</span></button></div></div>
+    <div class="mxcard list">${mxInvBtn()}<button class="mxli" data-act="openurl" data-v="https://mini.zalo.me/legal/terms-preview/${MINI_APP_ID}"><span class="t">Điều khoản sử dụng</span><span>↗</span></button></div></div>
     <nav class="mxnav"><a href="#" data-act="mxexfind">${mxSvg("find")}<span>Khám phá</span></a><a class="on" href="#" data-act="mxexme">${mxSvg("me")}<span>Tôi</span></a></nav>`;
 }
 
 /* ----- Vẽ Mini App ----- */
+/* ----- Dán link mời: dùng được cả ở bản Testing (link zalo.me/s/… luôn mở bản đã duyệt) ----- */
+let mxInvOpen=false;
+const mxInvBtn=()=>`<button class="mxli" data-act="mxinv"><span class="t">Nhập link mời quản lý / trọng tài</span><span>${mxInvOpen?"−":"+"}</span></button>`+(mxInvOpen?`<div class="mxinv"><label class="fld"><span class="lbl">Dán link hoặc mã mời</span><input id="mx-inv" data-draft="mx-inv" autocomplete="off" placeholder="zalo.me/s/…&amp;moi=… hoặc mã" value="${esc(val("mx-inv",""))}"></label><button class="primary wide" data-act="mxinvgo">Nhận quyền</button></div>`:"");
+function parseInv(x){
+  x=String(x||"").trim();if(!x)return null;
+  const m=x.match(/[?&]moi=([0-9a-z-]+)/i)||x.match(/\/moi\/([0-9a-z-]+)/i),c=x.match(/[?&]clb=([0-9a-z-]+)/i)||x.match(/pikeco\.app\/([0-9a-z-]+)\/moi\//i);
+  const tok=m?m[1]:/^[0-9a-z-]{4,40}$/i.test(x)?x:null;if(!tok)return null;
+  return {tok,cid:c?c[1].toLowerCase():null};
+}
 /* ----- Quản lý trong Mini App (chủ CLB, quản lý, trọng tài): dùng lại các trang quản lý của bản web ----- */
 const mxMgr=()=>!legacy&&(canWrite||REF);
 let mxModeV=null;
@@ -357,6 +366,13 @@ async function mxCheckin(D){
 
 /* ----- Bấm ----- */
 async function mxAct(act,b,id){
+  if(act==="mxinv"){mxInvOpen=!mxInvOpen;render();return true}
+  if(act==="mxinvgo"){const el=document.getElementById&&document.getElementById("mx-inv"),v=parseInv((el&&el.value)||drafts["mx-inv"]);
+    if(!v){toast("Link mời không đúng. Dán nguyên link chủ CLB gửi.");return true}
+    const c=v.cid||(MODE==="club"?CID:null);if(!c){toast("Link này thiếu tên CLB. Mở CLB đó trước rồi dán lại mã.");return true}
+    delete drafts["mx-inv"];mxInvOpen=false;
+    if(MODE==="club"&&c===CID){INVITE=v.tok;await acceptInvite();render();return true}
+    try{sessionStorage.setItem("pb-inv-"+c,v.tok)}catch(e){}setPath("/"+c);location.reload();return true}
   if(act==="mxmode"){const m=b.dataset.v==="choi"?"choi":"ql";if(m===mxMode())return true;mxSetMode(m);mxSheet=null;if(m==="ql")go("app",{tab:canWrite?"dk":"san"});else go("home");return true}
   if(act==="mxsheet"){mxSheet=mxSheet==="club"?null:"club";render();return true}
   if(act==="mxsheetx"){mxSheet=null;render();return true}

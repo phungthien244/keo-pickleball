@@ -1131,3 +1131,4 @@ div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
 .zlk{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);padding:12px}
 .zlk .t{flex:1;display:flex;flex-direction:column}.zlk small{color:var(--muted)}
 .mx .mxbody > .dhead:first-child{margin-top:0}
+.mxinv{display:flex;flex-direction:column;gap:8px;padding:10px 0 4px}

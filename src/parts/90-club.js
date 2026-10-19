@@ -30,8 +30,8 @@ async function refreshRole(){
   watchRef();watchAdmin();watchLink();
 }
 // Bỏ mã mời khỏi địa chỉ sau khi đã dùng (Mini App giữ ?clb=… trên địa chỉ)
-function dropInviteTok(){try{const q=new URLSearchParams(location.search);q.delete("moi");history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:"")+location.hash)}catch(e){}}
-const inviteTok=()=>INVITE||new URLSearchParams(location.search).get("moi");
+function dropInviteTok(){try{sessionStorage.removeItem("pb-inv-"+CID)}catch(e){}try{const q=new URLSearchParams(location.search);q.delete("moi");history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:"")+location.hash)}catch(e){}}
+const inviteTok=()=>{if(INVITE)return INVITE;const t=new URLSearchParams(location.search).get("moi");if(t)return t;try{return MINI?sessionStorage.getItem("pb-inv-"+CID):null}catch(e){return null}};
 async function acceptInvite(){
   const tok=inviteTok(),zl=MINI&&!!authUser&&/^zalo_/.test(String(authUser.uid||""));
   if(!tok||legacy||!(isGoogle(authUser)||zl))return;

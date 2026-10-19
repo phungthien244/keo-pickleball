@@ -241,3 +241,14 @@ test("trang Cài đặt: link mời gửi qua Zalo mở Mini App", async () => {
   await e.until(() => e.V().includes("zalo.me/s/180913816434821856/?clb=q7&amp;moi="));
   expect(e.T()).toContain("copy link web");
 });
+
+test("bản Testing: dán link mời trong tab Tôi để nhận quyền quản lý", async () => {
+  const data = base({ "clubs/q7/invites/abc123": { role: "scorer", exp: Date.now() + 864e5, by: "own", at: 1 } });
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", search: "?clb=q7", user: ZU, data });
+  MINI(e, "#/q7/cua-toi");
+  await e.boot(); await e.until(() => e.V().includes('data-act="mxinv"'));
+  await e.click("mxinv"); await e.until(() => e.V().includes('id="mx-inv"'));
+  e.input("mx-inv", "https://zalo.me/s/180913816434821856/?clb=q7&moi=abc123"); await e.click("mxinvgo");
+  await e.until(() => e.store.get("clubs/q7/members/zalo_9")?.role === "scorer");
+  await e.until(() => e.V().includes('data-act="mxmode"'));
+});
