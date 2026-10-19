@@ -57,7 +57,7 @@ export async function onRequestGet(ctx) {
   const hk = await crypto.subtle.importKey("raw", enc.encode(env.ZALO_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const proof = [...new Uint8Array(await crypto.subtle.sign("HMAC", hk, enc.encode(tj.access_token)))].map(b => b.toString(16).padStart(2, "0")).join("");
   let me = {};
-  for (const [fields, withProof] of [["id,name,picture.type(large)", true], ["id,name,picture", true], ["id,name,picture", false], ["id,name", false]]) {
+  for (const [fields, withProof] of [["id,name,picture.type(large)", true], ["id,name,picture", false], ["id", true], ["id", false]]) {
     const hd = { access_token: tj.access_token };
     if (withProof) hd.appsecret_proof = proof;
     const mr = await fetch("https://graph.zalo.me/v2.0/me?fields=" + fields, { headers: hd });
