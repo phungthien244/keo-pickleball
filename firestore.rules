@@ -230,7 +230,7 @@ service cloud.firestore {
         }
         allow update: if canEdit() || (
           player() && resource.data.uid == request.auth.uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pay', 'paidAt', 'cancel', 'cancelAt'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pay', 'paidAt', 'cancel', 'cancelAt', 'arrived', 'arrivedAt'])
           && (request.resource.data.get('pay', 'none') == resource.data.get('pay', 'none')
               || (resource.data.get('pay', 'none') == 'none' && request.resource.data.get('pay', 'none') == 'sent'))
           && (!('cancel' in request.resource.data.diff(resource.data).affectedKeys())

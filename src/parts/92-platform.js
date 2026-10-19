@@ -65,6 +65,7 @@ function vLogin(){
     <a class="cta y" href="/tao-clb" data-go="tao">Tạo CLB</a><button class="cta o" data-act="logout">Đổi tài khoản</button>${isPA()?`<a class="cta o" href="/quan-tri" data-go="qt">Quản trị nền tảng</a>`:""}</div>`;
 }
 function renderPlatform(){
+  if(MINI){if(!splashGone)hideSplash();document.title="Pikeco";const ae=document.activeElement,aid=ae&&ae.id;$("#view").innerHTML=`<section class="mx">${mxExplore()}</section>`;if(aid){const el=document.getElementById(aid);if(el)el.focus()}return}
   const u=authUser,t=$(".tkwrap"),tb=$("#tabs"),lg=$("#clogo");if(t)t.hidden=true;if(tb)tb.hidden=true;if(lg)lg.hidden=true;
   $("#title").innerHTML=`pikeco<span class="dotapp">.app</span>`;$("#curl").textContent="";
   $("#hact").innerHTML=MINI?"":isGoogle(u)?`${S.myClub?`<a href="/${esc(S.myClub)}">CLB của tôi</a>`:""}<button data-act="logout">Thoát</button>`:`<a href="/dang-nhap" data-go="login">Đăng nhập</a>`;

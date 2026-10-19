@@ -68,7 +68,7 @@ function clubAdmin(D){
       <button class="wide" data-act="cname">Lưu tên CLB</button>
       <div class="fld"><span class="lbl">Ai được xem</span><span class="seg segw"><button data-act="pub" data-v="1" aria-pressed="${CLUB?.public!==false}">Ai có link</button><button data-act="pub" data-v="0" aria-pressed="${CLUB?.public===false}">Chỉ ban tổ chức</button></span></div>
       <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="cp" data-v="${esc(link)}">Copy link</button></div></div></section>
-    ${voiceCard()}<section class="card2"><h2>Ngân hàng nhận tiền</h2><div class="cb">
+    ${introCard()}${voiceCard()}<section class="card2"><h2>Ngân hàng nhận tiền</h2><div class="cb">
       <label class="fld"><span class="lbl">Ngân hàng</span><select id="bk-code" data-draft="bk-code">${BANKS.map(([c,,n])=>`<option value="${c}" ${val("bk-code",b.code||"mb")===c?"selected":""}>${n}</option>`).join("")}</select></label>
       <label class="fld"><span class="lbl">Số tài khoản</span><input id="bk-acc" data-draft="bk-acc" inputmode="numeric" value="${esc(val("bk-acc",b.acc||""))}"></label>
       <label class="fld"><span class="lbl">Chủ tài khoản (không dấu)</span><input id="bk-holder" data-draft="bk-holder" value="${esc(val("bk-holder",b.holder||""))}"></label>
@@ -163,4 +163,14 @@ async function restoreSession(id){
   for(const [pid,d] of Object.entries(x.adj||{})){const p=S.players.find(q=>q.id===pid);if(p&&d)await db.collection("players").doc(pid).update({rating0:Math.round(Math.min(8,Math.max(1,(Number(p.rating0)||3)+Number(d)))*100)/100})}
   await ref.delete();delList=null;delete S.pm[sid];
   return `Đã khôi phục buổi #${sid}, rating đã tự cộng lại.`;
+}
+
+/* ----- Giới thiệu CLB: hiện trong Zalo Mini App cho người mới ----- */
+const INTRO=[["city","Khu vực","TP.HCM · Quận 10",40],["sched","Lịch đánh cố định","Tối thứ 3, 5 · 19:00–21:30",80],["venue","Sân","Sân Kỳ Hòa, 3 Cao Thắng, Q10",100],["level","Trình độ","2.5–3.5, nhận người mới",60],["feeTxt","Chi phí","50k/buổi, khách 70k",60],["zalo","Số Zalo liên hệ (công khai)","0901234567",15]];
+function introCard(){
+  const c=CLUB||{};
+  return `<section class="card2"><h2>Giới thiệu CLB</h2><div class="cb"><p class="rule">Hiện ở trang giới thiệu CLB trong Zalo Mini App, giúp người mới quyết định tham gia.</p>
+    <label class="fld"><span class="lbl">Giới thiệu ngắn</span><textarea id="ci-about" data-draft="ci-about" maxlength="500" rows="3" placeholder="CLB vui vẻ, chơi đều mỗi tuần, có kèo cân trình">${esc(val("ci-about",c.about||""))}</textarea></label>
+    ${INTRO.map(([k,l,ph,mx])=>`<label class="fld"><span class="lbl">${l}</span><input id="ci-${k}" data-draft="ci-${k}" maxlength="${mx}" ${k==="zalo"?'inputmode="tel"':""} placeholder="${ph}" value="${esc(val("ci-"+k,c[k]||""))}"></label>`).join("")}
+    <button class="wide" data-act="cintro">Lưu giới thiệu</button></div></section>`;
 }

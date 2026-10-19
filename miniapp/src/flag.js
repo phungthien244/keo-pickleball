@@ -1,7 +1,7 @@
-import { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview } from "zmp-sdk";
+import { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery } from "zmp-sdk";
 import BODY from "./body.html?raw";
 window.ZMINI = 1;
-window.ZMP = { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview };
+window.ZMP = { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery };
 document.documentElement.classList.add("mini");
 // Zalo nạp JS/CSS vào trang khung của nó: tự dựng khung giao diện nếu chưa có
 // Trang khung của Zalo có thể thiếu thẻ viewport → giao diện bị phóng to, tràn ngang

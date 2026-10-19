@@ -152,6 +152,9 @@ document.addEventListener("click",async e=>{
   if(act==="bsave"&&isAdm()){const code=val("bk-code",CLUB?.bank?.code||"mb"),bk=BANKS.find(z=>z[0]===code)||BANKS[0],acc=String(val("bk-acc",CLUB?.bank?.acc||"")).replace(/\s/g,""),hd=noAcc(val("bk-holder",CLUB?.bank?.holder||""));
     if(!/^\d{6,19}$/.test(acc)){toast("Số tài khoản chỉ gồm 6–19 chữ số.");return}if(!hd){toast("Nhập tên chủ tài khoản.");return}
     write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{bank:{code:bk[0],bin:bk[1],name:bk[2],acc,holder:hd}}).then(()=>{["bk-code","bk-acc","bk-holder"].forEach(k=>delete drafts[k])}),"Đã lưu ngân hàng");return}
+  if(act==="cintro"&&isAdm()){const rd=k=>{const el=document.getElementById&&document.getElementById("ci-"+k);return String((el&&el.value!=null?el.value:drafts["ci-"+k])??CLUB?.[k]??"").trim()};
+    const d={about:rd("about").slice(0,500)};for(const [k,,,mx] of INTRO)d[k]=rd(k).slice(0,mx);d.zalo=d.zalo.replace(/[^\d]/g,"").slice(0,15);
+    write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),d).then(()=>{["about",...INTRO.map(x=>x[0])].forEach(k=>delete drafts["ci-"+k])}),"Đã lưu giới thiệu CLB");return}
   if(act==="cname"&&isAdm()){const v=String(val("cl-name",CLUB?.name||"")).trim();if(v.length<3){toast("Tên CLB cần ít nhất 3 ký tự.");return}
     write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{name:v}).then(()=>{delete drafts["cl-name"];if(CLUB)CLUB.name=v}),"Đã lưu tên CLB");return}
   if(act==="clogodel"&&isAdm()){write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{logo:""}),"Đã xoá ảnh CLB");return}

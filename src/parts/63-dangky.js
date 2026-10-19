@@ -132,6 +132,8 @@ function dkAdmin(D){
   h+=card("Gửi link đăng ký",`<p class="rule">Link mở thẳng trang đăng ký trong Zalo. Dán vào nhóm hoặc in mã QR dán ở sân.</p>
     <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="cp" data-v="${esc(link)}">Copy</button></div>
     <div class="dkqr"><img alt="Mã QR mở trang đăng ký" width="180" height="180" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&data=${encodeURIComponent(link)}"><button class="primary" data-act="regshare">📤 Gửi tin mở đăng ký</button></div>`);
+  const ck=miniLink()+"&diemdanh=1";
+  h+=card("Mã QR điểm danh tại sân",`<p class="rule">In và dán ở sân. Người chơi quét bằng Zalo khi tới nơi là báo đã đến, bạn thấy dấu ✓ trong danh sách.</p><div class="dkqr"><img alt="Mã QR điểm danh" width="180" height="180" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&data=${encodeURIComponent(ck)}"><button class="line" data-act="cp" data-v="${esc(ck)}">Copy link điểm danh</button></div>`);
   if(phaseOf(D)==="prep"&&regList(D).all.length)h+=`<p class="rule" style="text-align:center">Bấm “Bắt đầu buổi” ở trang Sân: người đã đăng ký được tự điểm danh, khách được thêm vào danh sách.</p>`;
   return h;
 }
@@ -165,7 +167,7 @@ function regForm(D){
 function regPeople(D){
   const R=regList(D),nm=x=>esc(x.guest?x.name:D.pmap.get(x.pid)?.name||x.name||"?"),po=payOn();
   const row=(x,i)=>{const pay=x.pay||"none",k=feeOf(x);
-    return `<div class="prer${i>=R.max?" done":""}"><b class="no num">${i+1}</b><span class="pm">${nm(x)}${x.guest?` <small class="gtag">khách ${esc(x.lv||"")}</small>`:""}${i>=R.max?` <small>· chờ</small>`:""}<small>${hm(x.at)} ${dmy(x.at)}${x.by?" · "+esc(x.by):""}${po&&k?` · ${kVND(k)} · <span class="paychip ${pay}">${PAYLB[pay]}</span>`:""}</small></span>
+    return `<div class="prer${i>=R.max?" done":""}"><b class="no num">${i+1}</b><span class="pm">${nm(x)}${x.arrived?` <small class="gtag" style="color:var(--win)">✓ đã đến</small>`:""}${x.guest?` <small class="gtag">khách ${esc(x.lv||"")}</small>`:""}${i>=R.max?` <small>· chờ</small>`:""}<small>${hm(x.at)} ${dmy(x.at)}${x.by?" · "+esc(x.by):""}${po&&k?` · ${kVND(k)} · <span class="paychip ${pay}">${PAYLB[pay]}</span>`:""}</small></span>
       <span class="pb">${po&&k&&pay!=="ok"?`<button class="line" data-act="regpayok" data-id="${x.id}">✓ Đã nhận</button>`:""}${po&&pay==="ok"?`<button class="ghost" data-act="regpayundo" data-id="${x.id}" aria-label="Bỏ xác nhận">↺</button>`:""}<button class="ghost danger" data-act="regdel" data-id="${x.id}" aria-label="Bỏ">${armed("regdel:"+x.id)?"Bỏ?":"✕"}</button></span></div>`};
   const got=R.all.filter(x=>x.pay==="ok").reduce((s,x)=>s+feeOf(x),0);
   let b=`<div class="lab" style="margin:0 0 4px"><span class="lbl">Đã đăng ký ${R.conf.length}${R.wait.length?` · chờ ${R.wait.length}`:""}${po?` · đã nhận ${kVND(got)}`:""}</span>${R.all.length?`<button class="lnk" data-act="regatt">${armed("regatt:x")?"Bấm lần nữa":"Điểm danh theo đăng ký"}</button>`:""}</div>`;

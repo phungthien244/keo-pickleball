@@ -44,8 +44,7 @@ function render(){
   const active=D.players.filter(p=>p.active!==false).length;
   $("#sub").innerHTML=S.offline?`<span class="dot"></span> Không kết nối được dữ liệu chung`:"";
   if(!splashGone&&(S.offline||S.noClub||(S.live&&S.mReady&&S.hReady)))hideSplash();
-  if(autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
-  if(MINI&&route==="home"){route="app";tab="dk"}
+  if(!MINI&&autoRoute&&route==="home"&&S.live&&S.mReady){autoRoute=false;if(D.playing.length){route="app";tab="san"}}
   {const tb=document.querySelector('#tabs [data-tab="dk"]');if(tb){const n=pendCount();tb.hidden=!(isAdm()&&!legacy);tb.textContent=n?`Đăng ký (${n})`:"Đăng ký"}}
   if(MINI){rememberClub();if(ME&&ME!==myPid())ME=myPid();const cu=document.getElementById("curl");if(cu)cu.textContent="";const tb=document.getElementById("tabs");if(tb)tb.hidden=true;const tk=document.querySelector(".tkwrap");if(tk)tk.hidden=true;
     $("#hact").innerHTML=miniHact(D)}
@@ -61,6 +60,8 @@ function render(){
   const v=(!legacy&&CLUB&&clubSt(CLUB)!=="active"&&!isPA())?vStatus:S.noClub?(()=>`<div class="empty"><strong>Không tìm thấy CLB</strong>Đường dẫn CLB “${esc(CID)}” không tồn tại.</div>`):S.priv?(()=>`<div class="empty"><strong>CLB riêng tư</strong>Chỉ ban tổ chức xem được trang này.</div>`+loginBar()):route==="home"?vHome:route==="caidat"?vCaiDat:route==="clogin"?vClubLogin:route==="chot"?vChot:route==="vdv"?(D=>vHoSo(D,routePid)):route==="buoi"?(D=>vBuoi(D,routeSid)):({san:isG(c)?vGiaiSan:vSan,bxh:isG(c)?(D=>vGiaiBxh(D,gDerive(D))):vBxh,nguoi:vNguoi,tien:vTien,ls:vLs,dk:vDk,toi:vToi}[tab]||vSan);
   const loading=!S.offline&&!S.noClub&&!S.priv&&!(S.mReady&&S.hReady&&S.pReady);
   const akey=route+"|"+routeSid+"|"+tab+"|"+(S.live?1:0)+"|"+D.sid, doAnim=akey!==lastAnim&&!noAnimOnce; lastAnim=akey; noAnimOnce=false;
+  if(MINI&&MODE==="club"&&!legacy&&!S.noClub){$("#view").innerHTML=`<section class="mx">${loading?skeleton():renderMini(D)}</section>`;mxCheckin(D);
+    if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}return}
   $("#view").innerHTML=`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${loading?skeleton():v(D)}${MINI?"":clubFoot()}</section>${miniNav()}`;
   syncSheet(D);
   if(S.live){for(const m of D.SM)seen.add(m.id+(m.status==="done"?"d":"p"));seenReady=true}
