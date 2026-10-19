@@ -10,6 +10,7 @@ async function miniLogin(quiet){
   if(authUser&&/^zalo_/.test(String(authUser.uid||"")))return true;
   try{
     const id=await Z.getUserID();
+    if(window.FB_TARGET==="mock"){await FB.signInWithCustomToken(FB.auth,String(id||"demo"));authUser={uid:"zalo_"+String(id||"demo"),isAnonymous:false};await refreshRole();render();return true}
     let at="";try{at=await Z.getAccessToken()}catch(e){}
     try{const ui=await Z.getUserInfo({autoRequestPermission:false}),u=ui&&ui.userInfo;if(u&&u.name)localStorage.setItem("pb-zprof",JSON.stringify({n:u.name,p:u.avatar||""}))}catch(e){}
     const r=await fetch(API+"/api/zalo-mini",{method:"POST",headers:{"content-type":"text/plain"},body:JSON.stringify({id:String(id||""),at})});

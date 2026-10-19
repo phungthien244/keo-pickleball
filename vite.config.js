@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
     plugins: [appParts()],
     resolve: { alias: mock ? [{ find: /^\.\/firebase\.js$/, replacement: resolve(__dirname, "src/mock/firebase-mock.js") }] : [] },
     define: { __FB_TARGET__: JSON.stringify(t) },
-    build: { target: "es2020", sourcemap: true, rollupOptions: { output: { manualChunks: id => (id.includes("node_modules/@firebase") || id.includes("node_modules/firebase") ? "firebase" : undefined) } } },
+    build: { target: "es2020", sourcemap: true, rollupOptions: { input: mock ? { main: resolve(__dirname, "index.html"), mini: resolve(__dirname, "mini.html") } : undefined, output: { manualChunks: id => (id.includes("node_modules/@firebase") || id.includes("node_modules/firebase") ? "firebase" : undefined) } } },
     test: { environment: "node", include: ["tests/*.test.js"], testTimeout: 20000 }
   };
 });

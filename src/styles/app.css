@@ -1029,3 +1029,4 @@ div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
 .pbio{margin:8px 0 0;font-size:14px;line-height:1.5;opacity:.9;white-space:pre-line}
 .mehact{display:flex;align-items:center;gap:6px;color:#fff;text-decoration:none;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--navy-line);padding:4px 10px 4px 4px;min-height:40px}
 .mehact .av{width:30px;height:30px}
+.mini .wrap{min-height:calc(100vh - 120px)}
