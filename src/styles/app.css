@@ -1032,7 +1032,9 @@ div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
 .mini .wrap{min-height:calc(100vh - 120px)}
 /* ===== Zalo Mini App: giao diện kiểu app ===== */
 .mini header.top,.mini #tabs,.mini .ticker,.mini .tkwrap{display:none!important}
-.mini .wrap{padding:0 0 calc(64px + env(safe-area-inset-bottom,0px));max-width:560px;min-height:100vh}
+.mini .wrap{padding:0 0 calc(64px + env(safe-area-inset-bottom,0px));width:100%;max-width:none;margin:0;box-sizing:border-box;flex:1 1 100%;min-height:100vh}
+.mini main#view,.mini .mx{width:100%;box-sizing:border-box}
+.mini section.mx{padding-top:0}
 .mini main#view{padding:0}
 .mx{font-size:15px}
 .mxbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}

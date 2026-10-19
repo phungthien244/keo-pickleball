@@ -21,3 +21,17 @@ if (!document.getElementById("view")) {
   st.textContent = "[hidden]{display:none!important}img{max-width:100%}";
   document.head.appendChild(st);
 }
+
+// Ép mọi lớp bọc của trang khung Zalo giãn hết bề ngang (khung có thể co theo nội dung)
+function pkFull() {
+  const w = document.querySelector(".wrap");
+  for (let el = w && w.parentElement; el && el !== document.documentElement; el = el.parentElement) {
+    const s = el.style;
+    s.setProperty("display", "block", "important");
+    s.setProperty("width", "100%", "important");
+    s.setProperty("max-width", "none", "important");
+    s.setProperty("margin", "0", "important");
+    s.setProperty("padding", "0", "important");
+  }
+}
+pkFull(); addEventListener("load", pkFull);
