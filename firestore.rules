@@ -228,8 +228,12 @@ service cloud.firestore {
         allow read: if canRead();
         allow create: if canEdit() || (
           active() && player()
-          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv', 'hold'])
+          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv', 'hold', 'team', 'want', 'wantName', 'seek'])
           && request.resource.data.get('hold', false) is bool
+          && request.resource.data.get('seek', false) is bool
+          && request.resource.data.get('team', '') is string && request.resource.data.get('team', '').size() <= 120
+          && request.resource.data.get('want', '') is string && request.resource.data.get('want', '').size() <= 60
+          && request.resource.data.get('wantName', '') is string && request.resource.data.get('wantName', '').size() <= 60
           && request.resource.data.uid == request.auth.uid
           && id == string(request.resource.data.sid) + '_' + request.auth.uid
           && request.resource.data.get('pay', 'none') in ['none', 'sent']

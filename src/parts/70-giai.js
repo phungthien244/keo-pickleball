@@ -106,12 +106,13 @@ function gPairsBox(D,G){
   {const rec=Math.max(1,Math.floor(n/4));if(n>=3&&c.courts>rec)h+=`<div class="warnbox"><b>${n} cặp mà mở ${c.courts} sân:</b> nhiều cặp phải đánh liền, không kịp nghỉ. Nên dùng ${rec} sân. <button class="lnk" data-act="courts" data-d="${rec-c.courts}">Đổi ${rec} sân</button></div>`}
   if(!G.locked)h+=`<div class="seg komode"><button data-act="komode" data-v="0" aria-pressed="${!isKO(G)}">Vòng tròn</button><button data-act="komode" data-v="1" aria-pressed="${isKO(G)}">Vòng bảng → Knockout</button></div>`;
   h+=`<section class="gpbox"><div class="gph"><b>Các cặp · ${n}/${gMax(cfg().giai)}</b><small>${n?"sắp theo thứ tự thêm":"mỗi cặp là 2 người"}</small></div>`;
-  h+=n?P.map((p,i)=>`<div class="prow2"><span class="no num">${i+1}</span>${pairAv(D,p,"md")}<span class="nm">${pairNm(D,p)}<small class="num">${p.draw?"🎲 bốc thăm · ":""}Rating TB ${r2(pairR(D,p))}</small></span><button class="ghost danger" data-act="gdel" data-id="${p.id}" aria-label="Bỏ cặp ${esc(pairTx(D,p))}">✕</button></div>`).join(""):`<p class="rule" style="padding:0 12px">Chưa có cặp nào. Thêm từng cặp, hoặc để app ghép tự động cho cân trình.</p>`;
+  h+=n?P.map((p,i)=>`<div class="prow2"><span class="no num">${i+1}</span>${pairAv(D,p,"md")}<span class="nm">${pairNm(D,p)}<small class="num">${p.draw?"🎲 bốc thăm · ":p.reg?"🤝 đăng ký cặp · ":""}Rating TB ${r2(pairR(D,p))}</small></span><button class="ghost danger" data-act="gdel" data-id="${p.id}" aria-label="Bỏ cặp ${esc(pairTx(D,p))}">✕</button></div>`).join(""):`<p class="rule" style="padding:0 12px">Chưa có cặp nào. Thêm từng cặp, hoặc để app ghép tự động cho cân trình.</p>`;
   if(errs.gadd)h+=`<p class="err" style="padding:0 12px">${esc(errs.gadd)}</p>`;
   h+=gbInfo(D);
   if(n<gMax(cfg().giai))h+=`<div class="gpbt"><button class="primary" data-act="gaddopen" ${free.length<2?"disabled":""}>+ Thêm cặp</button><button class="line" data-act="gauto" ${free.length<2?"disabled":""}>Ghép tự động cân trình</button><button class="gbbtn" data-act="gbopen" ${free.length<2?"disabled":""}>🎲 Bốc thăm A/B</button></div>${free.length<2?`<small class="rule" style="padding:0 12px 12px;display:block">Cần thêm người có mặt (mục Điểm danh) để ghép cặp mới.</small>`:""}`;
   h+=`</section><small class="rule">Xếp hạng: số trận thắng → đối đầu trực tiếp → hiệu số → tổng điểm ghi.</small>`;
   if(isKO(G))h+=koSetup(D,G);
+  h=capBox(D)+h;
   if(gAddOpen&&n<gMax(cfg().giai))h+=gAddSheet(D,free,n);
   if(gbOpen&&n<gMax(cfg().giai))h+=gbSheet(D);
   h+=gbScreen(D);

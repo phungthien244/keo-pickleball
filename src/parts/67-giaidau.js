@@ -19,7 +19,7 @@ function gdCard(D,x){
   return withX(x,()=>{
     const s=xState(x),R=regList(D),mine=gdMine(x),n=R.conf.length,m=+x.max||0,fee=xFee(x),left=m?Math.max(0,m-n):null,ty=gdTy(x);
     const live=s==="live",href=live?pathOf("app",{tab:"san"}):pathOf("app",{tab:"dk",x:x.id}),go=live?`data-go="app" data-t="san"`:`data-go="app" data-t="dk" data-x="${esc(x.id)}"`;
-    const chips=[lvTxt(x)||"Mọi trình",`Chạm ${+x.target||11}`,x.guests&&"Nhận VĐV ngoài CLB"].filter(Boolean);
+    const chips=[lvTxt(x)||"Mọi trình",`Chạm ${+x.target||11}`,pairRegOn(x)&&"🤝 Đăng ký theo cặp",x.guests&&"Nhận VĐV ngoài CLB"].filter(Boolean);
     const pz=gdPrize(x),price=fee?`<b class="gdpr">${fmtK(fee)}${x.fmt==="giai"?"":""}</b>`:"";
     let foot;
     if(live)foot=`<span class="gdst ok"><span class="dot"></span>Đang đánh</span><span class="gdcta">XEM TRỰC TIẾP</span>`;
@@ -104,6 +104,7 @@ function gdPlace(){
 function gdDetail(D,o={}){
   const R=regList(D),r=regCfg(),full=R.conf.length>=R.max,fee=feeMem(),exp=gdExpired(RX);
   let h=gdHero(D);
+  {const inv=!o.mine&&capInvite(D);if(inv)h+=capBanner(D,inv)}
   if(exp)h+=`<div class="gdwarn">Đã hết 15 phút giữ chỗ nên chỗ của bạn được nhả ra. Đăng ký lại nếu còn chỗ.</div>`;
   h+=gdFacts(D,R)+gdPlace()+gdWho(D,R)+(RX.note?`<div class="gdbox"><h3>Giới thiệu</h3><span class="gdnote">${esc(RX.note)}</span></div>`:"")+gdMoney(D)+gdRules(D)+gdSched(D)+gdPolicy(D)+gdContact();
   let cta="";
@@ -138,6 +139,7 @@ function gdReg1(D){
       <div class="gd2"><div class="fld"><span class="lbl">Giới tính</span><span class="seg"><button data-act="gsg" data-v="M" aria-pressed="${g==="M"}">Nam</button><button data-act="gsg" data-v="F" aria-pressed="${g==="F"}">Nữ</button></span></div>
       <label class="fld"><span class="lbl">Trình độ tự đánh giá</span><select id="gs-lv" data-draft="gs-lv">${["2.0","2.5","3.0","3.5","4.0","4.5","5.0"].map(v=>`<option ${v===lv?"selected":""}>${v}</option>`).join("")}</select></label></div>
       ${lvTxt(r)?`<span class="gdnote">${esc(lvTxt(r))} cho giải đấu này. Ghi sai trình, BTC có thể xếp lại cặp.</span>`:""}</div>`}
+  h+=capReg1(D);
   if(k>0&&canPay&&!full){h+=`<span class="xsec">Cách thanh toán</span>`+opt("pay","now",`Chuyển khoản ngay <em class="gdtag">GIỮ CHỖ CHẮC</em>`,"Quét QR bằng app ngân hàng bất kỳ. BTC xác nhận là có vé.",null);
     if(!req)h+=opt("pay","site","Trả tại sân","Giữ chỗ tạm. Gần giờ đánh nếu đầy, người đã trả trước được ưu tiên.",null)}
   else if(full)h+=`<div class="gdwarn">Giải đấu đã đủ chỗ. Bạn vào danh sách chờ, có người hủy là bạn được vào và app báo cho bạn.</div>`;
@@ -186,6 +188,7 @@ function gdTicket(D,mine){
   h+=`<div class="gdticket ${ty.c}"><div class="gdtk1">${av(me||{name:nm},"md",1)}<span class="t">${gdBand(RX,true)}<b>${esc(xName(RX))}</b><small>${esc(whenFull(RX))}${RX.place?` · ${esc(RX.place)}`:""}</small></span></div>
     <div class="gdtk2">${ci}</div>
     <div class="gdtk3"><span><small>VĐV</small><b>${esc(nm)}${lv?` · ${esc(String(lv))}`:""}</b></span><span><small>Số thứ tự</small><b>${wait?`Chờ ${pos-R.max+1}`:`#${pos+1}`}</b></span><span><small>Lệ phí</small><b>${k?kVND(k):"0đ"}</b></span><span><small>Trạng thái</small>${paySt}</span></div></div>`;
+  h+=capTicket(D,mine);
   h+=`<div class="gdacts"><button data-act="mxcal">📅<span>THÊM LỊCH</span></button>${RX.map?`<button data-act="openurl" data-v="${esc(RX.map)}">📍<span>CHỈ ĐƯỜNG</span></button>`:""}<button data-act="mxinvite">👥<span>RỦ BẠN</span></button></div>`;
   if(RX.at)h+=`<div class="gdbox"><h3>Trước giờ đánh</h3><span class="gdnote">Đến ${hm(RX.at-15*6e4)} để check-in. App tự gọi bạn vào sân, xem ở tab Trực tiếp.</span></div>`;
   h+=`<button class="gdlink" data-act="gdinfo">Xem chi tiết giải đấu ›</button>`;
@@ -207,9 +210,10 @@ function gdPage(D){
 }
 
 async function gdAct(act,b,id){
+  if(await capAct(act,b,id))return true;
   if(act==="gdreg"){if(!isPlayer(authUser)){zaloStart();return true}mxDk="reg1";delete errs.gs;delete errs.gdok;render();try{window.scrollTo(0,0)}catch(e){}if(gdOpt.who==="guest")mxAskName();return true}
   if(act==="gdback"){mxDk=null;render();return true}
-  if(act==="gdopt"){const k=b.dataset.k,v=b.dataset.v;if(k==="who"||k==="pay")gdOpt[k]=v;if(k==="who"&&v==="guest")mxAskName();render();return true}
+  if(act==="gdopt"){const k=b.dataset.k,v=b.dataset.v;if(k==="who"||k==="pay"||k==="mate")gdOpt[k]=v;if(k==="who"&&v==="guest")mxAskName();render();return true}
   if(act==="gdagree"){drafts["gd-ok"]=val("gd-ok","")==="1"?"":"1";delete errs.gdok;render();return true}
   if(act==="gdzav"){const p=zaloProf().p;if(p){gsPhoto=p;delete errs.gs;render()}return true}
   if(act==="gdinfo"){gdInfo=!gdInfo;render();try{window.scrollTo(0,0)}catch(e){}return true}

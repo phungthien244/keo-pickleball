@@ -323,6 +323,12 @@ describe("giữ chỗ, ảnh VĐV ngoài CLB, check-in quét mã máy BTC", () =
     await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ci: Date.now(), ciCode: "OLD111" }));
     await assertSucceeds(setDoc(doc(google("ad"), "clubs/aep/ci/s1"), { code: "NEW222", exp: Date.now() + 40000 }));
     await assertSucceeds(updateDoc(doc(google("ad"), "clubs/aep/regs/s1_zalo_7"), { arrived: true, arrBy: "qr", arrivedAt: 2 }));
+  });  test("đăng ký theo cặp: người rủ ghi mã cặp và đồng đội muốn mời, người nhận lời ghi cùng mã cặp", async () => {
+    await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ...r, team: "s1_zalo_7", want: "p2", wantName: "Minh" }));
+    await assertSucceeds(setDoc(doc(zalo("zalo_8"), "clubs/aep/regs/s1_zalo_8"), { ...r, uid: "zalo_8", team: "s1_zalo_7" }));
+    await assertSucceeds(setDoc(doc(zalo("zalo_9"), "clubs/aep/regs/s1_zalo_9"), { ...r, uid: "zalo_9", seek: true }));
+    await assertFails(setDoc(doc(zalo("zalo_6"), "clubs/aep/regs/s1_zalo_6"), { ...r, uid: "zalo_6", seek: "x" }));
+    await assertFails(setDoc(doc(zalo("zalo_5"), "clubs/aep/regs/s1_zalo_5"), { ...r, uid: "zalo_5", team: 5 }));
   });
 });
 

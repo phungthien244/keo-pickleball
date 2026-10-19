@@ -380,3 +380,23 @@ test("tạo giải đấu: tùy chọn bật/tắt (chi phí, giải thưởng h
   await e.until(() => e.store.get("clubs/q7/app/config").schedId);
   expect(e.store.get("clubs/q7/app/config")).toMatchObject({ gt: "hang", hang1: 300, win2: false, refOn: true, cphi: false });
 });
+
+test("giải đăng ký theo cặp: người rủ chọn đồng đội trong CLB, đồng đội thấy lời mời và nhận lời, thành một cặp", async () => {
+  const data = base({ "clubs/q7/sched/s1": sched({ fmt: "giai", pairReg: "pair", name: "Giải cặp" }), "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
+  MINI(e, "#/q7");
+  await e.boot(); await e.until(() => e.T().includes("Giải đấu sắp tới"));
+  expect(e.T()).toContain("Đăng ký theo cặp");
+  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
+  await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
+  expect(e.T()).toContain("Tôi rủ đồng đội");
+  const p2 = Object.keys(data).find(k => k.startsWith("clubs/q7/players/") && k !== "clubs/q7/players/p1").split("/").pop();
+  await e.click("gdmate", { v: p2 });
+  await e.click("gdagree"); await e.click("regin");
+  await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.team === "s1_zalo_9");
+  expect(e.store.get("clubs/q7/regs/s1_zalo_9").want).toBe(p2);
+  await e.until(() => e.T().includes("MỜI ĐỒNG ĐỘI QUA ZALO"));
+  // đồng đội nhận lời: đăng ký với cùng mã cặp
+  await globalThis.window.FB.setDoc({ path: "clubs/q7/regs/s1_zalo_8" }, { sid: "s1", uid: "zalo_8", pid: p2, name: "B", at: Date.now(), pay: "none", team: "s1_zalo_9" });
+  await e.until(() => e.T().includes("CẶP CỦA BẠN"));
+});

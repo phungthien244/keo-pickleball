@@ -241,11 +241,12 @@ async function regAct(act,b,id){
       if(step&&!gsPhoto){errs.gs="Thêm ảnh rõ mặt của bạn để ban tổ chức nhận ra lúc check-in.";render();return true}
       d={...d,guest:true,name:nm,gender:drafts["gs-g"]==="F"?"F":"M",lv:String(val("gs-lv","3.0"))}}
     else d={...d,pid:L.pid,name:D.pmap.get(L.pid)?.name||""};
+    if(step){if(gdJoin&&capRegs(d.sid,gdJoin).length>=2){toast("Cặp này đã đủ hai người.");gdJoin="";render();return true}d={...d,...capFields(rid)}}
     // Lần trước quá giờ giữ chỗ: xoá đăng ký cũ rồi đăng ký lại
     const old=(S.regs||[]).find(x=>x.id===rid);
     try{if(old)await FB.deleteDoc(FB.doc(FB.fs,PFX+"regs/"+rid));
       await FB.setDoc(FB.doc(FB.fs,PFX+"regs/"+rid),d);if(guest)await gdSavePic(rid);
-      guestOpen=false;mxDk=null;gsPhoto="";delete drafts["gd-ok"];gdOpt={who:"",pay:""};gdInfo=false;
+      guestOpen=false;mxDk=null;gsPhoto="";delete drafts["gd-ok"];gdOpt={who:"",pay:""};gdInfo=false;gdJoin="";try{sessionStorage.removeItem("pb-doi")}catch(e){}
       toast(pay==="sent"?"Đã đăng ký, chờ chủ CLB xác nhận phí":hold?"Đã giữ chỗ 15 phút · chuyển khoản để chắc chỗ":"Đã đăng ký");render()}catch(e){toast("Chưa đăng ký được, thử lại.")}
     return true}
   if(act==="regpaid"){const D=derive(),mine=(S.regs||[]).find(x=>x.sid===regKey(D)&&x.uid===authUser?.uid&&!x.cancel);if(!mine)return true;
