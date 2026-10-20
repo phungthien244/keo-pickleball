@@ -12,7 +12,7 @@ async function miniLogin(quiet){
   const cu=(FB.auth&&FB.auth.currentUser)||authUser;
   if(cu&&/^zalo_/.test(String(cu.uid||"")))return true;
   try{
-    const id=await Z.getUserID();
+    const id=await Z.getUserID();if(id)saveZProf({zid:String(id)});
     if(window.FB_TARGET==="mock"){await FB.signInWithCustomToken(FB.auth,String(id||"demo"));authUser={uid:"zalo_"+String(id||"demo"),isAnonymous:false};await refreshRole();render();return true}
     let at="";try{at=await Z.getAccessToken()}catch(e){}
     try{const ui=await Z.getUserInfo({autoRequestPermission:false}),u=ui&&ui.userInfo;if(u&&u.name)saveZProf({n:u.name,p:u.avatar||""})}catch(e){}
@@ -24,7 +24,7 @@ async function miniLogin(quiet){
 let unsubLink=null;
 let ZPROF=null;
 function zaloProf(){if(ZPROF)return ZPROF;try{return JSON.parse(localStorage.getItem("pb-zprof")||"{}")||{}}catch(e){return {}}}
-function saveZProf(o){ZPROF=o;try{localStorage.setItem("pb-zprof",JSON.stringify(o))}catch(e){}}
+function saveZProf(o){ZPROF={...zaloProf(),...o};o=ZPROF;try{localStorage.setItem("pb-zprof",JSON.stringify(o))}catch(e){}}
 async function zaloStart(){
   if(!PLAYER_ON())return;
   if(ZALO_ON){if(window.FB_TARGET==="mock"){FB.signInWithCustomToken(FB.auth,"demo").then(()=>location.reload());return}
@@ -35,8 +35,14 @@ async function zaloStart(){
   catch(e){toast("Chưa vào được, thử lại.")}
 }
 // Trang vừa được Zalo trả về: #zt=<token>&zn=<tên>&zp=<ảnh> hoặc #zerr=<lỗi>
+// Mã người dùng Zalo trong Mini App (getUserID): dùng để người khác mở chat Zalo với mình (openChat)
+async function zidLoad(){const Z=window.ZMP;if(!Z||zaloProf().zid)return;try{const id=await Z.getUserID();if(id)saveZProf({zid:String(id)})}catch(e){}}
+const myZid=()=>MINI?String(zaloProf().zid||"").slice(0,64):"";
+async function zChat(zid,msg){
+  const Z=window.ZMP;if(zid&&Z&&Z.openChat){try{await Z.openChat({type:"user",id:String(zid),...(msg?{message:msg}:{})});return true}catch(e){}}
+  toast(MINI?"Chưa mở được chat Zalo, thử lại.":"Mở Pikeco trong Zalo để nhắn tin.");return false}
 async function zaloHash(){
-  if(MINI){miniLogin(true);return}
+  if(MINI){miniLogin(true).then(zidLoad);return}
   const h=String(location.hash||"");if(!/[#&](zt|zerr)=/.test(h))return;
   const q=new URLSearchParams(h.slice(1));
   try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
@@ -51,6 +57,7 @@ function watchLink(){
   try{unsubLink=FB.onSnapshot(FB.doc(FB.fs,PFX+"links/"+authUser.uid),{},s=>{S.link=s.exists()?s.data():null;
     if(S.link&&S.link.status==="ok"&&S.link.pid&&ME!==S.link.pid){ME=S.link.pid;try{localStorage.setItem("pb-me-"+CID,ME)}catch(e){}}
     if(S.link)rememberClub();
+    if(S.link&&MINI&&myZid()&&S.link.zid!==myZid())FB.updateDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid),{zid:myZid()}).catch(()=>{});
     render()},()=>{S.link=null;render()})}catch(e){}
 }
 const zaloBtn=(label)=>window.ZMP?`<button class="zalobtn" data-act="zlogin"><b>Z</b>${label&&!/Đăng nhập Zalo/.test(label)?label:"Vào bằng Zalo để đăng ký"}</button>`:PLAYER_ON()?`<button class="primary wide" data-act="zlogin">${label?label.replace("Đăng nhập Zalo để đăng ký","Tham gia để đăng ký"):"Tham gia để đăng ký giải đấu"}</button>`:`<small class="rule">Người chơi đăng ký trong Zalo Mini App của CLB.</small>`;
@@ -105,7 +112,7 @@ async function zaloAct(act,b,id){
   if(act==="lnksend"){if(!isPlayer(authUser))return true;const zp=zaloProf();
     const el=document.getElementById&&document.getElementById("lnk-name"),nn=String((el&&el.value)||drafts["lnk-name"]||zp.n||"").trim().slice(0,30);
     if(!nn){toast("Nhập tên của bạn.");return true}
-    const d={status:"pending",zname:String(zp.n||"").slice(0,40),photo:String(zp.p||"").slice(0,400),at:Date.now(),newName:nn};
+    const d={status:"pending",zname:String(zp.n||"").slice(0,40),photo:String(zp.p||"").slice(0,400),at:Date.now(),newName:nn,...(myZid()?{zid:myZid()}:{})};
     try{await FB.setDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid),d);toast("Đã gửi, chờ chủ CLB duyệt")}catch(e){toast("Chưa gửi được, thử lại.")}
     return true}
   if(await withX(xCtx(),()=>regAct(act,b,id)))return true;

@@ -225,6 +225,12 @@ describe("người chơi Zalo", () => {
     await assertFails(updateDoc(doc(zalo("zalo_2"), "qrlogin/t1"), { st: "ok", uid: "zalo_2" }));
     await assertSucceeds(updateDoc(doc(zalo("zalo_2"), "qrlogin/t3"), { st: "no" }));
   });
+  test("mã chat Zalo: người chơi tự cập nhật zid trong yêu cầu tham gia của mình, không sửa được gì khác", async () => {
+    await seed({ "clubs/aep/links/zalo_4": { status: "ok", pid: "p4" } });
+    await assertSucceeds(updateDoc(doc(zalo("zalo_4"), "clubs/aep/links/zalo_4"), { zid: "12345" }));
+    await assertFails(updateDoc(doc(zalo("zalo_4"), "clubs/aep/links/zalo_4"), { pid: "p1" }));
+    await assertFails(updateDoc(doc(zalo("zalo_5"), "clubs/aep/links/zalo_4"), { zid: "999" }));
+  });
   test("ban tổ chức giao quyền thẳng cho người chơi đã liên kết Zalo", async () => {
     await seed({ "clubs/aep/links/zalo_4": { status: "ok", pid: "p4" }, "clubs/aep/links/zalo_6": { status: "pending" } });
     const m = { role: "scorer", name: "Bốn", via: "zalo", pid: "p4", at: 1, by: "QL" };

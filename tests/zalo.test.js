@@ -223,7 +223,8 @@ test("thu phí trước: người chơi chuyển khoản lúc đăng ký, chủ 
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.hold === true);
   await e.until(() => e.V().includes("class=\"vqr\""));
   expect(e.T()).toContain("60.000đ"); expect(e.T()).toContain("Đang giữ chỗ #1");
-  await e.click("regpaid");
+  await e.click("regpaid"); expect(e.store.get("clubs/q7/regs/s1_zalo_9").pay).toBe("none");
+  await e.ok("regpaid");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.pay === "sent");
   await e.until(() => e.T().includes("Chờ BTC xác nhận"));
   delete globalThis.window.ZMINI; await new Promise(r => setTimeout(r, 700));
@@ -442,4 +443,26 @@ test("web: giải không nhận VĐV ngoài CLB thì chỉ có nút đăng ký t
   await e.boot(); await e.until(() => e.T().includes("ĐĂNG KÝ TRONG ZALO"));
   expect(e.V()).not.toContain('data-act="gdreg"');
   expect(e.V()).toContain("zalo.me/s/180913816434821856/?clb=q7&amp;buoi=s1");
+});
+
+test("nhắn tin: người chơi nhắn người tạo giải từ vé, BTC nhắn người đăng ký; vé không còn nút Thêm lịch", async () => {
+  const data = base({ "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1, zalo: "0901234567" },
+    "clubs/q7/sched/s1": sched({ byZ: "z-own", byN: "Anh Chủ" }), "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
+  const chats = [];
+  globalThis.window.ZMP = { getUserID: async () => "zid9", openChat: async o => { chats.push(o); } };
+  MINI(e, "#/q7");
+  await e.boot(); await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
+  expect(e.T()).toContain("Liên hệ ban tổ chức"); expect(e.T()).toContain("Anh Chủ");
+  await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
+  await e.click("gdagree"); await e.click("regin");
+  await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.zid === "zid9");
+  await e.until(() => e.T().includes("Vé của bạn"));
+  expect(e.T()).not.toContain("THÊM LỊCH");
+  expect(e.V()).toContain('data-act="gdchat" data-v="by"');
+  globalThis.window.open = () => {};
+  await e.click("gdchat", { v: "by" });
+  expect(chats[0]).toMatchObject({ type: "user", id: "z-own" });
+  expect(chats[0].message).toContain("Giải đấu tối");
+  delete globalThis.window.ZMP;
 });

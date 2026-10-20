@@ -21,7 +21,8 @@ import "../miniapp/src/mini.css";
     getAccessToken: async () => "",
     getUserInfo: async () => ({ userInfo: { id: zid, name: zid === "demo" ? "Người chơi Zalo" : "Người chơi " + zid.slice(1, 4).toUpperCase(), avatar: "" } }),
     openWebview: async ({ url }) => { window.open(url, "_blank"); },
-    openShareSheet: async () => ({})
+    openShareSheet: async () => ({}),
+    openChat: async ({ id, message }) => { const t = document.createElement("div"); t.className = "pvchat"; t.textContent = "(Bản thử) Mở chat Zalo với " + id + (message ? ": " + message : ""); t.style.cssText = "position:fixed;left:12px;right:12px;top:56px;z-index:99;background:#0068ff;color:#fff;padding:10px 12px;font:600 13px system-ui"; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
   };
   document.documentElement.classList.add("mini", "minipv");
   // Khung giống thanh tiêu đề Zalo

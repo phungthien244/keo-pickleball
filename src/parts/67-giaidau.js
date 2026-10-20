@@ -95,9 +95,16 @@ function gdSched(D){
   const at=RX.at;if(!at)return "";const row=(a,b)=>`<div class="gdrow"><span>${a}</span><b>${b}</b></div>`;
   return `<div class="gdbox"><h3>Lịch trình</h3>${row(hm(at-15*6e4),"Điểm danh, khởi động")}${row(hm(at),"Bắt đầu")}${RX.end?row(RX.end,RX.gton?"Kết thúc · trao giải":"Kết thúc"):""}</div>`;
 }
+// Nhắn tin: người tạo giải (chat Zalo trong Mini App) và số Zalo liên hệ của CLB
+const gdBy=()=>MINI&&RX&&RX.byZ&&RX.byZ!==myZid()?{z:RX.byZ,n:RX.byN||"Người tạo giải"}:null;
+const gdPhone=()=>String((CLUB&&CLUB.zalo)||"").replace(/\D/g,"");
+const gdChatMsg=()=>`Chào BTC, mình hỏi về ${xName(RX)} (${whenFull(RX)}):`;
 function gdContact(){
-  const zl=String((CLUB&&CLUB.zalo)||"").replace(/\D/g,"");if(!zl)return "";
-  return `<div class="gdbox row"><span class="gdav">${clubAv(CLUB||{id:CID},"s40")}</span><span class="t"><b>Ban tổ chức ${esc(CLUB?.name||"")}</b><span class="gdnote">Hỏi về giải, trình độ, ghép cặp</span></span><button class="gdcp" data-act="openurl" data-v="https://zalo.me/${zl}">💬 Nhắn Zalo</button></div>`;
+  const by=gdBy(),zl=gdPhone();if(!by&&!zl)return "";
+  let h=`<div class="gdbox gdct"><h3>Liên hệ ban tổ chức</h3>`;
+  if(by)h+=`<div class="gdctr">${av({name:by.n},"md",1)}<span class="t"><b>${esc(by.n)}</b><span class="gdnote">Người tạo giải · hỏi về giải, ghép cặp, lệ phí</span></span><button class="gdcp" data-act="gdchat" data-v="by">💬 Nhắn tin</button></div>`;
+  if(zl)h+=`<div class="gdctr">${clubAv(CLUB||{id:CID},"s40")}<span class="t"><b>Ban tổ chức ${esc(CLUB?.name||"")}</b><span class="gdnote">Zalo liên hệ của CLB</span></span><button class="gdcp" data-act="gdchat" data-v="clb">💬 Nhắn Zalo</button></div>`;
+  return h+`</div>`;
 }
 function gdHero(D){
   const ty=gdTy(RX);
@@ -114,7 +121,7 @@ function gdDetail(D,o={}){
   {const inv=!o.mine&&capInvite(D);if(inv)h+=capBanner(D,inv)}
   if(exp)h+=`<div class="gdwarn">Đã hết 15 phút giữ chỗ nên chỗ của bạn được nhả ra. Đăng ký lại nếu còn chỗ.</div>`;
   if(webReg()&&!webLinked()&&xOpen(RX)&&!regClosed())h+=`<div class="gdwebnote"><b>${r.guests&&webPayOk()?"Đăng ký ngay trên web, không cần tài khoản":"Đăng ký trong Zalo"}</b><span>${r.guests&&webPayOk()?`VĐV ngoài CLB đăng ký ở đây${feeGuest()?`, <b>chuyển khoản ${kVND(feeGuest())} trước</b> mới giữ được chỗ`:""}. Thành viên CLB đăng ký trong Zalo để có giá thành viên.`:"Giải này đăng ký qua Pikeco trong Zalo."}</span><span class="gdwl"><a href="${esc(miniLink(CID,RX.id))}">Mở trong Zalo ›</a>${qrlBtn("lnk")}</span>${qrlBox()}</div>`;
-  h+=gdFacts(D,R)+gdPlace()+gdWho(D,R)+(RX.note?`<div class="gdbox"><h3>Giới thiệu</h3><span class="gdnote">${esc(RX.note)}</span></div>`:"")+gdMoney(D)+gdRules(D)+gdSched(D)+gdPolicy(D)+gdContact();
+  h+=gdFacts(D,R)+gdPlace()+gdContact()+gdWho(D,R)+(RX.note?`<div class="gdbox"><h3>Giới thiệu</h3><span class="gdnote">${esc(RX.note)}</span></div>`:"")+gdMoney(D)+gdRules(D)+gdSched(D)+gdPolicy(D);
   let cta="";
   if(regClosed())cta=`<span class="gdsum"><b>Đã hết hạn</b><small>đăng ký</small></span><button class="primary" disabled>ĐÃ ĐÓNG ĐĂNG KÝ</button>`;
   else if(!xOpen(RX))cta=`<span class="gdsum"><b>${fee?fmtK(fee):""}</b><small>${esc(xChipTxt(RX))}</small></span><button class="primary" disabled>CHƯA MỞ ĐĂNG KÝ</button>`;
@@ -202,8 +209,9 @@ function gdTicket(D,mine){
     <div class="gdtk2">${ci}</div>
     <div class="gdtk3"><span><small>VĐV</small><b>${esc(nm)}${lv?` · ${esc(String(lv))}`:""}</b></span><span><small>Số thứ tự</small><b>${wait?`Chờ ${pos-R.max+1}`:`#${pos+1}`}</b></span><span><small>Lệ phí</small><b>${k?kVND(k):"0đ"}</b></span><span><small>Trạng thái</small>${paySt}</span></div></div>`;
   h+=capTicket(D,mine);
-  h+=`<div class="gdacts"><button data-act="mxcal">📅<span>THÊM LỊCH</span></button>${RX.map?`<button data-act="openurl" data-v="${esc(RX.map)}">📍<span>CHỈ ĐƯỜNG</span></button>`:""}<button data-act="mxinvite">👥<span>RỦ BẠN</span></button></div>`;
+  h+=`<div class="gdacts">${gdBy()||gdPhone()?`<button data-act="gdchat">💬<span>NHẮN BTC</span></button>`:""}${RX.map?`<button data-act="openurl" data-v="${esc(RX.map)}">📍<span>CHỈ ĐƯỜNG</span></button>`:""}<button data-act="mxinvite">👥<span>RỦ BẠN</span></button></div>`;
   if(RX.at)h+=`<div class="gdbox"><h3>Trước giờ đánh</h3><span class="gdnote">Đến ${hm(RX.at-15*6e4)} để check-in. App tự gọi bạn vào sân, xem ở tab Trực tiếp.</span></div>`;
+  h+=gdContact();
   h+=`<button class="gdlink" data-act="gdinfo">Xem chi tiết giải đấu ›</button>`;
   if(!mine.arrived)h+=locked?`<small class="rule" style="text-align:center">Đã qua giờ khóa hủy.</small>`:`<button class="ghost danger wide" data-act="regout">Hủy đăng ký${lk?` (hoàn 100% trước ${hm(lk)} ${dmy(lk)})`:""}</button>`;
   return gdShell(D,h);
@@ -223,6 +231,7 @@ function gdPage(D){
 }
 
 async function gdAct(act,b,id){
+  const X0=RX;
   if(await capAct(act,b,id))return true;
   if(act==="gdreg"&&!MINI){const u=authUser;
     if(u&&!u.isAnonymous&&!isZaloU(u)){toast("Bạn đang đăng nhập Google. Thoát ra để đăng ký làm VĐV, hoặc đăng ký trong Zalo.");return true}
@@ -230,11 +239,15 @@ async function gdAct(act,b,id){
     mxDk="reg1";delete errs.gs;delete errs.gdok;render();try{window.scrollTo(0,0)}catch(e){}return true}
   if(act==="gdreg"){if(!isPlayer(authUser)){zaloStart();return true}mxDk="reg1";delete errs.gs;delete errs.gdok;render();try{window.scrollTo(0,0)}catch(e){}if(gdOpt.who==="guest")mxAskName();return true}
   if(act==="gdback"){mxDk=null;render();return true}
+  if(act==="gdchat"){const {by,msg}=withX(X0,()=>({by:gdBy(),msg:X0?gdChatMsg():""})),zl=gdPhone(),w=b.dataset.v;
+    if(by&&w!=="clb"){await zChat(by.z,msg);return true}
+    if(zl){const u="https://zalo.me/"+zl;if(window.ZMP&&window.ZMP.openWebview){try{await window.ZMP.openWebview({url:u})}catch(e){location.href=u}}else window.open(u,"_blank");return true}
+    toast("Ban tổ chức chưa để thông tin liên hệ.");return true}
   if(act==="gdopt"){const k=b.dataset.k,v=b.dataset.v;if(k==="who"||k==="pay"||k==="mate")gdOpt[k]=v;if(k==="who"&&v==="guest")mxAskName();render();return true}
   if(act==="gdagree"){drafts["gd-ok"]=val("gd-ok","")==="1"?"":"1";delete errs.gdok;render();return true}
   if(act==="gdzav"){const p=zaloProf().p;if(p){gsPhoto=p;delete errs.gs;render()}return true}
   if(act==="gdinfo"){gdInfo=!gdInfo;render();try{window.scrollTo(0,0)}catch(e){}return true}
-  if(act==="gdsite"){const D=derive(),mine=gdMine(RX);if(!mine)return true;
+  if(act==="gdsite"){const D=derive(),mine=X0&&gdMine(X0);if(!mine)return true;
     try{await FB.updateDoc(FB.doc(FB.fs,PFX+"regs/"+mine.id),{hold:false});toast("Đã đổi sang trả tại sân")}catch(e){toast("Chưa đổi được, thử lại.")}return true}
   return false;
 }

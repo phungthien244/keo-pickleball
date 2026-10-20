@@ -87,6 +87,7 @@ function tvMgr(D,p){
   h+=dts.map(x=>`<div class="tvli"><span class="t">Giải đấu #${x.sid}<small>còn nợ ${fmtK(x.k)}</small></span><button class="primary sm" data-act="paid" data-id="${x.sid}" data-p="${p.id}">ĐÃ NHẬN</button></div>`).join("");
   if(!mf&&!dts.length)h+=`<p class="rule">Không có khoản nào cần thu.</p>`;
   if(tot)h+=`<button class="line wide" data-act="tvremind" data-id="${p.id}">💬 Nhắc ${esc(p.name)} qua Zalo</button>`;
+  else if(MINI&&zidOfP(p))h+=`<button class="line wide" data-act="zchat" data-v="${esc(zidOfP(p))}" data-n="${esc(p.name)}">💬 Nhắn tin cho ${esc(p.name)}</button>`;
   h+=`</div>`;
   h+=`<div class="tvbox"><h3>Ghi chú nội bộ</h3><textarea id="tvn-${p.id}" data-draft="tvn-${p.id}" rows="3" maxlength="500" placeholder="Ví dụ: hay tới trễ, đánh tay trái, đang chấn thương nhẹ…">${esc(val("tvn-"+p.id,N.t||""))}</textarea>
     <div class="tvbh"><small class="rule">${N.at?`Sửa ${dmy(N.at)} · ${esc(N.by||"")}`:"Người chơi không thấy ghi chú này."}</small><button class="line sm" data-act="tvnote" data-id="${p.id}">Lưu ghi chú</button></div></div>`;
@@ -115,6 +116,7 @@ async function tvAct(act,b,id){
   if(act==="tvremind"){const I=tvInfo(D),dts=debts().filter(x=>x.id===id),L=[];
     if(I.mfNo(p))L.push(`phí thành viên ${mfLb(I.cur)} ${fmtK(mfCfg().k)}`);for(const x of dts)L.push(`giải đấu #${x.sid} ${fmtK(x.k)}`);
     const txt=`Chào ${p.name} 👋 ${CLUB?.name||"CLB"} nhắc nhẹ: bạn còn ${L.join(", ")}. Mở Pikeco › Tôi để quét mã QR chuyển khoản nhé. Cảm ơn bạn!`;
+    if(MINI&&zidOfP(p)&&await zChat(zidOfP(p),txt))return true;
     const Z=window.ZMP;if(Z&&Z.openShareSheet){try{await Z.openShareSheet({type:"text",data:{description:txt}});return true}catch(e){}}
     if(navigator.share){try{await navigator.share({text:txt});return true}catch(e){}}
     try{await navigator.clipboard.writeText(txt);toast("Đã copy lời nhắc, gửi riêng qua Zalo")}catch(e){toast(txt)}return true}

@@ -133,6 +133,8 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="pay"){payOpen={sid:Number(b.dataset.sid),name:b.dataset.n,k:Number(b.dataset.k)};showSheet();return}
   if(act==="saveqr"){await saveQr(+b.dataset.a||0,b.dataset.n||"");return}
   if(act==="bankapp"){openOut(b.dataset.v);return}
+  if(act==="zchat"){const X=RX||xCtx();await zChat(b.dataset.v,`Chào ${b.dataset.n||"bạn"}, BTC ${CLUB?.name||""} nhắn về ${X?xName(X):"giải đấu"}:`);return}
+  if(act==="cplink"){try{await navigator.clipboard.writeText(b.dataset.v);toast("Đã copy link")}catch(x){toast(b.dataset.v)}return}
   if(act==="cp"){try{await navigator.clipboard.writeText(b.dataset.v);toast("Đã copy: "+b.dataset.v)}catch(x){toast(b.dataset.v)}return}
   if(act==="paid"){if(!canWrite)return;const sid=Number(id),h=S.hist.find(z=>z.sid===sid);if(!h)return;const pd={...(h.paid||{})};pd[b.dataset.p]=!pd[b.dataset.p];
     write(()=>db.doc("app/hist-"+sid).update({paid:pd}),pd[b.dataset.p]?"Đã đánh dấu đã nhận phí":"Đã bỏ đánh dấu");return}

@@ -44,6 +44,8 @@ function cfmInfo(key){
     regout:["Hủy đăng ký?","Bạn sẽ mất chỗ trong danh sách. Đã đóng phí thì báo ban tổ chức để hoàn.","Hủy đăng ký","d"],
     regdel:[`Bỏ${q||" người này"} khỏi danh sách?`,"Nhớ báo cho người đó. Nếu đã đóng phí, xử lý hoàn phí trước.","Bỏ khỏi danh sách","d"],
     regatt:["Điểm danh theo đăng ký?","Người đã xác nhận đăng ký sẽ được điểm danh vào giải đấu hôm nay.","Điểm danh","p"],
+    regpaid:["Bạn đã chuyển khoản xong?","Chỉ bấm khi tiền đã chuyển đi, đúng số tiền và nội dung. Ban tổ chức sẽ đối chiếu rồi xác nhận vé cho bạn.","Đã chuyển","p"],
+    regsent:["Bạn đã chuyển khoản xong?","Chỉ bấm khi tiền đã chuyển đi. Ban tổ chức sẽ đối chiếu rồi xác nhận.","Đã chuyển","p"],
     regpayok:[`Đã nhận phí${q?" của"+q:""}?`,"Chỉ xác nhận khi đã thấy chi phí về tài khoản hoặc đã nhận tiền mặt.","Đã nhận","p"],
     regpayundo:[`Bỏ xác nhận phí${q?" của"+q:""}?`,"Người này quay lại trạng thái chưa đóng.","Bỏ xác nhận","d"],
     regrefund:[`Ghi nhận hoàn phí${q?" cho"+q:""}?`,"Chỉ bấm sau khi đã chuyển trả phí.","Đã hoàn","p"],
