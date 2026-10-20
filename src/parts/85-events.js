@@ -4,6 +4,7 @@ document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.dataset&&t.dataset.me){setMe(t.value);return}
+  if(t.dataset&&t.dataset.kosel!=null){koSelChange(t);return}
   if(t.dataset&&t.dataset.gsphoto){const f=t.files&&t.files[0];t.value="";if(!f)return;if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
     shrink(f).then(d=>{gsPhoto=d;delete errs.gs;render()}).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}
   if(t.dataset&&t.dataset.myphoto){const f=t.files&&t.files[0];t.value="";const pid=myPid();if(!f||!pid)return;

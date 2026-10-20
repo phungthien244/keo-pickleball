@@ -86,6 +86,7 @@ export function setup({ search = "", path = "/", host = "rr.pikeco.app", user = 
     async nav(go, ds = {}) { await H.click({ target: { closest: s => (s === "[data-go]" ? { dataset: { go, ...ds } } : null) }, preventDefault() {} }); await tick(); },
     async tab(t) { await H.click({ target: { closest: s => (s === "[data-tab]" ? { dataset: { tab: t } } : null) } }); await tick(); },
     input(k, v) { H.input({ target: { dataset: { draft: k }, value: v } }); },
+    async sel(ds, v) { H.change({ target: { dataset: ds, value: String(v) } }); await tick(); },
     async cfg(k, v) { H.change({ target: { dataset: { save: "cfg", key: k }, value: String(v) } }); await tick(); },
     docs(prefix, fn = () => true) { return [...store].filter(([k, v]) => k.startsWith(prefix) && fn(v)).map(([k, v]) => [k.split("/").pop(), v]); },
     pid(name) { return [...store].find(([k, v]) => k.startsWith("players/") && v.name === name)[0].split("/").pop(); }

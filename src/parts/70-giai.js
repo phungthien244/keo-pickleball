@@ -197,7 +197,7 @@ function gCourt(D,GD,m){
   const side=(t,k,lab)=>`<div class="team"><div class="names"><div class="tl">${pairAv(D,t.p,"md")}<div>${pairNm(D,t.p)}<small class="num">${t.w} thắng · ${t.l} thua · Rating TB ${r2(pairR(D,t.p))}</small></div></div></div><input class="score num" id="${k}" data-draft="${k}" type="number" inputmode="numeric" min="0" max="11" aria-label="${lab}" value="${esc(val(k,""))}" ${canScore(m)?"":"disabled"}></div>`;
   return `<article class="court${isNew(m.id+"p")?" new":""}" style="--cc:${cColor(m.court)}"><div class="court-h"><h3>Sân ${esc(cName(m.court))}</h3><span class="num">${m.ko?esc(koMName(GD,m.ko)):GD.isKO?`Bảng ${KOG[(GD.games.find(g=>!g.ko&&g.key===gk(m.pa,m.pb))||{}).grp]||""} · lượt ${m.round}`:`Lượt ${m.round}`} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${esc(cName(m.court))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>${refTag(m.court)}
     ${side(X,ka,"Điểm đội 1")}${side(Y,kb,"Điểm đội 2")}
-    <div class="court-f"><span class="meta" style="flex:1">${esc(m.bo===3?"3 ván chạm 11 · nhập số ván thắng (2–0, 2–1)":m.to?`Chạm ${m.to}`:ruleTxt(D.c))}</span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button>`:""}${canScore(m)?`<button class="primary" data-act="savechk" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>${saveConfirm(D,m)}${cancelConfirm(D,m)}
+    <div class="court-f"><span class="meta" style="flex:1">${esc(mRuleTx(m)||ruleTxt(D.c))}</span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button>`:""}${canScore(m)?`<button class="primary" data-act="savechk" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>${saveConfirm(D,m)}${cancelConfirm(D,m)}
     ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}</article>`;
 }
 function gRounds(D,GD){
@@ -267,7 +267,7 @@ async function endGiai(){
       money:moneySnap(D,M),paid:{...(payDoc(D.sid).paid||{})},track:true,closedAt:Date.now(),closedBy:who(),sname:D.c.sname||"",rule:ruleTxt(D.c),
       giai:{prizes:prizes(D,M).map(x=>x.k),complete:GD.complete,
         table:GD.table.map(t=>({id:t.p.id,a:t.p.a,b:t.p.b,na:nmOf(t.p.a),nb:nmOf(t.p.b),gp:t.gp,w:t.w,l:t.l,pf:t.pf,pa:t.pa,wo:t.wo,out:t.out})),
-        ko:GD.isKO?{n:GD.groups.length,adv:GD.adv,groups:GD.groups}:null,
+        ko:GD.isKO?{n:GD.groups.length,q:GD.size,groups:GD.groups.map(p=>({p}))}:null,
         games:GD.games.filter(g=>g.st==="done"||(g.st==="wo"&&g.wo)).map(g=>({r:g.r,x:g.x,y:g.y,...(g.ko?{k:g.rn}:{}),sx:g.sx,sy:g.sy,wo:g.wo||null,court:g.m?.court||null,seq:g.m?.seq||null,at:g.m?.doneAt||null}))}});
     for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
     await xFinish(D);

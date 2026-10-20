@@ -126,52 +126,82 @@ test("giải cặp: bốc thăm nhóm A/B, lẻ người phải chọn ngồi ng
   expect(G2.draw.n).toBe(2);
 });
 
-test("vòng bảng → knockout: chia bảng có hạt giống, vòng bảng, bán kết, chung kết chạm 15, tranh hạng ba", async () => {
+test("vòng bảng → knockout: chọn hạt giống, chia bảng, luật điểm từng vòng, bán kết, chung kết 3 set, tranh hạng ba", async () => {
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK\nL\nM\nN\nO\nP"); await e.click("add");
   await e.tab("san"); await e.click("cset", { k: "fmt", v: "bang" });
   expect(e.store.get("app/config").fmt).toBe("giai");
-  expect(e.store.get("app/config").giai.ko.n).toBe(4);
-  await e.click("koset", { k: "n", v: "2" });
-  await e.click("koset", { k: "kto", v: "15" });
-  expect(e.store.get("app/config").giai.ko.kto).toBe(15);
   await e.click("gauto");
   expect(e.store.get("app/config").giai.pairs.length).toBe(8);
+  await e.click("koset", { k: "n", d: "-1" }); await e.click("koset", { k: "n", d: "-1" });
+  expect(e.store.get("app/config").giai.ko.n).toBe(2);
+  await e.click("koset", { k: "q", v: "4" });
+  // tứ kết/bán kết chạm 15 cách 2 tối đa 17; chung kết 3 set
+  for (let i = 0; i < 4; i++) await e.click("koru", { s: "k", k: "to", d: "1" });
+  await e.click("koru", { s: "k", k: "w2", v: "1" }); await e.click("koru", { s: "k", k: "cap", d: "1" });
+  await e.click("koru", { s: "f", k: "sets", v: "3" });
+  const K0 = e.store.get("app/config").giai.ko;
+  expect(K0.rk).toMatchObject({ to: 15, w2: true, cap: 17 });
+  expect(K0.rf.sets).toBe(3);
+  // chọn hạt giống bảng A là cặp cuối cùng
+  const P = e.store.get("app/config").giai.pairs, last = P[P.length - 1].id;
+  expect(e.V()).toContain('data-kosel="0"');
+  await e.sel({ kosel: "0" }, last);
+  expect(e.store.get("app/config").giai.ko.seedSel[0]).toBe(last);
   expect(e.V()).toMatch(/data-act="gstart" disabled/);
   await e.click("kodraw");
-  const K = e.store.get("app/config").giai.ko;
-  expect(K.groups.length).toBe(2);
-  expect(K.groups.every(g => g.length === 4)).toBe(true);
-  // mỗi bảng 1 hạt giống
-  expect(K.groups.every(g => g.filter(id => K.seeds.includes(id)).length === 1)).toBe(true);
+  const K = e.store.get("app/config").giai.ko, groups = K.groups.map(g => g.p);
+  expect(groups.length).toBe(2);
+  expect(groups.every(g => g.length === 4)).toBe(true);
+  expect(groups[0][0]).toBe(last);
+  expect(groups.every(g => g.filter(id => K.seeds.includes(id)).length === 1)).toBe(true);
   expect(e.T()).toContain("BẢNG A");
   await e.ok("gstart");
   const playing = () => e.docs("matches/", m => m.status === "playing");
   let k = 0;
   while (playing().length && k < 40) {
     const [id, m] = playing()[0];
-    if (m.ko) {
-      if (m.ko === "k1-0") {
-        expect(m.to).toBe(15);
-        e.input("sa-" + id, "11"); e.input("sb-" + id, "9"); await e.click("save", { id });
-        expect(e.V()).toContain("15");
-        e.input("sa-" + id, "15"); e.input("sb-" + id, "12");
-      } else if (m.ko.startsWith("k0") || m.ko === "k3") { expect(m.to).toBe(15); e.input("sa-" + id, "15"); e.input("sb-" + id, "6"); }
-      else { e.input("sa-" + id, "11"); e.input("sb-" + id, "6"); }
+    if (m.ko === "k1-0") {
+      expect(m.rule.sets).toBe(3);
+      e.input("sa-" + id, "2"); e.input("sb-" + id, "2"); await e.click("save", { id });
+      expect(e.V()).toContain("3 set");
+      e.input("sa-" + id, "2"); e.input("sb-" + id, "1");
+    } else if (m.ko) {
+      expect(m.rule).toMatchObject({ to: 15, w2: true, cap: 17 });
+      e.input("sa-" + id, "16"); e.input("sb-" + id, "14");
     } else { e.input("sa-" + id, k % 2 ? "11" : "8"); e.input("sb-" + id, k % 2 ? "4" : "11"); }
     await e.click("save", { id }); k++;
   }
   const done = e.docs("matches/", m => m.giai && m.status === "done");
   expect(done.filter(([, m]) => !m.ko).length).toBe(12);
   expect(done.filter(([, m]) => m.ko).map(([, m]) => m.ko).sort()).toEqual(["k0-0", "k0-1", "k1-0", "k3"]);
-  // nhất bảng A không gặp nhì bảng A ở bán kết
   const sf = done.filter(([, m]) => m.ko && m.ko.startsWith("k0")).map(([, m]) => [m.pa, m.pb]);
-  for (const [x, y] of sf) expect(K.groups.some(g => g.includes(x) && g.includes(y))).toBe(false);
+  for (const [x, y] of sf) expect(groups.some(g => g.includes(x) && g.includes(y))).toBe(false);
   expect(e.T()).toContain("VÔ ĐỊCH");
   await e.click("gend"); await e.click("gend"); await e.until(() => e.store.has("app/hist-1"));
   const h = e.store.get("app/hist-1");
   const fin = done.find(([, m]) => m.ko === "k1-0")[1];
   expect(h.giai.table[0].id).toBe(fin.sa > fin.sb ? fin.pa : fin.pb);
-  expect(h.giai.ko.n).toBe(2);
+  expect(h.giai.ko.groups[0].p.length).toBe(4);
+});
+
+test("vòng bảng lẻ cặp: 7 cặp chia 3 bảng, 4 cặp vào bán kết (nhất các bảng + nhì tốt nhất)", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK\nL\nM\nN"); await e.click("add");
+  await e.tab("san"); await e.click("cset", { k: "fmt", v: "bang" });
+  await e.click("gauto");
+  expect(e.store.get("app/config").giai.pairs.length).toBe(7);
+  expect(e.T()).toContain("3 bảng"); // 7 cặp: tự giảm từ 4 xuống 3 bảng
+  await e.click("koset", { k: "q", v: "4" });
+  await e.click("kodraw");
+  const groups = e.store.get("app/config").giai.ko.groups.map(g => g.p);
+  expect(groups.map(g => g.length).sort()).toEqual([2, 2, 3]);
+  await e.ok("gstart");
+  const playing = () => e.docs("matches/", m => m.status === "playing");
+  let k = 0;
+  while (playing().length && k < 40) { const [id, m] = playing()[0]; const to = m.rule ? m.rule.to : 11; e.input("sa-" + id, String(to)); e.input("sb-" + id, String(k % 9)); await e.click("save", { id }); k++; }
+  const ko = e.docs("matches/", m => m.ko && m.status === "done").map(([, m]) => m.ko).sort();
+  expect(ko).toEqual(["k0-0", "k0-1", "k1-0", "k3"]);
 });
