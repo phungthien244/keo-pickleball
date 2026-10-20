@@ -79,7 +79,7 @@ function mxHome(D){
     if(sum>0)h+=`<button class="mxcard warn" data-act="mxtien"><b>Bạn còn ${fmtK(sum)} chưa trả</b><span>${dt.length} giải đấu · bấm để chuyển khoản</span></button>`}
   const top=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating).slice(0,3);
   if(top.length)h+=`<div class="mxcard"><div class="mxhd"><b>Top rating</b><a href="${pathOf("app",{tab:"bxh"})}" data-go="app" data-t="bxh">Xem tất cả ›</a></div>${top.map((x,i)=>`<div class="mxli" data-pid="${x.id}"><span class="no">${i+1}</span>${av(x,"sm",1)}<span class="t">${esc(x.name)}</span><b class="num">${r2(D.st.get(x.id).rating)}</b></div>`).join("")}</div>`;
-  h+=`<div class="mxtiles"><a class="mxtile" href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"><small>Quỹ CLB</small><b class="num">${(fundNow()<0?"−":"")+fmtK(Math.abs(fundNow()))}</b></a><a class="mxtile" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><small>Thành viên</small><b class="num">${D.players.filter(x=>!x.guest).length}</b></a><a class="mxtile" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><small>Giới thiệu</small><b>CLB ›</b></a></div>`;
+  h+=`<div class="mxtiles">${fundView()==="off"?"":`<a class="mxtile" href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"><small>Quỹ CLB</small><b class="num">${(fundNow()<0?"−":"")+fmtK(Math.abs(fundNow()))}</b></a>`}<a class="mxtile" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><small>Thành viên</small><b class="num">${D.players.filter(x=>!x.guest).length}</b></a><a class="mxtile" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><small>Giới thiệu</small><b>CLB ›</b></a></div>`;
   const cta=!live&&!XC&&regOpen()?mxRegCta(D):"";
   return mxShell(D,h,cta);
 }
@@ -186,7 +186,7 @@ function mxRank(D){
 /* ----- 5 · Lịch sử · Tiền của tôi · Quỹ CLB ----- */
 function mxHist(D){
   const seg=mxSeg.hist,sb=(v,l)=>`<button data-act="mxseg" data-k="hist" data-v="${v}" aria-pressed="${seg===v}">${l}</button>`,me=mxPid();
-  let h=`<div class="mxseg">${sb("buoi","Các giải đấu")}${sb("tien","Chi phí của tôi")}${sb("quy","Quỹ CLB")}</div>`;
+  let h=`<div class="mxseg">${sb("buoi","Các giải đấu")}${sb("tien","Chi phí của tôi")}${fundView()==="off"?"":sb("quy","Quỹ CLB")}</div>`;
   if(seg==="tien"){
     if(!me)return mxShell(D,h+`<div class="mxcard muted"><b>Tham gia CLB</b><span>Chủ CLB xác nhận xong là bạn xem được chi phí các giải đấu của mình.</span></div>`);
     const dt=debts().filter(x=>x.id===me),sum=dt.reduce((a,x)=>a+x.k,0),p=D.pmap.get(me);
@@ -208,7 +208,7 @@ function mxMeTab(D){
   let h="";
   if(p){const s=D.st.get(p.id),A=D.all.get(p.id),rk=[...D.players].filter(x=>!x.guest).sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating).findIndex(x=>x.id===p.id)+1;
     h+=`<div class="mxcard prof">${av(p,"lg",1)}<span class="t"><b>${esc(p.name)}</b><small>${esc(CLUB?.name||"")} · ${mxRole()}</small></span><a class="line sm" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">Hồ sơ</a></div>
-    <div class="mxstats"><div><b class="num">${r2(s.rating)}</b><small>Rating</small></div><div><b class="num">#${rk}</b><small>Hạng</small></div><div><b class="num">${A.ses.size}</b><small>Giải đấu</small></div><div><b class="num">${pct(A.w,A.g)}%</b><small>Thắng</small></div></div>`;
+    <div class="mxstats"><div><b class="num">${r2(s.rating)}</b><small>Rating</small></div><div><b class="num">#${rk}</b><small>Hạng</small></div><div><b class="num">${A.ses.size}</b><small>Giải đấu</small></div><div><b class="num">${pct(A.w,A.g)}%</b><small>Thắng</small></div></div>${mfMe(D,p)}`;
   }else h+=`<div class="mxcard prof">${mxSvg("me")}<span class="t"><b>${esc(zaloProf().n||"Người dùng Zalo")}</b><small>${L&&L.status==="pending"?"Đang chờ chủ CLB duyệt":mxRole()==="VĐV ngoài CLB"?"Vận động viên ngoài CLB":"Chưa tham gia CLB này"}</small></span></div>${L&&L.status==="pending"?"":`<button class="primary wide" data-act="mxdk" data-v="pick">Tham gia CLB</button>`}`;
   const C=myClubs();
   h+=`<div class="mxcard list">
@@ -225,18 +225,6 @@ function mxMeTab(D){
 }
 
 /* ----- Giới thiệu CLB ----- */
-function mxIntro(D){
-  const c=CLUB||{},n=D.players.filter(x=>!x.guest).length,top=[...D.players].filter(x=>!x.guest).sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating).slice(0,3);
-  const kv=(k,v)=>v?`<div class="mxkv"><span>${k}</span><b>${esc(v)}</b></div>`:"";
-  let h=mxBack("home","Trang chủ")+`<div class="mxcard prof">${clubAv(c,"big")}<span class="t"><b>${esc(c.name||"")}</b><small>${esc(c.city||"")}${n?` · ${n} thành viên`:""}</small></span></div>`;
-  if(c.about)h+=`<div class="mxcard"><p style="margin:0;white-space:pre-line">${esc(c.about)}</p></div>`;
-  h+=`<div class="mxcard">${kv("Lịch đánh",c.sched)}${kv("Sân",c.venue)}${kv("Trình độ",c.level)}${kv("Chi phí",c.feeTxt||(D.c.thu==="phi"?`${fmtK(+D.c.phi||0)}/giải đấu`:THU[D.c.thu||"keo"]))}${kv("Thể thức",fmtTxt(D.c))}</div>`;
-  {const XC=(S.sched||[]).length?xPlayerCards(D):"";if(XC)h+=`<span class="mxsec">Giải đấu sắp tới</span>${XC}`;else if(regOpen())h+=mxSessCard(D,true)}
-  if(top.length)h+=`<div class="mxcard"><div class="mxhd"><b>Top rating</b></div>${top.map((x,i)=>`<div class="mxli" data-pid="${x.id}"><span class="no">${i+1}</span>${av(x,"sm",1)}<span class="t">${esc(x.name)}</span><b class="num">${r2(D.st.get(x.id).rating)}</b></div>`).join("")}</div>`;
-  const zl=String(c.zalo||"").replace(/\D/g,"");
-  const cta=(zl?`<button class="line wide" data-act="openurl" data-v="https://zalo.me/${zl}">💬 Nhắn chủ CLB qua Zalo</button>`:"")+(mxPid()?"":`<a class="primary wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">${regOpen()||schedUp().some(xOpen)?"Đăng ký giải đấu tới":"Tham gia CLB"}</a>`);
-  return mxShell(D,h,cta);
-}
 function mxMembers(D){
   const L=[...D.players].filter(p=>!p.guest).sort((a,b)=>String(a.name).localeCompare(String(b.name),"vi"));
   const q=String(val("mxq","")).toLowerCase().trim(),F=q?L.filter(p=>hasQ(q,p.name)):L;
@@ -444,7 +432,7 @@ function mxMgrView0(D){
   if(route==="chot")return vChot(D);
   if(route==="caidat")return mxMore(D);
   if(route==="home")return vDk(D);
-  return ({dk:vDk,san,tien:vTien,nguoi:D=>approvals(D)+vNguoi(D),ls:vLs,bxh}[tab]||vDk)(D);
+  return ({dk:vDk,san,tien:vTien,nguoi:vTV,ls:vLs,bxh}[tab]||vDk)(D);
 }
 function renderMini(D){
   if(mxMode()==="ql"&&!(route==="cmp"||(route==="app"&&(tab==="gt"||tab==="toi"))))return mxShell(D,mxMgrView(D));

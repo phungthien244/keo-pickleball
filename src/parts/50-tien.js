@@ -8,7 +8,7 @@ function money(D,extra){
   const att=D.players.filter(p=>D.st.get(p.id).g>0),n=att.length;
   const games=att.reduce((s,p)=>s+D.st.get(p.id).g,0);
   const base=new Map(),bu=new Map(),gop=new Map();
-  for(const p of att)base.set(p.id,thu==="keo"?D.st.get(p.id).charged:thu==="deu"?(n?Math.ceil(cost/n):0):thu==="phi"?(+c.phi||0):0);
+  for(const p of att)base.set(p.id,thu==="keo"?D.st.get(p.id).charged:thu==="deu"?mfPerk(p.id,n?Math.ceil(cost/n):0):thu==="phi"?mfPerk(p.id,+c.phi||0):0);
   const fund=[...base.values()].reduce((a,b)=>a+b,0),gap=fund-cost;
   if(thu==="keo"&&gap<0&&games)for(const p of att)bu.set(p.id,Math.ceil(-gap*D.st.get(p.id).g/games));
   const buTot=[...bu.values()].reduce((a,b)=>a+b,0);

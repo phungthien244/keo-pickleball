@@ -59,6 +59,7 @@ function loginBar(){
   return h;
 }
 function bankName(b){const x=BANKS.find(z=>z[0]===b.code);return x?x[2]:(b.name||b.code||"")}
+let cdOpen=new Set();
 function clubAdmin(D){
   if(!canWrite)return "";
   if(legacy){
@@ -71,31 +72,46 @@ function clubAdmin(D){
   if(!isAdm())return `<div class="panel clubp"><h2>Tài khoản</h2><p class="rule">Bạn đang có quyền ${esc(ROLE_LB[ROLE]||"")} ở ${esc(CLUB?.name||"CLB")}. Chỉ chủ CLB và quản lý mới đổi được cài đặt CLB.</p></div>`;
   const b=CLUB?.bank||{},mem=[...(S.members||[])].sort((a,b)=>(a.role==="owner"?-1:b.role==="owner"?1:0)||String(a.name).localeCompare(String(b.name),"vi"));
   const link=absUrl("/"+CID);
-  let h=`<section class="card2"><h2>Thông tin CLB</h2><div class="cb">
+  const sInfo=`<section class="card2"><h2>Thông tin CLB</h2><div class="cb">
       <div class="logoed">${clubAv(CLUB||{id:CID},"big")}<span class="t"><label class="lnkbtn">${logoOk(CLUB)?"Đổi ảnh đại diện":"Thêm ảnh đại diện"}<input type="file" accept="image/*" data-clogo="1" class="sr"></label>${logoOk(CLUB)?`<button class="ghost danger" data-act="clogodel">Xoá ảnh</button>`:""}<small class="rule">Ảnh vuông, app tự thu nhỏ. Hiện trên đầu trang và danh sách CLB.</small></span></div>
       <label class="fld"><span class="lbl">Tên CLB · hiện trên đầu trang</span><input id="cl-name" data-draft="cl-name" maxlength="60" value="${esc(val("cl-name",CLUB?.name||""))}"></label>
       <button class="wide" data-act="cname">Lưu tên CLB</button>
       <div class="fld"><span class="lbl">Ai được xem</span><span class="seg segw"><button data-act="pub" data-v="1" aria-pressed="${CLUB?.public!==false}">Ai có link</button><button data-act="pub" data-v="0" aria-pressed="${CLUB?.public===false}">Chỉ ban tổ chức</button></span></div>
-      <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="cp" data-v="${esc(link)}">Copy link</button></div></div></section>
-    ${introCard()}${voiceCard()}<section class="card2"><h2>Ngân hàng nhận phí</h2><div class="cb">
+      <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="cp" data-v="${esc(link)}">Copy link</button></div></div></section>`;
+  const sBank=`<section class="card2"><h2>Ngân hàng nhận phí</h2><div class="cb">
       <label class="fld"><span class="lbl">Ngân hàng</span><select id="bk-code" data-draft="bk-code">${BANKS.map(([c,,n])=>`<option value="${c}" ${val("bk-code",b.code||"mb")===c?"selected":""}>${n}</option>`).join("")}</select></label>
       <label class="fld"><span class="lbl">Số tài khoản</span><input id="bk-acc" data-draft="bk-acc" inputmode="numeric" value="${esc(val("bk-acc",b.acc||""))}"></label>
       <label class="fld"><span class="lbl">Chủ tài khoản (không dấu)</span><input id="bk-holder" data-draft="bk-holder" value="${esc(val("bk-holder",b.holder||""))}"></label>
       <span class="meta">${b.acc?`Đang dùng: ${esc(bankName(b))} · ${esc(b.acc)} · ${esc(b.holder||"")}`:"Chưa khai ngân hàng: nút Chuyển khoản sẽ bị ẩn."}</span>
-      <button class="wide" data-act="bsave">Lưu ngân hàng</button></div></section>
-    <section class="card2"><h2>PIN trọng tài</h2><div class="cb">
+      <button class="wide" data-act="bsave">Lưu ngân hàng</button></div></section>`;
+  const sPin=`    <section class="card2"><h2>PIN trọng tài</h2><div class="cb">
       <p class="rule">Trọng tài mở ${esc(link.replace(/^https?:\/\//,""))}/dang-nhap, nhập PIN là nhập được tỉ số, không cần tài khoản. Đổi PIN không làm mất quyền của các máy đã vào.</p>
       <div class="pinst${CLUB?.pinAt?" ok":""}">${CLUB?.pinAt?`✓ Đã có PIN · đổi lần cuối ${dmy(CLUB.pinAt)}`:"Chưa đặt PIN: trọng tài chưa vào được bằng PIN."}</div>
       <div class="pinrow"><label><span class="sr">PIN mới</span><input id="newpin" data-draft="newpin" type="text" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="PIN mới, ít nhất 4 số" value="${esc(val("newpin",""))}"></label><button class="dark" data-act="pinset">Đặt PIN</button></div>
       ${errs.pinset?`<p class="err">${esc(errs.pinset)}</p>`:""}
-      <div class="bar"><span class="meta grow">${(S.editors||[]).length} máy đang dùng PIN</span>${(S.editors||[]).length?`<button class="ghost danger" data-act="edclear">${armed("edclear:x")?"Bấm lần nữa":"Thu hồi tất cả"}</button>`:""}</div></div></section>
-    <section class="card2"><h2>Ban tổ chức</h2>${mem.map(m=>`<div class="mrow3">${av({name:m.name||m.email||"?"},"sm")}<span class="t"><b>${esc(m.name||m.email||m.id)}</b><small>${esc(m.email||(m.via==="zalo"?"Tài khoản Zalo":""))}</small></span><span class="rtag${m.role==="owner"?" o":""}">${ROLE_LB[m.role]||m.role}</span>${m.role!=="owner"&&m.id!==authUser?.uid?(armed("mrm:"+m.id)?`<button class="danger" data-act="mrm" data-id="${m.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="mrm" data-id="${m.id}">Gỡ</button>`):""}</div>`).join("")}
+      <div class="bar"><span class="meta grow">${(S.editors||[]).length} máy đang dùng PIN</span>${(S.editors||[]).length?`<button class="ghost danger" data-act="edclear">${armed("edclear:x")?"Bấm lần nữa":"Thu hồi tất cả"}</button>`:""}</div></div></section>`;
+  const sTeam=`    <section class="card2"><h2>Ban tổ chức</h2>${mem.map(m=>`<div class="mrow3">${av({name:m.name||m.email||"?"},"sm")}<span class="t"><b>${esc(m.name||m.email||m.id)}</b><small>${esc(m.email||(m.via==="zalo"?"Tài khoản Zalo":""))}</small></span><span class="rtag${m.role==="owner"?" o":""}">${ROLE_LB[m.role]||m.role}</span>${m.role!=="owner"&&m.id!==authUser?.uid?(armed("mrm:"+m.id)?`<button class="danger" data-act="mrm" data-id="${m.id}">Bấm lần nữa</button>`:`<button class="ghost danger" data-act="mrm" data-id="${m.id}">Gỡ</button>`):""}</div>`).join("")}
       <div class="cb"><div class="two"><button class="line" data-act="inv" data-v="admin">Mời quản lý</button><button class="line" data-act="inv" data-v="scorer">Mời trọng tài</button></div>
       ${invBox()}
       <p class="rule">Người được mời bấm link trong Zalo là mở Pikeco và có quyền ngay, không cần Google. Muốn quản lý trên máy tính thì mở link web rồi đăng nhập Google. Quản lý sửa được mọi thứ trừ gỡ chủ CLB; trọng tài chỉ nhập được tỉ số ở sân được giao.</p></div></section>`;
-  h+=refCard();
-  if(ROLE==="owner")h+=delCard();
-  return h;
+  const c=mfCfg(),cur=mfKey(),MM=mfMembers(D).filter(p=>!p.hold),np=MM.filter(p=>mfPaid(p.id,cur)).length,nEd=(S.editors||[]).length,nSc=mem.filter(m=>m.role==="scorer").length;
+  const vc=(typeof VOICE_LIST!=="undefined"&&(VOICE_LIST.find(x=>x[0]===(cfg().voice||VOICE_LIST[0][0]))||VOICE_LIST[0]))||["",""];
+  const G=[
+    ["CÂU LẠC BỘ",[
+      ["info","🏠","Thông tin CLB",`${esc(CLUB?.name||"")} · ${CLUB?.public===false?"chỉ ban tổ chức xem":"ai có link đều xem"}`,0,sInfo],
+      ["intro","📣","Trang giới thiệu",CLUB?.about?"Đã có giới thiệu, lịch đánh, sân":"Chưa viết giới thiệu cho người mới",!CLUB?.about,introCard()],
+      ["fv","👁","Thành viên xem quỹ",FV[(CLUB&&CLUB.fundView)||"flow"],0,`<section class="card2"><div class="cb">${fvCard()}</div></section>`]]],
+    ["PHÍ & THANH TOÁN",[
+      ["mf","💳","Phí thành viên cố định",mfOn()?`${fmtK(c.k)}/${c.per==="m"?"tháng":c.per==="q"?"quý":"năm"} · ${mfLb(cur)} ${np}/${MM.length} đã đóng`:"Đang tắt · bật để thu phí theo tháng/quý/năm",0,`<section class="card2"><div class="cb">${mfCard(D)}</div></section>`,`<button class="cdsw" data-act="mfon" aria-pressed="${mfOn()}" aria-label="Bật tắt phí thành viên">${gbSw(mfOn())}</button>`],
+      ["bank","🏦","Ngân hàng nhận phí",CLUB?.bank?.acc?`${esc(bankName(CLUB.bank))} · ${esc(CLUB.bank.acc)}`:"Chưa khai: người chơi không quét QR được",!CLUB?.bank?.acc,sBank]]],
+    ["BAN TỔ CHỨC & QUYỀN",[
+      ["team","👥","Ban tổ chức",`${mem.length} người · mời quản lý, trọng tài`,0,sTeam],
+      ["pin","🔑","PIN trọng tài",CLUB?.pinAt?`Đã đặt · ${nEd} máy đang dùng`:"Chưa đặt PIN",!CLUB?.pinAt,sPin],
+      ["ref","🎯","Giao sân cho trọng tài",`${nSc+nEd} trọng tài`,0,refCard()]]],
+    ["LOA",[["voice","🔊","Giọng đọc gọi vào sân",esc(vc[1]||""),0,voiceCard()]]],
+    ...(ROLE==="owner"?[["DỮ LIỆU",[["del","🗑","Giải đấu đã xóa",delList&&delList.length?`${delList.length} giải khôi phục được`:"Khôi phục giải đấu lỡ tay xoá",0,delCard()]]]]:[])];
+  return `<div class="cdgrp">${G.map(([gt,R])=>`<h3 class="cdgt">${gt}</h3><div class="cdlist">${R.map(([k,ic,t,sum,warn,html,sw])=>{const o=cdOpen.has(k);
+    return `<div class="cdrow${o?" open":""}"><div class="cdh"><button class="cdb" data-act="cdo" data-v="${k}" aria-expanded="${o}"><i class="cdic" aria-hidden="true">${ic}</i><span class="t"><b>${t}</b><small class="${warn?"warn":""}">${warn?"⚠ ":""}${sum}</small></span>${sw?"":`<i class="cdch" aria-hidden="true">${o?"▴":"▾"}</i>`}</button>${sw?sw+`<button class="cdch b" data-act="cdo" data-v="${k}" aria-label="Mở ${t}">${o?"▴":"▾"}</button>`:""}</div>${o?`<div class="cdbody">${html}</div>`:""}</div>`}).join("")}</div>`).join("")}</div>`;
 }
 async function migrate(){
   const u=authUser,now=Date.now(),base="clubs/"+CID+"/";
@@ -176,13 +192,13 @@ async function restoreSession(id){
 }
 
 /* ----- Giới thiệu CLB: hiện trong Zalo Mini App cho người mới ----- */
-const INTRO=[["city","Khu vực","TP.HCM · Quận 10",40],["sched","Lịch đánh cố định","Tối thứ 3, 5 · 19:00–21:30",80],["venue","Sân","Sân Kỳ Hòa, 3 Cao Thắng, Q10",100],["level","Trình độ","2.5–3.5, nhận người mới",60],["feeTxt","Chi phí","50k/giải đấu, VĐV ngoài CLB 70k",60],["zalo","Số Zalo liên hệ (công khai)","0901234567",15]];
+const INTRO=[["city","Khu vực","TP.HCM · Quận 10",40],["sched","Ghi chú lịch đánh","Nghỉ lễ, Tết thông báo trong nhóm",80],["venue","Sân","Sân Kỳ Hòa, 3 Cao Thắng, Q10",100],["level","Trình độ","2.5–3.5, nhận người mới",60],["feeTxt","Chi phí","50k/giải đấu, VĐV ngoài CLB 70k",60],["zalo","Số Zalo liên hệ (công khai)","0901234567",15]];
 function introCard(){
   const c=CLUB||{};
   return `<section class="card2"><h2>Giới thiệu CLB</h2><div class="cb"><p class="rule">Hiện ở trang giới thiệu CLB trong Zalo Mini App, giúp người mới quyết định tham gia.</p>
     <label class="fld"><span class="lbl">Giới thiệu ngắn</span><textarea id="ci-about" data-draft="ci-about" maxlength="500" rows="3" placeholder="CLB vui vẻ, chơi đều mỗi tuần, có chấp cân trình">${esc(val("ci-about",c.about||""))}</textarea></label>
     ${INTRO.map(([k,l,ph,mx])=>`<label class="fld"><span class="lbl">${l}</span><input id="ci-${k}" data-draft="ci-${k}" maxlength="${mx}" ${k==="zalo"?'inputmode="tel"':""} placeholder="${ph}" value="${esc(val("ci-"+k,c[k]||""))}"></label>`).join("")}
-    <button class="wide" data-act="cintro">Lưu giới thiệu</button></div></section>`;
+    ${introExtra()}<button class="wide" data-act="cintro">Lưu giới thiệu</button></div></section>`;
 }
 
 // Hộp link mời vừa tạo: link Zalo (mở Mini App, nhận quyền bằng Zalo) và link web (đăng nhập Google)

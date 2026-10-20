@@ -30,7 +30,7 @@ function attChips(D){
   const busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const n=D.players.filter(p=>p.active!==false).length;
   if(!D.players.length)return `<p class="rule">Chưa có thành viên. Nhập tên bên dưới, mỗi dòng một người.</p><div class="attnew">${addPanel(D,[])}</div>`;
-  const L=[...D.players].sort((a,b)=>(busy.has(b.id)-busy.has(a.id))||((a.active===false)-(b.active===false))||String(a.name).localeCompare(String(b.name),"vi"));
+  const L=D.players.filter(p=>!p.hold||p.active!==false).sort((a,b)=>(busy.has(b.id)-busy.has(a.id))||((a.active===false)-(b.active===false))||String(a.name).localeCompare(String(b.name),"vi"));
   const away=D.players.filter(p=>p.active===false);
   const X=xCur(),RG=X?(S.regs||[]).filter(r=>r.sid===X.id&&!r.cancel):[],byP=new Map(RG.filter(r=>r.pid).map(r=>[r.pid,r]));
   // Check-in: quét mã (QR), BTC bấm tay (TAY), vừa quét chờ duyệt, đã đăng ký chưa tới
@@ -245,8 +245,9 @@ function debts(){
   return L.sort((a,b)=>b.sid-a.sid||String(a.name).localeCompare(String(b.name),"vi"));
 }
 const ledSum=()=>(S.led||[]).reduce((a,x)=>a+(+x.k||0),0);
-function fundNow(){return clubFund()+ledSum()-debts().reduce((a,x)=>a+x.k,0)}
+function fundNow(){return clubFund()+ledSum()+mfFund()-debts().reduce((a,x)=>a+x.k,0)}
 function vSoQuy(D){
+  const FVm=fundView();if(FVm==="off")return `<div class="empty"><strong>Quỹ CLB chỉ ban tổ chức xem</strong>Chủ CLB đã tắt mục xem quỹ cho thành viên.</div>`;
   const DB=debts(),dt=DB.reduce((a,x)=>a+x.k,0),bal=fundNow();
   let h=`<div class="balbox"><span class="lbl">Quỹ CLB hiện có</span><b class="num">${bal<0?"−":""}${fmtK(Math.abs(bal))}</b><small>${S.hist.length} giải đấu đã chốt${(S.led||[]).length?` · ${(S.led||[]).length} khoản ghi tay`:""}${dt?` · chưa tính ${fmtK(dt)} còn nợ`:""}</small></div>`;
   if(canWrite){
@@ -255,10 +256,14 @@ function vSoQuy(D){
       ${errs.led?`<p class="err">${esc(errs.led)}</p>`:""}<div class="two"><button class="line" data-act="ledx">Thôi</button><button class="wide" data-act="ledsave">Lưu vào sổ</button></div><small class="rule">Dòng ghi tay xoá được nếu ghi nhầm.</small>`);
     else h+=`<div class="two2"><button class="ball" data-act="ledf" data-v="thu">+ Ghi thu</button><button class="line2" data-act="ledf" data-v="chi">− Ghi chi</button></div>`;
   }
-  if(DB.length)h+=card(`Còn nợ · ${fmtK(dt)}`,DB.map(x=>`<div class="lrow"><span class="t"><b>${esc(x.name)}</b><small>Giải đấu #${x.sid}</small></span><b class="num neg">${fmtK(x.k)}</b>${canWrite?`<button class="sm" data-act="paid" data-id="${x.sid}" data-p="${x.id}">Đã nhận</button>`:""}</div>`).join(""));
+  if(FVm==="bal")return h+`<p class="rule" style="text-align:center">Chủ CLB chỉ công khai số dư quỹ.</p>`;
+  if(DB.length&&FVm==="full")h+=card(`Còn nợ · ${fmtK(dt)}`,DB.map(x=>`<div class="lrow"><span class="t"><b>${esc(x.name)}</b><small>Giải đấu #${x.sid}</small></span><b class="num neg">${fmtK(x.k)}</b>${canWrite?`<button class="sm" data-act="paid" data-id="${x.sid}" data-p="${x.id}">Đã nhận</button>`:""}</div>`).join(""));
   const E=[...S.hist.filter(x=>x.money&&(x.money.on!==false||hClub(x))).map(x=>({at:x.endedAt||x.startedAt||0,t:(x.type==="giai"?"Giải · giải đấu #":"Giải đấu #")+x.sid,auto:true,k:hClub(x),
       sub:`Thu ${fmtK(x.money.collected!=null?x.money.collected:x.money.fund)} · chi ${fmtK(x.money.cost)}${x.money.pot?` · giải ${fmtK(x.money.pot)}`:""}${x.editedAt?` · đã sửa ${dmy(x.editedAt)}`:""}`})),
-    ...(S.led||[]).map(x=>({at:x.at||0,t:esc(x.note||""),auto:false,k:+x.k||0,sub:x.by?`Ghi bởi ${esc(x.by)}`:"",id:x.id}))].sort((a,b)=>b.at-a.at);
+    ...(S.led||[]).map(x=>({at:x.at||0,t:esc(x.note||""),auto:false,k:+x.k||0,sub:x.by?`Ghi bởi ${esc(x.by)}`:"",id:x.id})),
+    ...(mfCfg().fund===false?[]:(S.mfee||[]).map(d=>{const P=Object.values(d.paid||{});return {at:P.reduce((m,x)=>Math.max(m,+x.at||0),0),t:`Phí thành viên ${mfLb(d.id.slice(5))}`,auto:true,k:P.reduce((a,x)=>a+(+x.k||0),0),sub:`${P.length} người đã đóng`}}).filter(x=>x.k))].sort((a,b)=>b.at-a.at);
+  {const m0=new Date();m0.setDate(1);m0.setHours(0,0,0,0);const T=E.filter(x=>x.at>=m0.getTime()),tin=T.filter(x=>x.k>0).reduce((a,x)=>a+x.k,0),tout=T.filter(x=>x.k<0).reduce((a,x)=>a-x.k,0);
+    if(T.length)h+=`<div class="kpis k2q"><div class="kpi"><div class="lbl">Thu tháng ${m0.getMonth()+1}</div><div class="v num pos">+${fmtK(tin)}</div></div><div class="kpi"><div class="lbl">Chi tháng ${m0.getMonth()+1}</div><div class="v num neg">−${fmtK(tout)}</div></div></div>`}
   h+=card("Sổ thu chi",E.length?E.map(x=>{const d=x.at?new Date(x.at):null;return `<div class="lrow"><span class="d num">${d?`${d.getDate()}<br>T${d.getMonth()+1}`:"–"}</span><span class="t"><b>${x.t}</b><span class="tag ${x.auto?"a":"m"}">${x.auto?"Tự động":"Ghi tay"}</span><small>${x.sub}</small></span><b class="num ${x.k>=0?"pos":"neg"}">${x.k>=0?"+":"−"}${fmtK(Math.abs(x.k))}</b>${canWrite&&!x.auto?delBtn("leddel",x.id,"Xoá"):""}</div>`}).join(""):`<p class="rule">Chưa có khoản nào. Mỗi giải đấu chốt xong tự ghi một dòng.</p>`);
   return h;
 }
@@ -346,8 +351,8 @@ async function sessionAct(act,id,b,e){
     // Người đã đăng ký giải đấu hôm nay mà chưa check-in: BTC check-in tay giúp (đánh dấu khác với quét mã)
     const X=xCur(),r=!on&&X&&(S.regs||[]).find(z=>z.sid===X.id&&z.pid===id&&!z.cancel&&!z.arrived),ra=on&&X&&(S.regs||[]).find(z=>z.sid===X.id&&z.pid===id&&!z.cancel&&z.arrived);
     write(async()=>{await db.collection("players").doc(id).update({active:!on});if(r)await db.collection("regs").doc(r.id).update({arrived:true,arrBy:"btc",arrivedAt:Date.now()});if(ra)await db.collection("regs").doc(ra.id).update({arrived:false,ci:0,ciCode:""})},on?`${p.name} nghỉ`:r?`Đã check-in tay ${p.name}`:`${p.name} có mặt`);return true}
-  if(act==="attall"){const D=derive(),busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),all=D.players.every(p=>p.active!==false);
-    await write(async()=>{for(const p of D.players){const want=all?busy.has(p.id):true;if((p.active!==false)!==want)await db.collection("players").doc(p.id).update({active:want})}},all?"Đã bỏ chọn":"Đã chọn tất cả");return true}
+  if(act==="attall"){const D=derive(),busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),all=D.players.every(p=>p.hold||p.active!==false);
+    await write(async()=>{for(const p of D.players){const want=all?busy.has(p.id):!p.hold||p.active!==false;if((p.active!==false)!==want)await db.collection("players").doc(p.id).update({active:want})}},all?"Đã bỏ chọn":"Đã chọn tất cả");return true}
   if(act==="lpaid"){const sid=derive().sid,p=b.dataset.p,on=!(payDoc(sid).paid||{})[p];
     write(()=>savePay(sid,x=>{if(on)x.paid[p]=true;else delete x.paid[p]}),on?"Đã đánh dấu đã nhận":"Đã bỏ dấu");return true}
   if(act==="adj"){const k="aj-"+id;editing.has(k)?editing.delete(k):editing.add(k);render();return true}

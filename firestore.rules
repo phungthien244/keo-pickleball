@@ -189,6 +189,11 @@ service cloud.firestore {
         allow delete: if isMember() && myRole() == 'owner';
       }
       match /batches/{docId} { allow read: if canRead(); allow write: if canEdit(); }
+      // Ghi chú nội bộ về thành viên: chỉ chủ CLB và quản lý
+      match /notes/{pid} {
+        allow read, delete: if isAdmin();
+        allow write: if isAdmin() && request.resource.data.keys().hasOnly(['t', 'at', 'by']) && request.resource.data.t is string && request.resource.data.t.size() <= 500;
+      }
 
       // Người chơi Zalo xin nhận hồ sơ VĐV, chủ CLB hoặc quản lý duyệt
       match /links/{uid} {

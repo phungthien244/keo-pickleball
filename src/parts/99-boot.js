@@ -70,7 +70,7 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
   }
   db.doc("app/config").onSnapshot(s=>{S.cfg=s.exists?s.data():null;lsSet("pb-ses-"+CID,String(cfg().session||1));subSession(cfg().session||1);subRegs();live(s.metadata)},fail);
   db.collection("app").onSnapshot(q=>{const A=q.docs.map(d=>({id:d.id,...d.data()}));
-    S.hist=A.filter(d=>d.id.startsWith("hist-"));S.pays=Object.fromEntries(A.filter(d=>d.id.startsWith("pay-")).map(d=>[d.id,d]));S.led=A.filter(d=>d.id.startsWith("led-"));S.trash=A.find(d=>d.id==="trash")||null;
+    S.hist=A.filter(d=>d.id.startsWith("hist-"));S.pays=Object.fromEntries(A.filter(d=>d.id.startsWith("pay-")).map(d=>[d.id,d]));S.led=A.filter(d=>d.id.startsWith("led-"));S.mfee=A.filter(d=>d.id.startsWith("mfee-"));S.trash=A.find(d=>d.id==="trash")||null;
     S.hReady=true;render()},fail);
   db.collection("players").onSnapshot(q=>{S.players=q.docs.map(d=>({id:d.id,...d.data()}));S.pReady=true;live(q.metadata)},fail);
 })();

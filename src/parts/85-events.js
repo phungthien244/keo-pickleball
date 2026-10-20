@@ -16,6 +16,9 @@ document.addEventListener("change",e=>{
   if(t.dataset&&t.dataset.clogo){const f=t.files&&t.files[0];t.value="";if(!f||!isAdm())return;
     if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
     shrink(f).then(d=>write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{logo:d}),"Đã cập nhật ảnh CLB")).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}
+  if(t.dataset&&t.dataset.ccover){const f=t.files&&t.files[0];t.value="";if(!f||!isAdm())return;
+    if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
+    shrinkCover(f).then(d=>write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{cover:d}),"Đã cập nhật ảnh bìa")).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}
   if(t.dataset&&t.dataset.pick){t.checked?pickSel.add(t.dataset.pick):pickSel.delete(t.dataset.pick);render();return}
   const s=t.dataset&&t.dataset.save;if(!s)return;
   if(s==="cname"){if(!canWrite)return;const i=+t.dataset.i,c=cfg(),L=[...(c.cnames||[])];while(L.length<i)L.push("");L[i-1]=String(t.value||"").trim().slice(0,12);
@@ -162,8 +165,8 @@ document.addEventListener("click",onAct=async e=>{
     if(!/^\d{6,19}$/.test(acc)){toast("Số tài khoản chỉ gồm 6–19 chữ số.");return}if(!hd){toast("Nhập tên chủ tài khoản.");return}
     write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{bank:{code:bk[0],bin:bk[1],name:bk[2],acc,holder:hd}}).then(()=>{["bk-code","bk-acc","bk-holder"].forEach(k=>delete drafts[k])}),"Đã lưu ngân hàng");return}
   if(act==="cintro"&&isAdm()){const rd=k=>{const el=document.getElementById&&document.getElementById("ci-"+k);return String((el&&el.value!=null?el.value:drafts["ci-"+k])??CLUB?.[k]??"").trim()};
-    const d={about:rd("about").slice(0,500)};for(const [k,,,mx] of INTRO)d[k]=rd(k).slice(0,mx);d.zalo=d.zalo.replace(/[^\d]/g,"").slice(0,15);
-    write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),d).then(()=>{["about",...INTRO.map(x=>x[0])].forEach(k=>delete drafts["ci-"+k])}),"Đã lưu giới thiệu CLB");return}
+    const d={about:rd("about").slice(0,500)};for(const [k,,,mx] of INTRO)d[k]=rd(k).slice(0,mx);d.zalo=d.zalo.replace(/[^\d]/g,"").slice(0,15);for(const k of ["t1","t2"]){const v=rd(k);d[k]=/^\d{2}:\d{2}$/.test(v)?v:""}{const m=rd("map").slice(0,300);d.map=/^https:\/\//.test(m)?m:"";if(m&&!d.map){toast("Link bản đồ cần bắt đầu bằng https://");return}}
+    write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),d).then(()=>{["about","t1","t2","map",...INTRO.map(x=>x[0])].forEach(k=>delete drafts["ci-"+k])}),"Đã lưu giới thiệu CLB");return}
   if(act==="cname"&&isAdm()){const v=String(val("cl-name",CLUB?.name||"")).trim();if(v.length<3){toast("Tên CLB cần ít nhất 3 ký tự.");return}
     write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{name:v}).then(()=>{delete drafts["cl-name"];if(CLUB)CLUB.name=v}),"Đã lưu tên CLB");return}
   if(act==="clogodel"&&isAdm()){if(!armOr("clogodel:x"))return;write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{logo:""}),"Đã xoá ảnh CLB");return}
@@ -183,6 +186,10 @@ document.addEventListener("click",onAct=async e=>{
     if((cfg().fmt===v||(v==="xoay"&&!cfg().fmt))&&(v==="xoay"||curKo===ko))return;
     const keep=sheetOpen||phaseOf(derive())==="live",G1={...G0c,ko:ko?{...koDef(),...(G0c.ko||{})}:null};
     write(()=>saveCfg({fmt:v,giai:G1,...(keep?{phase:"live"}:{})}),ko?"Đã chọn thể thức Vòng bảng → Knockout":v==="giai"?"Đã chọn thể thức Cặp cố định vòng tròn":"Đã chọn thể thức Xoay cặp");return}
+  if(await mfAct(act,b,id))return;
+  if(await tvAct(act,b,id))return;
+  if(await gtAct(act,b))return;
+  if(act==="cdo"){const k=b.dataset.v;cdOpen.has(k)?cdOpen.delete(k):cdOpen.add(k);render();return}
   if(act==="capadd"&&await capAct(act,b,id))return;
   if(await gbAct(act,b,id))return;
   if(await koAct(act,b,id))return;

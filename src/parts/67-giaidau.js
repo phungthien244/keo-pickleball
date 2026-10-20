@@ -124,10 +124,10 @@ function gdReg1(D){
   if(!gdOpt.who)gdOpt.who=linked?"mem":r.guests?"guest":"mem";
   if(!gdOpt.pay)gdOpt.pay=canPay?"now":"site";
   if(req&&canPay)gdOpt.pay="now";
-  const who=gdOpt.who,pay=canPay&&!full?gdOpt.pay:"site",k=who==="guest"?feeGuest():feeMem(),me=linked?D.pmap.get(S.link.pid):null;
+  const who=gdOpt.who,me=linked?D.pmap.get(S.link.pid):null,pay=canPay&&!full?gdOpt.pay:"site",k=who==="guest"?feeGuest():mfPerk(me&&me.id,feeMem());
   const opt=(k2,v,title,sub,price,dis)=>`<button class="gdopt${gdOpt[k2]===v||(k2==="pay"&&pay===v)?" on":""}" data-act="gdopt" data-k="${k2}" data-v="${v}"${dis?" disabled":""}><span class="rd"></span><span class="t"><b>${title}</b><small>${sub}</small></span>${price!=null?`<b class="pr">${price}</b>`:""}</button>`;
   let h=`<div class="gdtop2"><button class="gdback" data-act="gdback" aria-label="Quay lại">‹</button><b>Đăng ký · ${esc(xName(RX))}</b></div>`+gdSteps(1)+`<span class="xsec">Bạn đăng ký với tư cách</span>`;
-  h+=opt("who","mem",linked?`Thành viên · ${esc(me?.name||"")}`:`Thành viên ${esc(CLUB?.name||"CLB")}`,linked?"Đã liên kết Zalo · giá thành viên":pend?"Đang chờ chủ CLB duyệt tên của bạn":"Chọn tên của bạn trong CLB, chủ CLB xác nhận một lần",feeMem()?fmtK(feeMem()):null);
+  h+=opt("who","mem",linked?`Thành viên · ${esc(me?.name||"")}`:`Thành viên ${esc(CLUB?.name||"CLB")}`,linked?"Đã liên kết Zalo · giá thành viên":pend?"Đang chờ chủ CLB duyệt tên của bạn":"Chọn tên của bạn trong CLB, chủ CLB xác nhận một lần",feeMem()?fmtK(mfPerk(me&&me.id,feeMem())):null);
   if(r.guests)h+=opt("who","guest","Vận động viên ngoài CLB","Không cần chờ duyệt · cần ảnh của bạn",feeGuest()?fmtK(feeGuest()):null);
   if(who==="guest"){const lv=val("gs-lv","3.0"),g=val("gs-g","M");
     h+=`<div class="gdbox gdphoto"><span class="xsec" style="margin:0">Ảnh của bạn · bắt buộc</span>

@@ -40,6 +40,8 @@ test("quản lý nhận lời mời, đặt PIN, lưu ngân hàng", async () => 
   expect(e.store.get("clubs/aep/members/u9")).toMatchObject({ role: "admin", invite: "tok1", email: "ql@x.vn" });
   await e.nav("caidat");
   expect(e.T()).toContain("Ngân hàng nhận phí");
+  expect(e.V()).not.toContain('data-act="vgrp"');
+  for (const k of ["voice", "team", "pin", "bank"]) await e.click("cdo", { v: k });
   expect(e.V()).toContain('data-act="vgrp"');
   expect(e.V()).not.toContain('data-act="vtry"');
   await e.click("vgrp", { g: "M" });

@@ -12,6 +12,7 @@ function cfmName(k,id){try{
   if(k==="pdel"||k==="del"||k==="phdel"||k==="unzalo")return derive().pmap.get(id)?.name||"";
   if(k==="xcancel"||k==="xdel")return (S.sched||[]).find(z=>z.id===id)?.name||"";
   if(k==="regdel"||k==="regpayok"||k==="regpayundo"||k==="regrefund"){const x=(S.regs||[]).find(z=>z.id===id);return x?(x.name||derive().pmap.get(x.pid)?.name||""):""}
+  if(k==="mfok"||k==="mfundo"){const [pid,key]=id.split("|");return (derive().pmap.get(pid)?.name||"")+" · "+mfLb(key)}
   if(/^ck/.test(k)){const x=(S.regs||[]).find(z=>z.id===id);return x?(x.pid?derive().pmap.get(x.pid)?.name||x.name:x.name)||"":""}
   if(k==="gout"||k==="gdel"){const D=derive(),p=(cfg().giai?.pairs||[]).find(z=>z.id===id);return p?[p.a,p.b].map(i=>D.pmap.get(i)?.name||"?").join(" & "):""}
   if(k==="cancel"){const m=(S.matches||[]).find(z=>z.id===id);return m?"Sân "+cName(m.court):""}
@@ -24,6 +25,7 @@ function cfmInfo(key){
     del:[`Xoá người chơi${q}?`,"Xoá khỏi danh sách thành viên. Trận cũ vẫn giữ nhưng tên hiện “(đã xóa)”.","Xoá","d"],
     phdel:[`Xoá ảnh${q?" của"+q:""}?`,"Ảnh sẽ mất, muốn có lại phải tải lên lại.","Xoá ảnh","d"],
     clogodel:["Xoá ảnh CLB?","Logo CLB sẽ về chữ cái đầu tên.","Xoá ảnh","d"],
+    gtcovdel:["Xoá ảnh bìa?","Trang giới thiệu CLB sẽ dùng nền mặc định.","Xoá ảnh","d"],
     mephotodel:["Xoá ảnh đại diện?","Ảnh của bạn sẽ mất, muốn có lại phải tải lên lại.","Xoá ảnh","d"],
     mdel:["Xoá trận này?","Trận vào thùng rác, vẫn hoàn tác được trong giải đấu.","Xoá trận","d"],
     cancel:[`Hủy trận${q}?`,"Bốn người quay lại hàng chờ. Có thể hoàn tác nếu nhầm.","Hủy trận","d"],
@@ -57,6 +59,10 @@ function cfmInfo(key){
     ckpaidok:[`Đã nhận tiền${q}?`,"Ghi nhận đã trả lệ phí và cho vào giải đấu.","Đã nhận · check-in","p"],
     ckman:[`Check-in tay${q}?`,"Dùng khi cần nhanh. Danh sách ghi ✋ TAY để phân biệt với tự quét mã.","Check-in tay","p"],
     ckundo:[`Hoàn tác check-in${q}?`,"Người này ra khỏi danh sách có mặt, trở về chưa tới.","Hoàn tác","d"],
+    mfok:[`Đã thu phí ${n}?`,"Ghi nhận đã đóng phí thành viên kỳ này. Chỉ bấm khi đã nhận tiền.","Đã thu","p"],
+    mfundo:[`Bỏ dấu đã thu ${n}?`,"Khoản phí này trở về chưa đóng.","Bỏ dấu","d"],
+    mfoff:["Tắt phí thành viên cố định?","Không thu phí kỳ mới nữa. Dữ liệu các kỳ đã thu vẫn giữ trong quỹ.","Tắt","d"],
+    mfper:["Đổi chu kỳ thu phí?","Kỳ đang theo dõi sẽ tính theo chu kỳ mới. Các khoản đã thu vẫn giữ trong quỹ.","Đổi chu kỳ","p"],
     kodraw:["Bốc chia bảng lại?","Các bảng hiện tại bị bỏ, bốc lại từ đầu. Lần bốc mới được ghi \"bốc lại\" để mọi người thấy.","Bốc lại","d"],
     gbredo:["Bốc lại các cặp?","Các cặp bốc thăm hiện tại bị bỏ, bốc lại từ đầu. Lần bốc mới được ghi \"bốc lại\" để mọi người thấy.","Bốc lại","d"],
     gdel:[`Bỏ cặp ${n||"này"}?`,"Cặp bị xoá khỏi danh sách giải.","Bỏ cặp","d"],
