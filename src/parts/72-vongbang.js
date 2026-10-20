@@ -152,7 +152,7 @@ function koSetup(D,G){
   let h=`<section class="kobox"><div class="koh"><span class="gdty vb">▦ VÒNG BẢNG → KNOCKOUT</span><small>${cnt.grp} trận vòng bảng + ${cnt.ko} trận knockout</small></div>
     <div class="kobd">${koSegs(K,ok,G)}${ok?`<small class="rule">Đã chia bảng: bốc lại nếu muốn đổi số bảng.</small>`:""}</div>`;
   if(ok){const seeds=new Set(K.seeds||[]);
-    h+=`<div class="kogrid">${K.groups.map((g,gx)=>`<div class="kog"><b>BẢNG ${KOG[gx]}</b>${g.map(id=>{const p=pm.get(id);return p?`<div class="kop mfade">${seeds.has(id)?`<span class="hg">HG</span>`:""}<span class="nm">${pairNm(D,p)}</span><small class="num">${r2(pairR(D,p))}</small></div>`:""}).join("")}</div>`).join("")}</div>
+    h+=`<div class="kogrid">${K.groups.map((g,gx)=>`<div class="kog"><b>BẢNG ${KOG[gx]}</b>${g.map(id=>{const p=pm.get(id);return p?`<div class="kop mfade">${seeds.has(id)?`<span class="hg">HG</span>`:""}${pair2(D,p)}<small class="num">${r2(pairR(D,p))}</small></div>`:""}).join("")}</div>`).join("")}</div>
       <div class="gbinfo"><span>🎲 Chia bảng lúc ${K.gat?hm(K.gat):""} · ${esc(K.gby||"BTC")}${K.gn>1?` · bốc lại lần ${K.gn}`:""} · HG = hạt giống</span><button class="lnk" data-act="koreplay">Xem lại</button>${canWrite&&!G.locked?`<button class="lnk" data-act="kodraw">Bốc lại</button>`:""}</div>`}
   else if(canWrite){const N=koNEff(G),need=Math.max(4,N*2);
     h+=`${stale?`<div class="gbwarn">Danh sách cặp đã thay đổi sau khi chia bảng. Bốc chia bảng lại nhé.</div>`:""}<div class="kobd">${n>=need?koSeedSel(D,G,N):""}
@@ -194,7 +194,7 @@ function koLich(D,GD){
 }
 async function koAct(act,b,id){
   if(!act||!act.startsWith("ko"))return false;
-  if(act==="koreplay"){koShow=Date.now();render();return true}
+  if(act==="koreplay"){koShow=Date.now();render();koFollow();return true}
   if(act==="koshowx"){koShow=0;render();return true}
   if(!canWrite)return true;
   const G=cfg().giai||{},K=koK(G);
@@ -216,7 +216,7 @@ async function koAct(act,b,id){
   if(act==="kodraw"){const D=derive(),P=G.pairs||[],N=koNEff(G);if(P.length<Math.max(4,N*2)){toast(`Cần ít nhất ${Math.max(4,N*2)} cặp.`);return true}
     if(koGroupsOk(G)&&!armOr("kodraw:x"))return true;
     const r=koDraw(D,P,N,K.seedSel);
-    await write(()=>saveKo(G,{n:N,groups:r.groups,seeds:r.seeds,gat:Date.now(),gby:who(),gn:(K.gn||0)+1}),null);koShow=Date.now();render();try{window.scrollTo(0,0)}catch(e){}return true}
+    await write(()=>saveKo(G,{n:N,groups:r.groups,seeds:r.seeds,gat:Date.now(),gby:who(),gn:(K.gn||0)+1}),null);koShow=Date.now();render();try{window.scrollTo(0,0)}catch(e){}koFollow();return true}
   return false;
 }
 // Tóm tắt thể thức: "2 bảng · 4 cặp vào bán kết · chung kết chạm 15"
@@ -239,6 +239,13 @@ function koShowScr(D,G,K,pm){
   return `<div class="koscr" role="dialog" aria-label="Bốc thăm chia bảng" data-k="${tag}"><div class="gbhd"><button class="ckx" data-act="koshowx" aria-label="Đóng">✕</button><span class="t"><b>Bốc thăm chia bảng</b><small>${(G.pairs||[]).length} cặp · ${N} bảng</small></span></div>
     <b class="gbno">BỐC THĂM CHIA BẢNG</b>
     <div class="kopots">${pots.map((p,r)=>`<span class="kopot" style="animation-delay:${(at.get(p[0])||0)*KO_STEP}s">${potLb(r)}</span>`).join("")}</div>
-    <div class="koshg">${gs.map((g,gx)=>`<div class="koshb"><b>BẢNG ${KOG[gx]}</b>${g.map(id=>{const p=pm.get(id),d=(at.get(id)||0)*KO_STEP;return p?`<div class="koshp" style="animation-delay:${d}s">${pairAv(D,p,"xs")}<span>${pairNm(D,p)}</span>${seeds.has(id)?`<i class="hg">HG</i>`:""}</div>`:""}).join("")}</div>`).join("")}</div>
+    <div class="koshg">${gs.map((g,gx)=>`<div class="koshb"><b>BẢNG ${KOG[gx]}</b>${g.map(id=>{const p=pm.get(id),d=(at.get(id)||0)*KO_STEP;return p?`<div class="koshp" style="animation-delay:${d}s">${pairAv(D,p,"xs")}${pair2(D,p,seeds.has(id))}</div>`:""}).join("")}</div>`).join("")}</div>
     <div class="gbft"><button class="gbnext kodone" data-act="koshowx" style="animation-delay:${total}s">XONG · ĐÃ CHIA ${N} BẢNG</button></div></div>`;
 }
+// Nhiều bảng thì màn hình tự cuộn theo cặp đang được bốc
+let koFT=[];
+function koFollow(){koFT.forEach(clearTimeout);koFT=[];if(typeof document==="undefined"||!document.querySelectorAll||typeof setTimeout!=="function")return;
+  setTimeout(()=>{const L=[...document.querySelectorAll(".koshp")].map(el=>[parseFloat(el.style.animationDelay)||0,el]).sort((a,b)=>a[0]-b[0]);
+    for(const [d,el] of L)koFT.push(setTimeout(()=>{try{el.scrollIntoView({block:"nearest",behavior:"smooth"})}catch(e){}},d*1000+100))},60)}
+// Tên cặp hai dòng, mỗi người một dòng, hiện đủ tên
+const pair2=(D,p,hg)=>`<span class="nm2"><span>${nm(D,p.a)}${hg?` <i class="hg">HG</i>`:""}</span><span>${nm(D,p.b)}</span></span>`;
