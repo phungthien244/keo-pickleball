@@ -476,8 +476,7 @@ async function mxAct(act,b,id){
     mxSeg.exTab="tao";delete errs.tao;render();mxAskName();try{window.scrollTo(0,0)}catch(e){}return true}
   if(act==="mxtaox"){mxSeg.exTab="";delete errs.tao;render();return true}
   if(act==="mxexgo"){mxSeg.exTab="";render();setTimeout(()=>{try{const el=document.getElementById("mxopen");el&&el.scrollIntoView&&el.scrollIntoView({behavior:"smooth"})}catch(e){}},60);return true}
-  if(act==="mxshareclb"){try{sessionStorage.removeItem("pb-newclub")}catch(e){}const u=miniLink(CID),t=`Mời vào CLB ${CLUB?.name||CID} trên pikeco.app: `;
-    if(window.ZMP&&window.ZMP.openShareSheet){try{await window.ZMP.openShareSheet({type:"link",data:{link:u,chatOnly:false}})}catch(e){}}else{try{await navigator.clipboard.writeText(t+u);toast("Đã copy link CLB")}catch(e){toast(u)}}render();return true}
+  if(act==="mxshareclb"){try{sessionStorage.removeItem("pb-newclub")}catch(e){}await shareOut({title:"Mời vào CLB",text:`Mời vào CLB ${CLUB?.name||CID} trên pikeco.app:`,path:"/"+CID});render();return true}
   if(act==="mxexfind"){mxSeg.exTab="";render();return true}
   if(act==="mxcmp"){routePid=id;go("cmp",{pid:id});return true}
   if(act==="openurl"){const u=String(b.dataset.v||"");if(!/^https:\/\//.test(u))return true;if(window.ZMP&&window.ZMP.openWebview){try{await window.ZMP.openWebview({url:u})}catch(e){location.href=u}}else window.open(u,"_blank");return true}
@@ -485,10 +484,8 @@ async function mxAct(act,b,id){
     let end=r.at+2*3600e3;if(r.end){const [hh,mm]=r.end.split(":").map(Number),e=new Date(r.at);e.setHours(hh,mm,0,0);if(e.getTime()>r.at)end=e.getTime()}
     const u=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent((CLUB?.name||"")+" · "+(RX?xName(RX):(D.c.sname||"Pickleball")))}&dates=${f(r.at)}/${f(end)}&location=${encodeURIComponent(r.place||"")}&details=${encodeURIComponent(miniLink(CID,RX&&RX.id))}`;
     return mxAct("openurl",{dataset:{v:u}})}
-  if(act==="mxinvite"){const D=derive(),r=regCfg(),u=miniLink(CID,RX&&RX.id),txt=`🏓 ${CLUB?.name||""}: ${RX?xName(RX):(D.c.sname||"giải đấu")} · ${whenFull(r)}${r.place?` · ${r.place}`:""}. Đăng ký trong Zalo:`;
-    if(window.ZMP&&window.ZMP.openShareSheet){try{await window.ZMP.openShareSheet({type:"link",data:{link:u,chatOnly:false}});return true}catch(e){}}
-    if(navigator.share){try{await navigator.share({text:txt,url:u})}catch(e){}return true}
-    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy lời mời")}catch(e){toast(u)}return true}
+  if(act==="mxinvite"){const D=derive(),r=regCfg(),txt=`🏓 ${CLUB?.name||""}: ${RX?xName(RX):(D.c.sname||"giải đấu")} · ${whenFull(r)}${r.place?` · ${r.place}`:""}. Bấm link để đăng ký:`;
+    await shareOut({title:"Rủ bạn đi đánh",text:txt,path:pathOf("app",{tab:"dk",x:RX?RX.id:null})});return true}
   if(act==="mxach"){const cv=mxAchCanvas(derive(),Number(id));if(!cv){toast("Không tạo được thẻ.");return true}
     const data=cv.toDataURL("image/png");
     if(window.ZMP&&window.ZMP.saveImageToGallery){try{await window.ZMP.saveImageToGallery({imageBase64Data:data});toast("Đã lưu thẻ vào máy, gửi vào nhóm thôi!");return true}catch(e){}}

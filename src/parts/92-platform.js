@@ -56,20 +56,20 @@ function vClb(){
 function vLogin(){
   const u=authUser;
   let h=`<div class="hero login"><span class="eyebrow y">Ban tổ chức</span><h1>Vào CLB<br>của bạn</h1>`;
-  if(!isGoogle(u))return h+`<p class="lead">Chủ CLB và quản lý đăng nhập bằng Google. Đăng nhập xong, app mở thẳng CLB của bạn.</p>
-    <button class="gwide" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập bằng Google</button>
+  if(!isGoogle(u)&&!isZaloU(u))return h+`<p class="lead">Chủ CLB và quản lý đăng nhập bằng Google, hoặc bằng Zalo (quét mã bằng điện thoại). Đăng nhập xong, app mở thẳng CLB của bạn.</p>
+    <button class="gwide" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập bằng Google</button>${qrlBtn()}${qrlBox()}
     <div class="tip"><b>Trọng tài?</b><span>Không cần tài khoản. Mở link CLB, vào tab Sân, nhập PIN chủ CLB đưa.</span></div>
     <div class="tip"><b>Mở từ Zalo?</b><span>Zalo chặn đăng nhập Google. Bấm ⋯ ở góc trên, chọn Mở bằng trình duyệt.</span></div>
     <div class="hfoot"><span>Chưa có CLB trên pikeco.app?</span><a class="cta y" href="/tao-clb" data-go="tao">Tạo CLB miễn phí</a></div></div>`;
   if(S.myClub===undefined){loadMyClub();return h+`<p class="lead">Đang tìm CLB của bạn…</p></div>`}
   if(S.myClub){if(!S.loginJump){S.loginJump=true;setTimeout(()=>{location.href="/"+S.myClub},300)}
     return h+`<p class="lead">Đang mở CLB của bạn…</p><a class="cta b" href="/${esc(S.myClub)}">Mở pikeco.app/${esc(S.myClub)}</a></div>`}
-  return h+`<p class="lead">${esc(u.email||"")} chưa làm chủ CLB nào. Nếu bạn là quản lý hoặc trọng tài, hãy mở link mời chủ CLB gửi.</p>
+  return h+`<p class="lead">${esc(u.email||(isZaloU(u)?"Tài khoản Zalo "+(zaloProf().n||""):""))} chưa làm chủ CLB nào. Nếu bạn là quản lý hoặc trọng tài, hãy mở link mời chủ CLB gửi.</p>
     <a class="cta y" href="/tao-clb" data-go="tao">Tạo CLB</a><button class="cta o" data-act="logout">Đổi tài khoản</button>${isPA()?`<a class="cta o" href="/quan-tri" data-go="qt">Quản trị nền tảng</a>`:""}</div>`;
 }
 let lastAnimP="";const doAnimP=k=>{const d=k!==lastAnimP;lastAnimP=k;return d};
 function renderPlatform(){
-  if(MINI){if(!splashGone)hideSplash();document.title="pikeco.app";const ae=document.activeElement,aid=ae&&ae.id;setView(`<section class="mx${doAnimP("mx|"+(mxSeg.exTab||""))?" mxanim":""}">${mxExplore()}</section>`);if(aid){const el=document.getElementById(aid);if(el)el.focus()}return}
+  if(MINI){if(!splashGone)hideSplash();document.title="pikeco.app";const ae=document.activeElement,aid=ae&&ae.id;setView(`<section class="mx${doAnimP("mx|"+(mxSeg.exTab||""))?" mxanim":""}">${mxExplore()}</section>`);dnDraw();if(aid){const el=document.getElementById(aid);if(el)el.focus()}return}
   const u=authUser,t=$(".tkwrap"),tb=$("#tabs"),lg=$("#clogo");if(t)t.hidden=true;if(tb)tb.hidden=true;if(lg)lg.hidden=true;
   $("#title").innerHTML=`pikeco<span class="dotapp">.app</span>`;$("#curl").textContent="";
   $("#hact").innerHTML=MINI?"":isGoogle(u)?`${S.myClub?`<a href="/${esc(S.myClub)}">CLB của tôi</a>`:""}<button data-act="logout">Thoát</button>`:`<a href="/dang-nhap" data-go="login">Đăng nhập</a>`;

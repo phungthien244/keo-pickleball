@@ -108,6 +108,6 @@ function summaryText(D){
   if(st.length)L.push("Top 3: "+st.slice(0,3).map((r,i)=>`${i+1}. ${r.p.name} ${r.s.w}–${r.s.l}`).join(" · "));
   if(R.tot){L.push(`Phải thu ${fmtK(R.tot)} · đã nhận ${R.np}/${R.n}`);if(BANK)L.push(`Chuyển khoản: ${BANK.name} ${BANK.acc} (${BANK.holder})`);L.push("Xem chi phí của bạn và mã QR:")}
   else L.push("Xem trực tiếp:");
-  L.push(absUrl(pathOf("app",{tab:R.tot?"tien":"san"})));
+  L.push(shLink(pathOf("app",{tab:R.tot?"tien":"san"})));
   return L.join("\n");
 }

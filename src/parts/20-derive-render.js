@@ -67,7 +67,7 @@ function render(){
   if(!(MINI&&loading))lastAnim=akey; noAnimOnce=false; if(MINI&&doAnim)mxAnimUntil=Date.now()+520;
   if(MINI&&MODE==="club"&&!S.noClub&&!clubChecked){if(!splashGone)hideSplash();setView(`<section class="mx">${mxLoading()}</section>`);return}
   if(MINI&&MODE==="club"&&!legacy&&!S.noClub){if(!splashGone)hideSplash();
-    setView(`<section class="mx${doAnim&&!loading?" mxanim":""}">${loading?mxLoading():renderMini(D)}</section>`);ckPlayer(D);if(!loading&&mxMode()==="ql")syncSheet(D);
+    setView(`<section class="mx${doAnim&&!loading?" mxanim":""}">${loading?mxLoading():renderMini(D)}</section>`);ckPlayer(D);dnDraw();if(!loading&&mxMode()==="ql")syncSheet(D);
     if(aid){const el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(...sel)}catch(e){}}}return}
   setView(`<section class="${doAnim?"anim":""}">${route==="app"?pageHead(D):""}${loading?skeleton():v(D)}${MINI?"":clubFoot()}</section>${miniNav()}${canWrite&&!MINI?ckPopup(D):""}`);
   syncSheet(D);

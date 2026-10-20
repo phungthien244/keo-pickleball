@@ -39,3 +39,36 @@ test("cài đặt nhóm gọn + giới thiệu: ngày đánh, nhãn", async () =
   await e.click("gttag", { v: "Nhận người mới" }); await e.until(() => (e.store.get("clubs/aep").tags || []).length === 1);
   await e.click("fvset", { v: "bal" }); await e.until(() => e.store.get("clubs/aep").fundView === "bal");
 });
+
+test("lọc nam/nữ, giao quyền trọng tài/quản lý cho người đã liên kết Zalo, thu quyền", async () => {
+  const d = data();
+  d["clubs/aep/players/p1"].zuid = "zalo_an";
+  d["clubs/aep/links/zalo_an"] = { status: "ok", pid: "p1" };
+  const e = setup({ user: OWNER, data: d });
+  await e.boot(); await e.nav("app", { t: "nguoi" });
+  await e.until(() => e.V().includes('data-act="tvg"'));
+  await e.click("tvg", { v: "F" });
+  expect(e.T()).toContain("Bình"); expect(e.T()).not.toContain("An\n");
+  expect(e.V()).not.toMatch(/data-pid="p1"/);
+  await e.click("tvg", { v: "" });
+  await e.ok("tvrole", { id: "p1", v: "scorer" });
+  await e.until(() => e.store.get("clubs/aep/members/zalo_an")?.role === "scorer");
+  expect(e.store.get("clubs/aep/members/zalo_an")).toMatchObject({ name: "An", via: "zalo", pid: "p1" });
+  await e.ok("tvrole", { id: "p1", v: "admin" });
+  await e.until(() => e.store.get("clubs/aep/members/zalo_an")?.role === "admin");
+  await e.click("tvf", { v: "btc" });
+  expect(e.T()).toContain("An");
+  await e.ok("tvrole", { id: "p1", v: "" });
+  await e.until(() => !e.store.has("clubs/aep/members/zalo_an"));
+});
+
+test("chủ CLB đăng nhập Google tạo mã liên kết Zalo (cùng quyền, 10 phút), Zalo nhận là có quyền chủ", async () => {
+  const e = setup({ user: OWNER, data: data() });
+  await e.boot(); await e.nav("caidat");
+  await e.until(() => e.V().includes('data-act="alnk"'));
+  await e.click("alnk");
+  const [k, iv] = [...e.store].find(([k]) => k.startsWith("clubs/aep/invites/"));
+  expect(iv).toMatchObject({ role: "owner", link: true });
+  expect(iv.exp - Date.now()).toBeLessThanOrEqual(10 * 60e3);
+  expect(e.T()).toContain("Quét bằng Zalo trên điện thoại"); expect(k).toMatch(/invites\/[0-9a-f]{24}$/);
+});

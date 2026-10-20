@@ -419,3 +419,27 @@ test("check-in: các nút đều hỏi xác nhận; check-in tay vào danh sách
   await e.until(() => e.store.get("clubs/q7/regs/a_p_p1").arrived === false);
   await e.until(() => e.store.get("clubs/q7/players/p1").active === false);
 });
+
+test("web: VĐV vãng lai đăng ký không cần đăng nhập, bắt buộc chuyển khoản trước (giữ chỗ 15 phút)", async () => {
+  const data = base({ "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1, bank: { code: "mb", bin: "970422", name: "MB Bank", acc: "123456", holder: "A" } },
+    "clubs/q7/sched/s1": sched({ guests: true, thu: "phi", phi: 60, feeG: 80, pay: "off" }) });
+  const e = setup({ host: "pikeco.app", path: "/q7/dang-ky/s1", data });
+  await e.boot(); await e.until(() => e.V().includes('data-act="gdreg"'));
+  expect(e.T()).toContain("Đăng ký ngay trên web, không cần tài khoản");
+  await e.click("gdreg"); await e.until(() => e.V().includes('data-act="guestin"'));
+  expect(e.T()).toContain("BẮT BUỘC");
+  expect(e.V()).not.toContain('data-v="site"');
+  expect(e.V()).not.toContain('data-v="mem"');
+  expect(e.V()).toContain('data-act="guestin" data-v="hold"');
+  e.input("gs-name", "Khách Web"); await e.click("gdagree");
+  await e.click("guestin", { v: "hold" });
+  expect(e.T()).toContain("Thêm ảnh rõ mặt");
+});
+
+test("web: giải không nhận VĐV ngoài CLB thì chỉ có nút đăng ký trong Zalo", async () => {
+  const data = base({ "clubs/q7/sched/s1": sched({ guests: false }) });
+  const e = setup({ host: "pikeco.app", path: "/q7/dang-ky/s1", data });
+  await e.boot(); await e.until(() => e.T().includes("ĐĂNG KÝ TRONG ZALO"));
+  expect(e.V()).not.toContain('data-act="gdreg"');
+  expect(e.V()).toContain("zalo.me/s/180913816434821856/?clb=q7&amp;buoi=s1");
+});

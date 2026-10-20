@@ -76,10 +76,8 @@ function capBox(D){
 async function capAct(act,b,id){
   if(act==="gdmate"){const v=b.dataset.v;if(v==="x"){gdJoin="";render();return true}gdOpt.want=gdOpt.want===v?"":v;render();return true}
   if(act==="gdjoin"){if(!isPlayer(authUser)){zaloStart();return true}gdJoin=b.dataset.v||"";gdOpt.mate="";mxDk="reg1";render();try{window.scrollTo(0,0)}catch(e){}return true}
-  if(act==="capshare"){const D=derive(),mine=gdMine(RX);if(!mine)return true;const u=capLink(RX.id,mine.team||mine.id),txt=`🤝 ${capName(D,mine)} rủ bạn đánh cặp ở ${xName(RX)} · ${whenFull(RX)}. Bấm để nhận lời và đăng ký:`;
-    if(window.ZMP&&window.ZMP.openShareSheet){try{await window.ZMP.openShareSheet({type:"link",data:{link:u,chatOnly:false}});return true}catch(e){}}
-    if(navigator.share){try{await navigator.share({text:txt,url:u})}catch(e){}return true}
-    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy link mời đồng đội")}catch(e){toast(u)}return true}
+  if(act==="capshare"){const D=derive(),mine=gdMine(RX);if(!mine)return true;const txt=`🤝 ${capName(D,mine)} rủ bạn đánh cặp ở ${xName(RX)} · ${whenFull(RX)}. Bấm để nhận lời và đăng ký:`;
+    await shareOut({title:"Mời đồng đội",text:txt,path:pathOf("app",{tab:"dk",x:RX.id}),q:"&buoi="+encodeURIComponent(RX.id)+"&doi="+encodeURIComponent(mine.team||mine.id),miniOnly:true});return true}
   if(act==="capadd"&&canWrite){const D=derive(),R=capReady(D),P=cfg().giai?.pairs||[],room=gMax(cfg().giai)-P.length;if(!R.length)return true;
     const t=Date.now().toString(36),add=R.slice(0,room).map(([a,bb],i)=>({id:"c"+t+"r"+i,a,b:bb,reg:1}));
     await write(()=>saveG({pairs:[...P,...add]}),`Đã thêm ${add.length} cặp đăng ký sẵn`);return true}

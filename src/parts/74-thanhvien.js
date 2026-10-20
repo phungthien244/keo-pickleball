@@ -1,8 +1,10 @@
 /* ---------- Quản lý thành viên (ban tổ chức): danh sách gọn, lọc nhanh, hồ sơ có tiền, ghi chú, tạm nghỉ ----------
    players/{id}.hold = true: tạm nghỉ dài ngày (ẩn khỏi điểm danh, không tính nợ phí thành viên)
    notes/{pid} = {t, at, by}: ghi chú nội bộ, chỉ ban tổ chức đọc */
-let tvF="all",tvSort="rt",tvAdd=false;
-const TVF=[["all","Tất cả"],["here","Có mặt"],["debt","Còn nợ"],["nozalo","Chưa Zalo"],["guest","Ngoài CLB"],["hold","Tạm nghỉ"]];
+let tvF="all",tvSort="rt",tvAdd=false,tvG="";
+const TVF=[["all","Tất cả"],["here","Có mặt"],["btc","Ban tổ chức"],["debt","Còn nợ"],["nozalo","Chưa Zalo"],["guest","Ngoài CLB"],["hold","Tạm nghỉ"]];
+const tvRole=(p,I)=>p.zuid?I.role.get(p.zuid)||"":"";
+const tvFlt=I=>({all:p=>!p.guest&&!p.hold,here:p=>p.active!==false,btc:p=>!!tvRole(p,I),debt:p=>I.debtOf(p.id)>0||I.mfNo(p),nozalo:p=>!p.guest&&!p.zuid,guest:p=>p.guest,hold:p=>p.hold});
 function tvInfo(D){
   const dt=new Map();for(const x of debts())dt.set(x.id,(dt.get(x.id)||0)+x.k);
   const role=new Map((S.members||[]).map(m=>[m.id,m.role]));
@@ -26,14 +28,16 @@ function vTV(D){
   const mem=D.players.filter(p=>!p.guest),here=D.players.filter(p=>p.active!==false),pend=pendCount();
   const nDebt=D.players.filter(p=>I.debtOf(p.id)||I.mfNo(p)).length;
   const q=String(val("tvq","")).trim();
-  const flt={all:p=>!p.guest&&!p.hold,here:p=>p.active!==false,debt:p=>I.debtOf(p.id)>0||I.mfNo(p),nozalo:p=>!p.guest&&!p.zuid,guest:p=>p.guest,hold:p=>p.hold}[tvF]||(()=>true);
-  const L=D.players.filter(p=>flt(p)&&hasQ(q,p.name,p.code,p.nick)).sort(tvSort==="nm"?(a,b)=>a.name.localeCompare(b.name,"vi"):(a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating);
-  const cnt=k=>D.players.filter({all:p=>!p.guest&&!p.hold,here:p=>p.active!==false,debt:p=>I.debtOf(p.id)>0||I.mfNo(p),nozalo:p=>!p.guest&&!p.zuid,guest:p=>p.guest,hold:p=>p.hold}[k]).length;
+  const FL=tvFlt(I),flt=FL[tvF]||(()=>true),gOk=p=>!tvG||(p.gender==="F"?"F":"M")===tvG;
+  const L=D.players.filter(p=>flt(p)&&gOk(p)&&hasQ(q,p.name,p.code,p.nick)).sort(tvSort==="nm"?(a,b)=>a.name.localeCompare(b.name,"vi"):(a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating);
+  const cnt=k=>D.players.filter(p=>FL[k](p)&&gOk(p)).length,gc=g=>D.players.filter(p=>flt(p)&&(p.gender==="F"?"F":"M")===g).length;
   let h=`<div class="tvstat">${[[mem.length,"THÀNH VIÊN",""],[here.length,"CÓ MẶT",""],[pend,"CHỜ DUYỆT",pend?"y":""],[nDebt,"CÒN NỢ",nDebt?"r":""]].map(([a,b,c])=>`<span><b class="num ${c}">${a}</b><small>${b}</small></span>`).join("")}</div>`;
   h+=approvals(D);
   h+=`<label class="tvq"><span class="sr">Tìm thành viên</span><input id="tvq" data-draft="tvq" data-live="1" type="search" placeholder="🔍 Tìm tên, biệt danh, mã…" value="${esc(val("tvq",""))}" autocomplete="off"></label>
     <div class="tvchips">${TVF.map(([k,l])=>{const n=cnt(k);return k!=="all"&&!n&&tvF!==k?"":`<button data-act="tvf" data-v="${k}" aria-pressed="${tvF===k}">${l} ${n}</button>`}).join("")}</div>
-    <div class="tvsort"><span>Xếp theo: <button class="lnk" data-act="tvsort">${tvSort==="nm"?"Tên A–Z":"Rating"} ▾</button></span><span>${L.length} người</span></div>`;
+    <div class="seg segw tvg">${[["","Nam & nữ"],["M",`Nam ${gc("M")}`],["F",`Nữ ${gc("F")}`]].map(([v,l])=>`<button data-act="tvg" data-v="${v}" aria-pressed="${tvG===v}">${l}</button>`).join("")}</div>
+    <div class="tvsort"><span>Xếp theo: <button class="lnk" data-act="tvsort">${tvSort==="nm"?"Tên A–Z":"Rating"} ▾</button></span><span>${L.length} người</span></div>
+    ${tvF==="btc"?`<small class="rule">Mở hồ sơ một người để giao hoặc thu quyền Quản lý, Trọng tài. Người cần đã liên kết Zalo.</small>`:""}`;
   h+=L.length?`<div class="tvlist">${L.map(p=>{const on=p.active!==false,b=busy.has(p.id);
     return `<div class="tvrow"><a class="tvm" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}"><span class="tvav">${av(p,"md",1)}${on?`<i class="dot"></i>`:""}</span>
       <span class="t"><span class="n"><b>${esc(p.name)}</b><small class="${p.gender==="F"?"f":"m"}">${p.gender==="F"?"Nữ":"Nam"}</small></span><span class="tags">${tvTags(D,p,I)}</span></span>
@@ -57,6 +61,17 @@ function tvAddPage(D){
   if(G.length)h+=`<section class="tvsec"><h3>③ Từ VĐV ngoài CLB đã từng chơi</h3>${G.slice(0,30).map(p=>{const A=D.all.get(p.id);return `<div class="tvg">${av(p,"sm",1)}<span class="t"><b>${esc(p.name)}</b><small>${A?.ses.size||0} giải đấu · rating ${r2(D.st.get(p.id).rating)}</small></span><button class="line sm" data-act="tvmem" data-id="${p.id}">+ Thành viên</button></div>`}).join("")}</section>`;
   return h;
 }
+/* ----- Quyền trong CLB: giao Quản lý / Trọng tài cho người đã liên kết Zalo ----- */
+const TV_ROLES=[["","Người chơi"],["scorer","Trọng tài"],["admin","Quản lý"]];
+function tvRoleBox(D,p,I){
+  const r=tvRole(p,I);
+  let h=`<div class="tvbox"><div class="tvbh"><h3>Quyền trong CLB</h3><b class="tvrb ${r||"pl"}">${r?ROLE_LB[r]:"Người chơi"}</b></div>`;
+  if(r==="owner")h+=`<p class="rule">Chủ CLB. Không đổi được quyền của chủ CLB.</p>`;
+  else if(!p.zuid)h+=`<p class="rule">${esc(p.name)} chưa liên kết Zalo nên chưa giao quyền thẳng được. Gửi link mời: họ bấm trong Zalo là nhận quyền.</p><div class="two"><button class="line" data-act="inv" data-v="admin">Link mời quản lý</button><button class="line" data-act="inv" data-v="scorer">Link mời trọng tài</button></div>${invBox()}`;
+  else h+=`<div class="seg segw tvrole">${TV_ROLES.map(([v,l])=>`<button data-act="tvrole" data-id="${p.id}" data-v="${v}" aria-pressed="${r===v}">${l}</button>`).join("")}</div>
+    <small class="rule">Quản lý: sửa mọi thứ trừ gỡ chủ CLB. Trọng tài: chỉ nhập tỉ số ở sân được giao. Người được giao thấy quyền mới khi mở lại Pikeco trong Zalo.</small>`;
+  return h+`</div>`;
+}
 /* ----- Hồ sơ (ban tổ chức xem): tiền, ghi chú nội bộ, tạm nghỉ ----- */
 const tvNotes={};
 function tvMgr(D,p){
@@ -66,6 +81,7 @@ function tvMgr(D,p){
   if(tvNotes[p.id]===undefined&&window.FB){tvNotes[p.id]=null;FB.getDoc(FB.doc(FB.fs,PFX+"notes/"+p.id)).then(s=>{tvNotes[p.id]=s.exists()?s.data():{};render()}).catch(()=>{tvNotes[p.id]={}})}
   const N=tvNotes[p.id]||{};
   let h=`<section class="tvmgr"><div class="tvmh"><b>Ban tổ chức</b><small>Chỉ quản lý thấy phần này</small></div>`;
+  h+=tvRoleBox(D,p,I);
   h+=`<div class="tvbox"><div class="tvbh"><h3>Tiền</h3>${tot?`<b class="neg">Đang nợ ${fmtK(tot)}</b>`:`<b class="pos">Không nợ</b>`}</div>`;
   if(mf)h+=keys.map(k=>{const ok=mfPaid(p.id,k);return `<div class="tvli"><span class="t">Phí thành viên ${mfLb(k)}<small>${fmtK(mfCfg().k)}${k===cur?` · hạn ngày ${mfCfg().due}`:""}</small></span>${ok?`<button class="ghost sm pos" data-act="mfpaid" data-id="${p.id}" data-v="${k}">✓ đã đóng</button>`:`<button class="primary sm" data-act="mfpaid" data-id="${p.id}" data-v="${k}">ĐÃ THU</button>`}</div>`}).join("");
   h+=dts.map(x=>`<div class="tvli"><span class="t">Giải đấu #${x.sid}<small>còn nợ ${fmtK(x.k)}</small></span><button class="primary sm" data-act="paid" data-id="${x.sid}" data-p="${p.id}">ĐÃ NHẬN</button></div>`).join("");
@@ -81,14 +97,16 @@ function tvMgr(D,p){
 async function tvAct(act,b,id){
   if(!/^tv/.test(act))return false;
   if(act==="tvf"){tvF=TVF.some(x=>x[0]===b.dataset.v)?b.dataset.v:"all";render();return true}
+  if(act==="tvg"){tvG=["M","F"].includes(b.dataset.v)?b.dataset.v:"";render();return true}
   if(act==="tvsort"){tvSort=tvSort==="nm"?"rt":"nm";render();return true}
   if(act==="tvadd"){tvAdd=!tvAdd;render();try{window.scrollTo(0,0)}catch(e){}return true}
   if(!canWrite)return true;
-  if(act==="tvshare"){const u=miniLink(CID),txt=`🏓 Mời mọi người tham gia ${CLUB?.name||"CLB"} trên Pikeco (Zalo): chọn tên của mình, đăng ký giải đấu, xem rating.`;
-    const Z=window.ZMP;if(Z&&Z.openShareSheet){try{await Z.openShareSheet({type:"link",data:{link:u,chatOnly:false}});return true}catch(e){}}
-    if(navigator.share){try{await navigator.share({text:txt,url:u});return true}catch(e){}}
-    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy link mời")}catch(e){toast(u)}return true}
+  if(act==="tvshare"){await shareOut({title:"Mời vào CLB",text:`🏓 Mời mọi người tham gia ${CLUB?.name||"CLB"} trên Pikeco (Zalo): chọn tên của mình, đăng ký giải đấu, xem rating.`,path:"/"+CID,miniOnly:true});return true}
   const D=derive(),p=D.pmap.get(id);if(!p)return true;
+  if(act==="tvrole"){const v=["admin","scorer"].includes(b.dataset.v)?b.dataset.v:"",I=tvInfo(D),cur=tvRole(p,I);
+    if(!p.zuid||cur==="owner"||cur===v)return true;if(!armOr("tvrole:"+id+"|"+v))return true;
+    const ref=FB.doc(FB.fs,PFX+"members/"+p.zuid);
+    await write(()=>!v?FB.deleteDoc(ref):cur?FB.updateDoc(ref,{role:v}):FB.setDoc(ref,{role:v,name:p.name,via:"zalo",pid:p.id,at:Date.now(),by:who()}),v?`${p.name} là ${ROLE_LB[v]}`:`Đã thu quyền của ${p.name}`);return true}
   if(act==="tvmem"){await write(()=>db.collection("players").doc(id).update({guest:false}),`${p.name} đã là thành viên CLB`);return true}
   if(act==="tvhold"){const on=!p.hold;if(on&&D.playing.some(m=>[...m.a,...m.b].includes(id))){toast("Người này đang trên sân.");return true}
     await write(()=>db.collection("players").doc(id).update(on?{hold:true,active:false}:{hold:false}),on?`${p.name} tạm nghỉ dài ngày`:`${p.name} đã quay lại`);return true}

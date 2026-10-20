@@ -197,6 +197,44 @@ describe("người chơi Zalo", () => {
     await assertFails(setDoc(doc(anon("a9"), "clubs/aep/members/a9"), { role: "admin", invite: "ok1" }));
     await assertSucceeds(setDoc(doc(zalo("zalo_2"), "clubs/aep/members/zalo_2"), { role: "admin", invite: "ok1", via: "zalo", name: "Z", email: "", at: 1 }));
   });
+  test("mã mời: chỉ đọc đúng mã, không liệt kê; chủ CLB tạo link liên kết tài khoản chủ ngắn hạn", async () => {
+    await seed({ "clubs/aep/invites/ok1": { role: "admin", exp: Date.now() + 864e5 } });
+    await assertSucceeds(getDoc(doc(anon("a1"), "clubs/aep/invites/ok1")));
+    await assertFails(getDocs(collection(anon("a1"), "clubs/aep/invites")));
+    await assertFails(getDocs(collection(zalo("zalo_5"), "clubs/aep/invites")));
+    await assertSucceeds(getDocs(collection(google("ad"), "clubs/aep/invites")));
+    await assertFails(setDoc(doc(google("ad"), "clubs/aep/invites/o1"), { role: "owner", exp: Date.now() + 6e5 }));
+    await assertFails(setDoc(doc(google("own"), "clubs/aep/invites/o2"), { role: "owner", exp: Date.now() + 864e5 }));
+    await assertSucceeds(setDoc(doc(google("own"), "clubs/aep/invites/o3"), { role: "owner", exp: Date.now() + 6e5, link: true }));
+    await assertSucceeds(setDoc(doc(zalo("zalo_own"), "clubs/aep/members/zalo_own"), { role: "owner", invite: "o3", via: "zalo", name: "Chủ", email: "", at: 1 }));
+    await assertFails(deleteDoc(doc(google("ad"), "clubs/aep/members/zalo_own")));
+    await assertFails(deleteDoc(doc(google("own"), "clubs/aep/members/own")));
+    await assertSucceeds(deleteDoc(doc(google("own"), "clubs/aep/members/zalo_own")));
+  });
+  test("đăng nhập web bằng Zalo: Mini App chỉ đồng ý cho chính mình, khi mã còn hạn", async () => {
+    const exp = Date.now() + 18e4;
+    await seed({ "qrlogin/t1": { st: "wait", sh: "h", exp, at: 1 }, "qrlogin/t2": { st: "wait", sh: "h", exp: 1, at: 1 }, "qrlogin/t3": { st: "wait", sh: "h", exp, at: 1 } });
+    await assertSucceeds(getDoc(doc(guest(), "qrlogin/t1")));
+    await assertFails(getDocs(collection(guest(), "qrlogin")));
+    await assertFails(setDoc(doc(zalo("zalo_1"), "qrlogin/t9"), { st: "ok", uid: "zalo_1" }));
+    await assertFails(updateDoc(doc(anon("a1"), "qrlogin/t1"), { st: "ok", uid: "a1" }));
+    await assertFails(updateDoc(doc(zalo("zalo_1"), "qrlogin/t1"), { st: "ok", uid: "zalo_2" }));
+    await assertFails(updateDoc(doc(zalo("zalo_1"), "qrlogin/t1"), { st: "ok", uid: "zalo_1", sh: "x" }));
+    await assertFails(updateDoc(doc(zalo("zalo_1"), "qrlogin/t2"), { st: "ok", uid: "zalo_1" }));
+    await assertSucceeds(updateDoc(doc(zalo("zalo_1"), "qrlogin/t1"), { st: "ok", uid: "zalo_1", zn: "An", okAt: 1 }));
+    await assertFails(updateDoc(doc(zalo("zalo_2"), "qrlogin/t1"), { st: "ok", uid: "zalo_2" }));
+    await assertSucceeds(updateDoc(doc(zalo("zalo_2"), "qrlogin/t3"), { st: "no" }));
+  });
+  test("ban tổ chức giao quyền thẳng cho người chơi đã liên kết Zalo", async () => {
+    await seed({ "clubs/aep/links/zalo_4": { status: "ok", pid: "p4" }, "clubs/aep/links/zalo_6": { status: "pending" } });
+    const m = { role: "scorer", name: "Bốn", via: "zalo", pid: "p4", at: 1, by: "QL" };
+    await assertFails(setDoc(doc(google("sc"), "clubs/aep/members/zalo_4"), m));
+    await assertFails(setDoc(doc(google("ad"), "clubs/aep/members/zalo_6"), m));
+    await assertFails(setDoc(doc(google("ad"), "clubs/aep/members/zalo_4"), { ...m, role: "owner" }));
+    await assertSucceeds(setDoc(doc(google("ad"), "clubs/aep/members/zalo_4"), m));
+    await assertSucceeds(updateDoc(doc(google("ad"), "clubs/aep/members/zalo_4"), { role: "admin" }));
+    await assertSucceeds(deleteDoc(doc(google("ad"), "clubs/aep/members/zalo_4")));
+  });
   test("lịch buổi: chỉ quản lý tạo buổi; người chơi đăng ký buổi đang mở hoặc đã tới giờ tự mở", async () => {
     const T = Date.now(), at = T + 2 * 864e5;
     await assertFails(setDoc(doc(zalo("zalo_1"), "clubs/aep/sched/x"), { st: "open", at }));

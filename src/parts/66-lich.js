@@ -318,7 +318,7 @@ function xPlayerCards(D,o={}){
 // Trang Đăng ký khi chưa chọn buổi: danh sách các buổi
 function vLichPlayer(D){
   const X=routeX?schedById(routeX):null;
-  if(X)return withX(X,()=>dkPlayer(D));
+  if(X)return withX(X,()=>!MINI&&!REF?gdPage(D):dkPlayer(D));
   const c=xPlayerCards(D,{all:true});
   if(c)return `<span class="xsec">Giải đấu sắp tới</span>${c}`+(PLAYER_ON()?linkCard(D):"");
   return dkPlayer(D);

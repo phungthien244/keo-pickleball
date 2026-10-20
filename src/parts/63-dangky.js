@@ -229,14 +229,19 @@ async function regAct(act,b,id){
   if(act==="guestopen"){guestOpen=!guestOpen;render();return true}
   if(act==="gsg"){drafts["gs-g"]=b.dataset.v;render();return true}
   if(act==="regin"||act==="guestin"){const D=derive(),L=S.link,u=authUser,guest=act==="guestin";
-    if(!isPlayer(u))return true;
+    const webAnon=!MINI&&!!u&&u.isAnonymous&&!canWrite&&!REF;
+    if(!isPlayer(u)&&!webAnon)return true;
+    if(webAnon&&!guest)return true;
     if(!guest&&(!L||L.status!=="ok"))return true;
     if(guest&&!regCfg().guests)return true;
     if((S.regs||[]).some(x=>x.sid===regKey(D)&&x.uid===u.uid&&!x.cancel&&!isHeldOut(x))){toast("Bạn đã có trong danh sách.");return true}
     if(regClosed()){toast("Đã hết hạn đăng ký giải đấu này.");return true}
     const step=mxDk==="reg1";
     if(step&&val("gd-ok","")!=="1"){errs.gdok="Đánh dấu đã đọc chính sách hủy để tiếp tục.";render();return true}
-    const pay=b.dataset.v==="sent"?"sent":"none",hold=b.dataset.v==="hold",rid=regKey(D)+"_"+u.uid;
+    // Web: VĐV vãng lai phải chuyển khoản trước, chỉ giữ chỗ 15 phút
+    const R0=regList(D),full0=R0.conf.length>=R0.max,mustPay=!MINI&&guest&&feeGuest()>0&&!full0;
+    if(mustPay&&!(BANK&&BANK.acc)){toast("CLB chưa khai ngân hàng. Đăng ký trong Zalo nhé.");return true}
+    const pay=mustPay?"none":b.dataset.v==="sent"?"sent":"none",hold=mustPay||b.dataset.v==="hold",rid=regKey(D)+"_"+u.uid;
     let d={sid:regKey(D),uid:u.uid,at:Date.now(),pay};if(hold)d.hold=true;
     if(guest){const el=document.getElementById&&document.getElementById("gs-name"),nm=String((el&&el.value)||drafts["gs-name"]||zaloProf().n||"").trim().slice(0,30);
       if(!nm){toast("Nhập tên của bạn.");return true}
@@ -283,9 +288,8 @@ async function regAdminAct(act,b,id,D){
       `🏓 ${c.courts} sân · ${fmtTxt(c)}${lvTxt(r)?" · "+lvTxt(r):""}${r.guests?" · nhận VĐV ngoài CLB":""}`,
       feeMem()?`💰 ${fmtK(feeMem())}/người${r.guests&&feeGuest()!==feeMem()?` · VĐV ngoài CLB ${fmtK(feeGuest())}`:""}${regPayMode()==="req"?" · chuyển khoản khi đăng ký":regPayMode()==="opt"?" · chuyển khoản trước hoặc trả tại sân":""}`:null,
       `✅ Đã đăng ký ${R.conf.length}${+r.max?`/${r.max}`:""} người${left===0?" · hết chỗ, vẫn vào danh sách chờ được":left?` · còn ${left} chỗ`:""}`,
-      r.deadline&&`⏳ Hạn đăng ký ${hm(r.deadline)} ${dowVN(r.deadline)}`,r.lockH&&r.at&&`⏰ Hủy được tới ${hm(regLockAt())} ${dowVN(regLockAt())}`,r.note&&`📝 ${r.note}`,"👉 Bấm link, đăng ký ngay trong Zalo:"].filter(Boolean);
+      r.deadline&&`⏳ Hạn đăng ký ${hm(r.deadline)} ${dowVN(r.deadline)}`,r.lockH&&r.at&&`⏰ Hủy được tới ${hm(regLockAt())} ${dowVN(regLockAt())}`,r.note&&`📝 ${r.note}`,"👉 Bấm link để đăng ký:"].filter(Boolean);
     const txt=L.join("\n");
-    if(navigator.share){try{await navigator.share({title:"Mở đăng ký",text:txt+"\n",url:u})}catch(x){}return true}
-    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return true}
+    await shareOut({title:"Gửi tin mở đăng ký",text:txt,path:pathOf("app",{tab:"dk",x:RX?RX.id:null})});return true}
   return false;
 }

@@ -31,6 +31,17 @@ service cloud.firestore {
     match /batches/{docId} { allow read: if true; allow write: if rootEditor(); }
     match /deleted/{docId} { allow read, write: if rootEditor(); }
 
+    // Đăng nhập web bằng Zalo Mini App: máy chủ tạo và xoá mã (khoá dịch vụ). Ai có mã đọc được trạng thái;
+    // Mini App đã đăng nhập Zalo chỉ được đồng ý cho chính tài khoản mình, hoặc từ chối, khi mã còn hạn.
+    match /qrlogin/{tok} {
+      allow get: if true;
+      allow list, create, delete: if false;
+      allow update: if zalo() && resource.data.st == 'wait' && resource.data.exp > request.time.toMillis()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['st', 'uid', 'zn', 'okAt'])
+        && ((request.resource.data.st == 'ok' && request.resource.data.uid == request.auth.uid) || (request.resource.data.st == 'no' && !('uid' in request.resource.data)))
+        && request.resource.data.get('zn', '') is string && request.resource.data.get('zn', '').size() <= 40;
+    }
+
     // ===== Nền tảng =====
     // Mỗi tài khoản (Google hoặc Zalo) một CLB: users/{uid} = { club, at }
     match /users/{uid} {
@@ -131,21 +142,37 @@ service cloud.firestore {
       match /members/{uid} {
         allow read: if isMember() || (signedIn() && request.auth.uid == uid) || isPA();
         // Chủ CLB: Google. Quản lý/trọng tài nhận link mời bằng Google (web) hoặc Zalo (Mini App)
-        allow create: if request.auth.uid == uid && (
+        allow create: if (request.auth.uid == uid && (
             ((google() || zalo()) && request.resource.data.role == 'owner'
               && getAfter(/databases/$(database)/documents/clubs/$(c)).data.owner == uid)
+            // Chủ CLB liên kết tài khoản thứ hai (Google ↔ Zalo) bằng link mời chủ CLB, hiệu lực ngắn
+            || ((google() || zalo()) && request.resource.data.role == 'owner'
+                && request.resource.data.invite is string
+                && get(/databases/$(database)/documents/clubs/$(c)/invites/$(request.resource.data.invite)).data.role == 'owner'
+                && get(/databases/$(database)/documents/clubs/$(c)/invites/$(request.resource.data.invite)).data.exp > request.time.toMillis())
             || ((google() || zalo()) && request.resource.data.role in ['admin', 'scorer']
                 && request.resource.data.invite is string
                 && get(/databases/$(database)/documents/clubs/$(c)/invites/$(request.resource.data.invite)).data.role == request.resource.data.role
                 && get(/databases/$(database)/documents/clubs/$(c)/invites/$(request.resource.data.invite)).data.exp > request.time.toMillis())
-          );
+          ))
+          // Ban tổ chức giao quyền thẳng cho người chơi đã liên kết Zalo (trang Thành viên)
+          || (isAdmin() && request.resource.data.role in ['admin', 'scorer']
+              && request.resource.data.keys().hasOnly(['role', 'name', 'via', 'pid', 'at', 'by'])
+              && get(/databases/$(database)/documents/clubs/$(c)/links/$(uid)).data.status == 'ok');
         allow update: if isAdmin() && resource.data.role != 'owner' && request.resource.data.role in ['admin', 'scorer'];
-        allow delete: if resource.data.role != 'owner' && (isAdmin() || (signedIn() && request.auth.uid == uid));
+        allow delete: if (resource.data.role != 'owner' && (isAdmin() || (signedIn() && request.auth.uid == uid)))
+          // Tài khoản chủ CLB thứ hai (đã liên kết): chủ CLB gỡ được, trừ tài khoản chủ chính
+          || (resource.data.role == 'owner' && uid != clubDoc().owner && isMember() && myRole() == 'owner');
       }
 
       match /invites/{tok} {
-        allow read: if signedIn();
-        allow create: if isAdmin() && request.resource.data.role in ['admin', 'scorer'];
+        // Chỉ đọc đúng mã mời mình có (không liệt kê được cả danh sách mã mời)
+        allow get: if signedIn();
+        allow list: if isAdmin();
+        allow create: if (isAdmin() && request.resource.data.role in ['admin', 'scorer'])
+          // Link liên kết tài khoản của chính chủ CLB: chỉ chủ CLB tạo, hết hạn trong 15 phút
+          || (isMember() && myRole() == 'owner' && request.resource.data.role == 'owner'
+              && request.resource.data.exp <= request.time.toMillis() + 900000);
         allow delete: if isAdmin();
         allow update: if false;
       }

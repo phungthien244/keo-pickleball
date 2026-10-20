@@ -27,7 +27,8 @@ function miniStart(){
   let last="";try{last=localStorage.getItem("pb-mini-last")||""}catch(e){}
   const c=q||String(last).replace(/[^a-z0-9-]/g,"");
   const b=String(new URLSearchParams(location.search||"").get("buoi")||"").replace(/[^A-Za-z0-9_-]/g,"");
-  return c?"/"+c+(b&&q?"/dang-ky/"+b:""):"/clb";
+  const p=q?miniDeepPath():"";
+  return c?"/"+c+(p?"/"+p:b&&q?"/dang-ky/"+b:""):"/clb";
 }
 const curPath=()=>MINI?(String(location.hash||"").slice(1)||miniStart()):location.pathname;
 const setPath=(p,rep)=>{try{history[rep?"replaceState":"pushState"](null,"",MINI?location.pathname+location.search+"#"+p:p)}catch(e){}};

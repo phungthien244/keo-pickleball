@@ -12,6 +12,7 @@ function cfmName(k,id){try{
   if(k==="pdel"||k==="del"||k==="phdel"||k==="unzalo")return derive().pmap.get(id)?.name||"";
   if(k==="xcancel"||k==="xdel")return (S.sched||[]).find(z=>z.id===id)?.name||"";
   if(k==="regdel"||k==="regpayok"||k==="regpayundo"||k==="regrefund"){const x=(S.regs||[]).find(z=>z.id===id);return x?(x.name||derive().pmap.get(x.pid)?.name||""):""}
+  if(k==="tvrole"){const [pid,v]=id.split("|");return (derive().pmap.get(pid)?.name||"")+" → "+(v?ROLE_LB[v]:"Người chơi")}
   if(k==="mfok"||k==="mfundo"){const [pid,key]=id.split("|");return (derive().pmap.get(pid)?.name||"")+" · "+mfLb(key)}
   if(/^ck/.test(k)){const x=(S.regs||[]).find(z=>z.id===id);return x?(x.pid?derive().pmap.get(x.pid)?.name||x.name:x.name)||"":""}
   if(k==="gout"||k==="gdel"){const D=derive(),p=(cfg().giai?.pairs||[]).find(z=>z.id===id);return p?[p.a,p.b].map(i=>D.pmap.get(i)?.name||"?").join(" & "):""}
@@ -59,6 +60,7 @@ function cfmInfo(key){
     ckpaidok:[`Đã nhận tiền${q}?`,"Ghi nhận đã trả lệ phí và cho vào giải đấu.","Đã nhận · check-in","p"],
     ckman:[`Check-in tay${q}?`,"Dùng khi cần nhanh. Danh sách ghi ✋ TAY để phân biệt với tự quét mã.","Check-in tay","p"],
     ckundo:[`Hoàn tác check-in${q}?`,"Người này ra khỏi danh sách có mặt, trở về chưa tới.","Hoàn tác","d"],
+    tvrole:[`Đổi quyền ${n}?`,"Quản lý sửa được mọi thứ trừ gỡ chủ CLB. Trọng tài chỉ nhập tỉ số sân được giao. Người chơi: không còn quyền quản lý.","Đổi quyền","p"],
     mfok:[`Đã thu phí ${n}?`,"Ghi nhận đã đóng phí thành viên kỳ này. Chỉ bấm khi đã nhận tiền.","Đã thu","p"],
     mfundo:[`Bỏ dấu đã thu ${n}?`,"Khoản phí này trở về chưa đóng.","Bỏ dấu","d"],
     mfoff:["Tắt phí thành viên cố định?","Không thu phí kỳ mới nữa. Dữ liệu các kỳ đã thu vẫn giữ trong quỹ.","Tắt","d"],

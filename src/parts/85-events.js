@@ -58,6 +58,8 @@ document.addEventListener("click",onAct=async e=>{
   if(b.dataset&&b.dataset.act==="bankapp"&&e.preventDefault)e.preventDefault();
   if(act==="cfmok"){await cfmOk();return}
   if(act==="cfmx"){cfmClose();return}
+  if(await shAct(act,b))return;
+  if(await loginAct(act,b))return;
   LASTDS={...b.dataset};
   if(act==="login"){
     // Đọc thẳng ô đang nhập (bàn phím điện thoại có khi không báo sự kiện gõ), ưu tiên ô cùng khung với nút bấm
@@ -95,12 +97,8 @@ document.addEventListener("click",onAct=async e=>{
     return}
   if(act==="bxf"){bxF=b.dataset.v;render();return}
   if(act==="hf"){hF=b.dataset.v;render();return}
-  if(act==="lshare"){const D=derive(),u=absUrl(pathOf("app",{tab:"san"})),txt=liveShareText(D);
-    if(navigator.share){try{await navigator.share({title:"Đang đánh trực tiếp",text:txt+"\n",url:u})}catch(x){}return}
-    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
-  if(act==="pshare"){const D=derive(),u=absUrl(pathOf("vdv",{pid:id})),txt=profileShare(D,id);
-    if(navigator.share){try{await navigator.share({title:"Hồ sơ vận động viên",text:txt+"\n",url:u})}catch(x){}return}
-    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
+  if(act==="lshare"){const D=derive();await shareOut({title:"Chia sẻ sân trực tiếp",text:liveShareText(D),path:pathOf("app",{tab:"san"})});return}
+  if(act==="pshare"){const D=derive();await shareOut({title:"Chia sẻ hồ sơ",text:profileShare(D,id),path:pathOf("vdv",{pid:id})});return}
   if(act==="vtry"){speak(VOICE_SAMPLE,b.dataset.v,"v:"+b.dataset.v,true);return}
   if(act==="spkstop"){stopSpeak();return}
   if(act==="champsay"){const k=b.dataset.k,D=derive();let txt="";
@@ -138,12 +136,11 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="cp"){try{await navigator.clipboard.writeText(b.dataset.v);toast("Đã copy: "+b.dataset.v)}catch(x){toast(b.dataset.v)}return}
   if(act==="paid"){if(!canWrite)return;const sid=Number(id),h=S.hist.find(z=>z.sid===sid);if(!h)return;const pd={...(h.paid||{})};pd[b.dataset.p]=!pd[b.dataset.p];
     write(()=>db.doc("app/hist-"+sid).update({paid:pd}),pd[b.dataset.p]?"Đã đánh dấu đã nhận phí":"Đã bỏ đánh dấu");return}
-  if(act==="share"||act==="copylink"){const u=shareUrl(id),D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id)),txt=x?(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x)):"Tổng kết giải đấu";
-    if(act==="share"&&navigator.share){try{await navigator.share({title:"Tổng kết giải đấu",text:txt+"\n",url:u})}catch(x){}return}
-    try{await navigator.clipboard.writeText(txt+"\n"+u);toast("Đã copy tin nhắn kèm link, dán vào nhóm Zalo nhé.")}catch(x){toast(u)}return}
+  if(act==="share"||act==="copylink"){const D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id)),txt=x?(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x)):"Tổng kết giải đấu";
+    await shareOut({title:"Chia sẻ tổng kết",text:txt,path:pathOf("buoi",{sid:id})});return}
   if(act==="sess"){const k="s-"+id;editing.has(k)?editing.delete(k):editing.add(k);render();return}
   if(act==="copysess"){const D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id));if(!x)return;
-    const txt=(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x))+"\n"+shareUrl(x.sid);try{await navigator.clipboard.writeText(txt);toast("Đã copy tin nhắn, dán vào nhóm Zalo nhé.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
+    const txt=(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x))+"\n"+shLink(pathOf("buoi",{sid:x.sid}));try{await navigator.clipboard.writeText(txt);toast("Đã copy tin nhắn, dán vào nhóm Zalo nhé.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
   if(await platformAct(act,id,b))return;
   if(await zaloAct(act,b,id))return;
   if(act==="pinset"){if(!isAdm()){toast("Chỉ chủ CLB và quản lý đăng nhập Google mới đặt được PIN.");return}
@@ -189,6 +186,7 @@ document.addEventListener("click",onAct=async e=>{
   if(await mfAct(act,b,id))return;
   if(await tvAct(act,b,id))return;
   if(await gtAct(act,b))return;
+  if(act==="clubshare"){await shareOut({title:"Chia sẻ CLB",text:`🏓 ${CLUB?.name||"CLB"} trên pikeco.app:`,path:"/"+CID});return}
   if(act==="cdo"){const k=b.dataset.v;cdOpen.has(k)?cdOpen.delete(k):cdOpen.add(k);render();return}
   if(act==="capadd"&&await capAct(act,b,id))return;
   if(await gbAct(act,b,id))return;

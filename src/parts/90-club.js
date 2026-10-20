@@ -37,14 +37,15 @@ async function refreshRole(){
 function dropInviteTok(){try{sessionStorage.removeItem("pb-inv-"+CID)}catch(e){}try{const q=new URLSearchParams(location.search);q.delete("moi");history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:"")+location.hash)}catch(e){}}
 const inviteTok=()=>{if(INVITE)return INVITE;const t=new URLSearchParams(location.search).get("moi");if(t)return t;try{return MINI?sessionStorage.getItem("pb-inv-"+CID):null}catch(e){return null}};
 async function acceptInvite(){
-  const tok=inviteTok(),zl=MINI&&!!authUser&&/^zalo_/.test(String(authUser.uid||""));
+  const tok=inviteTok(),zl=!!authUser&&/^zalo_/.test(String(authUser.uid||""));
   if(!tok||legacy||!(isGoogle(authUser)||zl))return;
   if(ROLE&&ROLE!=="pin"){if(MINI){dropInviteTok();toast(`Bạn đã là ${ROLE_LB[ROLE]} của ${CLUB?.name||"CLB"}.`)}return}
   try{const s=await FB.getDoc(FB.doc(FB.fs,PFX+"invites/"+tok));if(!s.exists()){toast("Link mời không còn hiệu lực.");return}
     const iv=s.data();if(iv.exp<Date.now()){toast("Link mời đã hết hạn, nhờ quản lý tạo link mới.");return}
     await FB.setDoc(FB.doc(FB.fs,PFX+"members/"+authUser.uid),zl?{role:iv.role,invite:tok,name:String(zaloProf().n||"Thành viên Zalo").slice(0,40),email:"",via:"zalo",at:Date.now()}:{role:iv.role,invite:tok,name:authUser.displayName||"",email:authUser.email||"",at:Date.now()});
-    await refreshRole();toast(`Đã nhận quyền ${ROLE_LB[iv.role]} của ${CLUB?.name||"CLB"}.`);
-    if(zl){dropInviteTok();mxSetMode("ql")}
+    await refreshRole();toast(iv.link?`Đã liên kết tài khoản · ${ROLE_LB[iv.role]} của ${CLUB?.name||"CLB"}.`:`Đã nhận quyền ${ROLE_LB[iv.role]} của ${CLUB?.name||"CLB"}.`);
+    if(iv.link){try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"invites/"+tok))}catch(e){}}
+    if(zl){dropInviteTok();if(MINI)mxSetMode("ql")}
     INVITE=null;route="home";setPath(pathOf("home"),1);
     render();
   }catch(e){toast("Không nhận được lời mời, thử lại.")}
@@ -52,11 +53,11 @@ async function acceptInvite(){
 function loginBar(){
   if(canWrite)return "";
   const u=authUser,tok=inviteTok();
-  let h=`<div class="ro login"><span>${tok&&!legacy?"Bạn được mời vào ban tổ chức của CLB. Đăng nhập Google để nhận quyền.":isGoogle(u)?`Đã đăng nhập ${esc(u.email||u.displayName||"")} nhưng chưa có quyền ở CLB này. Nhờ chủ CLB gửi link mời, hoặc nhập PIN trọng tài.`:"Bạn đang xem trực tiếp. Ban tổ chức đăng nhập Google, trọng tài nhập PIN để nhập tỉ số."}</span>
-    <span class="bar" style="gap:6px">${isGoogle(u)?`<button class="ghost" data-act="logout">Đổi tài khoản</button>`:`<button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button>`}
+  let h=`<div class="ro login"><span>${tok&&!legacy?"Bạn được mời vào ban tổ chức của CLB. Đăng nhập Google để nhận quyền.":isZaloU(u)?`Đã đăng nhập bằng Zalo${zaloProf().n?" ("+esc(zaloProf().n)+")":""} nhưng tài khoản này chưa có quyền ở CLB này. Nhờ chủ CLB giao quyền ở trang Thành viên, hoặc gửi link mời.`:isGoogle(u)?`Đã đăng nhập ${esc(u.email||u.displayName||"")} nhưng chưa có quyền ở CLB này. Nhờ chủ CLB gửi link mời, hoặc nhập PIN trọng tài.`:"Bạn đang xem trực tiếp. Ban tổ chức đăng nhập Google hoặc Zalo, trọng tài nhập PIN để nhập tỉ số."}</span>
+    <span class="bar" style="gap:6px">${isGoogle(u)||isZaloU(u)?`<button class="ghost" data-act="logout">Đổi tài khoản</button>`:`<button class="gbtn" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập Google</button>${qrlBtn("gbtn zbtn")}`}
     <input id="pinname" data-draft="pinname" maxlength="30" autocomplete="off" placeholder="Tên trọng tài" value="${esc(val("pinname",""))}" style="width:130px"><input id="pin" data-draft="pin" type="password" autocomplete="off" placeholder="PIN trọng tài" value="${esc(val("pin",""))}" style="width:120px"><button class="primary" data-act="login">Vào bằng PIN</button></span>
     ${errs.pin?`<p class="err" style="width:100%">${esc(errs.pin)}</p>`:""}${inApp()?`<p class="rule" style="width:100%">Trình duyệt trong Zalo/Facebook không cho đăng nhập Google. Bấm nút ⋯ ở góc trên rồi chọn Mở bằng trình duyệt.</p>`:""}</div>`;
-  return h;
+  return h.replace(/<\/div>$/,qrlBox()+"</div>");
 }
 function bankName(b){const x=BANKS.find(z=>z[0]===b.code);return x?x[2]:(b.name||b.code||"")}
 let cdOpen=new Set();
@@ -77,7 +78,7 @@ function clubAdmin(D){
       <label class="fld"><span class="lbl">Tên CLB · hiện trên đầu trang</span><input id="cl-name" data-draft="cl-name" maxlength="60" value="${esc(val("cl-name",CLUB?.name||""))}"></label>
       <button class="wide" data-act="cname">Lưu tên CLB</button>
       <div class="fld"><span class="lbl">Ai được xem</span><span class="seg segw"><button data-act="pub" data-v="1" aria-pressed="${CLUB?.public!==false}">Ai có link</button><button data-act="pub" data-v="0" aria-pressed="${CLUB?.public===false}">Chỉ ban tổ chức</button></span></div>
-      <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="cp" data-v="${esc(link)}">Copy link</button></div></div></section>`;
+      <div class="linkrow"><span>${esc(link.replace(/^https?:\/\//,""))}</span><button class="primary" data-act="clubshare">Chia sẻ</button></div></div></section>`;
   const sBank=`<section class="card2"><h2>Ngân hàng nhận phí</h2><div class="cb">
       <label class="fld"><span class="lbl">Ngân hàng</span><select id="bk-code" data-draft="bk-code">${BANKS.map(([c,,n])=>`<option value="${c}" ${val("bk-code",b.code||"mb")===c?"selected":""}>${n}</option>`).join("")}</select></label>
       <label class="fld"><span class="lbl">Số tài khoản</span><input id="bk-acc" data-draft="bk-acc" inputmode="numeric" value="${esc(val("bk-acc",b.acc||""))}"></label>
@@ -136,6 +137,7 @@ function vCaiDat(D){
   h+=`</div>`;
   if(REF)return h+`<section class="card2"><h2>Quyền trọng tài</h2><div class="cb"><p class="rule">${MYCT.length?`Bạn được giao sân ${MYCT.join(", ")}. Chỉ nhập được tỉ số ở các sân này.`:"Bạn chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào sân</a></div></section>`;
   if(!canWrite)return h+clubLoginBody();
+  h+=acctLinkCard();
   if(!legacy&&isAdm()){const T=[["Khai ngân hàng nhận phí",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
     if(ok<T.length)h+=`<div class="todo"><b>Bắt đầu · ${ok}/${T.length} việc đã xong</b><div class="bar2x"><i style="width:${Math.round(ok/T.length*100)}%"></i></div>${T.map(([l,d])=>`<div class="it${d?" ok":""}"><span class="ck" aria-hidden="true">${d?"✓":""}</span>${l}</div>`).join("")}</div>`}
   return h+clubAdmin(D);
@@ -148,7 +150,8 @@ function clubLoginBody(){
   if(!tok&&!legacy&&PLAYER_ON())h+=`<section class="card2"><h2>Người chơi</h2><div class="cb">${isPlayer(u)?`<p class="rule">Máy này đã tham gia. Bạn đăng ký giải đấu ở trang Sân đấu.</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào trang đăng ký</a>`:`<p class="rule">Tự đăng ký giải đấu, không cần tài khoản. Chạm vào tên mình, chủ CLB duyệt một lần là xong. Mở được ngay trong Zalo.</p>${zaloBtn()}`}</div></section>`;
   h+=`<section class="card2"><h2>${tok?"Nhận lời mời ban tổ chức":"Chủ CLB, quản lý"}</h2><div class="cb">`;
   if(isGoogle(u)&&!canWrite)h+=`<p class="rule">Đang đăng nhập ${esc(u.email||"")} nhưng tài khoản này chưa có quyền ở CLB. Nhờ chủ CLB gửi link mời, hoặc đổi tài khoản.</p><button class="line" data-act="logout">Đổi tài khoản Google</button>`;
-  else h+=`<p class="rule">${tok?"Bạn được mời vào ban tổ chức. Đăng nhập Google để nhận quyền.":"Đăng nhập Google để sửa cài đặt, xếp sân và quản lý thành viên."}</p><button class="gwide" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập bằng Google</button>`;
+  else if(isZaloU(u)&&!canWrite)h+=`<p class="rule">Đang đăng nhập bằng Zalo nhưng tài khoản này chưa có quyền ở CLB. Nhờ chủ CLB giao quyền ở trang Thành viên, hoặc gửi link mời.</p><button class="line" data-act="logout">Đổi tài khoản</button>`;
+  else h+=`<p class="rule">${tok?"Bạn được mời vào ban tổ chức. Đăng nhập Google hoặc Zalo để nhận quyền.":"Đăng nhập để sửa cài đặt, xếp sân và quản lý thành viên."}</p>${qrlBtn()}${qrlBox()}<button class="gwide" data-act="glogin"><span class="g" aria-hidden="true">G</span>Đăng nhập bằng Google</button>`;
   if(inApp())h+=`<p class="rule">Trình duyệt trong Zalo/Facebook không cho đăng nhập Google. Bấm nút ⋯ ở góc trên rồi chọn Mở bằng trình duyệt.</p>`;
   h+=`</div></section>`;
   if(!tok)h+=`<section class="card2"><h2>Trọng tài · vào nhanh bằng PIN</h2><div class="cb"><p class="rule">Không cần tài khoản. Nhập PIN chủ CLB đưa là nhập được tỉ số trên máy này.</p>

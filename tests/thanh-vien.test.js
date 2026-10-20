@@ -46,7 +46,11 @@ test("đang có giải đấu: người xem không vào được Quỹ và Lịc
   expect(e.T()).not.toContain("Sổ quỹ CLB");
   await e.tab("ls");
   expect(e.T()).toContain("đang đánh");
-  await e.click("lshare"); await e.until(() => shared);
+  await e.click("lshare");
+  expect(globalThis.document.querySelector("#shs").innerHTML).toContain("Link Mini App Zalo");
+  await e.click("shcp"); await e.until(() => shared);
+  expect(shared).toContain("zalo.me/s/180913816434821856/?clb=q7&p=san");
+  shared = null; await e.click("lshare"); await e.click("shk", { v: "web" }); await e.click("shcp"); await e.until(() => shared);
   expect(shared).toMatch(/^📣 Q7: .+ đang diễn ra! 🔴 𝗟𝗜𝗩𝗘\n1 sân · \d+ người\. Mời cả nhà vào xem trực tiếp:/);
   expect(shared).toContain("👉 Bấm link (không cần đăng nhập):");
   expect(shared).not.toContain("Giải đấu #");
