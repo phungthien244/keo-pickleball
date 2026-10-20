@@ -1675,3 +1675,16 @@ label.primary.gdfile{background:var(--blue);color:#fff}label.line.gdfile{border:
 .koseed select{flex:1;min-width:0;min-height:40px;margin-left:10px}
 .kodet summary{cursor:pointer;padding:10px 12px;font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;border-top:1px solid var(--line)}
 .kofr{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);padding:10px 12px}.kofr>b{font-family:var(--display);font-weight:900;font-size:14px}
+/* Bốc chia bảng: hiệu ứng */
+.koscr{position:fixed;inset:0;z-index:83;background:radial-gradient(circle at 50% 22%,#4a2a75,#1a0f2e 72%);color:#fff;display:flex;flex-direction:column;gap:12px;padding:max(12px,env(safe-area-inset-top)) 14px 0;overflow:auto;animation:ckin .2s var(--ease) both}
+.kopots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.kopot{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.1em;padding:4px 8px;border:1px solid rgba(255,255,255,.25);color:#d9c8f0;opacity:.35;animation:kopot .4s ease both}
+@keyframes kopot{to{opacity:1;background:var(--yellow);color:var(--navy);border-color:var(--yellow)}}
+.koshg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;width:100%;max-width:640px;margin:0 auto}
+.koshb{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);display:flex;flex-direction:column;min-height:120px}
+.koshb>b{font-family:var(--display);font-weight:900;font-size:14px;padding:8px 10px;background:var(--yellow);color:var(--navy)}
+.koshp{display:flex;align-items:center;gap:6px;padding:8px 10px;border-top:1px solid rgba(255,255,255,.12);font-size:13px;font-weight:600;opacity:0;animation:kodrop .7s cubic-bezier(.2,1.4,.4,1) both}
+.koshp span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.koshp .hg{font-style:normal}
+@keyframes kodrop{0%{opacity:0;transform:translateY(-60px) scale(1.25);background:var(--yellow);color:var(--navy)}55%{opacity:1;transform:translateY(4px) scale(1);background:var(--yellow);color:var(--navy)}100%{opacity:1;transform:none;background:transparent}}
+.kodone{opacity:0;animation:kofade .4s ease both;grid-column:1/-1}
+@keyframes kofade{to{opacity:1}}
