@@ -216,7 +216,7 @@ function mxMeTab(D){
     <button class="mxli" data-act="mxsheet"><span class="t">CLB của tôi</span><span class="t2">${C.length}</span><span>›</span></button>
     <button class="mxli" data-act="miniexplore"><span class="t">Khám phá CLB khác</span><span>›</span></button>
     <a class="mxli" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><span class="t">Giới thiệu ${esc(CLUB?.name||"CLB")}</span><span>›</span></a>
-    <button class="mxli" data-act="mute"><span class="t">Loa gọi vào sân</span><span class="t2">${loaMuted()?"Đang tắt":"Đang bật"}</span></button>${mxMgr()?"":mxInvBtn()}</div>`;
+    ${mxMgr()?"":mxInvBtn()}</div>`;
   h+=`<div class="mxcard list"><span class="mxsec">Quyền riêng tư</span>
     ${L?`<button class="mxli" data-act="mxleave"><span class="t" style="color:var(--lose)">${armed("mxleave:x")?"Bấm lần nữa: rời CLB và xoá thông tin của tôi":"Rời CLB, xoá thông tin của tôi"}</span></button>`:""}
     <button class="mxli" data-act="openurl" data-v="https://mini.zalo.me/legal/terms-preview/${MINI_APP_ID}"><span class="t">Điều khoản sử dụng</span><span>↗</span></button>

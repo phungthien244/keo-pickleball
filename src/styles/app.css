@@ -1690,3 +1690,7 @@ label.primary.gdfile{background:var(--blue);color:#fff}label.line.gdfile{border:
 @keyframes kofade{to{opacity:1}}
 .koshp .avs .av+.av{margin-left:-8px}.nm2 .hg{font-style:normal;vertical-align:middle;margin-left:2px}
 .nm2{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25;overflow-wrap:anywhere}.nm2>span+span::before{content:"& ";opacity:.6;font-weight:400}
+.vqr{display:block;background:#fff;max-width:100%;height:auto}
+.gdqr .vqr{width:220px;height:220px;border:1px solid var(--line)}
+.ckqm .vqr{width:min(calc(100vw - 72px),calc(100vh - 380px),360px);height:auto;aspect-ratio:1;min-width:220px;border:1px solid var(--line);padding:10px;box-sizing:border-box}
+.rgpay .vqr{width:110px;height:110px;flex:none}

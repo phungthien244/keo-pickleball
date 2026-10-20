@@ -82,7 +82,7 @@ function ckPopup(D){
   const lv=r.guest?r.lv:p?r2(D.st.get(p.id)?.rating||+p.rating0||0):"",nm=ckName(D,r),note=payNoteX(X,nm||"KHACH");
   const rest=P.filter(x=>x!==r),id=esc(r.id),first=String(nm).trim().split(/\s+/).pop();
   if(ckQR===r.id&&!paid)return `<div class="ckpf ckpq" role="dialog" aria-label="Mã chuyển khoản"><div class="ckqh"><button class="ckx" data-act="ckqrx" aria-label="Quay lại">‹</button>${ckPic(D,r,"ckpic s")}<b>${esc(nm)} · vé #${pos+1}</b></div>
-    <div class="ckqm"><small>QUÉT BẰNG APP NGÂN HÀNG</small><b class="ckamt">${kVND(k)}</b><img src="${esc(qrUrl(Math.round(k*1000),note))}" alt="Mã QR chuyển ${kVND(k)}">
+    <div class="ckqm"><small>QUÉT BẰNG APP NGÂN HÀNG</small><b class="ckamt">${kVND(k)}</b>${vqrSvg(Math.round(k*1000),note,320)}
       <div class="ckqi"><span><span>Ngân hàng</span><b>${esc(BANK.name||"")} · ${esc(BANK.holder||"")}</b></span><span><span>Nội dung</span><b class="lose">${esc(note)}</b></span></div></div>
     <div class="ckpa"><span class="gdnote">Quay màn hình về phía người chơi. Thấy tiền vào thì bấm:</span><button class="ckgo2" data-act="ckpaidok" data-id="${id}">✓ ĐÃ NHẬN TIỀN · CHECK-IN</button></div></div>`;
   const band=paid?`<div class="ckband ok"><span class="ic">✓</span><span class="t"><b>${k?`ĐÃ TRẢ ${kVND(k)}`:"MIỄN PHÍ"}</b><small>${k?(r.okAt?`BTC xác nhận lúc ${hm(r.okAt)}`:"BTC đã xác nhận"):"Giải đấu này không thu phí"}</small></span></div><div class="ckask">Nhìn người trước mặt: <b>có đúng như ảnh?</b></div>`

@@ -221,7 +221,7 @@ test("thu phí trước: người chơi chuyển khoản lúc đăng ký, chủ 
   expect(e.T()).toContain("GIỮ CHỖ CHẮC"); expect(e.T()).toContain("Trả tại sân");
   await e.click("gdagree"); await e.click("regin", { v: "hold" });
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.hold === true);
-  await e.until(() => e.V().includes("img.vietqr.io"));
+  await e.until(() => e.V().includes("class=\"vqr\""));
   expect(e.T()).toContain("60.000đ"); expect(e.T()).toContain("Đang giữ chỗ #1");
   await e.click("regpaid");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.pay === "sent");

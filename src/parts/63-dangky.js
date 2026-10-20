@@ -48,7 +48,7 @@ function regFaces(D,R){
 function payBox(D,name,k){
   if(!BANK||!BANK.acc)return `<small class="rule">CLB chưa khai ngân hàng nhận phí, bạn trả tại sân.</small>`;
   const amt=Math.round(k*1000),note=RX?payNoteX(RX,name||"KHACH"):payNote(D.sid,name||"KHACH");
-  return `<div class="rgpay"><img src="${esc(qrUrl(amt,note))}" alt="Mã QR chuyển ${kVND(k)}" width="110" height="110"><div class="kv2"><span>Chi phí</span><b class="num">${kVND(k)}</b><span>Nội dung</span><b>${esc(note)}</b><span>${esc(BANK.name||"")}</span><b class="num">${esc(BANK.acc)}</b><button class="line" data-act="saveqr" data-v="${esc(qrUrl(amt,note))}" data-n="${esc(note)}">Lưu mã QR</button></div></div>`;
+  return `<div class="rgpay">${vqrSvg(amt,note,110)}<div class="kv2"><span>Chi phí</span><b class="num">${kVND(k)}</b><span>Nội dung</span><b>${esc(note)}</b><span>${esc(BANK.name||"")}</span><b class="num">${esc(BANK.acc)}</b><button class="line" data-act="saveqr" data-a="${amt}" data-n="${esc(note)}">Lưu mã QR</button></div></div>`;
 }
 // Nút chính cho người chơi
 function regAction(D,R){

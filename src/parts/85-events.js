@@ -130,7 +130,7 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="qv"){qView=b.dataset.v==="so"?"so":"buoi";render();return}
   if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;showSheet();return}
   if(act==="pay"){payOpen={sid:Number(b.dataset.sid),name:b.dataset.n,k:Number(b.dataset.k)};showSheet();return}
-  if(act==="saveqr"){await saveQr(b.dataset.v,b.dataset.n||"chuyen-khoan");return}
+  if(act==="saveqr"){await saveQr(+b.dataset.a||0,b.dataset.n||"");return}
   if(act==="bankapp"){openOut(b.dataset.v);return}
   if(act==="cp"){try{await navigator.clipboard.writeText(b.dataset.v);toast("Đã copy: "+b.dataset.v)}catch(x){toast(b.dataset.v)}return}
   if(act==="paid"){if(!canWrite)return;const sid=Number(id),h=S.hist.find(z=>z.sid===sid);if(!h)return;const pd={...(h.paid||{})};pd[b.dataset.p]=!pd[b.dataset.p];
