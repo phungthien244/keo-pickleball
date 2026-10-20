@@ -466,3 +466,18 @@ test("nhắn tin: người chơi nhắn người tạo giải từ vé, BTC nh�
   expect(chats[0].message).toContain("Giải đấu tối");
   delete globalThis.window.ZMP;
 });
+
+test("Mini App: chia sẻ gửi tin nhắn kèm link mở đúng trang (Zalo tự nhận link)", async () => {
+  const data = base({ "clubs/q7/app/config": { title: "Q7", courts: 1, session: 1, phase: "live" } });
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
+  const shares = [];
+  globalThis.window.ZMP = { getUserID: async () => "zid9", openShareSheet: async o => { shares.push(o); } };
+  MINI(e, "#/q7/xep-hang");
+  await e.boot(); await e.until(() => e.V().includes("data-pid"));
+  await e.click("pshare", { id: "p1" });
+  expect(shares[0].type).toBe("text");
+  expect(shares[0].data.autoParseLink).toBe(true);
+  expect(shares[0].data.text).toContain("HỒ SƠ AN");
+  expect(shares[0].data.text).toMatch(/\nhttps:\/\/zalo\.me\/s\/180913816434821856\/\?clb=q7&p=vdv\/p1$/);
+  delete globalThis.window.ZMP;
+});

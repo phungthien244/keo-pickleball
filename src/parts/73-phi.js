@@ -86,10 +86,8 @@ async function mfAct(act,b,id){
     const d=mfDoc(key),paid={...(d.paid||{})};if(ok)delete paid[id];else paid[id]={k:+c.k||0,at:Date.now(),by:who()};
     await write(()=>db.doc("app/mfee-"+key).set({paid}),ok?"Đã bỏ dấu":`Đã thu phí ${mfLb(key)} của ${p.name}`);return true}
   if(act==="mfremind"){const D=derive(),cur=mfKey(),L=mfMembers(D).filter(p=>!p.hold&&!mfPaid(p.id,cur));if(!L.length){toast("Mọi người đã đóng phí.");return true}
-    const txt=`📌 ${CLUB?.name||"CLB"}: nhắc đóng phí thành viên ${mfLb(cur)} (${fmtK(c.k)}), hạn ngày ${c.due}.\nCòn: ${L.map(p=>p.name).join(", ")}.\nMở Pikeco › Tôi để quét mã QR chuyển khoản. Cảm ơn mọi người!`;
-    const Z=window.ZMP;if(Z&&Z.openShareSheet){try{await Z.openShareSheet({type:"text",data:{description:txt}});return true}catch(e){}}
-    if(navigator.share){try{await navigator.share({text:txt});return true}catch(e){}}
-    try{await navigator.clipboard.writeText(txt);toast("Đã copy lời nhắc, dán vào nhóm Zalo")}catch(e){toast(txt)}return true}
+    const txt=`📌 ${CLUB?.name||"CLB"}: nhắc đóng phí thành viên ${mfLb(cur)} (${fmtK(c.k)}), hạn ngày ${c.due}.\nCòn: ${L.map(p=>p.name).join(", ")}.\nMở Pikeco › Tôi để quét mã QR chuyển khoản. Cảm ơn mọi người!\n${miniPathOf(pathOf("app",{tab:"toi"}))}`;
+    await sendText(txt,"Đã copy lời nhắc, dán vào nhóm Zalo");return true}
   if(act==="fvset"){const v=FV[b.dataset.v]?b.dataset.v:"flow";await write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{fundView:v}),`Thành viên: ${FV[v]}`);return true}
   return false;
 }

@@ -7,11 +7,26 @@ let shKind=lsGet("pb-share")==="web"?"web":"mini";
 // Link dán kèm tin nhắn (tổng kết, mời...): Mini App luôn dùng link Mini App; web theo lựa chọn gần nhất
 const shLink=path=>MINI||shKind==="mini"?miniPathOf(path):webPathOf(path);
 let SHR=null; // {title,text,path,q(thêm vào link Mini App),miniOnly}
+// Mini App: gửi tin nhắn có nội dung + link bấm được (Zalo tự nhận link), giống bản web
+const isCancel=e=>/cancel|huỷ|hủy|đóng|close|abort|-201|-2\b/i.test(String((e&&(e.message||e.code))||e||""));
+async function zShareText(txt){
+  const Z=window.ZMP;if(!Z||!Z.openShareSheet)return false;
+  try{await Z.openShareSheet({type:"text",data:{text:String(txt).slice(0,2000),autoParseLink:true}});return true}
+  catch(e){if(isCancel(e))return true;return false}
+}
+// Chia sẻ chỉ có chữ (nhắc phí, nhắc nợ…): Zalo / chia sẻ của máy / copy
+async function sendText(txt,copied="Đã copy, dán vào nhóm Zalo nhé."){
+  if(MINI&&await zShareText(txt))return;
+  if(!MINI&&navigator.share){try{await navigator.share({text:txt});return}catch(e){if(e&&e.name==="AbortError")return}}
+  try{await navigator.clipboard.writeText(txt);toast(copied)}catch(e){toast(txt)}
+}
 async function shareOut(o){
   const mini=miniPathOf(o.path)+(o.q||"");
   if(MINI){
-    const Z=window.ZMP;if(Z&&Z.openShareSheet){try{await Z.openShareSheet({type:"link",data:{link:mini,chatOnly:false}});return}catch(e){}}
-    try{await navigator.clipboard.writeText((o.text?o.text+"\n":"")+mini);toast("Đã copy link, dán vào nhóm Zalo nhé.")}catch(e){toast(mini)}return}
+    const txt=(o.text?String(o.text).trim()+"\n":"")+mini;
+    if(await zShareText(txt))return;
+    const Z=window.ZMP;if(Z&&Z.openShareSheet){try{await Z.openShareSheet({type:"link",data:{link:mini,chatOnly:false}});return}catch(e){if(isCancel(e))return}}
+    try{await navigator.clipboard.writeText(txt);toast("Đã copy tin nhắn kèm link, dán vào nhóm Zalo nhé.")}catch(e){toast(mini)}return}
   SHR=o;shDraw();
 }
 function shDraw(){

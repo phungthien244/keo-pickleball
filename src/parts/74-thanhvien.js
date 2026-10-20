@@ -115,10 +115,8 @@ async function tvAct(act,b,id){
     await write(()=>FB.setDoc(FB.doc(FB.fs,PFX+"notes/"+id),d),"Đã lưu ghi chú");tvNotes[id]=d;delete drafts["tvn-"+id];render();return true}
   if(act==="tvremind"){const I=tvInfo(D),dts=debts().filter(x=>x.id===id),L=[];
     if(I.mfNo(p))L.push(`phí thành viên ${mfLb(I.cur)} ${fmtK(mfCfg().k)}`);for(const x of dts)L.push(`giải đấu #${x.sid} ${fmtK(x.k)}`);
-    const txt=`Chào ${p.name} 👋 ${CLUB?.name||"CLB"} nhắc nhẹ: bạn còn ${L.join(", ")}. Mở Pikeco › Tôi để quét mã QR chuyển khoản nhé. Cảm ơn bạn!`;
+    const txt=`Chào ${p.name} 👋 ${CLUB?.name||"CLB"} nhắc nhẹ: bạn còn ${L.join(", ")}. Mở Pikeco › Tôi để quét mã QR chuyển khoản nhé. Cảm ơn bạn!\n${miniPathOf(pathOf("app",{tab:"toi"}))}`;
     if(MINI&&zidOfP(p)&&await zChat(zidOfP(p),txt))return true;
-    const Z=window.ZMP;if(Z&&Z.openShareSheet){try{await Z.openShareSheet({type:"text",data:{description:txt}});return true}catch(e){}}
-    if(navigator.share){try{await navigator.share({text:txt});return true}catch(e){}}
-    try{await navigator.clipboard.writeText(txt);toast("Đã copy lời nhắc, gửi riêng qua Zalo")}catch(e){toast(txt)}return true}
+    await sendText(txt,"Đã copy lời nhắc, gửi riêng qua Zalo");return true}
   return false;
 }
