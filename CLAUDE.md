@@ -14,5 +14,6 @@
 ## Mini App
 - `miniapp/` dùng chung code `src/parts`; `window.ZMINI` bật chế độ Mini App, đường dẫn sau dấu `#`.
 - Đăng nhập: `getUserID` → `/api/zalo-mini` → Firebase custom token `zalo_<HMAC>` (Zalo chặn máy chủ ngoài VN đọc thông tin người dùng).
+  - **Không bao giờ đổi `ZALO_SECRET` trên Cloudflare**: mã tài khoản = HMAC(ZALO_SECRET, mã Zalo), đổi khoá là mọi người dùng Zalo thành tài khoản mới (đã xảy ra 10/2026). Máy còn phiên cũ tự gộp qua `old` ID token (lib/zmove.js), máy không còn phiên cũ thì mất liên kết.
 - Trang quản lý: https://miniapp.zaloplatforms.com/miniapp/180913816434821856/
 - Xem thử Mini App trên trình duyệt (dữ liệu giả, khung Zalo giả): https://demo.pikeco.pages.dev/mini?clb=aep — thêm `nguoi=moi` để đóng vai người dùng Zalo mới. Mở bằng trình duyệt tích hợp, đặt cỡ mobile, tự chụp màn hình để kiểm tra trước khi nhờ người dùng deploy.
