@@ -94,7 +94,7 @@ function vGiaiSan(D){
   const G=D.c.giai||{pairs:[]};
   if(canWrite&&(phaseOf(D)==="prep"||stepView==="prep"))return steps3(1,D)+vPrep(D);
   if(canWrite&&!G.locked)return steps3(2,D)+cfgChip(D)+gSetup(D,G)+undoBar();
-  if(canWrite)return steps3(2,D)+cfgChip(D)+gRun(D,gDerive(D))+undoBar();
+  if(canWrite)return steps3(2,D)+(MINI?"":cfgChip(D))+gRun(D,gDerive(D))+undoBar();
   return refNote()+(G.locked&&phaseOf(D)==="live"?`<div class="lsrow">${liveShareBtn()}</div>`:"")+(G.locked?gRun(D,gDerive(D)):gSetup(D,G));
 }
 // Tab Sân · Tùy chọn của giải: danh sách cặp gọn, thêm cặp bằng bảng trượt, ghép tự động cân trình
@@ -189,7 +189,7 @@ function gRun(D,GD){
     ${!GD.complete?`<p class="rule" style="margin-top:8px">Kết thúc sớm: các trận chưa đánh không tính, xếp hạng theo kết quả hiện có.</p>`:""}</div>`}
   // Quản lý: chia thành 4 phần Sân · Lịch · Bảng · Quản lý cho đỡ dài
   if(canWrite){const sg=["san","lich","bang","ql"].includes(liveSeg)?liveSeg:"san";
-    return top+lsegBar([["san",`Sân · ${live.length}`],["lich","Lịch"],["bang","Bảng"],["ql","Quản lý"]],sg)+({san:sanP,lich:lichP,bang:vGiaiBxh(D,GD),ql:h})[sg]}
+    return top+lsegBar([["san",`Sân · ${live.length}`],["lich","Lịch"],["bang","Bảng"],["ql","Quản lý"]],sg)+({san:sanP,lich:lichP,bang:vGiaiBxh(D,GD),ql:(MINI?cfgChip(D):"")+h})[sg]}
   return top+sanP+(GD.isKO?koBang(D,GD):"")+lichP+h;
 }
 function gCourt(D,GD,m){

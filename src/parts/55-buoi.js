@@ -15,12 +15,12 @@ const COSTS=[["court","Chi phí sân"],["water","Chi phí nước"],["ball","Chi
 // Thanh 3 bước: luôn dính dưới các tab, bấm để chuyển qua lại. n = bước đang xem, ph = bước thật của buổi.
 let stepView=null;
 function steps3(n,D){
-  // Mini App: đang đánh / chốt không hiện thanh 3 bước (chốt mở bằng nút riêng, quay lại bằng nút ‹)
-  if(MINI&&n>1)return "";
   const L=[["prep","Tùy chọn"],["live","Đang đánh"],["chot","Chốt giải đấu"]];
   const ph=D?(phaseOf(D)==="live"?2:1):n;
   return `<nav class="bsteps" aria-label="Các bước của giải đấu">${L.map(([v,l],i)=>{const k=i+1,on=k===n,ok=k<ph;
-    return `<button class="${on?"on":ok?"ok":""}" data-act="step" data-v="${v}"${on?' aria-current="step"':""}><b>${ok&&!on?"✓":k}</b>${l}</button>`}).join("")}</nav>`;
+    // Mini App: bước Chốt mờ, không bấm được cho tới khi bấm nút "Kết thúc & chốt giải đấu"
+    const off=MINI&&v==="chot"&&n<3;
+    return `<button class="${on?"on":ok?"ok":""}" data-act="step" data-v="${v}"${on?' aria-current="step"':""}${off?" disabled":""}><b>${ok&&!on?"✓":k}</b>${l}</button>`}).join("")}</nav>`;
 }
 const card=(t,body,right="")=>`<section class="card2"><h2 class="ch2"><span>${t}</span>${right}</h2><div class="cb">${body}</div></section>`;
 const cfIn=(k,label,v)=>`<label class="fld"><span class="lbl">${label}</span><input id="cf-${k}" data-draft="cf-${k}" data-save="cfg" data-key="${k}" type="number" inputmode="decimal" min="0" value="${esc(val("cf-"+k,v))}"></label>`;

@@ -1057,7 +1057,9 @@ html.mini{--sat:0px}
 .mxturn{top:calc(92px + var(--sat))!important}
 .mini .lseg{position:sticky;z-index:15;top:calc(48px + var(--sat))}
 .mxhsp.big~.mxbody .lseg{top:calc(92px + var(--sat))}
-.mini .bsteps{position:static}
+.mini .bsteps{top:calc(48px + var(--sat))}.mxhsp.big~.mxbody .bsteps{top:calc(92px + var(--sat))}
+.mxhsp.big~.mxbody .bsteps~.lseg{top:calc(146px + var(--sat))}
+.bsteps button:disabled{opacity:.4;cursor:not-allowed}
 .mx .mxbody>.dhead:first-child{margin:-12px -12px 0;padding-top:4px}
 /* Thanh trong suốt trên poster: cuộn xuống thì hiện ảnh poster thu nhỏ làm nền + tên giải */
 .mxhd.ov::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(8,33,58,.6),rgba(8,33,58,.6)),var(--ovbg,none) center/cover,var(--navy);opacity:0;transition:opacity .2s}
@@ -1074,13 +1076,13 @@ html.mini{--sat:0px}
 .mxhd.ov+.mxbody>.gdposter:first-child{margin:-12px -12px 0;width:calc(100% + 24px);max-width:none}
 .mxbody>.gdposter+.gdhero{margin-top:-10px;box-shadow:0 -24px 24px -4px var(--navy)}
 .gdcover{position:relative;margin:-12px -12px 0;height:calc(270px + var(--sat));background:var(--navy);overflow:hidden;color:#fff}
-.gdcover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
+.gdcover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
 .gdcover::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(8,33,58,.5),rgba(8,33,58,0) 32%,rgba(8,33,58,0) 42%,rgba(8,33,58,.94))}
 .gdcv{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:14px 16px 16px;display:flex;flex-direction:column;gap:5px}
 .gdcv b{font-family:var(--display);font-weight:900;font-size:27px;line-height:1.1;text-shadow:0 1px 10px rgba(0,0,0,.4)}
 .gdcv .d{font-size:14px;color:#e4eef7}
 .gdcv .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}
-.gdshr{display:inline-flex;align-items:center;gap:6px;flex:none;min-height:36px;padding:0 14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.gdshr{display:inline-flex;align-items:center;gap:6px;flex:none;min-height:38px;padding:0 14px;background:var(--yellow);border:0;color:var(--navy);font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .gdshr svg{width:16px;height:16px}
 .mxclub{display:flex;align-items:center;gap:9px;border:0;background:none;padding:0;min-height:40px;flex:1;min-width:0;text-transform:none;letter-spacing:0;font-family:var(--body);color:#fff;text-align:left}
 .mxclub .t{display:flex;flex-direction:column;min-width:0;line-height:1.15}
