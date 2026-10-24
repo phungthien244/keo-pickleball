@@ -1,6 +1,6 @@
 /* ---------- Đăng ký buổi: chủ CLB mở buổi, người chơi đăng ký (Mini App), thu tiền trước tùy chọn ---------- */
 const MINI_APP_ID="180913816434821856";
-const miniLink=(cid=CID,x)=>`https://zalo.me/s/${MINI_APP_ID}/?clb=${encodeURIComponent(cid)}${x?"&buoi="+encodeURIComponent(x):""}`;
+const miniLink=(cid=CID,x)=>`https://zalo.me/s/${MINI_APP_ID}/?clb=${encodeURIComponent(cid)}${x?"&buoi="+encodeURIComponent(x):""}${zEnvQ()}`;
 const HOLD_MS=15*60e3; // Chọn chuyển khoản ngay (hoặc bắt buộc thu trước): giữ chỗ 15 phút cho người chưa chuyển
 // RX: buổi trong lịch đang xem (66-lich.js). Không có RX: buổi hiện tại theo cách cũ (app/config.reg)
 const regCfg=()=>RX||cfg().reg||{};

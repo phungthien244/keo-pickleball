@@ -467,17 +467,25 @@ test("nhắn tin: người chơi nhắn người tạo giải từ vé, BTC nh�
   delete globalThis.window.ZMP;
 });
 
-test("Mini App: chia sẻ gửi tin nhắn kèm link mở đúng trang (Zalo tự nhận link)", async () => {
+test("Mini App: chia sẻ thẻ Mini App (ảnh, tiêu đề, mô tả, path) hoặc tin nhắn đầy đủ; bản Testing gắn env + version vào link", async () => {
   const data = base({ "clubs/q7/app/config": { title: "Q7", courts: 1, session: 1, phase: "live" } });
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
   const shares = [];
   globalThis.window.ZMP = { getUserID: async () => "zid9", openShareSheet: async o => { shares.push(o); } };
+  globalThis.window.APP_ENV = "TESTING"; globalThis.window.APP_VERSION = "12";
   MINI(e, "#/q7/xep-hang");
   await e.boot(); await e.until(() => e.V().includes("data-pid"));
   await e.click("pshare", { id: "p1" });
-  expect(shares[0].type).toBe("text");
-  expect(shares[0].data.autoParseLink).toBe(true);
-  expect(shares[0].data.text).toContain("HỒ SƠ AN");
-  expect(shares[0].data.text).toMatch(/\nhttps:\/\/zalo\.me\/s\/180913816434821856\/\?clb=q7&p=vdv\/p1$/);
-  delete globalThis.window.ZMP;
+  expect(shares.length).toBe(0);
+  expect(globalThis.document.querySelector("#shs").innerHTML).toContain("Thẻ Mini App");
+  await e.click("shz", { v: "card" }); await e.click("shzgo");
+  expect(shares[0].type).toBe("zmp_deep_link");
+  expect(shares[0].data).toMatchObject({ path: "/?clb=q7&p=vdv/p1", thumbnail: "https://pikeco.app/og.png" });
+  expect(shares[0].data.title).toContain("HỒ SƠ AN");
+  expect(shares[0].data.title.length).toBeLessThanOrEqual(100);
+  await e.click("pshare", { id: "p1" }); await e.click("shz", { v: "text" }); await e.click("shzgo");
+  expect(shares[1].type).toBe("text");
+  expect(shares[1].data.autoParseLink).toBe(true);
+  expect(shares[1].data.text).toMatch(/\nhttps:\/\/zalo\.me\/s\/180913816434821856\/\?clb=q7&p=vdv\/p1&env=TESTING&version=12$/);
+  delete globalThis.window.ZMP; delete globalThis.window.APP_ENV; delete globalThis.window.APP_VERSION;
 });
