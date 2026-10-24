@@ -9,6 +9,7 @@
 - **"Xuất bản" = xuất bản cả web và Zalo Mini App:**
   1. Web: `git push origin dev:main` (Cloudflare Pages + CI deploy Firestore rules).
   2. Mini App (ID 180913816434821856, tên Pikeco): chép mã mới (`src/`, `vite.parts.js`, `firebase.config.js`, `miniapp/`) vào máy người dùng `C:\Users\LLG\pikeco\app` qua cầu nối thiết bị, rồi nhờ người dùng chạy trong PowerShell `cd $HOME\pikeco\app\miniapp; npx zmp deploy` chọn **Testing** (máy chủ zmp-api của Zalo không vào được từ môi trường cloud). Sau đó vào trang quản lý Mini App bấm Submit for review.
+- Khi nhờ người dùng chạy lệnh: luôn đặt lệnh trong khối code riêng (```powershell … ```) để có nút copy, mỗi khối một lệnh chạy được ngay.
 - `zmp login` lưu ZMP_TOKEN vào `.env` của thư mục đang chạy: không commit file `.env` có token.
 
 ## Mini App
