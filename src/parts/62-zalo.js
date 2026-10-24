@@ -9,17 +9,22 @@ async function miniLogin(quiet){
   const Z=window.ZMP;if(!Z)return false;
   // Chờ Firebase đọc lại phiên đăng nhập đã lưu: đã có tài khoản Zalo thì không cần đăng nhập lại qua máy chủ
   try{if(FB.auth&&FB.auth.authStateReady)await FB.auth.authStateReady()}catch(e){}
-  const cu=(FB.auth&&FB.auth.currentUser)||authUser;
-  if(cu&&/^zalo_/.test(String(cu.uid||"")))return true;
+  // Phiên Zalo đã đối chiếu với mã Zalo trên máy này thì dùng lại; phiên cũ chưa đối chiếu → hỏi máy chủ một lần (gộp tài khoản nếu lệch)
+  const cu=(FB.auth&&FB.auth.currentUser)||authUser,zl=cu&&/^zalo_/.test(String(cu.uid||""));
+  if(zl&&(lsGet("pb-zuid-ok")===cu.uid||window.FB_TARGET==="mock"))return true;
   try{
     const id=await Z.getUserID();if(id)saveZProf({zid:String(id)});
     if(window.FB_TARGET==="mock"){await FB.signInWithCustomToken(FB.auth,String(id||"demo"));authUser={uid:"zalo_"+String(id||"demo"),isAnonymous:false};await refreshRole();render();return true}
     let at="";try{at=await Z.getAccessToken()}catch(e){}
     try{const ui=await Z.getUserInfo({autoRequestPermission:false}),u=ui&&ui.userInfo;if(u&&u.name)saveZProf({n:u.name,p:u.avatar||""})}catch(e){}
-    const r=await fetch(API+"/api/zalo-mini",{method:"POST",headers:{"content-type":"text/plain"},body:JSON.stringify({id:String(id||""),at})});
-    const j=await r.json().catch(()=>({}));if(!j.token)throw new Error(j.error||"no token");
-    await FB.signInWithCustomToken(FB.auth,j.token);return true;
-  }catch(e){if(!quiet)toast("Chưa vào được bằng Zalo, thử lại.");return false}
+    let old="";if(zl&&cu.getIdToken){try{old=await cu.getIdToken()}catch(e){}}
+    const r=await fetch(API+"/api/zalo-mini",{method:"POST",headers:{"content-type":"text/plain"},body:JSON.stringify({id:String(id||""),at,...(old?{old}:{})})});
+    const j=await r.json().catch(()=>({}));if(!j.token){if(zl)return true;throw new Error(j.error||"no token")}
+    if(!(zl&&cu.uid===j.uid))await FB.signInWithCustomToken(FB.auth,j.token);
+    lsSet("pb-zuid-ok",j.uid);
+    if(j.moved&&!j.moved.error&&(j.moved.members||j.moved.links||j.moved.regs||j.moved.clubs))toast("Đã gộp tài khoản Zalo cũ: quyền CLB, liên kết và đăng ký đã chuyển sang tài khoản này.");
+    return true;
+  }catch(e){if(zl)return true;if(!quiet)toast("Chưa vào được bằng Zalo, thử lại.");return false}
 }
 let unsubLink=null;
 let ZPROF=null;

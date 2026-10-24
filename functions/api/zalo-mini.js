@@ -2,6 +2,7 @@
 // Zalo chặn máy chủ ngoài Việt Nam đọc thông tin người dùng, nên chỉ đối chiếu được khi Zalo cho phép.
 // Mã tài khoản = zalo_ + HMAC(ID Zalo): không lộ ID Zalo thật trong dữ liệu công khai.
 import { customToken, hmacHex } from "../../lib/fbtoken.js";
+import { verifyIdToken, moveAccount } from "../../lib/zmove.js";
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, OPTIONS", "access-control-allow-headers": "content-type" };
 const out = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json", ...CORS } });
 
@@ -21,6 +22,14 @@ export async function onRequestPost({ request, env }) {
   }
   let sa; try { sa = JSON.parse(env.FIREBASE_SA); } catch (e) { return out({ error: "Khoá Firebase lỗi." }, 500); }
   const uid = "zalo_" + (await hmacHex(env.ZALO_SECRET, "mini:" + id)).slice(0, 40);
+  // Máy đang giữ phiên Zalo cũ khác mã hiện tại: gộp dữ liệu tài khoản cũ sang tài khoản đúng
+  let moved = null;
+  if (b.old) {
+    try {
+      const from = await verifyIdToken(b.old, sa.project_id);
+      if (from && from !== uid && /^zalo_[0-9A-Za-z]+$/.test(from)) moved = await moveAccount(sa, from, uid);
+    } catch (e) { moved = { error: true }; }
+  }
   const token = await customToken(sa, uid, { zalo: true, zv: verified });
-  return out({ token, uid, verified });
+  return out({ token, uid, verified, ...(moved ? { moved } : {}) });
 }
