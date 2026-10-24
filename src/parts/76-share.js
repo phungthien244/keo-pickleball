@@ -100,11 +100,12 @@ if(MINI){dbgLog("mở app: "+location.href);try{const E=window.ZMP&&window.ZMP.e
     const m=t.match(/[?&]clb=([a-z0-9-]+)/i),pp=t.match(/[?&]p=([A-Za-z0-9/_%-]+)/);if(!m)return;
     const c=m[1].toLowerCase(),p=pp?decodeURIComponent(pp[1]).replace(/[^A-Za-z0-9/_-]/g,""):"",np="/"+c+(p?"/"+p:"");
     setPath(np);if(c!==CID){location.reload();return}applyPath(readPath(np));render()})}catch(e){}}
+const D0name=()=>{try{return derive().pmap.get(S.link.pid)?.name||S.link.pid||""}catch(e){return ""}};
 function dbgCard(){
   if(!dbgOn())return "";
   const q=new URLSearchParams(location.search||""),row=(k,v)=>`<div class="dbgr"><span>${k}</span><b>${esc(String(v||"–"))}</b></div>`;
   return `<section class="card2 dbg"><h2>Kiểm tra link chia sẻ (bản thử)</h2><div class="cb">
-    ${row("Bản",`${window.APP_ENV||"?"} · ${window.APP_VERSION||"?"}`)}${row("clb",q.get("clb"))}${row("p",q.get("p"))}${row("Trang đang mở",curPath())}
+    ${row("Bản",`${window.APP_ENV||"?"} · ${window.APP_VERSION||"?"}`)}${row("clb",q.get("clb"))}${row("p",q.get("p"))}${row("Trang đang mở",curPath())}${row("Tài khoản",authUser?String(authUser.uid).slice(0,14)+"…":"chưa vào")}${row("Mã Zalo (6 số cuối)",myZid()?"…"+myZid().slice(-6):"chưa có")}${row("Liên kết VĐV",S.link?`${S.link.status} · ${D0name()}`:"chưa liên kết")}
     <div class="dbgr"><span>Link mở app</span><b class="u">${esc(location.href)}</b></div>
     <div class="dbgr"><span>Link chia sẻ trang này</span><b class="u">${esc(miniPathOf(curPath()))}</b></div>
     <div class="two"><button class="line" data-act="dbgcard">Gửi thử thẻ</button><button class="line" data-act="dbgtext">Gửi thử tin nhắn</button></div>
