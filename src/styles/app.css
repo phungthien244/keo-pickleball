@@ -1044,12 +1044,34 @@ div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
 .mxanim .mxbody > *:nth-child(2){animation-delay:.04s}.mxanim .mxbody > *:nth-child(3){animation-delay:.08s}.mxanim .mxbody > *:nth-child(n+4){animation-delay:.12s}
 .mini main#view{padding:0}
 .mx{font-size:15px}
-.mxbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
-.mxclub{display:flex;align-items:center;gap:8px;border:0;background:none;padding:0;min-height:40px;flex:1;min-width:0;text-transform:none;letter-spacing:0;font-family:var(--body);font-size:16px;color:var(--ink)}
-.mxclub b{font-family:var(--display);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mxclub .clogo{width:30px;height:30px;flex:none;font-size:14px}
-.mxme{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:var(--sunk);color:var(--muted);flex:none}
-.mxme svg{width:20px;height:20px}.mxme .av{width:36px;height:36px}
+/* Thanh đầu Mini App (thanh Zalo đã ẩn): nền xanh như bản web, chừa chỗ nút "··· ✕" của Zalo bên phải */
+.mxhd{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:6px;min-height:48px;padding:calc(4px + env(safe-area-inset-top,0px)) 104px 4px 12px;background:var(--navy);color:#fff;box-sizing:border-box}
+.mxhd .tt{flex:1;min-width:0;font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mxhd.sub{padding-left:4px}
+.mxbk{width:40px;height:40px;flex:none;display:grid;place-items:center;border:0;background:none;color:#fff;padding:0;min-height:0}
+.mxbk svg{width:22px;height:22px}
+.mxhd.ov{position:fixed;left:0;right:0;max-width:560px;margin:0 auto;background:linear-gradient(rgba(8,33,58,.6),rgba(8,33,58,0));transition:background-color .2s}
+.mxsc .mxhd.ov{background:var(--navy)}
+.mxhd.ov .tt{opacity:0;transition:opacity .2s}.mxsc .mxhd.ov .tt{opacity:1}
+.mxhd.ov .mxbk{background:rgba(8,33,58,.45);width:36px;height:36px;margin:2px 4px 2px 6px}.mxsc .mxhd.ov .mxbk{background:none}
+.mxhd.ov+.mxbody>.phero:first-child{padding-top:60px}
+.mxhd.ov+.mxbody>.gthero:first-child{padding-top:64px}
+.mxclub{display:flex;align-items:center;gap:9px;border:0;background:none;padding:0;min-height:40px;flex:1;min-width:0;text-transform:none;letter-spacing:0;font-family:var(--body);color:#fff;text-align:left}
+.mxclub .t{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.mxclub b{font-family:var(--display);font-weight:900;font-size:15px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mxclub b i{font-style:normal;font-size:10px;color:var(--sky);vertical-align:2px}
+.mxclub small{font-size:11px;color:var(--sky);letter-spacing:.06em}
+.mxclub .clogo{width:32px;height:32px;flex:none;font-size:14px;box-shadow:0 0 0 2px rgba(255,255,255,.18)}
+.mxhd .tt:only-child{padding-left:0}
+.mxstrip{display:flex;align-items:center;gap:8px;min-height:44px;padding:5px 12px;background:var(--navy-2);color:#fff;box-sizing:border-box}
+.mxst{flex:1;min-width:0;display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none}
+.mxst .tg{display:inline-flex;align-items:center;gap:5px;flex:none;background:var(--navy-3);font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:5px 8px}
+.mxst.live .tg{background:var(--lose)}.mxst.live .dot{width:7px;height:7px}
+.mxst.open .tg{background:var(--yellow);color:var(--navy)}.mxst.next .tg{background:var(--blue)}
+.mxst .tx{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.mxstrip .mxsw{border-color:var(--navy-line);background:transparent}.mxstrip .mxsw button{color:var(--sky);min-height:30px}.mxstrip .mxsw button[aria-pressed="true"]{background:var(--yellow);color:var(--navy)}
+.mxme{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:var(--navy-3);color:var(--sky);flex:none}
+.mxme svg{width:20px;height:20px}.mxme .av{width:34px;height:34px}
 .mxbody{padding:12px;display:flex;flex-direction:column;gap:10px}
 .mxcard{display:flex;flex-direction:column;gap:4px;background:var(--surface);border:1px solid var(--line);padding:12px 14px;color:inherit;text-decoration:none;text-align:left;width:100%;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:400;font-size:15px;min-height:0}
 .mxcard>b{font-family:var(--display);font-weight:800;font-size:16px}
@@ -1086,7 +1108,7 @@ div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
 .mxacts{display:flex;gap:8px}.mxacts>*{flex:1}
 .mxback{color:var(--blue);text-decoration:none;font-size:14px;font-weight:600;align-self:flex-start;padding:2px 0}
 .mxlink2{color:var(--blue);text-decoration:none;font-size:14px;font-weight:600;text-align:center;padding:6px}
-.mxturn{display:flex;flex-direction:column;padding:8px 12px;background:var(--warn-bg);color:var(--warn);text-decoration:none;border-bottom:1px solid var(--line);position:sticky;top:53px;z-index:19}
+.mxturn{display:flex;flex-direction:column;padding:8px 12px;background:var(--warn-bg);color:var(--warn);text-decoration:none;border-bottom:1px solid var(--line);position:sticky;top:48px;z-index:19}
 .mxturn b{font-size:14px}.mxturn span{font-size:12px}.mxturn.on{background:var(--blue);color:#fff}
 .mxcta{position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom,0px));z-index:29;padding:8px 12px;background:linear-gradient(transparent,var(--bg) 30%);display:flex;flex-direction:column;gap:6px;max-width:560px;margin:0 auto}
 .mxcta .primary.wide,.mxcta button{min-height:48px;width:100%}

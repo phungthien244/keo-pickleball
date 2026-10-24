@@ -13,11 +13,39 @@ const mxBack=()=>"";
 /* ----- Khung chung: dòng CLB, thanh lượt của tôi, nội dung, nút cố định, thanh dưới ----- */
 function mxCur(){if(route==="vdv"||route==="cmp")return "rank";if(route==="buoi")return "hist";if(route==="home")return "home";
   return {san:"live",bxh:"rank",ls:"hist",tien:"hist",toi:"me",dk:"home",gt:"home",nguoi:"rank"}[tab]||"home"}
+// Thanh đầu riêng (đã ẩn thanh Zalo): chừa ~100px bên phải cho nút "··· ✕" của Zalo
+function mxSubT(D){
+  if(route==="vdv")return {t:D.pmap.get(routePid)?.name||"Hồ sơ",ov:1};
+  if(route==="cmp")return {t:"So kè"};
+  if(route==="buoi")return {t:"Kết quả buổi"};
+  if(route==="chot")return {t:"Chốt buổi"};
+  if(route==="caidat")return {t:"Cài đặt"};
+  if(route==="app"&&tab==="gt")return {t:"Giới thiệu",ov:1};
+  if(route==="app"&&tab==="nguoi"&&mxMode()!=="ql")return {t:"Thành viên"};
+  const X=route==="app"&&tab==="dk"&&routeX?schedById(routeX):null;
+  if(X)return {t:xName(X),ov:mxMode()!=="ql"&&!!(X.poster&&posterCache[X.id])};
+  return null;
+}
+function mxStat(D){
+  const tag=(c,l,t,go)=>`<a class="mxst ${c}" href="${go[0]}" ${go[1]}><span class="tg">${c==="live"?`<i class="dot on"></i>`:""}${l}</span><span class="tx">${esc(t)}</span></a>`;
+  if(phaseOf(D)==="live")return tag("live","Trực tiếp",D.playing.length?`Đang đánh · ${D.playing.length} sân`:"Giải đấu đang diễn ra",[pathOf("app",{tab:"san"}),`data-go="app" data-t="san"`]);
+  const U=typeof schedUp==="function"?schedUp():[],X=U.find(xOpen)||U[0];
+  if(X){const op=xOpen(X);return tag(op?"open":"next",op?"Mở đăng ký":"Sắp tới",`${xName(X)}${X.at?" · "+dowVN(X.at)+" "+dmy(X.at):""}`,[pathOf("app",{tab:"dk",x:X.id}),`data-go="app" data-t="dk" data-x="${esc(X.id)}"`])}
+  const n=D.players.filter(p=>p.active!==false).length;
+  return tag("","CLB",n?`${n} thành viên`:"pikeco.app",[pathOf("app",{tab:"gt"}),`data-go="app" data-t="gt"`]);
+}
+function mxHead(D,ql,sw,p,nm){
+  const sb=mxSubT(D);
+  if(sb)return `<header class="mxhd sub${sb.ov?" ov":""}"><button class="mxbk" data-act="mxback" aria-label="Quay lại"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><b class="tt">${esc(sb.t)}</b></header>`;
+  return `<header class="mxhd"><button class="mxclub" data-act="mxsheet">${clubAv(CLUB||{id:CID},"",nm)}<span class="t"><b>${esc(nm)} <i aria-hidden="true">▾</i></b><small>pikeco.app</small></span></button></header>`
+    +`<div class="mxstrip">${mxStat(D)}${sw}<a class="mxme" href="${pathOf("app",{tab:"toi"})}" data-go="app" data-t="toi" aria-label="Tôi">${p?av(p,"sm",1):mxSvg("me")}</a></div>`+(ql?"":mxTurn(D));
+}
+// Thanh đầu trang nền tảng (Khám phá, Tôi, Tạo CLB)
+const mxHeadP=(t,right="",back="")=>`<header class="mxhd${back?" sub":""}">${back}<b class="tt">${t}</b>${right}</header>`;
 function mxShell(D,body,cta=""){
   const p=mxMe(D),nm=(CLUB&&CLUB.name)||D.c.title;
   const R0=mxAs||{cw:canWrite,rf:REF},ql=mxMode()==="ql",sw=!legacy&&(R0.cw||R0.rf)?`<span class="mxsw" role="group" aria-label="Chế độ"><button data-act="mxmode" data-v="choi" aria-pressed="${!ql}">Chơi</button><button data-act="mxmode" data-v="ql" aria-pressed="${ql}">${R0.cw?"Quản lý":"Trọng tài"}</button></span>`:"";
-  let h=`<div class="mxbar"><button class="mxclub" data-act="mxsheet">${clubAv(CLUB||{id:CID},"",nm)}<b>${esc(nm)}</b><span aria-hidden="true">▾</span></button>${sw}<a class="mxme" href="${pathOf("app",{tab:"toi"})}" data-go="app" data-t="toi" aria-label="Tôi">${p?av(p,"sm",1):mxSvg("me")}</a></div>`;
-  h+=(ql?"":mxTurn(D))+`<div class="mxbody">${body}</div>`;
+  let h=mxHead(D,ql,sw,p,nm)+`<div class="mxbody">${body}</div>`;
   if(cta)h+=`<div class="mxcta">${cta}</div>`;
   h+=ql?mxMgrNav():mxNav();
   return h+mxSheetHtml()+(ql?ckPopup(D):"");
@@ -29,7 +57,7 @@ function mxNav(){
 // Đang nạp CLB (vừa chuyển CLB): dựng sẵn khung Mini App, không lộ giao diện web
 function mxLoading(){
   const k=myClubs().find(x=>x.id===CID),nm=(CLUB&&CLUB.name)||(k&&k.name)||"";
-  return `<div class="mxbar"><span class="mxclub">${clubAv(k||{id:CID,name:nm},"",nm)}<b>${esc(nm)}</b></span><span class="mxme">${mxSvg("me")}</span></div><div class="mxbody">${skeleton()}</div>${mxMode()==="ql"?mxMgrNav():mxNav()}`;
+  return `<header class="mxhd"><span class="mxclub">${clubAv(k||{id:CID,name:nm},"",nm)}<span class="t"><b>${esc(nm)}</b><small>pikeco.app</small></span></span></header><div class="mxstrip"><span class="mxst"><span class="tg">CLB</span><span class="tx">Đang tải…</span></span></div><div class="mxbody">${skeleton()}</div>${mxMode()==="ql"?mxMgrNav():mxNav()}`;
 }
 // Thanh "Lượt của tôi": ghim khi buổi đang diễn ra và mình có mặt
 function mxTurn(D){
@@ -321,7 +349,7 @@ function mxExplore(){
   const now=new Date(),endDay=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).getTime(),wk=d=>[0,6].includes(new Date(d).getDay());
   const O=(mxOpen||[]).filter(x=>(!q||noAcc(`${x.club.name} ${x.club.city||""} ${x.r.place||""}`).toLowerCase().includes(q))&&(f==="all"||(f==="nay"&&x.r.at&&x.r.at<endDay)||(f==="tuan"&&x.r.at&&wk(x.r.at))));
   const fb=(v,l)=>`<button data-act="mxseg" data-k="ex" data-v="${v}" aria-pressed="${f===v}">${l}</button>`;
-  let h=`<div class="mxbar"><span class="mxclub"><b>${mine.length?"Khám phá":mxHello()}</b></span><a class="mxme" href="#" data-act="mxexme" aria-label="Tôi">${mxSvg("me")}</a></div><div class="mxbody">`;
+  let h=mxHeadP(mine.length?"Khám phá":mxHello())+`<div class="mxbody">`;
   if(!mine.length)h+=mxHero();
   h+=`<label class="srch"><span class="sr">Tìm CLB</span><input id="cq" data-draft="cq" data-live="1" type="search" placeholder="Tìm CLB, khu vực, sân…" value="${esc(val("cq",""))}"></label>`;
   h+=`<span class="mxsec" id="mxopen">Giải đấu đang nhận vận động viên</span><div class="mxseg sm">${fb("all","Tất cả")}${fb("nay","Hôm nay")}${fb("tuan","Cuối tuần")}</div>`;
@@ -338,7 +366,7 @@ function mxExplore(){
 function mxExploreMe(){
   const mine=myClubs(),P=zaloProf(),nm=String(P.n||"").trim(),own=S.myClub;
   if(S.myClub===undefined&&isZaloU(authUser))loadMyClub();
-  return `<div class="mxbar"><span class="mxclub"><b>Tôi</b></span></div><div class="mxbody">
+  return `${mxHeadP("Tôi")}<div class="mxbody">
     <div class="mxcard prof">${P.p?`<img class="mxav" src="${esc(P.p)}" alt="">`:`<span class="mxav">${nm?esc(nm.charAt(0).toUpperCase()):mxSvg("me")}</span>`}<span class="t"><b>${esc(nm||"Người dùng Zalo")}</b><small>Tài khoản Zalo · ${mine.length?`${mine.length} CLB`:"chưa tham gia CLB nào"}</small></span></div>
     <span class="mxsec">CLB của bạn</span>
     ${mine.length?`<div class="mxcard list">${mine.map(c=>`<button class="mxli" data-act="miniclub" data-id="${esc(c.id)}">${clubAv(c,"s40")}<span class="t">${esc(c.name)}<small>${esc(c.role||"")}</small></span><span>›</span></button>`).join("")}</div>`
@@ -356,7 +384,7 @@ async function mxAskName(){
 function mxCreate(){
   if(isZaloU(authUser)&&S.myClub===undefined)loadMyClub();
   const P=zaloProf(),nm=String(P.n||"").trim();
-  let h=`<div class="mxbar"><span class="mxclub"><b>Tạo CLB</b></span><a class="mxx" href="#" data-act="mxtaox">Đóng</a></div><div class="mxbody mxform">`;
+  let h=mxHeadP("Tạo CLB","",`<button class="mxbk" data-act="mxtaox" aria-label="Đóng"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`)+`<div class="mxbody mxform">`;
   if(S.myClub)return h+`<div class="mxcard"><b>Bạn đã là chủ CLB</b><span class="rule">Mỗi tài khoản Zalo tạo được một CLB. CLB của bạn: pikeco.app/${esc(S.myClub)}</span><button class="primary wide" data-act="miniclub" data-id="${esc(S.myClub)}">Mở CLB của bạn</button></div></div>`;
   const name=val("nc-name",""),slug=val("nc-slug","")||slugOf(name);
   const inp=(k,l,v,extra="",hint="")=>`<label class="fld"><span class="lbl">${l}</span><input id="${k}" data-draft="${k}" value="${esc(v)}" ${extra}>${hint?`<span class="hint">${hint}</span>`:""}</label>`;
@@ -470,6 +498,7 @@ async function mxAct2(act,b,id){
     if(MODE==="club"&&c===CID){INVITE=v.tok;await acceptInvite();render();return true}
     try{sessionStorage.setItem("pb-inv-"+c,v.tok)}catch(e){}setPath("/"+c);location.reload();return true}
   if(act==="mxmode"){const m=b.dataset.v==="choi"?"choi":"ql";if(m===mxMode())return true;mxSetMode(m);mxSheet=null;if(m==="ql")go("app",{tab:canWrite?"dk":"san"});else go("home");return true}
+  if(act==="mxback"){mxSheet=null;if(mxNavN>0)history.back();else if(mxMode()==="ql")go("app",{tab:canWrite?"dk":"san"});else go("home");return true}
   if(act==="mxsheet"){mxSheet=mxSheet==="club"?null:"club";render();return true}
   if(act==="mxsheetx"){mxSheet=null;render();return true}
   if(act==="mxsheetreg"){mxSheet="reg";render();return true}

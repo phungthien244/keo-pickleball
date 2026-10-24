@@ -26,16 +26,16 @@ import "../miniapp/src/mini.css";
     openChat: async ({ id, message }) => { const t = document.createElement("div"); t.className = "pvchat"; t.textContent = "(Bản thử) Mở chat Zalo với " + id + (message ? ": " + message : ""); t.style.cssText = "position:fixed;left:12px;right:12px;top:56px;z-index:99;background:#0068ff;color:#fff;padding:10px 12px;font:600 13px system-ui"; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
   };
   document.documentElement.classList.add("mini", "minipv");
-  // Khung giống thanh tiêu đề Zalo
+  // Thanh Zalo đã ẩn (actionBarHidden): chỉ còn nút "··· ✕" nổi góc phải như trong Zalo
   const bar = document.createElement("div");
   bar.className = "zbar";
-  bar.innerHTML = `<span class="zb" aria-hidden="true">‹</span><b>pikeco.app</b><span class="zcap" aria-hidden="true"><i>···</i><i>✕</i></span>`;
+  bar.innerHTML = `<span class="zcap" aria-hidden="true"><i>···</i><i>✕</i></span>`;
   document.body.appendChild(bar);
   document.body.insertAdjacentHTML("beforeend", BODY);
   const st = document.createElement("style");
   st.textContent = `[hidden]{display:none!important}img{max-width:100%}
-  .zbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;height:44px;padding:0 12px;background:#0c2b44;color:#fff;font:600 16px system-ui}
-  .zbar b{flex:1}.zbar .zb{font-size:26px;line-height:1}.zcap{display:flex;border:1px solid rgba(255,255,255,.35);border-radius:16px;overflow:hidden}.zcap i{font-style:normal;padding:2px 10px;font-size:13px}.zcap i+i{border-left:1px solid rgba(255,255,255,.35)}
+  .zbar{position:fixed;top:8px;right:8px;z-index:60;pointer-events:none;font:600 16px system-ui;color:#fff}
+  .zcap{display:flex;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.35);border-radius:16px;overflow:hidden}.zcap i{font-style:normal;padding:2px 10px;font-size:13px}.zcap i+i{border-left:1px solid rgba(255,255,255,.35)}
   @media(min-width:520px){html.minipv body{max-width:400px;margin:0 auto;box-shadow:0 0 0 1px #ccd}html.minipv .mnav{max-width:400px;margin:0 auto}}`;
   document.head.appendChild(st);
   const f = document.createElement("link"); f.rel = "stylesheet";

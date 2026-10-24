@@ -1,6 +1,6 @@
 /* Mini App: thanh tiêu đề của Zalo đã có tên app, bỏ khoảng trống an toàn thừa phía trên */
 :root{padding-top:0!important}
-html,body{max-width:100%;overflow-x:hidden}
+html{max-width:100%;overflow-x:hidden}body{max-width:100%;overflow-x:clip}
 #app,body>div{max-width:100vw}
 /* Trang khung của Zalo co khung chứa theo nội dung (flex/inline) → ép tràn hết bề ngang */
 html,body{margin:0!important;padding:0!important;width:100%!important;min-width:100%;background:var(--bg,#f1f3f6)!important}
