@@ -19,7 +19,9 @@ async function miniLogin(quiet){
     try{const ui=await Z.getUserInfo({autoRequestPermission:false}),u=ui&&ui.userInfo;if(u&&u.name)saveZProf({n:u.name,p:u.avatar||""})}catch(e){}
     let old="";if(zl&&cu.getIdToken){try{old=await cu.getIdToken()}catch(e){}}
     const r=await fetch(API+"/api/zalo-mini",{method:"POST",headers:{"content-type":"text/plain"},body:JSON.stringify({id:String(id||""),at,...(old?{old}:{})})});
-    const j=await r.json().catch(()=>({}));if(!j.token){if(zl)return true;throw new Error(j.error||"no token")}
+    const j=await r.json().catch(()=>({}));
+    lsSet("pb-zsync",JSON.stringify({at:Date.now(),from:zl?cu.uid:"",to:j.uid||"",moved:j.moved||null,err:j.token?"":(j.error||"không có token")}));
+    if(!j.token){if(zl)return true;throw new Error(j.error||"no token")}
     if(!(zl&&cu.uid===j.uid))await FB.signInWithCustomToken(FB.auth,j.token);
     lsSet("pb-zuid-ok",j.uid);
     if(j.moved&&!j.moved.error&&(j.moved.members||j.moved.links||j.moved.regs||j.moved.clubs))toast("Đã gộp tài khoản Zalo cũ: quyền CLB, liên kết và đăng ký đã chuyển sang tài khoản này.");

@@ -100,12 +100,18 @@ if(MINI){dbgLog("mở app: "+location.href);try{const E=window.ZMP&&window.ZMP.e
     const m=t.match(/[?&]clb=([a-z0-9-]+)/i),pp=t.match(/[?&]p=([A-Za-z0-9/_%-]+)/);if(!m)return;
     const c=m[1].toLowerCase(),p=pp?decodeURIComponent(pp[1]).replace(/[^A-Za-z0-9/_-]/g,""):"",np="/"+c+(p?"/"+p:"");
     setPath(np);if(c!==CID){location.reload();return}applyPath(readPath(np));render()})}catch(e){}}
+// Kết quả lần đối chiếu tài khoản Zalo gần nhất (gộp phiên cũ sang tài khoản đúng)
+const zsyncTx=()=>{let z=null;try{z=JSON.parse(lsGet("pb-zsync")||"null")}catch(e){}if(!z)return "chưa chạy";
+  const m=z.moved,t=hm(z.at);if(z.err)return `${t} · lỗi: ${z.err}`;
+  if(m&&m.error)return `${t} · gộp lỗi trên máy chủ`;
+  if(m)return `${t} · đã gộp ${z.from.slice(0,10)}… → ${z.to.slice(0,10)}…: ${m.members||0} quyền, ${m.links||0} liên kết, ${m.regs||0} đăng ký, ${m.clubs||0} CLB`;
+  return `${t} · khớp, không cần gộp`};
 const D0name=()=>{try{return derive().pmap.get(S.link.pid)?.name||S.link.pid||""}catch(e){return ""}};
 function dbgCard(){
   if(!dbgOn())return "";
   const q=new URLSearchParams(location.search||""),row=(k,v)=>`<div class="dbgr"><span>${k}</span><b>${esc(String(v||"–"))}</b></div>`;
   return `<section class="card2 dbg"><h2>Kiểm tra link chia sẻ (bản thử)</h2><div class="cb">
-    ${row("Bản",`${window.APP_ENV||"?"} · ${window.APP_VERSION||"?"}`)}${row("clb",q.get("clb"))}${row("p",q.get("p"))}${row("Trang đang mở",curPath())}${row("Tài khoản",authUser?String(authUser.uid).slice(0,14)+"…":"chưa vào")}${row("Mã Zalo (6 số cuối)",myZid()?"…"+myZid().slice(-6):"chưa có")}${row("Liên kết VĐV",S.link?`${S.link.status} · ${D0name()}`:"chưa liên kết")}
+    ${row("Bản",`${window.APP_ENV||"?"} · ${window.APP_VERSION||"?"}`)}${row("clb",q.get("clb"))}${row("p",q.get("p"))}${row("Trang đang mở",curPath())}${row("Tài khoản",authUser?String(authUser.uid).slice(0,14)+"…":"chưa vào")}${row("Mã Zalo (6 số cuối)",myZid()?"…"+myZid().slice(-6):"chưa có")}${row("Liên kết VĐV",S.link?`${S.link.status} · ${D0name()}`:"chưa liên kết")}${row("Đối chiếu tài khoản",zsyncTx())}<button class="line wide" data-act="dbgzsync">Đối chiếu, gộp tài khoản Zalo ngay</button>
     <div class="dbgr"><span>Link mở app</span><b class="u">${esc(location.href)}</b></div>
     <div class="dbgr"><span>Link chia sẻ trang này</span><b class="u">${esc(miniPathOf(curPath()))}</b></div>
     <div class="two"><button class="line" data-act="dbgcard">Gửi thử thẻ</button><button class="line" data-act="dbgtext">Gửi thử tin nhắn</button></div>
@@ -113,6 +119,7 @@ function dbgCard(){
     <pre class="dbglog">${esc(DBG.join("\n"))}</pre></div></section>`;
 }
 async function dbgAct(act){
+  if(act==="dbgzsync"){try{localStorage.removeItem("pb-zuid-ok")}catch(e){}await miniLogin(false);render();toast(zsyncTx());return true}
   if(act!=="dbgcard"&&act!=="dbgtext")return false;
   const o={title:"Thử chia sẻ",text:`Thử chia sẻ Pikeco\nTrang ${curPath()} · ${new Date().toLocaleTimeString("vi-VN")}`,path:curPath()};
   dbgLog("gửi thử "+(act==="dbgcard"?"thẻ":"tin nhắn")+": "+JSON.stringify(shCard(o)));
