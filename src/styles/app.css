@@ -1045,17 +1045,22 @@ div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
 .mini main#view{padding:0}
 .mx{font-size:15px}
 /* Thanh đầu Mini App (thanh Zalo đã ẩn): nền xanh như bản web, chừa chỗ nút "··· ✕" của Zalo bên phải */
-.mxhd{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:6px;min-height:48px;padding:calc(4px + env(safe-area-inset-top,0px)) 104px 4px 12px;background:var(--navy);color:#fff;box-sizing:border-box}
+.mxhd{position:fixed;top:0;left:0;right:0;max-width:560px;margin:0 auto;z-index:20;display:flex;align-items:center;gap:6px;min-height:48px;padding:calc(4px + env(safe-area-inset-top,0px)) 104px 4px 12px;background:var(--navy);color:#fff;box-sizing:border-box}
 .mxhd .tt{flex:1;min-width:0;font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mxhd.sub{padding-left:4px}
+/* Thanh đầu cố định (không trôi khi iOS kéo nảy đầu/cuối trang), chừa chỗ bằng khối đệm */
+.mxhsp{height:calc(48px + env(safe-area-inset-top,0px));flex:none}
+html.mini,html.mini body{overscroll-behavior-y:none}
 .mxbk{width:40px;height:40px;flex:none;display:grid;place-items:center;border:0;background:none;color:#fff;padding:0;min-height:0}
 .mxbk svg{width:22px;height:22px}
-.mxhd.ov{position:fixed;left:0;right:0;max-width:560px;margin:0 auto;background:linear-gradient(rgba(8,33,58,.6),rgba(8,33,58,0));transition:background-color .2s}
+.mxhd.ov{background:linear-gradient(rgba(8,33,58,.6),rgba(8,33,58,0));transition:background-color .2s}
 .mxsc .mxhd.ov{background:var(--navy)}
 .mxhd.ov .tt{opacity:0;transition:opacity .2s}.mxsc .mxhd.ov .tt{opacity:1}
-.mxhd.ov .mxbk{background:rgba(8,33,58,.45);width:36px;height:36px;margin:2px 4px 2px 6px}.mxsc .mxhd.ov .mxbk{background:none}
-.mxhd.ov+.mxbody>.phero:first-child{padding-top:60px}
-.mxhd.ov+.mxbody>.gthero:first-child{padding-top:64px}
+.mxhd.ov .mxbk{background:rgba(8,33,58,.55);width:36px;height:36px;margin:2px 4px 2px 6px}.mxsc .mxhd.ov .mxbk{background:none}
+.mxhd.ov+.mxbody>.gthero:first-child{padding-top:64px;margin-top:-12px}
+/* Trang giải có poster: poster tràn viền từ đỉnh, chuyển màu xuống khối thông tin xanh */
+.mxhd.ov+.mxbody>.gdposter:first-child{margin:-12px -12px 0;width:calc(100% + 24px);max-width:none}
+.mxbody>.gdposter+.gdhero{margin-top:-10px;box-shadow:0 -24px 24px -4px var(--navy)}
 .mxclub{display:flex;align-items:center;gap:9px;border:0;background:none;padding:0;min-height:40px;flex:1;min-width:0;text-transform:none;letter-spacing:0;font-family:var(--body);color:#fff;text-align:left}
 .mxclub .t{display:flex;flex-direction:column;min-width:0;line-height:1.15}
 .mxclub b{font-family:var(--display);font-weight:900;font-size:15px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1430,8 +1435,8 @@ button:active:not(:disabled),a.ccard:active,a.mxcard:active,a.sescard:active,a.t
 .gdbar{flex:1;height:6px;background:var(--sunk);position:relative;display:block}.gdbar i{position:absolute;left:0;top:0;bottom:0;background:var(--win)}
 .gdcta{min-height:34px;padding:0 12px;display:flex;align-items:center;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.06em;background:var(--blue);color:#fff;white-space:nowrap}
 .gdcta.g{background:#c97a16}.gdcta.ok{background:var(--win)}.gdcta.line{background:var(--surface);color:var(--ink);border:1px solid var(--ink)}
-.gdhero{margin:-12px -12px 0;padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;background:var(--blue);color:#fff}
-.gdhero.g{background:#c97a16}
+.gdhero{margin:-12px -12px 0;padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;background:var(--navy);color:#fff;position:relative}
+.gdhero.g,.gdhero.vb{background:var(--navy)}
 .gdhero b{font-family:var(--display);font-weight:900;font-size:23px;line-height:1.15}
 .gdhero>span{font-size:14px}
 .gdorg{display:flex;align-items:center;gap:8px;font-size:13px!important;opacity:.95}
@@ -1455,7 +1460,7 @@ button:active:not(:disabled),a.ccard:active,a.mxcard:active,a.sescard:active,a.t
 .gdcta-bar{display:flex;align-items:center;gap:12px}
 .gdsum{display:flex;flex-direction:column;flex:none}.gdsum b{font-size:18px}.gdsum small{font-size:11px;color:var(--muted);font-weight:600}.gdsum small.hot{color:var(--lose)}
 .gdcta-bar .primary{flex:1;min-height:52px}
-button.primary.g{background:#c97a16;border-color:#c97a16}button.primary.win{background:var(--win);border-color:var(--win)}
+button.primary.win{background:var(--win);border-color:var(--win)}
 .gdtop2{display:flex;align-items:center;gap:10px;margin:-12px -12px 0;padding:12px 14px;background:var(--surface)}.gdtop2 b{flex:1;font-size:15px}
 .gdback{min-height:32px;padding:0 8px;border:0;background:none;font-size:22px;color:var(--muted)}
 .gdsteps{display:grid;grid-template-columns:repeat(3,1fr);margin:0 -12px;background:var(--surface);border-bottom:1px solid var(--line)}
@@ -1642,7 +1647,7 @@ label.primary.gdfile{background:var(--blue);color:#fff}label.line.gdfile{border:
 .gbft .line{background:transparent;color:#d9c8f0;border-color:rgba(255,255,255,.3);min-height:56px}
 .gbnext{min-height:60px;background:var(--yellow);border-color:var(--yellow);color:var(--navy);font-size:14px}.gbft .gbnext:only-child{grid-column:1/-1}
 /* ===== Vòng bảng → Knockout ===== */
-.gdty.vb,.gdhero.vb,.gdcta.vb{background:#6b3fa0}.gdticket.vb{border-top-color:#6b3fa0}button.primary.vb{background:#6b3fa0;border-color:#6b3fa0}
+.gdty.vb,.gdcta.vb{background:#6b3fa0}.gdticket.vb{border-top-color:#6b3fa0}
 .xfmt.vb .ic{background:#f3eefa;color:#6b3fa0}.xnew{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.08em;background:#6b3fa0;color:#fff;padding:2px 6px;margin-left:4px;vertical-align:middle}
 .komode{display:flex;width:100%;margin-bottom:10px}.komode button{flex:1;font-size:11px;padding:0 6px}
 .kobox{background:var(--surface);border:2px solid #6b3fa0;margin-top:10px;display:flex;flex-direction:column}

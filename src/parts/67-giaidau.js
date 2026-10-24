@@ -112,7 +112,7 @@ function gdHero(D){
   return gdHeroBox(D,ty);
 }
 function gdHeroBox(D,ty){
-  return `<div class="gdhero ${ty.c}"><span class="gdty w">${ty.lb}</span><b>${esc(xName(RX))}</b><span>${esc(whenFull(RX))}</span>
+  return `<div class="gdhero ${ty.c}"><span class="gdty ${ty.c}">${ty.lb}</span><b>${esc(xName(RX))}</b><span>${esc(whenFull(RX))}</span>
     <span class="gdorg">${clubAv(CLUB||{id:CID},"s20")}${esc(CLUB?.name||"")} tổ chức</span></div>`;
 }
 function gdPlace(){
@@ -171,7 +171,7 @@ function gdReg1(D){
   let cta;
   if(who==="mem"&&!linked)cta=`<button class="primary wide" data-act="mxdk" data-v="pick">${pend?"Xem yêu cầu tham gia":"CHỌN TÊN CỦA BẠN TRONG CLB"}</button>`;
   else{const act=who==="guest"?"guestin":"regin",v=full||!k||!canPay?"none":pay==="now"?"hold":"none";
-    cta=`<button class="primary wide ${gdTy(RX).c}" data-act="${act}" data-v="${v}">${full?"VÀO DANH SÁCH CHỜ":v==="hold"?`TIẾP TỤC · THANH TOÁN ${kVND(k)}`:"ĐĂNG KÝ"}</button>`}
+    cta=`<button class="primary wide" data-act="${act}" data-v="${v}">${full?"VÀO DANH SÁCH CHỜ":v==="hold"?`TIẾP TỤC · THANH TOÁN ${kVND(k)}`:"ĐĂNG KÝ"}</button>`}
   return gdShell(D,h,cta);
 }
 
