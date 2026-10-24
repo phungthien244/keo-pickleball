@@ -11,7 +11,7 @@ async function cfmOk(){const k=CFM.k,ds=CFM.ds;cfmClose();if(!k||!ds||!onAct)ret
 function cfmName(k,id){try{
   if(k==="pdel"||k==="del"||k==="phdel"||k==="unzalo")return derive().pmap.get(id)?.name||"";
   if(k==="xcancel"||k==="xdel")return (S.sched||[]).find(z=>z.id===id)?.name||"";
-  if(k==="regdel"||k==="regpayok"||k==="regpayundo"||k==="regrefund"){const x=(S.regs||[]).find(z=>z.id===id);return x?(x.name||derive().pmap.get(x.pid)?.name||""):""}
+  if(k==="regdel"||k==="regpayok"||k==="regpayundo"||k==="regrefund"||k==="xbtowait"){const x=(S.regs||[]).find(z=>z.id===id);return x?(x.name||derive().pmap.get(x.pid)?.name||""):""}
   if(k==="tvrole"){const [pid,v]=id.split("|");return (derive().pmap.get(pid)?.name||"")+" → "+(v?ROLE_LB[v]:"Người chơi")}
   if(k==="mfok"||k==="mfundo"){const [pid,key]=id.split("|");return (derive().pmap.get(pid)?.name||"")+" · "+mfLb(key)}
   if(/^ck/.test(k)){const x=(S.regs||[]).find(z=>z.id===id);return x?(x.pid?derive().pmap.get(x.pid)?.name||x.name:x.name)||"":""}
@@ -87,6 +87,8 @@ function cfmInfo(key){
     gpredel:["Bỏ trận định sẵn?","Trận này sẽ không được xếp theo thứ tự đã định.","Bỏ","d"],
     predel:["Bỏ trận định sẵn?","Trận này sẽ không được xếp theo thứ tự đã định.","Bỏ","d"],
     start:startInfo(),
+    xbclose:["Đóng đăng ký ngay?","Không ai đăng ký thêm được. Gia hạn lại ở menu ··· nếu cần.","Đóng đăng ký","p"],
+    xbtowait:[`Chuyển${q||" người này"} xuống chờ chỗ?`,"Người này xuống cuối danh sách, người chờ chỗ đầu tiên được lên giữ chỗ.","Chuyển","d"],
     xcancel:[`Hủy giải đấu${q}?`,"Nhớ báo người đã đăng ký. Ai đã đóng phí cần được hoàn.","Hủy giải đấu","d"],
     xdel:[`Xoá giải đấu${q}?`,"Giải đấu và danh sách đăng ký bị xoá hẳn, không hoàn tác được.","Xoá giải đấu","d"],
     xsoff:["Tắt lịch lặp lại?","Giải đấu mới sẽ không tự tạo nữa. Các giải đấu đã tạo vẫn giữ.","Tắt","d"],

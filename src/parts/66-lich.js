@@ -97,7 +97,7 @@ function vLichAdm(D){
   if(!isAdm())return vLichPlayer(D);
   xEnsure(D);
   if(xNew||xEdit||xSEdit)return xForm(D);
-  if(routeX){const X=schedById(routeX);if(X)return xAdminDetail(D,X);if(S.schedReady)return `<div class="empty"><strong>Không thấy giải đấu này</strong>Giải đấu đã bị xoá.</div><a class="line wide" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Về lịch giải đấu</a>`}
+  if(routeX){const X=schedById(routeX);if(X)return xBtc(D,X);if(S.schedReady)return `<div class="empty"><strong>Không thấy giải đấu này</strong>Giải đấu đã bị xoá.</div><a class="line wide" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Về lịch giải đấu</a>`}
   let h=approvals(D);
   h+=`<button class="xnewbtn" data-act="xnew">+ Tạo giải đấu mới</button>`;
   for(const s of (S.series||[]).filter(s=>s.on))h+=`<div class="xser"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>
@@ -425,7 +425,7 @@ async function xAct(act,b,id,D){
   if(act==="xnew"){xNew="pick";xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;if(route!=="app"||tab!=="dk"||routeX)go("app",{tab:"dk"});else{render();try{scrollTo({top:0})}catch(e){}}return true}
   if(act==="xfmt"){xNew=["giai","bang"].includes(b.dataset.v)?b.dataset.v:"xoay";xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xclose"){xNew=null;xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;render();return true}
-  if(act==="xedit"){xEdit=id;xNew=null;xSEdit=null;xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
+  if(act==="xedit"){xbMenu=false;xbSel=null;xEdit=id;xNew=null;xSEdit=null;xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xsedit"){xSEdit=id;xNew=null;xEdit=null;xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xfset"){drafts["xf-"+b.dataset.k]=b.dataset.v;if(XOK.has(b.dataset.k)){if(b.dataset.v==="1")xfOpen.add(b.dataset.k);else xfOpen.delete(b.dataset.k)}render();return true}
   if(act==="xpmode"){if(xfPoster){xfPoster.mode=b.dataset.v==="fill"?"fill":"fit";xPosterRedo()}return true}

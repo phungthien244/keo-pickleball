@@ -129,6 +129,7 @@ async function zaloAct(act,b,id){
 }
 async function zaloAdminAct(act,b,id){
   const D=derive();
+  if(await xbAct(act,b,id,D))return true;
   if(await xAct(act,b,id,D))return true;
   if(await withX(xCtx(),()=>regAdminAct(act,b,id,D)))return true;
   if(act==="apvpick"||act==="apvnew"){const m=act==="apvpick"?"pick":"new";if(apvOpen===id&&apvMode===m)apvOpen=null;else{apvOpen=id;apvMode=m;apvSel=null}render();return true}
