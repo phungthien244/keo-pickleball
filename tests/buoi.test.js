@@ -7,6 +7,7 @@ test("luồng giải đấu: chuẩn bị → đang đánh → chốt, quỹ gi�
   e.input("bulk", "An\nBình\nChi | nữ\nDung | nữ\nEm\nPhương | nữ\nGiang\nHà | nữ"); await e.click("add");
   await e.tab("san");
   // ① Chuẩn bị: thấy điểm danh, thể thức, tiền, nút bắt đầu; chưa có ô xếp trận
+  await e.open("gio");
   expect(e.T()).toContain("Giải đấu #1 · chuẩn bị");
   expect(e.T()).toContain("Điểm danh");
   expect(e.V()).toContain('data-act="start"');
@@ -22,7 +23,7 @@ test("luồng giải đấu: chuẩn bị → đang đánh → chốt, quỹ gi�
   await e.ok("start");
   expect(e.store.get("app/config").phase).toBe("live");
   // ② Đang đánh: dải tóm tắt + nút Sửa, bảng sửa mở được
-  expect(e.T()).toContain("Giải đấu #1 · đang đánh");
+  expect(e.T()).toContain("TRỰC TIẾP");
   await e.click("sheet");
   await e.click("courts", { d: "1" }); expect(e.store.get("app/config").courts).toBe(3);
   await e.click("sheetx");
@@ -77,6 +78,7 @@ test("luồng giải đấu: chuẩn bị → đang đánh → chốt, quỹ gi�
   expect(e.store.get("app/hist-1").editedAt).toBeGreaterThan(0);
   // buổi mới bắt đầu ở bước chuẩn bị
   await e.tab("san");
+  await e.open("gio");
   expect(e.T()).toContain("Giải đấu #2 · chuẩn bị");
 });
 
@@ -100,6 +102,7 @@ test("luật điểm: chạm, cách 2, điểm trần; tên giải đấu; tắt
   await e.tab("san");
   e.H.change({ target: { dataset: { save: "cfg", key: "sname" }, value: "Giải đấu tối thứ 5" } }); await e.tick();
   expect(e.store.get("app/config").sname).toBe("Giải đấu tối thứ 5");
+  await e.open("gio");
   expect(e.T()).toContain("Giải đấu tối thứ 5 · chuẩn bị");
   expect(e.T()).not.toContain("Giải đấu tối thứ 5 · Giải đấu #1");
   await e.click("ptmax", { v: "1" });
@@ -127,10 +130,10 @@ test("đổi thể thức trong bảng Sửa không đẩy về bước Chuẩn 
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ"); await e.click("add");
   await e.tab("san"); await e.ok("start"); await e.click("sheet");
   await e.click("cset", { k: "fmt", v: "giai" });
-  expect(e.T()).toContain("đang đánh");
+  expect(e.T()).toContain("TRỰC TIẾP");
   await e.click("cset", { k: "fmt", v: "xoay" });
   expect(e.store.get("app/config").phase).toBe("live");
-  expect(e.T()).toContain("đang đánh");
+  expect(e.T()).toContain("TRỰC TIẾP");
   expect(e.T()).not.toContain("· chuẩn bị");
 });
 

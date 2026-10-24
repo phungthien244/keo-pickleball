@@ -370,9 +370,10 @@ function xAutoPrep(D){
   if(X)for(const r of (S.regs||[]).filter(r=>r.sid===X.id&&r.arrived&&r.pid&&!r.cancel)){const p=D.pmap.get(r.pid),k="arr|"+r.id;
     if(p&&p.active===false&&!xAutoDone.has(k)){xAutoDone.add(k);setTimeout(()=>write(()=>db.collection("players").doc(p.id).update({active:true})),0)}}
 }
-function xPrepHead(D){
+function xPrepHead(D){return ckCard(D)+xPrepHero(D)}
+function xPrepHero(D){
   const X=xCur(),c=D.c,thu=c.thu||"keo",T=isAdm()?xToday():[];
-  let h=ckCard(D);
+  let h="";
   if(T.length>1&&phaseOf(D)!=="live"&&!D.SM.length)h+=`<div class="xpick" role="group" aria-label="Chọn giải đấu hôm nay">${T.slice().sort((a,b)=>a.at-b.at).map(x=>`<button data-act="xprep" data-id="${x.id}" aria-pressed="${X&&X.id===x.id}"><b>${hm(x.at)}</b>${esc(xName(x))}</button>`).join("")}</div>`;
   h+=`<section class="xhero prephd"><span class="k">${esc(sessTitle(c,D.sid))} · chuẩn bị${X&&X.at?` · ${esc(xTime(X))}`:""}</span>
     <div class="xrow2"><h1>${esc(X?xName(X):(c.sname||"Giải đấu nhanh"))}</h1>${X?`<a class="xedit" href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}">Sửa giải đấu ›</a>`:""}</div>${X&&phaseOf(D)!=="live"&&!D.SM.length?`<button class="lnk hnchg" data-act="hnunpick">⇄ Đổi giải khác</button>`:""}

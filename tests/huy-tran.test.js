@@ -39,6 +39,7 @@ test("thanh 3 bước bấm chuyển qua lại, hàng chờ chia nam nữ, thêm
   await e.tab("san");
   expect(e.V()).toContain('data-act="step"');
   await e.click("step", { v: "live" });
+  await e.open("gio");
   expect(e.T()).toContain("Giải đấu #1 · chuẩn bị");
   await e.ok("start"); await e.click("gen");
   await e.click("lseg", { v: "cho" });
@@ -46,7 +47,8 @@ test("thanh 3 bước bấm chuyển qua lại, hàng chờ chia nam nữ, thêm
   expect(e.V()).toContain('class="qgrid"');
   expect(e.T()).toMatch(/Nam · 1.+Nữ · 1/);
   await e.click("step", { v: "prep" });
-  expect(e.T()).toContain("Về trang Đang đánh");
+  expect(e.T()).toContain("← Về Đang đánh");
+  await e.open("ck");
   expect(e.V()).toContain("ac on busy");
   await e.click("attadd");
   expect(e.V()).toContain('id="bulk"');

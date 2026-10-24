@@ -93,8 +93,8 @@ const courtStep=c=>`<span class="lbl">Số sân</span><span class="stepper"><but
 function vGiaiSan(D){
   const G=D.c.giai||{pairs:[]};
   if(canWrite&&(phaseOf(D)==="prep"||stepView==="prep"))return hnShowPick(D)?hnPick(D):steps3(1,D)+vPrep(D);
-  if(canWrite&&!G.locked)return steps3(2,D)+cfgChip(D)+gSetup(D,G)+undoBar();
-  if(canWrite)return steps3(2,D)+(MINI?"":cfgChip(D))+gRun(D,gDerive(D))+undoBar();
+  if(canWrite&&!G.locked)return steps3(2,D)+hqLive(D)+gSetup(D,G)+undoBar();
+  if(canWrite)return steps3(2,D)+hqLive(D)+gRun(D,gDerive(D))+undoBar();
   return refNote()+(G.locked&&phaseOf(D)==="live"?`<div class="lsrow">${liveShareBtn()}</div>`:"")+(G.locked?gRun(D,gDerive(D)):gSetup(D,G));
 }
 // Tab Sân · Tùy chọn của giải: danh sách cặp gọn, thêm cặp bằng bảng trượt, ghép tự động cân trình
@@ -167,7 +167,7 @@ function gSetup(D,G,o={}){
   else h+=`<div class="empty"><strong>Đang ghép cặp</strong>Người tổ chức đang ghép cặp cho giải. Lịch thi đấu sẽ hiện ở đây.</div>`;
   return h;
 }
-function gRun(D,GD){
+function gRun(D,GD,part){
   const c=D.c,left=GD.total-GD.resolved,est=Math.ceil(left/Math.max(1,c.courts))*GSLOT,pc=GD.total?Math.round(GD.resolved/GD.total*100):0;
   const live=D.playing.filter(m=>m.giai),liveV=live.filter(myCourt),gv=gView||(GD.isKO?"luot":"san");
   let h=`<div class="gprog"><div class="t"><span class="num">${GD.isKO?(GD.gDone?"Knockout":"Vòng bảng"):`Lượt ${GD.curR}/${GD.rounds}`} · xong ${GD.resolved}/${GD.total} trận</span><span class="num">${left?`Còn ~${dur(est)}`:"Đã xong"}</span></div><div class="b"><i style="width:${pc}%"></i></div></div>`;
@@ -188,14 +188,17 @@ function gRun(D,GD){
     <div class="bar" style="margin-top:12px">${!GD.complete?`<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để kết thúc sớm":"Kết thúc giải sớm"}</button>`:""}${!D.done.some(m=>m.giai)?`<button class="ghost danger" data-act="gcancel">${armed("gcancel:x")?"Bấm lần nữa để hủy":"Hủy lịch, ghép lại cặp"}</button>`:""}</div>
     ${!GD.complete?`<p class="rule" style="margin-top:8px">Kết thúc sớm: các trận chưa đánh không tính, xếp hạng theo kết quả hiện có.</p>`:""}</div>`}
   // Quản lý: chia thành 4 phần Sân · Lịch · Bảng · Quản lý cho đỡ dài
-  if(canWrite){const sg=["san","lich","bang","ql"].includes(liveSeg)?liveSeg:"san";
-    return top+lsegBar([["san",`Sân · ${live.length}`],["lich","Lịch"],["bang","Bảng"],["ql","Quản lý"]],sg)+({san:sanP,lich:lichP,bang:vGiaiBxh(D,GD),ql:(MINI?cfgChip(D):"")+h})[sg]}
+  if(part==="ql")return h;
+  if(canWrite){const sg=["san","lich","kq","bang"].includes(liveSeg)?liveSeg:"san";
+    const D2=GD.games.filter(g=>g.st==="done"||g.st==="wo").sort((a,b)=>((b.m&&b.m.doneAt)||0)-((a.m&&a.m.doneAt)||0));
+    const kqP=D2.length?`<div class="rnds"><div class="rnd"><div class="rh"><span>KẾT QUẢ · MỚI NHẤT TRƯỚC</span><span>${D2.length} TRẬN</span></div>${D2.map(g=>gRow(D,GD,g)).join("")}</div></div>`:`<div class="empty"><strong>Chưa có kết quả</strong>Trận nào lưu tỉ số sẽ hiện ở đây.</div>`;
+    return top+lsegBar([["san",`Sân · ${live.length}`],["lich","Tiếp theo"],["kq","Kết quả"],["bang","Xếp hạng"]],sg)+({san:sanP,lich:lichP,kq:kqP,bang:vGiaiBxh(D,GD)})[sg]}
   return top+sanP+(GD.isKO?koBang(D,GD):"")+lichP+h;
 }
 function gCourt(D,GD,m){
   const X=GD.T.get(m.pa),Y=GD.T.get(m.pb),ka=`sa-${m.id}`,kb=`sb-${m.id}`;
   const side=(t,k,lab)=>`<div class="team"><div class="names"><div class="tl">${pairAv(D,t.p,"md")}<div>${pairNm(D,t.p)}<small class="num">${t.w} thắng · ${t.l} thua · Rating TB ${r2(pairR(D,t.p))}</small></div></div></div><input class="score num" id="${k}" data-draft="${k}" type="number" inputmode="numeric" min="0" max="11" aria-label="${lab}" value="${esc(val(k,""))}" ${canScore(m)?"":"disabled"}></div>`;
-  return `<article class="court${isNew(m.id+"p")?" new":""}" style="--cc:${cColor(m.court)}"><div class="court-h"><h3>Sân ${esc(cName(m.court))}</h3><span class="num">${m.ko?esc(koMName(GD,m.ko)):GD.isKO?`Bảng ${KOG[(GD.games.find(g=>!g.ko&&g.key===gk(m.pa,m.pb))||{}).grp]||""} · lượt ${m.round}`:`Lượt ${m.round}`} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${esc(cName(m.court))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>${refTag(m.court)}
+  return `<article class="court${isNew(m.id+"p")?" new":""}" style="--cc:${cColor(m.court)}"><div class="court-h"><h3>Sân ${esc(cName(m.court))}</h3>${canWrite?hqStale(m):""}<span class="num">${m.ko?esc(koMName(GD,m.ko)):GD.isKO?`Bảng ${KOG[(GD.games.find(g=>!g.ko&&g.key===gk(m.pa,m.pb))||{}).grp]||""} · lượt ${m.round}`:`Lượt ${m.round}`} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${esc(cName(m.court))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>${refTag(m.court)}
     ${side(X,ka,"Điểm đội 1")}${side(Y,kb,"Điểm đội 2")}
     <div class="court-f"><span class="meta" style="flex:1">${esc(mRuleTx(m)||ruleTxt(D.c))}</span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button>`:""}${canScore(m)?`<button class="primary" data-act="savechk" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>${saveConfirm(D,m)}${cancelConfirm(D,m)}
     ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}</article>`;

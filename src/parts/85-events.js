@@ -119,7 +119,7 @@ document.addEventListener("click",onAct=async e=>{
     const keepPos=()=>{if(barY!=null){const nY=natY();try{scrollTo({top:y0>=barY&&nY!=null?nY:Math.min(y0,nY??y0)})}catch(e){}}repaint()};
     noAnimOnce=true;
     if(v==="chot"){stepView=null;sheetOpen=false;go("chot",{keep:1});keepPos();return}
-    if(v==="live"&&phaseOf(D)!=="live"){toast("Giải đấu chưa bắt đầu. Bấm “Bắt đầu giải đấu” ở cuối trang Chuẩn bị.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san",keep:1});keepPos()}return}
+    if(v==="live"&&phaseOf(D)!=="live"){toast("Giải chưa bắt đầu. Bấm “Bắt đầu giải” ở cuối tab Quản lý.");if(route!=="app"||tab!=="san"){stepView=null;go("app",{tab:"san",keep:1});keepPos()}return}
     stepView=v==="prep"?"prep":null;sheetOpen=false;
     if(route!=="app"||tab!=="san")go("app",{tab:"san",keep:1});else render();keepPos();return}
   if(act==="cnopen"){cnOpen=!cnOpen;render();return}
@@ -162,6 +162,7 @@ document.addEventListener("click",onAct=async e=>{
   // Trọng tài chỉ được lưu tỉ số ở sân được giao
   const REF_ACTS=["savechk","savex","save","cancelx"];
   if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
+  if(canWrite&&!legacy&&hqAct(act,b))return;
   if(canWrite&&!legacy&&await ckAct(act,b,id))return;
   if(canWrite&&!legacy&&await zaloAdminAct(act,b,id))return;
   if(act==="migrate"){if(!legacy||!isGoogle(authUser)||!S.rootEditor){toast("Cần đăng nhập Google và nhập PIN trước.");return}if(!armOr("migrate:x"))return;try{await migrate()}catch(x){S.migMsg="Chuyển chưa xong ("+((x&&x.code)||"lỗi")+"). Kiểm tra luật Firestore mới đã xuất bản chưa rồi thử lại.";render()}return}

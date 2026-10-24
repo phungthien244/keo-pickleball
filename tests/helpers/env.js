@@ -83,6 +83,8 @@ export function setup({ search = "", path = "/", host = "rr.pikeco.app", user = 
     // thao tác có hộp thoại xác nhận: bấm nút rồi bấm "Xác nhận"
     async ok(act, ds = {}) { await this.click(act, ds); await H.click({ target: { closest: s => (s === "[data-act]" ? { dataset: { act: "cfmok" } } : null) } }); await tick(); },
     CF: () => mk("#cfm").innerHTML,
+    // mở một nhóm thu gọn ở tab Hôm nay · Quản lý (nếu đang đóng)
+    async open(k) { if (!mk("#view").innerHTML.includes(`data-v="${k}" aria-expanded="true"`)) await this.click("prow", { v: k }); },
     async nav(go, ds = {}) { await H.click({ target: { closest: s => (s === "[data-go]" ? { dataset: { go, ...ds } } : null) }, preventDefault() {} }); await tick(); },
     async tab(t) { await H.click({ target: { closest: s => (s === "[data-tab]" ? { dataset: { tab: t } } : null) } }); await tick(); },
     input(k, v) { H.input({ target: { dataset: { draft: k }, value: v } }); },

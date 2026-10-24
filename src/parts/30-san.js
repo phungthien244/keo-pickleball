@@ -6,17 +6,17 @@ function vSan(D){
   const c=D.c, busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
   const free=Math.max(0,c.courts-D.playing.length), can=Math.min(free,Math.floor(waiting.length/4));
-  let h=steps3(2,D)+(MINI?"":cfgChip(D));
+  let h=steps3(2,D)+hqLive(D);
   if(!D.players.length)return h+`<div class="empty"><strong>Chưa có người chơi</strong>Vào tab Thành viên thêm người, hoặc bấm Sửa để điểm danh.</div>`;
   // Đang đánh chia 4 phần: Sân · Hàng chờ · Đã xong · Quản lý
-  const sg=["san","cho","xong","ql"].includes(liveSeg)?liveSeg:"san",genB=`<button class="ball wide" data-act="gen">${can?`Xếp trận cho ${can} sân trống`:"Xếp trận tiếp"}</button>${errs.gen?`<p class="err">${esc(errs.gen)}</p>`:""}`;
-  h+=lsegBar([["san",`Sân · ${D.playing.length}`],["cho",`Hàng chờ · ${waitQueue(D).length}`],["xong",`Đã xong · ${D.done.length}`],["ql","Quản lý"]],sg);
+  const sg=["san","cho","xong","bxh"].includes(liveSeg)?liveSeg:"san",genB=`<button class="ball wide" data-act="gen">${can?`Xếp trận cho ${can} sân trống`:"Xếp trận tiếp"}</button>${errs.gen?`<p class="err">${esc(errs.gen)}</p>`:""}`;
+  h+=lsegBar([["san",`Sân · ${D.playing.length}`],["cho","Tiếp theo"],["xong","Kết quả"],["bxh","Xếp hạng"]],sg);
   if(sg==="cho")return h+queueBox(D,true)+genB+undoBar();
   if(sg==="xong")return h+doneBox(D)+undoBar();
-  if(sg==="ql")return h+(MINI?cfgChip(D):"")+moneyMini(D)+`<a class="btn-line" href="${pathOf("chot")}" data-go="chot">Kết thúc &amp; chốt giải đấu →</a><p class="rule" style="text-align:center;margin-top:-6px">Chưa chốt thì vẫn đánh tiếp được. Chốt rồi vẫn mở lại để sửa được.</p>`+undoBar();
+  if(sg==="bxh")return h+vBxh(D)+undoBar();
   if(!D.playing.length)h+=`<div class="lab"><span class="lbl">Sân</span><span class="bar">${courtStep(c)}</span></div><div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; ưu tiên đôi nam nữ hoặc cùng giới theo cài đặt; không bao giờ đôi nam gặp đôi nữ.</div>`;
   else h+=`<div class="lab"><span class="lbl">Sân đang đánh</span><span class="bar">${courtStep(c)}</span></div><div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;
-  h+=genB;
+  if(can&&D.playing.length){const Q=waitQueue(D).slice(0,4);h+=`<div class="hqfree"><span><b>${free} sân trống</b>${Q.length?` · kế: ${Q.map(p=>esc(p.name)).join(", ")}`:""}</span><button class="ball" data-act="gen">Đưa vào</button></div>${errs.gen?`<p class="err">${esc(errs.gen)}</p>`:""}`}else h+=genB;
   {const Q=waitQueue(D).slice(0,8);if(Q.length)h+=`<button class="nextq" data-act="lseg" data-v="cho"><span class="lbl">Vào sân tiếp theo</span><span class="t">${Q.map(p=>esc(p.name)).join(", ")}</span><span aria-hidden="true">›</span></button>`}
   return h+undoBar();
 }
@@ -82,7 +82,7 @@ function keoPill(c,pA){
 function courtCard(D,m){
   const c=D.c,i=D.info.get(m.id),pA=i.pA, ka=`sa-${m.id}`,kb=`sb-${m.id}`;
   return `<article class="court${isNew(m.id+"p")?" new":""}" style="--cc:${cColor(m.court)}">
-    <div class="court-h"><h3>Sân ${esc(cName(m.court))}</h3><span class="num">${KIND[kindOf(D,m)]} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${esc(cName(m.court))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>${refTag(m.court)}
+    <div class="court-h"><h3>Sân ${esc(cName(m.court))}</h3><span class="num">${KIND[kindOf(D,m)]} · Trận #${m.seq}</span>${canWrite?hqStale(m):""}${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${esc(cName(m.court))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>${refTag(m.court)}
     <div class="team"><div class="names">${teamLine(D,m.a)}</div><input class="score num" id="${ka}" data-draft="${ka}" type="number" inputmode="numeric" min="0" max="99" aria-label="Điểm đội 1" value="${esc(val(ka,""))}" ${canScore(m)?"":"disabled"}></div>
     <div class="prob" title="Xác suất thắng dự kiến"><i style="width:${Math.round(pA*100)}%"></i></div>
     <div class="bar" style="justify-content:space-between;padding:6px 16px 0"><span class="lbl num" style="color:var(--navy)">${Math.round(pA*100)}% thắng</span><span class="lbl num">${Math.round((1-pA)*100)}% thắng</span></div>

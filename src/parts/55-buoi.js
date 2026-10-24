@@ -15,12 +15,10 @@ const COSTS=[["court","Chi phí sân"],["water","Chi phí nước"],["ball","Chi
 // Thanh 3 bước: luôn dính dưới các tab, bấm để chuyển qua lại. n = bước đang xem, ph = bước thật của buổi.
 let stepView=null;
 function steps3(n,D){
-  const L=[["prep","Tùy chọn"],["live","Đang đánh"],["chot","Chốt giải đấu"]];
-  const ph=D?(phaseOf(D)==="live"?2:1):n;
-  return `<nav class="bsteps" aria-label="Các bước của giải đấu">${L.map(([v,l],i)=>{const k=i+1,on=k===n,ok=k<ph;
-    // Mini App: bước Chốt mờ, không bấm được cho tới khi bấm nút "Kết thúc & chốt giải đấu"
-    const off=MINI&&v==="chot"&&n<3;
-    return `<button class="${on?"on":ok?"ok":""}" data-act="step" data-v="${v}"${on?' aria-current="step"':""}${off?" disabled":""}><b>${ok&&!on?"✓":k}</b>${l}</button>`}).join("")}</nav>`;
+  // Hôm nay chỉ còn 2 tab: Quản lý (chuẩn bị, cài đặt, chốt) · Đang đánh (sân, tiếp theo, kết quả, xếp hạng)
+  const live=D?phaseOf(D)==="live":n===2,L=[["prep","Quản lý"],["live","Đang đánh"]],cur=n===2?"live":"prep";
+  return `<nav class="bsteps b2" aria-label="Hôm nay">${L.map(([v,l])=>{const on=v===cur,off=v==="live"&&!live;
+    return `<button class="${on?"on":""}${off?" dim":""}" data-act="step" data-v="${v}"${on?' aria-current="page"':""}>${v==="live"&&live?'<i class="ldot" aria-hidden="true"></i>':""}${l}</button>`}).join("")}</nav>`;
 }
 const card=(t,body,right="")=>`<section class="card2"><h2 class="ch2"><span>${t}</span>${right}</h2><div class="cb">${body}</div></section>`;
 const cfIn=(k,label,v)=>`<label class="fld"><span class="lbl">${label}</span><input id="cf-${k}" data-draft="cf-${k}" data-save="cfg" data-key="${k}" type="number" inputmode="decimal" min="0" value="${esc(val("cf-"+k,v))}"></label>`;
@@ -141,8 +139,8 @@ function prepRow(k,title,sum,body,tog){const on=prepOpen.has(k);
   return `<div class="pxrow${on?" on":""}"><div class="prowhd"><button class="prowh" data-act="prow" data-v="${k}" aria-expanded="${on}"><span class="tt"><span>${title}</span><small>${esc(sum)}</small></span><i aria-hidden="true">${on?"−":"›"}</i></button>${sw}</div>${on?`<div class="prowb">${body}</div>`:""}</div>`}
 function prepRows(D){
   const c=D.c,G=isG(c),thu=c.thu||"keo",gt=c.gt||"khong",cp=c.cphi!==false,gon=gt!=="khong",mu=typeof loaMuted==="function"&&loaMuted();
-  let h=`<span class="xsec">Cài đặt thêm · bật cái nào dùng cái đó</span><div class="pxrows">`;
-  h+=prepRow("san","Sân và luật điểm",`${c.courts} sân · chạm ${c.target}${G&&isKO(c.giai)?(()=>{const K=koK(c.giai);return ` · KO ${ruleTx(koRule(K,"k"))} · CK ${ruleTx(koRule(K,"f"))}`})():""}${winBy2(c)?" cách 2":""}${ptMax(c)?`, trần ${ptMax(c)}`:""}`,fmtBlock(D));
+  let h=`<span class="xsec">Tuỳ chọn · bật thì mới bung cài đặt</span><div class="pxrows">`;
+  if(0)h+=prepRow("san","Sân và luật điểm",`${c.courts} sân · chạm ${c.target}${G&&isKO(c.giai)?(()=>{const K=koK(c.giai);return ` · KO ${ruleTx(koRule(K,"k"))} · CK ${ruleTx(koRule(K,"f"))}`})():""}${winBy2(c)?" cách 2":""}${ptMax(c)?`, trần ${ptMax(c)}`:""}`,fmtBlock(D));
   h+=prepRow("tien",G?"Chi phí, lệ phí":"Chi phí",cp?THU[thu]+(thu==="phi"?` ${fmtK(+c.phi||0)}`:""):"Tắt · không thu phí",cp?moneyBlock(D):`<small class="rule">Giải đấu này không thu phí. Bật công tắc để tính chi phí.</small>`,{act:"cphi",on:cp});
   h+=prepRow("giai","Giải thưởng",gon?GT[gt]||"":"Tắt · không trao giải",prizeBlock(D),{act:"gton",on:gon});
   h+=prepRow("tt","Trọng tài nhập điểm",c.refOn===true?"Bật":"Tắt · ban tổ chức tự nhập",refBlock(D),{act:"refon",on:c.refOn===true});
@@ -151,26 +149,7 @@ function prepRows(D){
   h+=prepRow("mc","Loa gọi vào sân & MC",mu?"Tắt trên máy này":"Bật · đọc thể thức khi bắt đầu",mcBlock(D),{act:"mute",on:!mu});
   return h+`</div>`;
 }
-function vPrep(D){
-  const c=D.c,G=isG(c),X=xCur(),live=phaseOf(D)==="live";
-  xAutoPrep(D);
-  let h=(!X&&!live&&hnQuick&&isAdm()&&hnList().length?`<button class="lnk hnback" data-act="hnquickx">‹ Về danh sách giải</button>`:"")+xPrepHead(D);
-  if(!X){h+=xNoSched(D);h+=card(live?"Giải đấu này":"Giải đấu nhanh · không cần đăng ký trước",buoiBlock(D))}
-  const n=D.players.filter(p=>p.active!==false).length;
-  if(G){
-    // Giải cặp: điểm danh thu gọn, khối chính là Các cặp
-    const used=new Set(((c.giai||{}).pairs||[]).flatMap(p=>[p.a,p.b]));
-    h+=`<div class="pxrows">${prepRow("att","Điểm danh",`${n} người có mặt · ${used.size} đã ghép cặp`,attChips(D))}</div>`;
-    h+=gSetup(D,c.giai||{pairs:[]},{prep:true});
-    h+=prepRows(D)+flexNote;
-    if(live)return h+`<button class="ball wide" data-act="step" data-v="live">Về trang Đang đánh →</button>`;
-    return h+gStartBar(D,c.giai||{pairs:[]});
-  }
-  h+=card(`Điểm danh · ai có mặt?`,attChips(D));
-  h+=prepRows(D)+flexNote;
-  if(live)return h+`<button class="ball wide" data-act="step" data-v="live">Về trang Đang đánh →</button>`;
-  return h+`<div class="prepgo"><button class="ball wide" data-act="start">Bắt đầu giải đấu #${D.sid} · ${n} người →</button><p class="rule">${n<4?`Cần ít nhất 4 người có mặt để xếp trận, hiện có ${n}.`:"Có thể chuẩn bị từ trước, bấm khi mọi người tới sân."}</p></div>`;
-}
+function vPrep(D){return hqView(D)}
 
 /* ----- ② Đang đánh: dải tóm tắt + bảng Sửa ----- */
 function cfgChip(D){

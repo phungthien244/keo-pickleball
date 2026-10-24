@@ -12,6 +12,7 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   await e.click("cset", { k: "gt", v: "gop" }); await e.cfg("gtv", 30);
   for (const [x, y] of [["A", "B"], ["C", "D"], ["E", "F"], ["G", "H"], ["I", "J"]]) { e.input("gp1", e.pid(x)); e.input("gp2", e.pid(y)); await e.click("gadd"); }
   e.input("gp1", e.pid("K")); e.input("gp2", e.pid("K")); await e.click("gadd");
+  await e.open("cap");
   expect(e.V()).toContain("Hai người phải khác nhau");
   await e.ok("gstart");
   const playing = () => e.docs("matches/", m => m.status === "playing");
@@ -80,6 +81,7 @@ test("giải cặp ở bước Tùy chọn: ghép tự động cân trình, bả
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF"); await e.click("add");
   await e.tab("san"); await e.click("cset", { k: "fmt", v: "giai" });
+  await e.open("cap");
   expect(e.V()).toContain('data-act="gauto"');
   await e.click("gaddopen"); expect(e.V()).toContain('class="gsheet"');
   const [a, b] = e.docs("players/").map(([id]) => id);
@@ -97,6 +99,7 @@ test("giải cặp: bốc thăm nhóm A/B, lẻ người phải chọn ngồi ng
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF\nG"); await e.click("add");
   await e.tab("san"); await e.click("cset", { k: "fmt", v: "giai" });
+  await e.open("cap");
   await e.click("gbopen"); expect(e.V()).toContain("gbsheet");
   // 7 người: lẻ 1, nút bốc bị khoá cho tới khi chọn người ngồi ngoài
   expect(e.V()).toMatch(/data-act="gbgo" disabled/);
@@ -146,6 +149,7 @@ test("vòng bảng → knockout: chọn hạt giống, chia bảng, luật đi�
   expect(K0.rf.sets).toBe(3);
   // chọn hạt giống bảng A là cặp cuối cùng
   const P = e.store.get("app/config").giai.pairs, last = P[P.length - 1].id;
+  await e.open("cap");
   expect(e.V()).toContain('data-kosel="0"');
   await e.sel({ kosel: "0" }, last);
   expect(e.store.get("app/config").giai.ko.seedSel[0]).toBe(last);

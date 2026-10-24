@@ -240,7 +240,7 @@ test("thu phí trước: người chơi chuyển khoản lúc đăng ký, chủ 
   // hôm nay ở tab Sân: buổi theo lịch được chọn sẵn, điểm danh theo đăng ký
   await o.nav("app", { t: "san" });
   await o.until(() => o.store.get("clubs/q7/app/config").schedId === "s1");
-  await o.until(() => o.T().includes("Sửa giải đấu"));
+  await o.open("gio"); await o.until(() => o.T().includes("Sửa giải đấu"));
   expect(o.store.get("clubs/q7/app/config")).toMatchObject({ thu: "phi", phi: 60, sname: "Giải đấu tối" });
   await o.until(() => o.store.get("clubs/q7/app/pay-1")?.paid?.p1 === true);
   expect(o.store.get("clubs/q7/players/p1").active).toBe(false); // đã trả nhưng chưa check-in: chưa có mặt
@@ -358,11 +358,12 @@ test("tab Sân: hôm nay 2 giải đấu theo lịch thì tự chọn giải đ�
   // đã đăng ký nhưng chưa check-in: chưa vào danh sách có mặt
   await e.until(() => e.store.get("clubs/q7/players/p1").active === false);
   expect(e.store.get("clubs/q7/players/p3").active).toBe(false);
-  await e.until(() => e.V().includes('data-act="xprep" data-id="b"'));
+  await e.open("gio"); await e.until(() => e.V().includes('data-act="xprep" data-id="b"'));
   await e.click("xprep", { id: "b" });
   await e.until(() => e.store.get("clubs/q7/app/config").schedId === "b");
   expect(e.store.get("clubs/q7/app/config").courts).toBe(3);
   await e.until(() => e.store.get("clubs/q7/players/p2").active === true);
+  await e.open("ck");
   expect(e.T()).toContain("QR");
 });
 

@@ -35,7 +35,7 @@ test("lời MC đọc thể thức: tự tạo theo cài đặt, sửa được,
   expect(e.T()).toContain("Mỗi trận đánh chạm 11 điểm, đội thắng phải cách biệt 2 điểm");
   expect(e.T()).toContain("Khi một đội đạt 6 điểm, hai đội đổi sân");
   expect(e.T()).toContain("đánh lại");
-  await e.ok("start");
+  await e.ok("start"); await e.click("step", { v: "prep" });
   expect(e.V()).toContain('data-act="speakrules"');
   await e.click("speakrules");
   expect(said.pop().text).toMatch(/^Xin chào các vận động viên/);
@@ -76,7 +76,7 @@ test("đang đọc thì nút thành Dừng màu đỏ, nút tắt loa chặn đ�
   globalThis.speechSynthesis = globalThis.window.speechSynthesis;
   await e.boot();
   e.input("bulk", "Tuấn\nHà | nữ\nMinh\nLan | nữ"); await e.click("add");
-  await e.tab("san"); await e.ok("start"); await e.click("gen");
+  await e.tab("san"); await e.ok("start"); await e.click("gen"); await e.click("step", { v: "prep" });
   expect(e.V()).toContain('data-act="mute"');
   await e.click("speakrules");
   expect(said.length).toBe(1);
