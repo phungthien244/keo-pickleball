@@ -106,7 +106,7 @@ function mxHome(D){
   if(p){const dt=debts().filter(x=>x.id===p.id),sum=dt.reduce((a,x)=>a+x.k,0);
     if(sum>0)h+=`<button class="mxcard warn" data-act="mxtien"><b>Bạn còn ${fmtK(sum)} chưa trả</b><span>${dt.length} giải đấu · bấm để chuyển khoản</span></button>`}
   const top=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating).slice(0,3);
-  if(top.length)h+=`<div class="mxcard"><div class="mxhd"><b>Top rating</b><a href="${pathOf("app",{tab:"bxh"})}" data-go="app" data-t="bxh">Xem tất cả ›</a></div>${top.map((x,i)=>`<div class="mxli" data-pid="${x.id}"><span class="no">${i+1}</span>${av(x,"sm",1)}<span class="t">${esc(x.name)}</span><b class="num">${r2(D.st.get(x.id).rating)}</b></div>`).join("")}</div>`;
+  if(top.length)h+=`<div class="mxcard"><div class="mxch"><b>Top rating</b><a href="${pathOf("app",{tab:"bxh"})}" data-go="app" data-t="bxh">Xem tất cả ›</a></div>${top.map((x,i)=>`<div class="mxli" data-pid="${x.id}"><span class="no">${i+1}</span>${av(x,"sm",1)}<span class="t">${esc(x.name)}</span><b class="num">${r2(D.st.get(x.id).rating)}</b></div>`).join("")}</div>`;
   h+=`<div class="mxtiles">${fundView()==="off"?"":`<a class="mxtile" href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"><small>Quỹ CLB</small><b class="num">${(fundNow()<0?"−":"")+fmtK(Math.abs(fundNow()))}</b></a>`}<a class="mxtile" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><small>Thành viên</small><b class="num">${D.players.filter(x=>!x.guest).length}</b></a><a class="mxtile" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><small>Giới thiệu</small><b>CLB ›</b></a></div>`;
   const cta=!live&&!XC&&regOpen()?mxRegCta(D):"";
   return mxShell(D,h,cta);
@@ -156,7 +156,7 @@ function mxSessionX(D){
   if(mine){
     const pos=R.all.indexOf(mine),k=feeOf(mine),pay=mine.pay||"none",nm=mine.guest?mine.name:D.pmap.get(mine.pid)?.name,locked=r.at&&Date.now()>regLockAt();
     h+=`<div class="mxcard ticket"><b>${pos<R.max?`✓ Bạn đã giữ chỗ #${pos+1}`:`Bạn đang chờ · thứ ${pos-R.max+1}`}</b><span>${esc(whenFull(r))}${r.place?` · ${esc(r.place)}`:""}</span>${mine.arrived?`<span class="mxmine">Đã điểm danh tại sân ✓</span>`:""}</div>`;
-    if(payOn()&&k>0){h+=`<div class="mxcard"><div class="mxhd"><b>${pay==="ok"?"Đã trả ":pay==="sent"?"Đã báo chuyển ":"Chuyển khoản "}${kVND(k)}</b><span class="paychip ${pay}">${PAYLB[pay]}</span></div>${pay==="none"?payBox(D,nm,k):""}${pay==="none"&&regPayMode()==="req"?`<small class="rule">Giữ chỗ tới ${hm((mine.at||0)+HOLD_MS)}.</small>`:""}</div>`}
+    if(payOn()&&k>0){h+=`<div class="mxcard"><div class="mxch"><b>${pay==="ok"?"Đã trả ":pay==="sent"?"Đã báo chuyển ":"Chuyển khoản "}${kVND(k)}</b><span class="paychip ${pay}">${PAYLB[pay]}</span></div>${pay==="none"?payBox(D,nm,k):""}${pay==="none"&&regPayMode()==="req"?`<small class="rule">Giữ chỗ tới ${hm((mine.at||0)+HOLD_MS)}.</small>`:""}</div>`}
     h+=mxSessCard(D)+mxWho(D,R)+`<div class="mxacts"><button class="line" data-act="mxcal">📅 Thêm vào lịch</button><button class="line" data-act="mxinvite">Mời bạn</button></div>`;
     if(!locked)h+=`<button class="ghost danger wide" data-act="regout">${armed("regout:x")?"Bấm lần nữa để hủy":"Hủy đăng ký"}</button>`;else h+=`<small class="rule" style="text-align:center">Đã qua giờ khóa hủy.</small>`;
     return mxShell(D,h,pay==="none"&&payOn()&&k>0?`<button class="primary wide" data-act="regpaid">Tôi đã chuyển khoản</button>`:"");
@@ -167,7 +167,7 @@ function mxSessionX(D){
   if(regClosed())return mxShell(D,h+`<div class="mxcard muted"><b>Đã hết hạn đăng ký</b></div>`);
   const full=R.conf.length>=R.max,k=feeMem();
   if(linked){
-    if(payOn()&&k>0&&!full){h+=`<div class="mxcard"><div class="mxhd"><b>Chuyển khoản ${kVND(k)}</b></div>${payBox(D,D.pmap.get(S.link.pid)?.name,k)}</div>`;
+    if(payOn()&&k>0&&!full){h+=`<div class="mxcard"><div class="mxch"><b>Chuyển khoản ${kVND(k)}</b></div>${payBox(D,D.pmap.get(S.link.pid)?.name,k)}</div>`;
       return mxShell(D,h,`<button class="primary wide" data-act="regin" data-v="sent">Đăng ký và đã chuyển khoản</button><button class="line wide" data-act="regin" data-v="none">${regPayMode()==="req"?"Giữ chỗ 30 phút, chuyển sau":"Đăng ký, trả tại sân"}</button>`)}
     return mxShell(D,h,`<button class="primary wide" data-act="regin" data-v="none">${full?"Vào danh sách chờ":"Đăng ký tham gia"}</button>`);
   }
@@ -178,7 +178,7 @@ function mxSessionX(D){
 function mxWho(D,R){
   if(!R.all.length)return "";
   const f=x=>{const p=D.pmap.get(x.pid);return `<span class="rgp">${av(p||{name:x.name},"sm",1)}<small>${esc(p?.name||x.name||"?")}${x.guest?" · VĐV ngoài CLB":""}${x.arrived?" ✓":""}</small></span>`};
-  return `<div class="mxcard"><div class="mxhd"><b>Ai đi (${R.conf.length})</b>${R.wait.length?`<span class="t2">${R.wait.length} người chờ</span>`:""}</div><div class="rgl">${R.conf.map(f).join("")}</div>${R.wait.length?`<span class="lbl">Danh sách chờ</span><div class="rgl wt">${R.wait.map(f).join("")}</div>`:""}</div>`;
+  return `<div class="mxcard"><div class="mxch"><b>Ai đi (${R.conf.length})</b>${R.wait.length?`<span class="t2">${R.wait.length} người chờ</span>`:""}</div><div class="rgl">${R.conf.map(f).join("")}</div>${R.wait.length?`<span class="lbl">Danh sách chờ</span><div class="rgl wt">${R.wait.map(f).join("")}</div>`:""}</div>`;
 }
 
 /* ----- 3 · Trực tiếp ----- */

@@ -1034,7 +1034,7 @@ div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
 .mini header.top,.mini #tabs,.mini .ticker,.mini .tkwrap{display:none!important}
 .mini .wrap{padding:0 0 calc(64px + env(safe-area-inset-bottom,0px));width:100%;max-width:none;margin:0;box-sizing:border-box;flex:1 1 100%;min-height:100vh}
 .mini main#view,.mini .mx{width:100%;box-sizing:border-box}
-.mini section.mx{padding-top:0;gap:0}
+.mini section.mx{padding-top:0;gap:0;max-width:560px;margin-inline:auto}
 .mx .mxbody > .hero{margin-inline:-12px}
 .mx .mxbody > .hero:first-child,.mx .mxbody > .phero:first-child{margin-top:-12px;margin-left:-12px;margin-right:-12px}
 .mini a.bk,.mini .mxback{display:none!important}
@@ -1115,7 +1115,7 @@ html.mini{--sat:0px}
 .mxcard.prof{flex-direction:row;align-items:center;gap:12px}.mxcard.prof .t{flex:1;min-width:0;display:flex;flex-direction:column}.mxcard.prof .t b{font-family:var(--display);font-weight:800;font-size:18px}.mxcard.prof .t small{color:var(--muted)}.mxcard.prof svg{width:44px;height:44px;color:var(--muted)}
 .mxcard.prof .line.sm{min-height:34px;display:flex;align-items:center;padding:0 12px;border:1px solid var(--line-2);text-decoration:none;color:inherit;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
 .mxmine{color:var(--ink)!important;font-weight:600;margin-top:2px}
-.mxhd{display:flex;align-items:center;justify-content:space-between;gap:8px}.mxhd b{font-family:var(--display);font-weight:800}.mxhd a{font-size:13px;color:var(--blue);text-decoration:none}
+.mxch{display:flex;align-items:center;justify-content:space-between;gap:8px}.mxch b{font-family:var(--display);font-weight:800}.mxch a{font-size:13px;color:var(--blue);text-decoration:none}
 .mxkv{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;padding:3px 0}.mxkv>span{color:var(--muted)}.mxkv b{text-align:right}
 .mxli{display:flex;align-items:center;gap:10px;padding:10px 0;border:0;border-bottom:1px solid var(--line);background:none;width:100%;text-align:left;color:inherit;text-decoration:none;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:400;font-size:15px;min-height:0;cursor:pointer}
 .mxli:last-child{border-bottom:0}.mxli .t{flex:1;min-width:0;display:flex;flex-direction:column}.mxli .t small{color:var(--muted);font-size:12px}.mxli .no{width:20px;color:var(--muted);font-size:13px;text-align:center}.mxli.me{background:var(--warn-bg);margin:0 -14px;padding-left:14px;padding-right:14px}
