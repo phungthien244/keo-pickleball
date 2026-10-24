@@ -231,6 +231,17 @@ describe("người chơi Zalo", () => {
     await assertFails(updateDoc(doc(zalo("zalo_4"), "clubs/aep/links/zalo_4"), { pid: "p1" }));
     await assertFails(updateDoc(doc(zalo("zalo_5"), "clubs/aep/links/zalo_4"), { zid: "999" }));
   });
+  test("ảnh thẻ chia sẻ: BTC và người chơi đã duyệt lưu ảnh, poster chỉ BTC, ai xem được CLB thì đọc được", async () => {
+    await seed({ "clubs/aep/links/zalo_4": { status: "ok", pid: "p4" }, "clubs/aep/links/zalo_6": { status: "pending" } });
+    const img = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    await assertSucceeds(setDoc(doc(zalo("zalo_4"), "clubs/aep/the/vdv_p4"), { img, at: 1 }));
+    await assertFails(setDoc(doc(zalo("zalo_6"), "clubs/aep/the/vdv_p4"), { img, at: 1 }));
+    await assertFails(setDoc(doc(zalo("zalo_4"), "clubs/aep/the/poster_x1"), { img, at: 1 }));
+    await assertSucceeds(setDoc(doc(google("ad"), "clubs/aep/the/poster_x1"), { img, at: 1 }));
+    await assertFails(setDoc(doc(google("ad"), "clubs/aep/the/vdv_p4"), { img: "data:image/svg+xml;base64,PHN2Zz4=", at: 1 }));
+    await assertFails(setDoc(doc(google("ad"), "clubs/aep/the/a%2Fb"), { img, at: 1 }));
+    await assertSucceeds(getDoc(doc(guest(), "clubs/aep/the/vdv_p4")));
+  });
   test("ban tổ chức giao quyền thẳng cho người chơi đã liên kết Zalo", async () => {
     await seed({ "clubs/aep/links/zalo_4": { status: "ok", pid: "p4" }, "clubs/aep/links/zalo_6": { status: "pending" } });
     const m = { role: "scorer", name: "Bốn", via: "zalo", pid: "p4", at: 1, by: "QL" };

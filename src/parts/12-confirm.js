@@ -26,6 +26,7 @@ function cfmInfo(key){
     del:[`Xoá người chơi${q}?`,"Xoá khỏi danh sách thành viên. Trận cũ vẫn giữ nhưng tên hiện “(đã xóa)”.","Xoá","d"],
     phdel:[`Xoá ảnh${q?" của"+q:""}?`,"Ảnh sẽ mất, muốn có lại phải tải lên lại.","Xoá ảnh","d"],
     clogodel:["Xoá ảnh CLB?","Logo CLB sẽ về chữ cái đầu tên.","Xoá ảnh","d"],
+    xpdel:["Xoá poster giải?","Khi chia sẻ sẽ dùng ảnh tự vẽ theo thông tin giải. Bấm Lưu để áp dụng.","Xoá poster","d"],
     gtcovdel:["Xoá ảnh bìa?","Trang giới thiệu CLB sẽ dùng nền mặc định.","Xoá ảnh","d"],
     mephotodel:["Xoá ảnh đại diện?","Ảnh của bạn sẽ mất, muốn có lại phải tải lên lại.","Xoá ảnh","d"],
     mdel:["Xoá trận này?","Trận vào thùng rác, vẫn hoàn tác được trong giải đấu.","Xoá trận","d"],

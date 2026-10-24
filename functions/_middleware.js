@@ -58,9 +58,16 @@ export async function onRequest(ctx) {
   try { m = await Promise.race([meta(new URL(ctx.request.url)), new Promise(r => setTimeout(() => r(null), 1500))]); } catch (e) { m = null; }
   const u = new URL(ctx.request.url), url = u.origin + u.pathname;
   // Ảnh xem trước lấy theo tên miền đang mở (bản thử dùng ảnh của bản thử)
+  // Trang có ảnh thẻ riêng (CLB, hồ sơ, giải, tổng kết, sân): /api/the trả ảnh đã lưu, chưa có thì tự về ảnh chung
+  const sg = u.pathname.split("/").filter(Boolean), cid = (sg[0] || "").toLowerCase();
+  let img = u.origin + "/og.png?v=2";
+  if (m && /^[a-z0-9-]{2,20}$/.test(cid)) {
+    const k = sg.length === 1 || sg[1] === "gioi-thieu" ? "clb" : (["vdv", "buoi", "dang-ky"].includes(sg[1]) && sg[2]) ? `${sg[1]}_${sg[2]}` : sg[1] === "san" && sg.length === 2 ? "san" : "";
+    if (k && /^[a-z-]+(_[A-Za-z0-9_-]{1,80})?$/.test(k)) img = `${u.origin}/api/the/${cid}/${k}.jpg`;
+  }
   let rw = new HTMLRewriter()
-    .on('meta[property="og:image"]', new SetAttr(u.origin + "/og.png?v=2"))
-    .on('meta[name="twitter:image"]', new SetAttr(u.origin + "/og.png?v=2"))
+    .on('meta[property="og:image"]', new SetAttr(img))
+    .on('meta[name="twitter:image"]', new SetAttr(img))
     .on('meta[property="og:url"]', new SetAttr(url));
   if (m) rw = rw
     .on("title", new SetText(m.title))

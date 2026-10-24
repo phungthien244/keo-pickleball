@@ -127,6 +127,7 @@ function xAdminDetail(D,X){
   return withX(X,()=>{
     const s=xState(X),R=regList(D),fee=xFee(X),got=R.all.filter(x=>x.pay==="ok").reduce((a,x)=>a+feeOf(x),0),link=miniLink(CID,X.id),today=sameDay(X.at,Date.now());
     let h=`<a class="xback" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">‹ Lịch giải đấu</a>`;
+    if(X.poster){const pi=posterCache[X.id];if(pi===undefined)posterGet(X.id).then(()=>render());else if(pi)h+=`<img class="gdposter" src="${esc(pi)}" alt="Poster ${esc(xName(X))}">`}
     h+=`<section class="xhero"><span class="k">${X.at?`${esc(dowVN(X.at))} · ${esc(dmy(X.at))} · `:""}${esc(xTime(X))}</span><h1>${esc(xName(X))}</h1>
       <span class="sub">${esc([xFmt(X),X.courts&&`${X.courts} sân`,X.target&&`chạm ${X.target}`,fee&&fmtK(fee),X.place].filter(Boolean).join(" · "))}</span>
       <span class="xrow">${xChip(X)}${X.series?`<span class="xchip dk">↻ hằng tuần</span>`:""}${X.guests?`<span class="xchip dk">Nhận VĐV ngoài CLB</span>`:""}</span>
@@ -194,6 +195,25 @@ function xDef(c,f){const G=f==="giai",ch=chiaOf(c),k=hangOf(c);
     adv:false,win2:winBy2(c),ptMax:+c.ptMax||0,gmode:c.gmode||"mix",refOn:c.refOn===true,preOn:c.preOn===true,noteOn:false,incl:""}}
 let xSrcCache=null;
 const xv=(D,k)=>{const s=xSrcCache||xSrc(D);const v=s[k];return val("xf-"+k,typeof v==="boolean"?(v?"1":"0"):v==null?"":v)};
+// Poster giải (không bắt buộc): ảnh thẻ chia sẻ Zalo, xem trước link web, ảnh đầu trang giải
+let xfPoster=null; // {src,mode:"fit"|"fill",pos,out} | {del:true}
+function xPosterField(){
+  const X=xEdit&&schedById(xEdit),old=X&&X.poster?(posterCache[X.id]===undefined?(posterGet(X.id).then(()=>render()),null):posterCache[X.id]):null;
+  const P=xfPoster,cur=P&&P.del?null:(P&&P.out)||old,busy=P&&P.src&&!P.out;
+  const seg=(k,opts,v)=>`<span class="seg segw">${opts.map(([a,l])=>`<button data-act="${k}" data-v="${a}" aria-pressed="${String(v)===String(a)}">${l}</button>`).join("")}</span>`;
+  return `<div class="fld xposter"><span class="lbl">Poster giải · không bắt buộc</span>
+    ${cur?`<img class="xpimg" src="${esc(cur)}" alt="Poster giải">`:`<div class="xpnone">${busy?"Đang xử lý ảnh…":"Chưa có poster: khi chia sẻ dùng ảnh tự vẽ theo thông tin giải"}</div>`}
+    ${P&&P.src?`${seg("xpmode",[["fit","Vừa khung"],["fill","Cắt ngang"]],P.mode)}${P.mode==="fill"?seg("xppos",[["0","Phần trên"],["0.5","Giữa"],["1","Phần dưới"]],P.pos):""}`:""}
+    <span class="bar" style="gap:6px"><label class="lnkbtn">${cur?"Đổi poster":"Tải poster lên"}<input type="file" accept="image/*" data-xposter="1" class="sr"></label>${cur?`<button class="ghost danger" data-act="xpdel">Xoá poster</button>`:""}</span>
+    <small class="rule">Hiện khi chia sẻ giải qua Zalo và trên đầu trang giải. Khung ngang 1200×630: poster dọc chọn "Vừa khung" để giữ trọn ảnh.</small></div>`;
+}
+async function xPosterRedo(){const P=xfPoster;if(!P||!P.src)return;P.out=null;render();P.out=await posterMake(P.src,P.mode,P.pos);render()}
+async function posterCommit(sid){
+  const P=xfPoster;if(!P)return undefined;
+  if(P.del){try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"the/poster_"+sid))}catch(e){}posterCache[sid]=null;return null}
+  if(!P.out)return undefined;
+  await FB.setDoc(FB.doc(FB.fs,PFX+"the/poster_"+sid),{img:P.out,at:Date.now()});posterCache[sid]=P.out;return Date.now();
+}
 // Form tạo/sửa giải: các nhóm thu gọn, bấm tiêu đề mới xổ ra
 let xfOpen=new Set(),xfOpenK="";const XOK=new Set();
 const xfHead=(k,title,sum,o)=>`<button class="xot" data-act="xfo" data-k="${k}" aria-expanded="${o}"><span class="t"><b>${title}</b><small>${esc(sum)}</small></span><i class="xch" aria-hidden="true">${o?"▴":"▾"}</i></button>`;
@@ -205,7 +225,7 @@ function xForm(D){
   const seg=(k,opts)=>`<span class="seg segw">${opts.map(([val2,l])=>`<button data-act="xfset" data-k="${k}" data-v="${val2}" aria-pressed="${String(v(k))===String(val2)}">${l}</button>`).join("")}</span>`;
   const stp=(k,label,unit,min,max)=>`<div class="srow"><span>${label}</span><span class="stepper"><button data-act="xfstep" data-k="${k}" data-d="-1" data-min="${min}" data-max="${max}" aria-label="Bớt">−</button><span class="num">${esc(v(k))}${unit}</span><button data-act="xfstep" data-k="${k}" data-d="1" data-min="${min}" data-max="${max}" aria-label="Thêm">+</button></span></div>`;
   // Một dòng tùy chọn: tên + tóm tắt + công tắc; bật thì hiện phần cài đặt
-  {const fk=[xEdit,xNew,xSEdit].map(x=>x||"").join("|");if(fk!==xfOpenK){xfOpenK=fk;xfOpen=new Set(xEdit||xSEdit?[]:["_base"])}}
+  {const fk=[xEdit,xNew,xSEdit].map(x=>x||"").join("|");if(fk!==xfOpenK){xfOpenK=fk;xfOpen=new Set(xEdit||xSEdit?[]:["_base"]);xfPoster=null}}
   const opt=(k,title,sum,body)=>{const o=on(k),x=o&&!!body&&xfOpen.has(k);XOK.add(k);return `<div class="xopt${o?" on":""}${x?" open":""}"><div class="xoh">${xfHead(k,title,o?sum:"Tắt · bấm để bật",x).replace(o&&body?"":'<i class="xch" aria-hidden="true">▾</i>',"")}<button class="xsw${o?" on":""}" data-act="xfset" data-k="${k}" data-v="${o?"0":"1"}" role="switch" aria-checked="${o}" aria-label="${esc(title)}"><i></i></button></div>${x?`<div class="xob">${body}</div>`:""}</div>`};
   const thu=v("thu"),days=String(v("days")).split(",").filter(Boolean).map(Number),gt=v("gt"),top3=G||gt==="hang"||v("trao")==="top3";
   const fee=thu==="phi"?+v("phi")||0:+v("fee")||0;
@@ -215,7 +235,7 @@ function xForm(D){
   if(bo)h+=`<div class="xgb">${inp("name",G?"Tên giải":"Tên giải đấu",`maxlength="60" placeholder="${G?"Giải cặp tháng này":"Giải đấu tối thứ 5"}"`)}
     <div class="form">${xSEdit?"":inp("date","Ngày",'type="date"')}${inp("time","Bắt đầu",'type="time"')}${inp("end","Kết thúc",'type="time"')}</div>
     ${inp("place","Sân",'maxlength="60" placeholder="Sân Kỳ Hòa, Q10"')}${inp("map","Link Google Maps (không bắt buộc)",'type="url" maxlength="300" placeholder="https://maps.app.goo.gl/…"')}
-    ${stp("courts","Số sân","",1,30)}${stp("target","Chạm điểm","",5,31)}</div>`;
+    ${stp("courts","Số sân","",1,30)}${stp("target","Chạm điểm","",5,31)}${xSEdit?"":xPosterField()}</div>`;
   h+=`</section>`}
   h+=`<span class="xsec">Tùy chọn · bật cái nào dùng cái đó</span><div class="xopts">`;
   if(!xEdit)h+=opt("rep","Lặp lại hằng tuần",`${days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DOW[d]).join(" & ")||"Chưa chọn ngày"} · ${v("auto")==="1"?`tự mở đăng ký trước ${v("openD")} ngày`:"tự bấm mở đăng ký"}`,
@@ -310,17 +330,19 @@ async function xSave(D,mode){
   if(rep&&!days.length){errs.xf="Chọn ít nhất một ngày trong tuần để lặp.";render();return}
   delete errs.xf;
   if(xEdit){const X=schedById(xEdit);if(!X)return;
-    await write(()=>db.collection("sched").doc(X.id).set(xBuild({...f,at},{st:X.st,openAt:X.openAt||0,series:X.series||null,num:X.num??null,createdAt:X.createdAt||Date.now(),...(X.byZ?{byZ:X.byZ,byN:X.byN||""}:{})})),"Đã lưu giải đấu");
+    await write(async()=>{const pv=await posterCommit(X.id);
+      await db.collection("sched").doc(X.id).set(xBuild({...f,at},{st:X.st,openAt:X.openAt||0,series:X.series||null,num:X.num??null,createdAt:X.createdAt||Date.now(),...(X.byZ?{byZ:X.byZ,byN:X.byN||""}:{}),poster:pv===undefined?(X.poster||null):pv}))},"Đã lưu giải đấu");
     xEdit=null;xClearDraft();render();return}
   const id=db.collection("sched").doc().id;let sid=null;
   await write(async()=>{
     if(rep){sid=db.collection("series").doc().id;await db.collection("series").doc(sid).set({days,time:t,end:f.end,tpl:f,auto,openD,on:true,from:dayStart(at),at:Date.now(),...xBy()})}
     await db.collection("sched").doc(rep?sid+"-"+ymd(at):id).set(xBuild({...f,at},{st:mode==="open"?"open":"draft",openAt:0,series:sid}));
+    {const nid=rep?sid+"-"+ymd(at):id,pv=await posterCommit(nid);if(pv)await db.collection("sched").doc(nid).update({poster:pv})}
     if(rep)await xMaterialize({id:sid,days,time:t,end:f.end,tpl:f,auto,openD,from:dayStart(at)});
   },mode==="open"?"Đã tạo giải đấu và mở đăng ký":"Đã lưu nháp");
   xNew=null;xClearDraft();go("app",{tab:"dk",x:rep?sid+"-"+ymd(at):id});
 }
-const xClearDraft=()=>{for(const k of XF_KEYS)delete drafts["xf-"+k];xSrcCache=null};
+const xClearDraft=()=>{for(const k of XF_KEYS)delete drafts["xf-"+k];xSrcCache=null;xfPoster=null};
 
 /* ----- Người chơi: danh sách buổi sắp tới (Trang chủ Mini App, trang Đăng ký trên web) ----- */
 function xPlayerCards(D,o={}){
@@ -406,6 +428,9 @@ async function xAct(act,b,id,D){
   if(act==="xedit"){xEdit=id;xNew=null;xSEdit=null;xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xsedit"){xSEdit=id;xNew=null;xEdit=null;xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xfset"){drafts["xf-"+b.dataset.k]=b.dataset.v;if(XOK.has(b.dataset.k)){if(b.dataset.v==="1")xfOpen.add(b.dataset.k);else xfOpen.delete(b.dataset.k)}render();return true}
+  if(act==="xpmode"){if(xfPoster){xfPoster.mode=b.dataset.v==="fill"?"fill":"fit";xPosterRedo()}return true}
+  if(act==="xppos"){if(xfPoster){xfPoster.pos=Math.max(0,Math.min(1,+b.dataset.v||0));xPosterRedo()}return true}
+  if(act==="xpdel"){if(!armOr("xpdel:x"))return true;xfPoster={del:true};render();return true}
   if(act==="xfo"){const k=b.dataset.k;if(XOK.has(k)&&String(xv(derive(),k))!=="1"){drafts["xf-"+k]="1";xfOpen.add(k)}else xfOpen.has(k)?xfOpen.delete(k):xfOpen.add(k);render();return true}
   if(act==="xfstep"){const k=b.dataset.k,cur=parseFloat(xv(D,k))||0;drafts["xf-"+k]=String(Math.min(+b.dataset.max,Math.max(+b.dataset.min,cur+Number(b.dataset.d))));render();return true}
   if(act==="xfday"){const d=Number(b.dataset.v),L=String(xv(D,"days")).split(",").filter(Boolean).map(Number),i=L.indexOf(d);if(i>=0)L.splice(i,1);else L.push(d);drafts["xf-days"]=L.join(",");render();return true}

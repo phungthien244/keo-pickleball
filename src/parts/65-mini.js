@@ -454,8 +454,13 @@ async function mxCheckin(D){
 }
 
 /* ----- Bấm ----- */
+// Giữ giải đang xem (RX) qua lần chờ gdAct: phần sau chạy lại trong đúng ngữ cảnh giải
 async function mxAct(act,b,id){
+  const X0=RX;
   if(await gdAct(act,b,id))return true;
+  return withX(X0,()=>mxAct2(act,b,id));
+}
+async function mxAct2(act,b,id){
   if(act==="mxscan"){ckScan();return true}
   if(act==="mxinv"){mxInvOpen=!mxInvOpen;render();return true}
   if(act==="mxinvgo"){const el=document.getElementById&&document.getElementById("mx-inv"),v=parseInv((el&&el.value)||drafts["mx-inv"]);

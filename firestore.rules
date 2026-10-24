@@ -86,6 +86,7 @@ service cloud.firestore {
       function active() { return clubDoc().get('status', 'active') == 'active'; }
       // Chủ CLB và quản lý: sửa mọi thứ. Trọng tài (tài khoản Trọng tài hoặc máy PIN): chỉ nhập tỉ số sân được giao.
       function canEdit() { return active() && isAdmin(); }
+      function myLinkOk() { return signedIn() && exists(/databases/$(database)/documents/clubs/$(c)/links/$(request.auth.uid)) && get(/databases/$(database)/documents/clubs/$(c)/links/$(request.auth.uid)).data.status == 'ok'; }
       function refCourts() {
         return isMember() ? get(memberPath(request.auth.uid)).data.get('courts', [])
           : get(/databases/$(database)/documents/clubs/$(c)/editors/$(request.auth.uid)).data.get('courts', []);
@@ -216,6 +217,17 @@ service cloud.firestore {
         allow delete: if isMember() && myRole() == 'owner';
       }
       match /batches/{docId} { allow read: if canRead(); allow write: if canEdit(); }
+      // Ảnh thẻ chia sẻ (JPEG vẽ trên máy người chia sẻ) và poster giải: ai xem được CLB thì xem được ảnh
+      // Ghi: ban tổ chức; người chơi đã được duyệt ghi ảnh hồ sơ/giải/tổng kết/sân/CLB (không ghi poster)
+      match /the/{key} {
+        allow read: if canRead();
+        allow delete: if canEdit();
+        allow create, update: if key.matches('^[a-z-]+(_[A-Za-z0-9_-]{1,80})?$')
+          && request.resource.data.keys().hasOnly(['img', 'at'])
+          && request.resource.data.img is string && request.resource.data.img.size() < 400000
+          && request.resource.data.img[0:23] == 'data:image/jpeg;base64,'
+          && (canEdit() || (active() && player() && !key.matches('^poster_.*') && myLinkOk()));
+      }
       // Ghi chú nội bộ về thành viên: chỉ chủ CLB và quản lý
       match /notes/{pid} {
         allow read, delete: if isAdmin();

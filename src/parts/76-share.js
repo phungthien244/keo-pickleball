@@ -10,7 +10,7 @@ const SH_THUMB="https://pikeco.app/og.png";
 // Thẻ chia sẻ: tiêu đề = dòng đầu, mô tả = các dòng sau (bỏ dòng "👉 Bấm link…")
 function shCard(o){
   const L=String(o.text||"").split("\n").map(x=>x.trim()).filter(x=>x&&!/^👉/.test(x)&&!/^https?:\/\//.test(x));
-  return {title:String(o.cardTitle||L[0]||o.title||"Pikeco").slice(0,100),description:String(o.cardDesc||L.slice(1).join(" · ")||(CLUB&&CLUB.name)||"").slice(0,400),thumbnail:o.thumb||SH_THUMB,path:miniRel(o.path)+(o.q||"")};
+  return {title:String((o._th&&o._th.title)||o.cardTitle||L[0]||o.title||"Pikeco").slice(0,100),description:String(o.cardDesc||L.slice(1).join(" · ")||(CLUB&&CLUB.name)||"").slice(0,400),thumbnail:o.thumb||SH_THUMB,path:miniRel(o.path)+(o.q||"")};
 }
 let zKind=lsGet("pb-zshare")==="text"?"text":"card";
 const webPathOf=path=>"https://pikeco.app"+(String(path||"/").startsWith("/")?path:"/"+path);
@@ -43,7 +43,12 @@ async function zSendText(o){
   const Z=window.ZMP;if(Z&&Z.openShareSheet){try{await Z.openShareSheet({type:"link",data:{link:mini,chatOnly:false}});return}catch(e){if(isCancel(e))return}}
   try{await navigator.clipboard.writeText(txt);toast("Đã copy tin nhắn kèm link, dán vào nhóm Zalo nhé.")}catch(e){toast(mini)}
 }
-async function shareOut(o){SHR=o;shDraw()}
+// Mở bảng chia sẻ, vẽ ảnh thẻ riêng của trang (hồ sơ, giải, tổng kết, sân, CLB) để xem trước
+async function shareOut(o){SHR=o;shDraw();
+  o._thP=thDraw(o.path).catch(()=>null);o._th=await o._thP;if(SHR===o)shDraw();
+  // Web: lưu sẵn ảnh để link dán vào Facebook/Zalo có ảnh xem trước đúng trang
+  if(!MINI&&o._th&&(canWrite||isZaloU(authUser)))thSave(o._th);
+}
 function shDraw(){
   let el=$("#shs");
   if(!el&&document.createElement&&document.body&&document.body.appendChild){el=document.createElement("div");el.id="shs";document.body.appendChild(el)}
@@ -53,7 +58,7 @@ function shDraw(){
     el.innerHTML=`<div class="cfmdim" data-act="shx"></div><div class="shbox" role="dialog" aria-modal="true" aria-labelledby="sht">
     <div class="shhd"><h2 id="sht">${esc(o.title||"Chia sẻ")}</h2><button class="shxb" data-act="shx" aria-label="Đóng">✕</button></div>
     ${opt("card","Thẻ Mini App","Ảnh, tiêu đề, mô tả ngắn và nút Mở ngay.","▣")}${opt("text","Tin nhắn đầy đủ","Toàn bộ nội dung kèm link bấm được.","≡")}
-    ${zKind==="card"?`<div class="shcard"><img src="${esc(C.thumbnail)}" alt=""><b>${esc(C.title)}</b><small>${esc(C.description)}</small><span class="mo">Mở ngay</span></div>`:`<pre class="shtxt">${esc(String(o.text||"").trim())}\n${esc(miniPathOf(o.path)+(o.q||""))}</pre>`}
+    ${zKind==="card"?`<div class="shcard"><img src="${esc(o._th?o._th.data:C.thumbnail)}" alt=""><b>${esc(C.title)}</b><small>${esc(C.description)}</small><span class="mo">Mở ngay</span></div>`:`<pre class="shtxt">${esc(String(o.text||"").trim())}\n${esc(miniPathOf(o.path)+(o.q||""))}</pre>`}
     <div class="cfmbtn"><button class="line" data-act="shx">Đóng</button><button class="primary" data-act="shzgo">Gửi qua Zalo</button></div></div>`;return}
   const o=SHR,k=o.miniOnly?"mini":shKind,u=k==="mini"?miniPathOf(o.path)+(o.q||""):webPathOf(o.path);
   const opt=(v,t,s,ic)=>`<button class="shopt${k===v?" on":""}" data-act="shk" data-v="${v}" ${o.miniOnly&&v==="web"?"disabled":""}><span class="ic" aria-hidden="true">${ic}</span><span class="t"><b>${t}</b><small>${s}</small></span><span class="rd"></span></button>`;
@@ -72,7 +77,8 @@ async function shAct(act,b){
   if(!SHR)return true;
   if(act==="shz"){zKind=b.dataset.v==="text"?"text":"card";lsSet("pb-zshare",zKind);shDraw();return true}
   if(act==="shzgo"){const o=SHR;SHR=null;shDraw();
-    if(zKind==="card"){if(await zSendCard(o))return true;toast("Chưa gửi được thẻ, chuyển sang tin nhắn chữ.")}
+    if(zKind==="card"){if(o._thP)await o._thP;if(o._th){const u=await thSave(o._th);if(u)o.thumb=u}
+      if(await zSendCard(o))return true;toast("Chưa gửi được thẻ, chuyển sang tin nhắn chữ.")}
     await zSendText(o);return true}
   if(act==="shk"){shKind=b.dataset.v==="web"?"web":"mini";lsSet("pb-share",shKind);shDraw();return true}
   const o=SHR,k=o.miniOnly?"mini":shKind,u=k==="mini"?miniPathOf(o.path)+(o.q||""):webPathOf(o.path);

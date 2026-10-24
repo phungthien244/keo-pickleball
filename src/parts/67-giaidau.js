@@ -107,7 +107,11 @@ function gdContact(){
   return h+`</div>`;
 }
 function gdHero(D){
-  const ty=gdTy(RX);
+  const ty=gdTy(RX),X=RX;
+  if(X.poster){const pi=posterCache[X.id];if(pi===undefined)posterGet(X.id).then(()=>render());else if(pi)return `<img class="gdposter" src="${esc(pi)}" alt="Poster ${esc(xName(X))}">`+gdHeroBox(D,ty)}
+  return gdHeroBox(D,ty);
+}
+function gdHeroBox(D,ty){
   return `<div class="gdhero ${ty.c}"><span class="gdty w">${ty.lb}</span><b>${esc(xName(RX))}</b><span>${esc(whenFull(RX))}</span>
     <span class="gdorg">${clubAv(CLUB||{id:CID},"s20")}${esc(CLUB?.name||"")} tổ chức</span></div>`;
 }

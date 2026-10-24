@@ -16,6 +16,9 @@ document.addEventListener("change",e=>{
   if(t.dataset&&t.dataset.clogo){const f=t.files&&t.files[0];t.value="";if(!f||!isAdm())return;
     if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
     shrink(f).then(d=>write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{logo:d}),"Đã cập nhật ảnh CLB")).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}
+  if(t.dataset&&t.dataset.xposter){const f=t.files&&t.files[0];t.value="";if(!f||!canWrite)return;
+    if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
+    posterRead(f).then(src=>{xfPoster={src,mode:"fit",pos:.5,out:null};return xPosterRedo()}).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}
   if(t.dataset&&t.dataset.ccover){const f=t.files&&t.files[0];t.value="";if(!f||!isAdm())return;
     if(!/^image\//.test(f.type)){toast("File này không phải ảnh.");return}
     shrinkCover(f).then(d=>write(()=>FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{cover:d}),"Đã cập nhật ảnh bìa")).catch(()=>toast("Không đọc được ảnh này, thử ảnh khác."));return}
