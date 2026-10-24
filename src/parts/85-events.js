@@ -149,6 +149,7 @@ document.addEventListener("click",onAct=async e=>{
     const txt=(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x))+"\n"+shLink(pathOf("buoi",{sid:x.sid}));try{await navigator.clipboard.writeText(txt);toast("Đã copy tin nhắn, dán vào nhóm Zalo nhé.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
   if(await platformAct(act,id,b))return;
   if(await zaloAct(act,b,id))return;
+  if(!legacy&&MODE==="club"&&await hnAct(act,b,id))return;
   if(act==="pinset"){if(!isAdm()){toast("Chỉ chủ CLB và quản lý đăng nhập Google mới đặt được PIN.");return}
     const el=document.getElementById&&document.getElementById("newpin"),p=String((el&&el.value)||drafts.newpin||"").trim();
     if(!/^\S{4,12}$/.test(p)){errs.pinset="PIN cần 4–12 ký tự, không có khoảng trắng.";render();return}

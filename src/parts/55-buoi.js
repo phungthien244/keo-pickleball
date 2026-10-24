@@ -35,9 +35,11 @@ function attChips(D){
   const L=D.players.filter(p=>!p.hold||p.active!==false).sort((a,b)=>(busy.has(b.id)-busy.has(a.id))||((a.active===false)-(b.active===false))||String(a.name).localeCompare(String(b.name),"vi"));
   const away=D.players.filter(p=>p.active===false);
   const X=xCur(),RG=X?(S.regs||[]).filter(r=>r.sid===X.id&&!r.cancel):[],byP=new Map(RG.filter(r=>r.pid).map(r=>[r.pid,r]));
+  // Giải theo lịch: chỉ hiện người đã đăng ký và người đang có mặt; thành viên khác thêm qua "+ Người đến muộn"
+  const L0=L;if(X)L.splice(0,L.length,...L0.filter(p=>byP.has(p.id)||p.active!==false||busy.has(p.id)));
   // Check-in: quét mã (QR), BTC bấm tay (TAY), vừa quét chờ duyệt, đã đăng ký chưa tới
   const tag=id=>{const r=byP.get(id);if(!r)return "";return r.arrived?(r.arrBy==="btc"?`<small class="atag b">✋ TAY</small>`:`<small class="atag q">⌗ QR</small>`):r.ci?`<small class="atag w">● chờ duyệt</small>`:`<small class="atag">đăng ký</small>`};
-  return `<div class="lab" style="margin:0"><span class="meta num">${n}/${D.players.length} người có mặt</span><button class="lnk" data-act="attall">${n===D.players.length?"Bỏ chọn hết":"Chọn tất cả"}</button></div>
+  return `<div class="lab" style="margin:0"><span class="meta num">${X?`${n} có mặt · ${RG.length} đăng ký`:`${n}/${D.players.length} người có mặt`}</span>${X?`<button class="lnk" data-act="hnlate" data-id="${esc(X.id)}">＋ Người đến muộn</button>`:`<button class="lnk" data-act="attall">${n===D.players.length?"Bỏ chọn hết":"Chọn tất cả"}</button>`}</div>
   <div class="attc">${L.map(p=>{const on=p.active!==false;return `<button class="ac${on?" on":""}${busy.has(p.id)?" busy":""}" data-act="att" data-id="${p.id}" aria-pressed="${on}">${on?"✓ ":""}${esc(p.name)}${busy.has(p.id)?" · trên sân":""}${tag(p.id)}</button>`}).join("")}<button class="ac add" data-act="attadd" aria-expanded="${attAdd}">${attAdd?"✕ Đóng":"+ Người mới"}</button></div>
   ${attAdd?`<div class="attnew">${addPanel(D,away)}</div>`:""}`;
 }
@@ -152,7 +154,7 @@ function prepRows(D){
 function vPrep(D){
   const c=D.c,G=isG(c),X=xCur(),live=phaseOf(D)==="live";
   xAutoPrep(D);
-  let h=xPrepHead(D);
+  let h=(!X&&!live&&hnQuick&&isAdm()&&hnList().length?`<button class="lnk hnback" data-act="hnquickx">‹ Về danh sách giải</button>`:"")+xPrepHead(D);
   if(!X){h+=xNoSched(D);h+=card(live?"Giải đấu này":"Giải đấu nhanh · không cần đăng ký trước",buoiBlock(D))}
   const n=D.players.filter(p=>p.active!==false).length;
   if(G){

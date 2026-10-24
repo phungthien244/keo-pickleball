@@ -305,6 +305,29 @@ service cloud.firestore {
               && request.resource.data.name is string && request.resource.data.name.size() > 0)
           )
         );
+        // Vãng lai / đến muộn chưa đăng ký: xin vào bằng mã check-in đang hiện trên máy BTC (phải có mặt ở sân),
+        // không cần giải còn mở đăng ký; BTC duyệt tại bàn. Giải tắt nhận vãng lai (walkin == false) thì không.
+        allow create: if active() && player()
+          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv', 'zid', 'walkin', 'ci', 'ciCode'])
+          && request.resource.data.sid is string
+          && request.resource.data.uid == request.auth.uid
+          && id == request.resource.data.sid + '_' + request.auth.uid
+          && request.resource.data.walkin == true
+          && request.resource.data.get('pay', 'none') == 'none'
+          && request.resource.data.get('zid', '') is string && request.resource.data.get('zid', '').size() <= 64
+          && exists(/databases/$(database)/documents/clubs/$(c)/sched/$(request.resource.data.sid))
+          && sx(request.resource.data.sid).get('walkin', true) != false
+          && request.resource.data.ci is int
+          && request.resource.data.ciCode is string && request.resource.data.ciCode.size() > 0
+          && request.resource.data.ciCode == get(/databases/$(database)/documents/clubs/$(c)/ci/$(request.resource.data.sid)).data.code
+          && request.time.toMillis() < get(/databases/$(database)/documents/clubs/$(c)/ci/$(request.resource.data.sid)).data.exp
+          && (
+            (myLink().status == 'ok' && myLink().pid == request.resource.data.pid
+              && request.resource.data.get('guest', false) == false)
+            || (request.resource.data.get('guest', false) == true
+              && request.resource.data.get('pid', null) == null
+              && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 60)
+          );
         // Check-in: người chơi quét mã đang hiện trên máy ban tổ chức (mã đổi liên tục, có hạn)
         function ciOk() {
           let k = get(/databases/$(database)/documents/clubs/$(c)/ci/$(string(resource.data.sid))).data;

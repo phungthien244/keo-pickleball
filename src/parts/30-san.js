@@ -2,7 +2,7 @@ let liveSeg="san";
 const lsegBar=(L,cur)=>`<nav class="lseg" aria-label="Phần của giải đấu">${L.map(([k,l])=>`<button data-act="lseg" data-v="${k}" aria-pressed="${cur===k}">${l}</button>`).join("")}</nav>`;
 function vSan(D){
   if(!canWrite)return vSanView(D);
-  if(phaseOf(D)==="prep"||stepView==="prep")return steps3(1,D)+vPrep(D);
+  if(phaseOf(D)==="prep"||stepView==="prep")return hnShowPick(D)?hnPick(D):steps3(1,D)+vPrep(D);
   const c=D.c, busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
   const free=Math.max(0,c.courts-D.playing.length), can=Math.min(free,Math.floor(waiting.length/4));

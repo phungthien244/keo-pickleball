@@ -378,7 +378,21 @@ describe("giữ chỗ, ảnh VĐV ngoài CLB, check-in quét mã máy BTC", () =
     await assertFails(updateDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ci: Date.now(), ciCode: "OLD111" }));
     await assertSucceeds(setDoc(doc(google("ad"), "clubs/aep/ci/s1"), { code: "NEW222", exp: Date.now() + 40000 }));
     await assertSucceeds(updateDoc(doc(google("ad"), "clubs/aep/regs/s1_zalo_7"), { arrived: true, arrBy: "qr", arrivedAt: 2 }));
-  });  test("đăng ký theo cặp: người rủ ghi mã cặp và đồng đội muốn mời, người nhận lời ghi cùng mã cặp", async () => {
+  });
+  test("vãng lai xin vào bằng mã đang hiện, kể cả đã hết hạn đăng ký; mã sai, tự ghi đã trả, giải tắt vãng lai thì không", async () => {
+    const w = { sid: "s1", uid: "zalo_7", guest: true, name: "Lan", gender: "F", lv: "3.0", at: 1, pay: "none", walkin: true, ci: Date.now(), ciCode: "K7QF9A" };
+    await seed({ "clubs/aep/sched/s1": { st: "open", deadline: 1000, at: Date.now() - 3600e3 }, "clubs/aep/ci/s1": { code: "K7QF9A", exp: Date.now() + 40000 } });
+    await assertFails(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ...w, ciCode: "SAI000" }));
+    await assertFails(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ...w, pay: "ok" }));
+    await assertFails(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ...w, arrived: true }));
+    await assertFails(setDoc(doc(zalo("zalo_8"), "clubs/aep/regs/s1_zalo_7"), { ...w, uid: "zalo_8" }));
+    await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), w));
+    await seed({ "clubs/aep/sched/s1": { st: "open", walkin: false } });
+    await assertFails(setDoc(doc(zalo("zalo_8"), "clubs/aep/regs/s1_zalo_8"), { ...w, uid: "zalo_8" }));
+    await seed({ "clubs/aep/sched/s1": { st: "open" }, "clubs/aep/ci/s1": { code: "K7QF9A", exp: Date.now() - 1000 } });
+    await assertFails(setDoc(doc(zalo("zalo_8"), "clubs/aep/regs/s1_zalo_8"), { ...w, uid: "zalo_8" }));
+  });
+  test("đăng ký theo cặp: người rủ ghi mã cặp và đồng đội muốn mời, người nhận lời ghi cùng mã cặp", async () => {
     await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/s1_zalo_7"), { ...r, team: "s1_zalo_7", want: "p2", wantName: "Minh" }));
     await assertSucceeds(setDoc(doc(zalo("zalo_8"), "clubs/aep/regs/s1_zalo_8"), { ...r, uid: "zalo_8", team: "s1_zalo_7" }));
     await assertSucceeds(setDoc(doc(zalo("zalo_9"), "clubs/aep/regs/s1_zalo_9"), { ...r, uid: "zalo_9", seek: true }));

@@ -18,6 +18,16 @@ function cfmName(k,id){try{
   if(k==="gout"||k==="gdel"){const D=derive(),p=(cfg().giai?.pairs||[]).find(z=>z.id===id);return p?[p.a,p.b].map(i=>D.pmap.get(i)?.name||"?").join(" & "):""}
   if(k==="cancel"){const m=(S.matches||[]).find(z=>z.id===id);return m?"Sân "+cName(m.court):""}
 }catch(e){}return ""}
+// Bắt đầu giải: tóm tắt có mặt, vắng (nhường chỗ), chưa trả tiền để BTC kiểm lại trước khi bấm
+function startInfo(){
+  const base=["Bắt đầu giải đấu?","Đăng ký online sẽ đóng. Người đã đăng ký được điểm danh tự động.","Bắt đầu","p"];
+  try{const D=derive(),c=D.c,X=xCur(),n=D.players.filter(p=>p.active!==false).length,line=`${n} người có mặt · ${c.courts} sân · chạm ${c.target}`;
+    if(!X)return [`Bắt đầu giải đấu #${D.sid}?`,line,"Bắt đầu","p"];
+    const R=withX(X,()=>regList(D)),nm=r=>r.pid?(D.pmap.get(r.pid)?.name||r.name||"?"):(r.name||"?"),cut=L=>L.slice(0,6).map(nm).join(", ")+(L.length>6?` +${L.length-6}`:"");
+    const abs=R.conf.filter(r=>!r.arrived),up=R.wait.filter(r=>r.arrived),due=R.all.filter(r=>r.arrived&&r.pay!=="ok"&&r.pay!=="sent"&&withX(X,()=>feeOf(r))>0);
+    const m=[line];if(abs.length)m.push(`Vắng ${abs.length}: ${cut(abs)} · nhường chỗ`);if(up.length)m.push(`Vào thay ${up.length}: ${cut(up)}`);if(due.length)m.push(`Chưa trả tiền ${due.length}: ${cut(due)}`);
+    m.push("Đăng ký online sẽ đóng.");return [`Bắt đầu ${xName(X)}?`,m.join("\n"),"Bắt đầu","p"]}catch(e){return base}
+}
 // [tiêu đề, lời nhắc, chữ nút xác nhận, kiểu nút: d = nguy hiểm, p = xác nhận thường]
 function cfmInfo(key){
   const i=key.indexOf(":"),k=i<0?key:key.slice(0,i),id=i<0?"":key.slice(i+1),n=cfmName(k,id),q=n?" "+n:"";
@@ -76,7 +86,7 @@ function cfmInfo(key){
     gstart:["Tạo lịch giải?","Sau khi tạo lịch, muốn thêm/bỏ cặp phải hủy lịch làm lại.","Tạo lịch","p"],
     gpredel:["Bỏ trận định sẵn?","Trận này sẽ không được xếp theo thứ tự đã định.","Bỏ","d"],
     predel:["Bỏ trận định sẵn?","Trận này sẽ không được xếp theo thứ tự đã định.","Bỏ","d"],
-    start:["Bắt đầu giải đấu?","Đăng ký online sẽ đóng. Người đã đăng ký được điểm danh tự động.","Bắt đầu","p"],
+    start:startInfo(),
     xcancel:[`Hủy giải đấu${q}?`,"Nhớ báo người đã đăng ký. Ai đã đóng phí cần được hoàn.","Hủy giải đấu","d"],
     xdel:[`Xoá giải đấu${q}?`,"Giải đấu và danh sách đăng ký bị xoá hẳn, không hoàn tác được.","Xoá giải đấu","d"],
     xsoff:["Tắt lịch lặp lại?","Giải đấu mới sẽ không tự tạo nữa. Các giải đấu đã tạo vẫn giữ.","Tắt","d"],

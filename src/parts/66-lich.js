@@ -375,7 +375,7 @@ function xPrepHead(D){
   let h=ckCard(D);
   if(T.length>1&&phaseOf(D)!=="live"&&!D.SM.length)h+=`<div class="xpick" role="group" aria-label="Chọn giải đấu hôm nay">${T.slice().sort((a,b)=>a.at-b.at).map(x=>`<button data-act="xprep" data-id="${x.id}" aria-pressed="${X&&X.id===x.id}"><b>${hm(x.at)}</b>${esc(xName(x))}</button>`).join("")}</div>`;
   h+=`<section class="xhero prephd"><span class="k">${esc(sessTitle(c,D.sid))} · chuẩn bị${X&&X.at?` · ${esc(xTime(X))}`:""}</span>
-    <div class="xrow2"><h1>${esc(X?xName(X):(c.sname||"Giải đấu nhanh"))}</h1>${X?`<a class="xedit" href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}">Sửa giải đấu ›</a>`:""}</div>
+    <div class="xrow2"><h1>${esc(X?xName(X):(c.sname||"Giải đấu nhanh"))}</h1>${X?`<a class="xedit" href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}">Sửa giải đấu ›</a>`:""}</div>${X&&phaseOf(D)!=="live"&&!D.SM.length?`<button class="lnk hnchg" data-act="hnunpick">⇄ Đổi giải khác</button>`:""}
     <span class="sub">${esc([fmtTxt(c),c.cphi===false?"không thu phí":THU[thu]+(thu==="phi"?` ${fmtK(+c.phi||0)}`:"")].filter(Boolean).join(" · "))}</span>${xStats(D)}</section>`;
   return h;
 }
@@ -410,7 +410,7 @@ async function xApply(D,X,quiet){
   if(X.preOn!=null&&X.fmt!=="giai")p.preOn=!!X.preOn;
   let n=0;
   await write(async()=>{await saveCfg(p);await db.collection("sched").doc(X.id).update({num:D.sid});
-    const R=withX(X,()=>regList(D)),inS=new Set(R.conf.filter(x=>x.arrived).map(x=>x.pid).filter(Boolean));
+    const R=withX(X,()=>regList(D)),inS=new Set(R.all.filter(x=>x.arrived).map(x=>x.pid).filter(Boolean));
     n=await withX(X,()=>regStart(D));
     // Có người đăng ký: danh sách có mặt = người đã check-in (chưa ai tới thì để trống, check-in xong mới vào)
     if(R.conf.length)for(const pl of D.players){const on=inS.has(pl.id);if((pl.active!==false)!==on)await db.collection("players").doc(pl.id).update({active:on})}
