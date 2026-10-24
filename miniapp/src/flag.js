@@ -1,8 +1,25 @@
-import { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery, scanQRCode, openOutApp, openChat, events, EventName } from "zmp-sdk";
+import { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery, scanQRCode, openOutApp, openChat, events, EventName, configAppView } from "zmp-sdk";
 import BODY from "./body.html?raw";
 window.ZMINI = 1;
-window.ZMP = { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery, scanQRCode, openOutApp, openChat, events, EventName };
+window.ZMP = { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery, scanQRCode, openOutApp, openChat, events, EventName, configAppView };
 document.documentElement.classList.add("mini");
+// Thanh trạng thái trong suốt: thanh đầu xanh / poster giải tràn lên tận mép trên như các app khác.
+// Đo độ cao thanh trạng thái (Android: Zalo đặt --zaui-safe-area-inset-top; iOS: env()); đo không ra thì giữ thanh thường.
+(async () => {
+  const root = document.documentElement;
+  try {
+    await configAppView({ headerColor: "#0c2b44", headerTextColor: "white", statusBarType: "transparent", actionBar: { hide: true } });
+    await new Promise(r => setTimeout(r, 60));
+    const pr = document.createElement("div");
+    pr.style.cssText = "position:fixed;top:0;left:0;width:1px;height:0;visibility:hidden;padding-top:env(safe-area-inset-top,0px)";
+    document.body.appendChild(pr);
+    let h = parseFloat(getComputedStyle(pr).paddingTop) || 0; pr.remove();
+    const z = parseFloat(getComputedStyle(root).getPropertyValue("--zaui-safe-area-inset-top")) || 0;
+    h = Math.max(h, z);
+    if (h < 12 || h > 80) { await configAppView({ statusBarType: "normal", actionBar: { hide: true } }); h = 0; }
+    root.style.setProperty("--sat", Math.round(h) + "px");
+  } catch (e) {}
+})();
 // Zalo nạp JS/CSS vào trang khung của nó: tự dựng khung giao diện nếu chưa có
 // Trang khung của Zalo có thể thiếu thẻ viewport → giao diện bị phóng to, tràn ngang
 if (!document.querySelector('meta[name="viewport"]')) {

@@ -108,8 +108,13 @@ function gdContact(){
 }
 function gdHero(D){
   const ty=gdTy(RX),X=RX;
-  if(X.poster){const pi=posterCache[X.id];if(pi===undefined)posterGet(X.id).then(()=>render());else if(pi)return `<img class="gdposter" src="${esc(pi)}" alt="Poster ${esc(xName(X))}">`+gdHeroBox(D,ty)}
+  if(X.poster){const pi=posterCache[X.id];if(pi===undefined)posterGet(X.id).then(()=>render());else if(pi)return MINI?gdCover(D,ty,pi):`<img class="gdposter" src="${esc(pi)}" alt="Poster ${esc(xName(X))}">`+gdHeroBox(D,ty)}
   return gdHeroBox(D,ty);
+}
+// Mini App: poster tràn viền (cả dưới thanh trạng thái), tên giải và nút chia sẻ nằm trên ảnh
+function gdCover(D,ty,pi){
+  return `<div class="gdcover"><img src="${esc(pi)}" alt="Poster ${esc(xName(RX))}"><div class="gdcv"><span class="gdty ${ty.c}">${ty.lb}</span><b>${esc(xName(RX))}</b><span class="d">${esc(whenFull(RX))}</span>
+    <span class="row"><span class="gdorg">${clubAv(CLUB||{id:CID},"s20")}${esc(CLUB?.name||"")} tổ chức</span><button class="gdshr" data-act="mxinvite"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5l7 7-7 7M21 12H10a7 7 0 0 0-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Chia sẻ</button></span></div></div>`;
 }
 function gdHeroBox(D,ty){
   return `<div class="gdhero ${ty.c}"><span class="gdty ${ty.c}">${ty.lb}</span><b>${esc(xName(RX))}</b><span>${esc(whenFull(RX))}</span>

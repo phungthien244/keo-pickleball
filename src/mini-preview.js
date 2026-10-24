@@ -31,6 +31,10 @@ import "../miniapp/src/mini.css";
   bar.className = "zbar";
   bar.innerHTML = `<span class="zcap" aria-hidden="true"><i>···</i><i>✕</i></span>`;
   document.body.appendChild(bar);
+  // ?sat=47: giả lập thanh trạng thái trong suốt (iPhone) để xem thanh đầu / poster tràn lên mép trên
+  const sat = +(q.get("sat") || 0);
+  if (sat) { document.documentElement.style.setProperty("--sat", sat + "px"); bar.style.top = (sat + 4) + "px";
+    const sb = document.createElement("div"); sb.textContent = "9:41"; sb.style.cssText = `position:fixed;top:0;left:0;right:0;height:${sat}px;z-index:61;pointer-events:none;color:#fff;font:600 15px system-ui;display:flex;align-items:center;padding:6px 28px 0;box-sizing:border-box;text-shadow:0 0 4px rgba(0,0,0,.4)`; document.body.appendChild(sb); }
   document.body.insertAdjacentHTML("beforeend", BODY);
   const st = document.createElement("style");
   st.textContent = `[hidden]{display:none!important}img{max-width:100%}

@@ -18,12 +18,12 @@ function mxSubT(D){
   if(route==="vdv")return {t:D.pmap.get(routePid)?.name||"Hồ sơ"};
   if(route==="cmp")return {t:"So kè"};
   if(route==="buoi")return {t:"Kết quả buổi"};
-  if(route==="chot")return {t:"Chốt buổi"};
+  if(route==="chot")return {t:"Chốt giải đấu"};
   if(route==="caidat")return {t:"Cài đặt"};
   if(route==="app"&&tab==="gt")return {t:"Giới thiệu",ov:String((CLUB||{}).cover||"").startsWith("data:image/")};
   if(route==="app"&&tab==="nguoi"&&mxMode()!=="ql")return {t:"Thành viên"};
   const X=route==="app"&&tab==="dk"&&routeX?schedById(routeX):null;
-  if(X)return {t:xName(X),ov:mxMode()!=="ql"&&!!(X.poster&&posterCache[X.id])};
+  if(X){const im=mxMode()!=="ql"&&X.poster&&posterCache[X.id];return {t:xName(X),ov:!!im,img:im||""}}
   return null;
 }
 function mxStat(D){
@@ -36,9 +36,9 @@ function mxStat(D){
 }
 function mxHead(D,ql,sw,p,nm){
   const sb=mxSubT(D);
-  if(sb)return `<header class="mxhd sub${sb.ov?" ov":""}"><button class="mxbk" data-act="mxback" aria-label="Quay lại"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><b class="tt">${esc(sb.t)}</b></header>${sb.ov?"":`<div class="mxhsp"></div>`}`;
-  return `<header class="mxhd"><button class="mxclub" data-act="mxsheet">${clubAv(CLUB||{id:CID},"",nm)}<span class="t"><b>${esc(nm)} <i aria-hidden="true">▾</i></b><small>pikeco.app</small></span></button></header><div class="mxhsp"></div>`
-    +`<div class="mxstrip">${mxStat(D)}${sw}<a class="mxme" href="${pathOf("app",{tab:"toi"})}" data-go="app" data-t="toi" aria-label="Tôi">${p?av(p,"sm",1):mxSvg("me")}</a></div>`+(ql?"":mxTurn(D));
+  if(sb)return `<header class="mxhd sub${sb.ov?" ov":""}"${sb.img?` style="--ovbg:url('${esc(sb.img)}')"`:""}><button class="mxbk" data-act="mxback" aria-label="Quay lại"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><b class="tt">${esc(sb.t)}</b></header>${sb.ov?"":`<div class="mxhsp"></div>`}`;
+  return `<div class="mxtop"><header class="mxhd"><button class="mxclub" data-act="mxsheet">${clubAv(CLUB||{id:CID},"",nm)}<span class="t"><b>${esc(nm)} <i aria-hidden="true">▾</i></b><small>pikeco.app</small></span></button></header>`
+    +`<div class="mxstrip">${mxStat(D)}${sw}<a class="mxme" href="${pathOf("app",{tab:"toi"})}" data-go="app" data-t="toi" aria-label="Tôi">${p?av(p,"sm",1):mxSvg("me")}</a></div></div><div class="mxhsp big"></div>`+(ql?"":mxTurn(D));
 }
 // Thanh đầu trang nền tảng (Khám phá, Tôi, Tạo CLB)
 const mxHeadP=(t,right="",back="")=>`<header class="mxhd${back?" sub":""}">${back}<b class="tt">${t}</b>${right}</header><div class="mxhsp"></div>`;
@@ -57,7 +57,7 @@ function mxNav(){
 // Đang nạp CLB (vừa chuyển CLB): dựng sẵn khung Mini App, không lộ giao diện web
 function mxLoading(){
   const k=myClubs().find(x=>x.id===CID),nm=(CLUB&&CLUB.name)||(k&&k.name)||"";
-  return `<header class="mxhd"><span class="mxclub">${clubAv(k||{id:CID,name:nm},"",nm)}<span class="t"><b>${esc(nm)}</b><small>pikeco.app</small></span></span></header><div class="mxhsp"></div><div class="mxstrip"><span class="mxst"><span class="tg">CLB</span><span class="tx">Đang tải…</span></span></div><div class="mxbody">${skeleton()}</div>${mxMode()==="ql"?mxMgrNav():mxNav()}`;
+  return `<div class="mxtop"><header class="mxhd"><span class="mxclub">${clubAv(k||{id:CID,name:nm},"",nm)}<span class="t"><b>${esc(nm)}</b><small>pikeco.app</small></span></span></header><div class="mxstrip"><span class="mxst"><span class="tg">CLB</span><span class="tx">Đang tải…</span></span></div></div><div class="mxhsp big"></div><div class="mxbody">${skeleton()}</div>${mxMode()==="ql"?mxMgrNav():mxNav()}`;
 }
 // Thanh "Lượt của tôi": ghim khi buổi đang diễn ra và mình có mặt
 function mxTurn(D){

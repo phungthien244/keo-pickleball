@@ -15,6 +15,8 @@ const COSTS=[["court","Chi phí sân"],["water","Chi phí nước"],["ball","Chi
 // Thanh 3 bước: luôn dính dưới các tab, bấm để chuyển qua lại. n = bước đang xem, ph = bước thật của buổi.
 let stepView=null;
 function steps3(n,D){
+  // Mini App: đang đánh / chốt không hiện thanh 3 bước (chốt mở bằng nút riêng, quay lại bằng nút ‹)
+  if(MINI&&n>1)return "";
   const L=[["prep","Tùy chọn"],["live","Đang đánh"],["chot","Chốt giải đấu"]];
   const ph=D?(phaseOf(D)==="live"?2:1):n;
   return `<nav class="bsteps" aria-label="Các bước của giải đấu">${L.map(([v,l],i)=>{const k=i+1,on=k===n,ok=k<ph;

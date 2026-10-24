@@ -1045,22 +1045,43 @@ div.paychip{align-self:flex-start;font-size:12px;padding:4px 10px}
 .mini main#view{padding:0}
 .mx{font-size:15px}
 /* Thanh đầu Mini App (thanh Zalo đã ẩn): nền xanh như bản web, chừa chỗ nút "··· ✕" của Zalo bên phải */
-.mxhd{position:fixed;top:0;left:0;right:0;max-width:560px;margin:0 auto;z-index:20;display:flex;align-items:center;gap:6px;min-height:48px;padding:calc(4px + env(safe-area-inset-top,0px)) 104px 4px 12px;background:var(--navy);color:#fff;box-sizing:border-box}
+.mxhd{position:fixed;top:0;left:0;right:0;max-width:560px;margin:0 auto;z-index:20;display:flex;align-items:center;gap:6px;min-height:calc(48px + var(--sat));padding:calc(4px + var(--sat)) 104px 4px 12px;background:var(--navy);color:#fff;box-sizing:border-box}
 .mxhd .tt{flex:1;min-width:0;font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mxhd.sub{padding-left:4px}
 /* Thanh đầu cố định (không trôi khi iOS kéo nảy đầu/cuối trang), chừa chỗ bằng khối đệm */
-.mxhsp{height:calc(48px + env(safe-area-inset-top,0px));flex:none}
-html.mini,html.mini body{overscroll-behavior-y:none}
+html.mini{--sat:0px}
+.mxhsp{height:calc(48px + var(--sat));flex:none}.mxhsp.big{height:calc(92px + var(--sat))}
+/* Thanh CLB + dải trạng thái (nút Chơi/Quản lý) cố định cùng nhau; trang vẫn kéo nảy tự nhiên */
+.mxtop{position:fixed;top:0;left:0;right:0;max-width:560px;margin:0 auto;z-index:20}
+.mxtop .mxhd{position:relative;max-width:none}
+.mxturn{top:calc(92px + var(--sat))!important}
+.mini .lseg{position:sticky;z-index:15;top:calc(48px + var(--sat))}
+.mxhsp.big~.mxbody .lseg{top:calc(92px + var(--sat))}
+.mini .bsteps{position:static}
+.mx .mxbody>.dhead:first-child{margin:-12px -12px 0;padding-top:4px}
+/* Thanh trong suốt trên poster: cuộn xuống thì hiện ảnh poster thu nhỏ làm nền + tên giải */
+.mxhd.ov::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(8,33,58,.6),rgba(8,33,58,.6)),var(--ovbg,none) center/cover,var(--navy);opacity:0;transition:opacity .2s}
+.mxsc .mxhd.ov::before{opacity:1}
+.mxhd.ov>*{position:relative}
 .mxbk{width:40px;height:40px;flex:none;display:grid;place-items:center;border:0;background:none;color:#fff;padding:0;min-height:0}
 .mxbk svg{width:22px;height:22px}
 .mxhd.ov{background:linear-gradient(rgba(8,33,58,.6),rgba(8,33,58,0));transition:background-color .2s}
-.mxsc .mxhd.ov{background:var(--navy)}
+.mxsc .mxhd.ov{background:transparent}
 .mxhd.ov .tt{opacity:0;transition:opacity .2s}.mxsc .mxhd.ov .tt{opacity:1}
-.mxhd.ov .mxbk{background:rgba(8,33,58,.55);width:36px;height:36px;margin:2px 4px 2px 6px}.mxsc .mxhd.ov .mxbk{background:none}
+.mxhd.ov .mxbk{background:rgba(8,33,58,.35);width:36px;height:36px;margin:2px 4px 2px 6px}.mxsc .mxhd.ov .mxbk{background:none}
 .mxhd.ov+.mxbody>.gthero:first-child{padding-top:64px;margin-top:-12px}
 /* Trang giải có poster: poster tràn viền từ đỉnh, chuyển màu xuống khối thông tin xanh */
 .mxhd.ov+.mxbody>.gdposter:first-child{margin:-12px -12px 0;width:calc(100% + 24px);max-width:none}
 .mxbody>.gdposter+.gdhero{margin-top:-10px;box-shadow:0 -24px 24px -4px var(--navy)}
+.gdcover{position:relative;margin:-12px -12px 0;height:calc(270px + var(--sat));background:var(--navy);overflow:hidden;color:#fff}
+.gdcover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
+.gdcover::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(8,33,58,.5),rgba(8,33,58,0) 32%,rgba(8,33,58,0) 42%,rgba(8,33,58,.94))}
+.gdcv{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:14px 16px 16px;display:flex;flex-direction:column;gap:5px}
+.gdcv b{font-family:var(--display);font-weight:900;font-size:27px;line-height:1.1;text-shadow:0 1px 10px rgba(0,0,0,.4)}
+.gdcv .d{font-size:14px;color:#e4eef7}
+.gdcv .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}
+.gdshr{display:inline-flex;align-items:center;gap:6px;flex:none;min-height:36px;padding:0 14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.gdshr svg{width:16px;height:16px}
 .mxclub{display:flex;align-items:center;gap:9px;border:0;background:none;padding:0;min-height:40px;flex:1;min-width:0;text-transform:none;letter-spacing:0;font-family:var(--body);color:#fff;text-align:left}
 .mxclub .t{display:flex;flex-direction:column;min-width:0;line-height:1.15}
 .mxclub b{font-family:var(--display);font-weight:900;font-size:15px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1157,7 +1178,7 @@ html.mini,html.mini body{overscroll-behavior-y:none}
 .two button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
 .zlk{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);padding:12px}
 .zlk .t{flex:1;display:flex;flex-direction:column}.zlk small{color:var(--muted)}
-.mx .mxbody > .dhead:first-child{margin-top:0}
+.mx .mxbody > .dhead:first-child{margin-top:-12px}
 .mxinv{display:flex;flex-direction:column;gap:8px;padding:10px 0 4px}
 /* ===== Lịch buổi (tab Tạo / Lịch buổi) ===== */
 .xsec{display:block;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
