@@ -79,6 +79,17 @@ if (MODE === "list") {
       console.log(`::notice::CLB ${cid} · ${f.role?.stringValue} · ${f.name?.stringValue || ""} | TO ${to} (${await acct(to)}) | FROM ${from} (${await acct(from)})`);
     }
   }
+} else if (MODE === "links") {
+  // Liên kết VĐV nằm ở tài khoản khác với tài khoản ghi trên hồ sơ VĐV (zuid): dấu hiệu bị chuyển
+  for (const c of await F.list("clubs", "owner")) {
+    const cid = tail(c.name).split("/")[1];
+    const P = {}; for (const p of await F.list(`clubs/${cid}/players`)) P[tail(p.name).split("/").pop()] = p.fields || {};
+    for (const l of await F.list(`clubs/${cid}/links`)) {
+      const f = l.fields || {}, uid = tail(l.name).split("/").pop(), pid = f.pid?.stringValue, st = f.status?.stringValue, z = pid && P[pid]?.zuid?.stringValue;
+      if (st !== "ok" || !z || z === uid) continue;
+      console.log(`::notice::CLB ${cid} · VĐV ${P[pid]?.name?.stringValue || pid} | LINK ${uid} (${await acct(uid)}) | ZUID ${z} (${await acct(z)})`);
+    }
+  }
 } else if (MODE === "apply") {
   const TO = process.env.TO, FROM = process.env.FROM;
   if (!/^zalo_[0-9a-f]+$/.test(TO || "") || !/^zalo_[0-9a-f]+$/.test(FROM || "")) throw new Error("TO/FROM sai");
