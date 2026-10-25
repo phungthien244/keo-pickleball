@@ -176,7 +176,9 @@ async function zaloAdminAct(act,b,id){
     await write(async()=>{let pid=v;
       if(nw){const ref=db.collection("players").doc();pid=ref.id;await ref.set({name:String(drafts["apv-name-"+id]??(x.newName||x.zname||"Người chơi")).trim().slice(0,30)||"Người chơi",gender:(drafts["apv-g"]||x.gender)==="F"?"F":"M",rating0:2.5,active:false,createdAt:Date.now(),code:"PB-"+String(nextCode()).padStart(3,"0"),zuid:id})}
       else await db.collection("players").doc(pid).update({zuid:id});
-      await FB.updateDoc(FB.doc(FB.fs,PFX+"links/"+id),{status:"ok",pid});apvOpen=null;apvSel=null;delete drafts["apv-g"]},nw?"Đã tạo hồ sơ mới và duyệt":`Đã ghép với ${p.name}`);return true}
+      await FB.updateDoc(FB.doc(FB.fs,PFX+"links/"+id),{status:"ok",pid});apvOpen=null;apvSel=null;delete drafts["apv-g"];
+      // Đang ở thẻ Chờ duyệt: chuyển về Tất cả để thấy người vừa duyệt trong danh sách
+      if(typeof tvF!=="undefined"&&tvF==="pend"&&!(S.links||[]).some(z=>z.status==="pending"&&z.id!==id))tvF="all"},nw?"Đã duyệt · thêm vào danh sách thành viên":`Đã ghép với ${p.name}`);return true}
   if(act==="unzalo"){const p=D.pmap.get(id);if(!p||!p.zuid)return true;if(!armOr("unzalo:"+id))return true;
     await write(async()=>{await db.collection("players").doc(id).update({zuid:null});try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+p.zuid))}catch(e){}},"Đã bỏ ghép tài khoản Zalo");return true}
   if(act==="lnkno"){if(!armOr("lnkno:"+id))return true;await write(()=>FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+id)),"Đã từ chối");return true}
