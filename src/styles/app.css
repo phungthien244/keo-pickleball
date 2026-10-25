@@ -2088,3 +2088,8 @@ section:not(.mx) .hqcta{bottom:0;margin:16px -16px 0}
 .ppt.on{padding-right:22px}.ppt.on::after{top:50%;right:7px;transform:translateY(-50%);font-size:12px}
 /* bảng trượt vẽ lại tại chỗ: không chạy lại hiệu ứng mở */
 .mxsheet.still,.sheetbg.still,.sheetbg.still .sheet,.mxdim.still{animation:none}
+/* hàng danh sách bấm được: rà chuột/nhấn không đổi màu đường kẻ, chỉ đổi nền nhẹ */
+.xbrow:hover,.xbli:hover,.hqst:hover,.xbrow:focus,.xbli:focus,.hqst:focus{border-color:var(--line)}
+.hqgh:hover,.hqban:hover{border-color:transparent}.hqban:hover{border-color:#fcd34d}
+.xbrow:hover,.xbli:hover,.hqst:hover,.hqgh:hover{background:var(--sunk)}
+.xbrow:focus:not(:focus-visible),.xbli:focus:not(:focus-visible){outline:none}
