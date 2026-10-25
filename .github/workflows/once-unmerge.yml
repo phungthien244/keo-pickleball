@@ -1,0 +1,17 @@
+name: Một lần · trả dữ liệu gộp nhầm
+on:
+  push:
+    branches: [once-unmerge]
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Chạy
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -a; [ -f scripts/once/plan.env ] && . scripts/once/plan.env; set +a
+          node scripts/once/unmerge.mjs
