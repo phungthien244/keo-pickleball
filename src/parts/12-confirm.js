@@ -62,6 +62,7 @@ function cfmInfo(key){
     regpayundo:[`Bỏ xác nhận phí${q?" của"+q:""}?`,"Người này quay lại trạng thái chưa đóng.","Bỏ xác nhận","d"],
     regrefund:[`Ghi nhận hoàn phí${q?" cho"+q:""}?`,"Chỉ bấm sau khi đã chuyển trả phí.","Đã hoàn","p"],
     mxleave:["Rời câu lạc bộ?","Thông tin của bạn trong CLB sẽ bị xoá. Muốn quay lại phải xin vào lại.","Rời CLB","d"],
+    zunmerge:["Tách tài khoản?","Quyền CLB, liên kết VĐV, đăng ký và CLB đã gộp sẽ trả về tài khoản Zalo cũ. Tài khoản đang dùng trở thành tài khoản mới, chưa có quyền gì.","Tách ra","d"],
     mrm:["Gỡ khỏi ban tổ chức?","Người này mất quyền quản lý CLB ngay.","Gỡ","d"],
     edclear:["Thu hồi tất cả PIN?","Mọi máy đang vào bằng PIN mất quyền ghi, cần nhập lại PIN.","Thu hồi","d"],
     migrate:["Chuyển dữ liệu?","Chỉ làm một lần. Đừng tắt app trong lúc chuyển.","Bắt đầu chuyển","p"],

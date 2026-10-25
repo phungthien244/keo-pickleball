@@ -1,8 +1,8 @@
 // Đăng nhập từ Zalo Mini App: app gửi ID người dùng Zalo (getUserID) + access token → trả token đăng nhập Firebase
 // Zalo chặn máy chủ ngoài Việt Nam đọc thông tin người dùng, nên chỉ đối chiếu được khi Zalo cho phép.
 // Mã tài khoản = zalo_ + HMAC(ID Zalo): không lộ ID Zalo thật trong dữ liệu công khai.
-import { customToken, hmacHex } from "../../lib/fbtoken.js";
-import { verifyIdToken, moveAccount } from "../../lib/zmove.js";
+import { customToken, hmacHex, sha256Hex } from "../../lib/fbtoken.js";
+import { verifyIdTokenBody, moveAccount } from "../../lib/zmove.js";
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, OPTIONS", "access-control-allow-headers": "content-type" };
 const out = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json", ...CORS } });
 
@@ -23,13 +23,16 @@ export async function onRequestPost({ request, env }) {
   let sa; try { sa = JSON.parse(env.FIREBASE_SA); } catch (e) { return out({ error: "Khoá Firebase lỗi." }, 500); }
   const uid = "zalo_" + (await hmacHex(env.ZALO_SECRET, "mini:" + id)).slice(0, 40);
   // Máy đang giữ phiên Zalo cũ khác mã hiện tại: gộp dữ liệu tài khoản cũ sang tài khoản đúng
+  // Dấu vân tay mã Zalo (không phụ thuộc ZALO_SECRET): chỉ gộp khi phiên cũ đúng là của cùng người Zalo này.
+  // Phiên cũ không có dấu (cấp trước bản này) hoặc của người Zalo khác (máy đổi tài khoản) thì không gộp.
+  const zh = (await sha256Hex("pikeco-zid:" + id)).slice(0, 32);
   let moved = null;
   if (b.old) {
     try {
-      const from = await verifyIdToken(b.old, sa.project_id);
-      if (from && from !== uid && /^zalo_[0-9A-Za-z]+$/.test(from)) moved = await moveAccount(sa, from, uid);
+      const ob = await verifyIdTokenBody(b.old, sa.project_id), from = ob && String(ob.sub);
+      if (from && from !== uid && /^zalo_[0-9A-Za-z]+$/.test(from) && ob.zh && ob.zh === zh) moved = await moveAccount(sa, from, uid);
     } catch (e) { moved = { error: true }; }
   }
-  const token = await customToken(sa, uid, { zalo: true, zv: verified });
+  const token = await customToken(sa, uid, { zalo: true, zv: verified, zh });
   return out({ token, uid, verified, ...(moved ? { moved } : {}) });
 }

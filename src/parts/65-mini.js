@@ -241,7 +241,7 @@ function mxHist(D){
 /* ----- 6 · Tôi ----- */
 function mxMeTab(D){
   const p=mxMe(D),L=S.link;
-  let h=dbgCard();
+  let h=dbgCard()+unmergeCard();
   if(p){const s=D.st.get(p.id),A=D.all.get(p.id),rk=[...D.players].filter(x=>!x.guest).sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating).findIndex(x=>x.id===p.id)+1;
     h+=`<div class="mxcard prof">${av(p,"lg",1)}<span class="t"><b>${esc(p.name)}</b><small>${esc(CLUB?.name||"")} · ${mxRole()}</small></span><a class="line sm" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">Hồ sơ</a></div>
     <div class="mxstats"><div><b class="num">${r2(s.rating)}</b><small>Rating</small></div><div><b class="num">#${rk}</b><small>Hạng</small></div><div><b class="num">${A.ses.size}</b><small>Giải đấu</small></div><div><b class="num">${pct(A.w,A.g)}%</b><small>Thắng</small></div></div>${mfMe(D,p)}${(()=>{const dt=debts().filter(x=>x.id===p.id),sum=dt.reduce((a,x)=>a+x.k,0);return sum?`<button class="mxcard warn" data-act="mxtien"><b>Bạn còn ${fmtK(sum)} lệ phí chưa trả</b><span>${dt.length} giải đấu · bấm để chuyển khoản</span></button>`:""})()}${mxTickets(D)}`;

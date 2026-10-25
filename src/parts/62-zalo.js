@@ -25,7 +25,8 @@ async function miniLogin(quiet){
     let old="";if(zl&&cu.getIdToken&&prev&&prev===id){try{old=await cu.getIdToken()}catch(e){}}
     const r=await fetch(API+"/api/zalo-mini",{method:"POST",headers:{"content-type":"text/plain"},body:JSON.stringify({id:String(id||""),at,...(old?{old}:{})})});
     const j=await r.json().catch(()=>({}));
-    lsSet("pb-zsync",JSON.stringify({at:Date.now(),from:zl?cu.uid:"",to:j.uid||"",moved:j.moved||null,err:j.token?"":(j.error||"không có token")}));
+    {let z0=null;try{z0=JSON.parse(lsGet("pb-zsync")||"null")}catch(e){}
+      lsSet("pb-zsync",JSON.stringify(!j.moved&&z0&&z0.moved&&(z0.to===j.uid||!j.token)?{...z0,last:Date.now()}:{at:Date.now(),from:zl?cu.uid:"",to:j.uid||"",moved:j.moved||null,err:j.token?"":(j.error||"không có token")}))}
     if(!j.token){if(zl)return true;throw new Error(j.error||"no token")}
     if(!(zl&&cu.uid===j.uid))await FB.signInWithCustomToken(FB.auth,j.token);
     lsSet("pb-zuid-ok",j.uid);
@@ -44,6 +45,14 @@ async function zSwitch(){
   ZPROF=null;authUser=null;
   toast("Đã đổi sang tài khoản Zalo khác");
   setTimeout(()=>{try{location.reload()}catch(e){}},300);
+}
+// Gộp nhầm: tài khoản này vừa nhận quyền, liên kết, đăng ký từ tài khoản Zalo khác trên máy → cho tách lại
+function zMergedInfo(){try{const z=JSON.parse(lsGet("pb-zsync")||"null");if(!z||!authUser||z.to!==authUser.uid||!z.from||z.from===z.to||!z.moved||z.moved.error||z.undone)return null;
+  const m=z.moved;return (m.members||m.links||m.regs||m.clubs||m.users)?z:null}catch(e){return null}}
+function unmergeCard(){
+  const z=zMergedInfo();if(!z)return "";
+  return `<div class="mxcard warn umg"><b>Tài khoản này đã nhận quyền của tài khoản Zalo khác</b><span>Lúc ${dhm(z.at)} app đã gộp ${[z.moved.members&&`${z.moved.members} quyền CLB`,z.moved.links&&`${z.moved.links} liên kết VĐV`,z.moved.regs&&`${z.moved.regs} đăng ký`,z.moved.clubs&&`${z.moved.clubs} CLB`].filter(Boolean).join(", ")} từ tài khoản Zalo trước đó trên máy này. Nếu đó là người khác (máy đổi tài khoản Zalo), bấm Tách ra để trả lại.</span>
+    <button class="primary wide" data-act="zunmerge">${armed("zunmerge:x")?"Bấm lần nữa để tách":"Tách ra · trả quyền cho tài khoản cũ"}</button><button class="ghost" data-act="zunmergeno">Đúng là tôi, giữ nguyên</button></div>`;
 }
 let unsubLink=null;
 let ZPROF=null;
@@ -135,6 +144,16 @@ async function zaloAct(act,b,id){
   if(act==="miniexplore"){quickNext();setPath("/clb");location.reload();return true}
   if(act==="openweb"){const u="https://pikeco.app"+(b.dataset.v||"/");if(window.ZMP&&window.ZMP.openWebview){try{await window.ZMP.openWebview({url:u})}catch(e){location.href=u}}else location.href=u;return true}
   if(act==="lnkcancel"){if(!armOr("lnkcancel:x"))return true;try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid))}catch(e){}return true}
+  if(act==="zunmergeno"){try{const z=JSON.parse(lsGet("pb-zsync")||"{}");lsSet("pb-zsync",JSON.stringify({...z,undone:"keep"}))}catch(e){}render();return true}
+  if(act==="zunmerge"){if(!armOr("zunmerge:x"))return true;
+    try{let tok="";try{tok=await (FB.auth.currentUser||authUser).getIdToken()}catch(e){}
+      if(!tok&&!window.__PBTEST){toast("Mở lại app rồi thử lại.");return true}
+      const j=await fetch(API+"/api/zalo-unmerge",{method:"POST",headers:{"content-type":"text/plain"},body:JSON.stringify({tok})}).then(r=>r.json()).catch(()=>({}));
+      if(!j.ok){toast(j.error||"Chưa tách được, thử lại.");return true}
+      const z=JSON.parse(lsGet("pb-zsync")||"{}");lsSet("pb-zsync",JSON.stringify({...z,undone:Date.now()}));
+      toast("Đã tách: quyền và dữ liệu đã trả về tài khoản cũ");setTimeout(()=>{try{location.reload()}catch(e){}},800)}
+    catch(e){toast("Chưa tách được, thử lại.")}
+    return true}
   if(act==="zinfo"){mxAskedName=false;await mxAskName(true);return true}
   if(await phAct(act,b))return true;
   if(act==="lnksend"){if(!isPlayer(authUser))return true;const zp=zaloProf();
