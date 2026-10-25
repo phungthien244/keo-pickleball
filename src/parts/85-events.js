@@ -163,7 +163,7 @@ document.addEventListener("click",onAct=async e=>{
   if(act.startsWith("tt")&&await ttAct(act,b))return;
   const REF_ACTS=["savechk","savex","save","cancelx"];
   if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
-  if(canWrite&&!legacy&&hqAct(act,b))return;
+  if(canWrite&&hqAct(act,b))return;
   if(canWrite&&!legacy&&await ckAct(act,b,id))return;
   if(canWrite&&!legacy&&await zaloAdminAct(act,b,id))return;
   if(act==="migrate"){if(!legacy||!isGoogle(authUser)||!S.rootEditor){toast("Cần đăng nhập Google và nhập PIN trước.");return}if(!armOr("migrate:x"))return;try{await migrate()}catch(x){S.migMsg="Chuyển chưa xong ("+((x&&x.code)||"lỗi")+"). Kiểm tra luật Firestore mới đã xuất bản chưa rồi thử lại.";render()}return}

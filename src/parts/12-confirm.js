@@ -20,13 +20,14 @@ function cfmName(k,id){try{
 }catch(e){}return ""}
 // Bắt đầu giải: tóm tắt có mặt, vắng (nhường chỗ), chưa trả tiền để BTC kiểm lại trước khi bấm
 function startInfo(){
-  const base=["Bắt đầu giải đấu?","Đăng ký online sẽ đóng. Người đã đăng ký được điểm danh tự động.","Bắt đầu","p"];
+  const base=["Khai mạc giải?","Đăng ký online sẽ đóng. Người đã đăng ký được điểm danh tự động.","Khai mạc","p"];
+  const km=c=>[c.refOn===true?"":"",isG(c)?"":`App sẽ: ${typeof loaMuted==="function"&&!loaMuted()?"loa đọc thể thức → ":""}đưa trận đầu vào sân → loa mời vào sân.`].filter(Boolean);
   try{const D=derive(),c=D.c,X=xCur(),n=D.players.filter(p=>p.active!==false).length,line=`${n} người có mặt · ${c.courts} sân · chạm ${c.target}`;
-    if(!X)return [`Bắt đầu giải đấu #${D.sid}?`,line,"Bắt đầu","p"];
+    if(!X)return [`Khai mạc giải đấu #${D.sid}?`,[line,...km(c)].join("\n"),"Khai mạc","p"];
     const R=withX(X,()=>regList(D)),nm=r=>r.pid?(D.pmap.get(r.pid)?.name||r.name||"?"):(r.name||"?"),cut=L=>L.slice(0,6).map(nm).join(", ")+(L.length>6?` +${L.length-6}`:"");
     const abs=R.conf.filter(r=>!r.arrived),up=R.wait.filter(r=>r.arrived),due=R.all.filter(r=>r.arrived&&r.pay!=="ok"&&r.pay!=="sent"&&withX(X,()=>feeOf(r))>0);
     const m=[line];if(abs.length)m.push(`Vắng ${abs.length}: ${cut(abs)} · nhường chỗ`);if(up.length)m.push(`Vào thay ${up.length}: ${cut(up)}`);if(due.length)m.push(`Chưa trả tiền ${due.length}: ${cut(due)}`);
-    m.push("Đăng ký online sẽ đóng.");return [`Bắt đầu ${xName(X)}?`,m.join("\n"),"Bắt đầu","p"]}catch(e){return base}
+    m.push(...km(c),"Đăng ký online sẽ đóng.");return [`Khai mạc ${xName(X)}?`,m.join("\n"),"Khai mạc","p"]}catch(e){return base}
 }
 // [tiêu đề, lời nhắc, chữ nút xác nhận, kiểu nút: d = nguy hiểm, p = xác nhận thường]
 function cfmInfo(key){

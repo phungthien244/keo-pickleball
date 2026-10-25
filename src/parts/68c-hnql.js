@@ -53,28 +53,68 @@ function hqChot(D){
     ${D.playing.length?`<p class="rule">Còn ${D.playing.length} trận trên sân: lưu hoặc huỷ trước khi chốt.</p>`:""}<button class="primary wide" data-act="step" data-v="chot">Kết thúc và lưu giải</button><p class="rule">Chưa chốt thì vẫn đánh tiếp được. Chốt rồi vẫn mở lại để sửa được.</p>`;
   return hqGrp("chot","Kết thúc và chốt giải",sum,body);
 }
+// Trang Quản lý chia 6 thẻ ngang; mỗi lúc chỉ thấy một việc. Số vàng = việc còn thiếu.
+let hqTab=null;
+const HQ_TABS=[["san","Sẵn sàng"],["nguoi","Người"],["tien","Tiền"],["luat","Sân, luật"],["tt","Trọng tài"],["chot","Chốt"]];
+// Sân đã có trọng tài (thành viên vai trọng tài hoặc máy vào bằng PIN được giao sân)
+function hqRefCov(){const s=new Set();for(const r of [...(S.members||[]).filter(m=>m.role==="scorer"),...(S.editors||[])])for(const c of (r.courts||[]))s.add(Number(c));return s}
+// Danh sách kiểm tra: [thẻ, đã xong?, chữ, nút]
+function hqChecks(D){
+  const c=D.c,G=isG(c),X=ckSched(),L=[],n=D.players.filter(p=>p.active!==false).length;
+  L.push(["luat",true,`Sân, luật · ${c.courts} sân, chạm ${c.target}${winBy2(c)?" cách 2":""}`]);
+  if(G){const g=c.giai||{},P=g.pairs||[],ok=P.length>=3&&(!isKO(g)||koGroupsOk(g));L.push(["nguoi",ok,`Cặp${isKO(g)?", chia bảng":""} · ${P.length} cặp${isKO(g)?(koGroupsOk(g)?` · ${koNEff(g)} bảng đã bốc`:" · chưa bốc chia bảng"):""}`,ok?"":"Sửa"])}
+  const mu=typeof loaMuted==="function"&&loaMuted();L.push(["tt",!mu,mu?"Loa · đang tắt trên máy này":"Loa · bật trên máy này",mu?"Bật":""]);
+  if(c.refOn===true){const cov=hqRefCov(),miss=Array.from({length:c.courts},(_,i)=>i+1).filter(k=>!cov.has(k));L.push(["tt",!miss.length,miss.length?`Trọng tài · ${miss.map(k=>"Sân "+cName(k)).join(", ")} chưa có`:"Trọng tài · đủ các sân",miss.length?"Giao":""])}
+  if(X&&isAdm()){const st=ckStats(D,X);L.push(["nguoi",!st.pend,`Check-in · ${st.arr}/${st.L.length} đã tới${st.pend?` · ${st.pend} chờ duyệt`:""}`,st.pend?"Duyệt":""]);
+    if(st.due)L.push(["tien",false,`Tiền · còn ${fmtK(st.due)} chưa thu`,"Xem"]);else L.push(["tien",true,"Tiền · đã thu đủ"])}
+  else L.push(["nguoi",n>=4,`Có mặt · ${n} người${n<4?" · cần ít nhất 4":""}`,n<4?"Thêm":""]);
+  return L;
+}
+function hqTabsBar(D,cur,live){
+  const C=hqChecks(D),bad=k=>C.filter(x=>x[0]===k&&!x[1]).length,X=ckSched(),pend=X&&isAdm()?ckPending().filter(r=>r.sid===X.id).length:0;
+  const badge={san:C.filter(x=>!x[1]).length,nguoi:live?pend:bad("nguoi"),tien:live?0:bad("tien"),tt:bad("tt")};
+  return `<nav class="hqtabs" aria-label="Quản lý">${HQ_TABS.map(([k,l])=>{const lock=k==="chot"&&!live,on=k===cur;
+    return `<button data-act="hqtab" data-v="${k}" aria-pressed="${on}"${lock?' class="lock"':""}>${l}${lock?" 🔒":""}${badge[k]?`<i>${badge[k]}</i>`:""}</button>`}).join("")}</nav>`;
+}
+function hqSanSang(D){
+  const c=D.c,X=xCur(),live=phaseOf(D)==="live",C=hqChecks(D),done=C.filter(x=>x[1]).length,left=X&&X.at?X.at-Date.now():0;
+  const T=isAdm()?xToday():[],many=T.length>1&&!live&&!D.SM.length;
+  let h=`<section class="hqhero"><span class="k">${esc(X?xName(X):(c.sname||"Giải đấu nhanh"))}${X&&X.at?` · ${hm(X.at)}`:""}</span><b>${live?"Đang đánh":left>0?`còn ${left>=36e5?`${Math.floor(left/36e5)} giờ `:""}${Math.round(left%36e5/6e4)}′`:"Tới giờ đánh"}</b><span class="v">${done}/${C.length} mục xong · bấm dòng để sửa</span>${(X&&!live&&!D.SM.length)||many?`<button class="lnk hnchg" data-act="hnunpick">⇄ Đổi giải khác</button>`:""}</section>`;
+  h+=`<div class="hqchk">${C.map(([k,ok,t,b])=>`<button class="r" data-act="hqtab" data-v="${k}"><i class="${ok?"ok":"no"}">${ok?"✓":"!"}</i><span>${esc(t)}</span>${b?`<em>${b}</em>`:`<span class="go" aria-hidden="true">›</span>`}</button>`).join("")}</div>`;
+  h+=`<div class="hqgs">${hqGrp("gio","Thông tin giải",esc(fmtTxt(c)),xPrepHero(D))}</div>`;
+  if(!X)h+=xNoSched(D)+card(live?"Giải đấu này":"Giải đấu nhanh · không cần đăng ký trước",buoiBlock(D));
+  return h;
+}
+function hqNguoi(D){
+  const c=D.c,G=isG(c),X=ckSched(),live=phaseOf(D)==="live";let h="";
+  if(X&&isAdm()){const s=ckStats(D,X),P=s.L.filter(r=>r.ci&&!r.arrived).length,N=s.L.filter(r=>!r.arrived&&!r.ci).length;
+    h+=`<div class="hqtiles three"><span><b class="num">${s.arr}<small>/${s.L.length}</small></b><small>ĐÃ TỚI</small></span><span><b class="num y">${P}</b><small>CHỜ DUYỆT</small></span><span><b class="num">${N}</b><small>CHƯA TỚI</small></span></div>
+      <div class="two hqbt"><button class="nv" data-act="ckall">⌗ Mở bàn đón</button><button class="line" data-act="hnlate" data-id="${esc(X.id)}">＋ Đến muộn</button></div><div class="hqopts">${hnOpts(X)}</div>`;
+    h+=`<div class="hqcks">${hqCkShort(D,X)}</div>`}
+  h+=`<span class="xsec">Ai có mặt · bấm để cho vào hoặc nghỉ</span>`+attChips(D);
+  if(G){const g=c.giai||{pairs:[]};h+=`<span class="xsec">${isKO(g)?"Cặp, chia bảng":"Các cặp"}</span>`+(g.locked?gRun(D,gDerive(D),"ql"):gSetup(D,g,{prep:!live}))}
+  return h;
+}
+function hqTien(D){const M=hqMoney(D);return `<section class="hqbox"><span class="cap">Thu · ${M.sum}</span>${M.body}</section>`+prepRows(D,["tien","giai"])}
+function hqLuat(D){return `<section class="hqbox">${fmtBlock(D)}</section>`+prepRows(D,["pre"])}
+function hqTT(D){return prepRows(D,["tt","mc"])}
+function hqChotTab(D){
+  if(phaseOf(D)!=="live")return `<div class="empty"><strong>Mở khi giải đã bắt đầu</strong>Trao giải, chi thật, gửi kết quả và chốt sổ nằm ở đây.</div>`;
+  const G=isG(D.c),GD=G&&(D.c.giai||{}).locked?gDerive(D):null,M=money(D),pz=prizes(D,M);
+  const st=(n,t,s)=>`<button class="hqst" data-act="step" data-v="chot"><span class="n">${n}</span><span class="t"><b>${t}</b> · ${s}</span><span aria-hidden="true">›</span></button>`;
+  return `<section class="hqbox"><span class="cap">${GD?`Đã đánh xong ${GD.resolved}/${GD.total} trận`:`${D.done.length} trận đã xong${D.playing.length?` · ${D.playing.length} đang đánh`:""}`}</span><div class="hqsts">${st(1,"Trao thưởng",pz.length?pz.slice(0,3).map(p=>`${esc(p.label||"")} ${fmtK(p.k)}`).join(" · "):"không trao giải")}${st(2,"Chi thật",COSTS.filter(([k])=>+D.c.costs[k]>0).map(([k,l])=>`${l.toLowerCase()} ${fmtK(+D.c.costs[k])}`).join(" · ")||"nhập chi phí sân, bóng, nước")}${st(3,"Gửi kết quả","vào nhóm Zalo, thẻ thành tích")}</div>
+    ${D.playing.length?`<p class="rule">Còn ${D.playing.length} trận trên sân: lưu hoặc huỷ trước khi chốt.</p>`:""}<p class="rule">Chưa chốt thì vẫn đánh tiếp được. Chốt rồi vẫn mở lại để sửa được.</p></section>`;
+}
 function hqView(D){
   const c=D.c,G=isG(c),X=xCur(),live=phaseOf(D)==="live",n=D.players.filter(p=>p.active!==false).length;
   xAutoPrep(D);
+  let cur=hqTab||(live?"nguoi":"san");if(cur==="chot"&&!live)cur="san";
   let h=(!X&&!live&&hnQuick&&isAdm()&&hnList().length?`<button class="lnk hnback" data-act="hnquickx">‹ Về danh sách giải</button>`:"");
-  h+=hqQuick(D);
-  // Nhóm 1: giải hôm nay
-  const T=isAdm()?xToday():[],many=T.length>1&&!live&&!D.SM.length;
-  let gb=xPrepHero(D);
-  if(!X){gb+=xNoSched(D)+card(live?"Giải đấu này":"Giải đấu nhanh · không cần đăng ký trước",buoiBlock(D))}
-  h+=`<div class="hqgs">`+hqGrp("gio","Giải hôm nay",esc([X?xName(X):(c.sname||"Giải đấu nhanh"),fmtTxt(c)].filter(Boolean).join(" · "))+(many||(X&&!live)?" · đổi giải":""),gb);
-  h+=hqGrp("ck","Điểm danh, check-in",hqCkSum(D),hqCkBody(D));
-  {const M=hqMoney(D);h+=hqGrp("tien","Tiền",M.sum,M.body)}
-  h+=hqGrp("san","Sân và luật điểm",esc(`${c.courts} sân · chạm ${c.target}${winBy2(c)?" cách 2":""}${ptMax(c)?`, trần ${ptMax(c)}`:""}${live?" · đổi sân giữa giải":""}`),fmtBlock(D));
-  if(G){const g=c.giai||{pairs:[]},P=g.pairs||[];
-    const body=g.locked?gRun(D,gDerive(D),"ql"):gSetup(D,g,{prep:!live});
-    h+=hqGrp("cap",isKO(g)?"Cặp, chia bảng":"Các cặp",`${P.length} cặp${isKO(g)?` · ${koNEff(g)} bảng`:""}${g.locked?" · đã khoá lịch":""}`,body)}
-  h+=`</div>`;
-  h+=prepRows(D);
-  h+=`<div class="hqgs">${hqChot(D)}</div>`;
-  if(live)return h+`<div class="hqcta"><button class="ball wide" data-act="step" data-v="live">← Về Đang đánh</button></div>`;
+  h+=hqTabsBar(D,cur,live)+hqQuick(D);
+  h+=({san:hqSanSang,nguoi:hqNguoi,tien:hqTien,luat:hqLuat,tt:hqTT,chot:hqChotTab}[cur])(D);
+  if(live)return h+`<div class="hqcta">${cur==="chot"?`<button class="ball wide" data-act="step" data-v="chot">🏆 Kết thúc và chốt giải</button>`:`<button class="ball wide" data-act="step" data-v="live">← Về Đang đánh</button>`}</div>`;
   if(G)return h+gStartBar(D,c.giai||{pairs:[]});
-  return h+`<div class="hqcta"><button class="ball wide" data-act="start">Bắt đầu giải · ${n} người →</button>${n<4?`<small>Cần ít nhất 4 người có mặt, hiện có ${n}.</small>`:""}</div>`;
+  return h+`<div class="hqcta"><button class="ball wide go" data-act="start">▶ Khai mạc giải · ${n} người</button>${n<4?`<small>Cần ít nhất 4 người có mặt, hiện có ${n}.</small>`:`<small>Loa đọc thể thức → trận đầu tự vào sân</small>`}</div>`;
 }
 
 /* ---------- Đang đánh: dải trực tiếp + báo chờ duyệt ---------- */
@@ -104,21 +144,27 @@ function ckAll(D){
     return `${g}${lv?` · ${lv}`:""} · ${r.guest?"ngoài CLB":"thành viên"}`};
   const pay=r=>`<span class="hqpay ${r.pay==="ok"?"ok":r.pay==="sent"?"sent":"no"}">${ckPayLb(r)}</span>`;
   const row=(r,right,extra="")=>`<div class="hqck big">${ckPic(D,r,"ckpic")}<span class="t"><b>${esc(ckName(D,r))}${r.walkin&&!r.arrived?` <i class="tag">XIN VÀO</i>`:""}</b><small>${sub(r)}${extra}</small>${pay(r)}</span>${right}</div>`;
-  let h=`<div class="hqhd"><button data-act="ckallx" aria-label="Quay lại">‹</button><b>Check-in · ${esc(xName(X))}</b></div>
+  let h=`<div class="hqhd"><button data-act="ckallx" aria-label="Quay lại">‹</button><b>Bàn đón · ${esc(xName(X))}</b></div>
+    <div class="hqqr"><span class="ic" aria-hidden="true">⌗</span><span class="t"><b>QUÉT ĐỂ CHECK-IN</b><small>Mở mã toàn màn hình, quay về phía người tới · mã đổi mỗi 30 giây</small></span><button class="nv" data-act="ckopen" data-id="${esc(X.id)}">Mở mã</button></div>
     <div class="hqtiles"><span><b class="num">${s.arr}<small>/${L.length}</small></b><small>ĐÃ TỚI</small></span><span><b class="num y">${P.length}</b><small>CHỜ DUYỆT</small></span><span><b class="num">${N.length}</b><small>CHƯA TỚI</small></span><span><b class="num">${fmtK(s.due)}</b><small>CẦN THU</small></span></div>
     <div class="xbfl">${[["all","Tất cả",L.length],["pend","Chờ duyệt",P.length],["no","Chưa tới",N.length],["yes","Đã tới",A.length]].map(([k,l,n])=>`<button data-act="ckallf" data-v="${k}" aria-pressed="${f===k}">${l} ${n}</button>`).join("")}</div>`;
   if(L.length>10)h+=`<label class="srch xbq"><span class="sr">Tìm tên</span><input id="ck-q" data-draft="ck-q" data-live="1" type="search" placeholder="Tìm tên…" value="${esc(val("ck-q",""))}"></label>`;
   const sec=(k,t,R,fn)=>(f==="all"||f===k)&&R.filter(mt).length?`<span class="xsec">${t}</span><div class="hqcks">${R.filter(mt).map(fn).join("")}</div>`:"";
   h+=sec("pend","Chờ duyệt · bấm để so mặt và thu tiền",P,r=>row(r,`<button class="ckbtn" data-act="ckview" data-id="${esc(r.id)}">Duyệt</button>`,r.ci?` · quét ${hm(r.ci)}`:""));
+  if(N.length&&(f==="all"||f==="no"))h+=`<button class="line hqcall" data-act="ckcallall">📣 Loa gọi ${N.length} người chưa tới</button>`;
   h+=sec("no","Chưa tới",N,r=>row(r,`<button class="ckbtn line" data-act="ckman" data-id="${esc(r.id)}">${armed("ckman:"+r.id)?"Bấm lần nữa":"Check-in tay"}</button>`));
   h+=sec("yes","Đã tới · mới nhất trước",A,r=>row(r,`<span class="ckby ${r.arrBy==="btc"?"btc":"qr"}">${r.arrBy==="btc"?"✋ TAY":"⌗ QR"}</span><button class="ckbtn line ckun" data-act="ckundo" data-id="${esc(r.id)}" aria-label="Hoàn tác check-in">${armed("ckundo:"+r.id)?"Hoàn tác?":"↶"}</button>`,r.arrivedAt?` · ${hm(r.arrivedAt)}`:""));
   if(!L.length)h+=`<div class="empty"><strong>Chưa có ai trong danh sách</strong>Người đăng ký giải sẽ hiện ở đây.</div>`;
-  return h+`<div class="hqcta two"><button class="btn-line" data-act="hnlate" data-id="${esc(X.id)}">＋ Đến muộn</button><button class="ball" data-act="ckopen" data-id="${esc(X.id)}">⌗ Mở mã check-in</button></div>`;
+  return h+`<div class="hqcta two"><button class="btn-line" data-act="hnlate" data-id="${esc(X.id)}">＋ Đến muộn</button><button class="ball" data-act="ckallx">Xong · về Quản lý</button></div>`;
 }
 function hqAct(act,b){
   if(act==="ckall"){ckAllOpen=true;ckAllF="all";render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="ckallx"){ckAllOpen=false;render();return true}
+  if(act==="ckcallall"){const D=derive(),X=ckSched();if(!X)return true;const N=ckList(D,X).filter(r=>!r.arrived&&!r.ci).map(r=>ckName(D,r));
+    if(!N.length)return true;if(typeof loaMuted==="function"&&loaMuted()){toast("Loa đang tắt trên máy này.");return true}
+    speak(`Mời các vận động viên ${N.join(", ")} tới bàn ban tổ chức để check-in.`,"","ckcall");return true}
   if(act==="ckallf"){ckAllF=b.dataset.v||"all";render();return true}
   if(act==="hqlock"){toast("Mục này mở khi giải đã bắt đầu.");return true}
+  if(act==="hqtab"){const v=b.dataset.v;if(v==="chot"&&phaseOf(derive())!=="live"){toast("Thẻ Chốt mở khi giải đã bắt đầu.");return true}hqTab=v;ckAllOpen=false;render();try{scrollTo({top:0})}catch(e){}return true}
   return false;
 }

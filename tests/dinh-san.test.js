@@ -5,7 +5,7 @@ test("xoay cặp: trận định sẵn vào sân trước theo thứ tự, sau �
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ\nG\nH | nữ\nI\nK | nữ\nL\nM | nữ"); await e.click("add");
-  await e.tab("san");
+  await e.tab("san"); await e.click("hqtab", { v: "luat" });
   expect(e.T()).toContain("Xếp sẵn các trận đầu");
   await e.click("preon");
   const id = n => e.pid(n);

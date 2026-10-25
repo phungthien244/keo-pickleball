@@ -134,12 +134,14 @@ const flexNote=`<div class="flexnote"><b>Không khoá cứng.</b> Mọi mục tr
 // Bước Sẵn sàng: tóm tắt buổi → ai có mặt → tùy chọn (thu gọn, mở ra là đủ mọi cài đặt cũ) → Bắt đầu
 let prepOpen=new Set();
 // Một dòng "Cài đặt thêm": bấm tên để mở/thu gọn, công tắc bên phải để bật/tắt tính năng
-function prepRow(k,title,sum,body,tog){const on=prepOpen.has(k);
+const prepRow=(...a)=>prepRow0(...a);
+function prepRow0(k,title,sum,body,tog){const on=prepOpen.has(k);
   const sw=tog?`<button class="xsw${tog.on?" on":""}" data-act="${tog.act}" role="switch" aria-checked="${!!tog.on}" aria-label="${esc(title)}"><i></i></button>`:"";
   return `<div class="pxrow${on?" on":""}"><div class="prowhd"><button class="prowh" data-act="prow" data-v="${k}" aria-expanded="${on}"><span class="tt"><span>${title}</span><small>${esc(sum)}</small></span><i aria-hidden="true">${on?"−":"›"}</i></button>${sw}</div>${on?`<div class="prowb">${body}</div>`:""}</div>`}
-function prepRows(D){
+function prepRows(D,keys){
   const c=D.c,G=isG(c),thu=c.thu||"keo",gt=c.gt||"khong",cp=c.cphi!==false,gon=gt!=="khong",mu=typeof loaMuted==="function"&&loaMuted();
-  let h=`<span class="xsec">Tuỳ chọn · bật thì mới bung cài đặt</span><div class="pxrows">`;
+  let h=keys?`<div class="pxrows">`:`<span class="xsec">Tuỳ chọn · bật thì mới bung cài đặt</span><div class="pxrows">`;
+  const prepRow=(k,...a)=>!keys||keys.includes(k)?prepRow0(k,...a):"";
   if(0)h+=prepRow("san","Sân và luật điểm",`${c.courts} sân · chạm ${c.target}${G&&isKO(c.giai)?(()=>{const K=koK(c.giai);return ` · KO ${ruleTx(koRule(K,"k"))} · CK ${ruleTx(koRule(K,"f"))}`})():""}${winBy2(c)?" cách 2":""}${ptMax(c)?`, trần ${ptMax(c)}`:""}`,fmtBlock(D));
   h+=prepRow("tien",G?"Chi phí, lệ phí":"Chi phí",cp?THU[thu]+(thu==="phi"?` ${fmtK(+c.phi||0)}`:""):"Tắt · không thu phí",cp?moneyBlock(D):`<small class="rule">Giải đấu này không thu phí. Bật công tắc để tính chi phí.</small>`,{act:"cphi",on:cp});
   h+=prepRow("giai","Giải thưởng",gon?GT[gt]||"":"Tắt · không trao giải",prizeBlock(D),{act:"gton",on:gon});
@@ -313,7 +315,12 @@ async function sessionAct(act,id,b,e){
   if(act==="lseg"){liveSeg=b.dataset.v;render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="prow"){const k=b.dataset.v;if(prepOpen.has(k))prepOpen.delete(k);else prepOpen.add(k);render();return true}
   if(act==="start"){if(!armOr("start:x"))return true;const D=derive(),ro=regOpen();let n=0;
-    await write(async()=>{n=await regStart(D);await saveCfg(ro?{phase:"live",reg:{...regCfg(),on:false}}:{phase:"live"})},`Đã bắt đầu giải đấu #${D.sid}`);if(n)toast(`Đã bắt đầu · điểm danh thêm ${n} người đã đăng ký`);return true}
+    await write(async()=>{n=await regStart(D);await saveCfg(ro?{phase:"live",reg:{...regCfg(),on:false}}:{phase:"live"})},`Đã khai mạc giải đấu #${D.sid}`);if(n)toast(`Đã khai mạc · điểm danh thêm ${n} người đã đăng ký`);
+    hqTab=null;stepView=null;
+    // Khai mạc: loa đọc thể thức, rồi đưa trận đầu vào sân (xoay cặp)
+    if(!isG(D.c)&&typeof window!=="undefined"&&!window.__PBTEST){try{if(typeof loaMuted==="function"&&!loaMuted())speak(mcText(derive()),"","rules")}catch(e){}
+      const D2=derive();if(D2.players.filter(p=>p.active!==false).length>=4&&!D2.playing.length)await generate()}
+    return true}
   if(act==="win2"){const on=b.dataset.v==="1";write(()=>saveCfg({win2:on}),on?"Thắng phải cách 2":"Chạm là thắng");return true}
   if(act==="ptmax"){const c=cfg(),on=b.dataset.v==="1";write(()=>saveCfg({ptMax:on?Math.max(c.target+2,+c.ptMax||c.target+4):0}));return true}
   if(act==="ptmaxd"){const c=cfg(),n=Math.min(40,Math.max(c.target+1,(+c.ptMax||c.target+4)+Number(b.dataset.d)));write(()=>saveCfg({ptMax:n}));return true}

@@ -54,6 +54,7 @@ test("Chuẩn bị: mục Trọng tài mặc định tắt, bật lên giao sân
     }
   });
   await e.boot(); await e.until(() => e.T().includes("Trọng tài"));
+  await e.click("hqtab", { v: "tt" });
   expect(e.T()).toContain("ban tổ chức tự nhập");
   await e.click("prow", { v: "tt" });
   expect(e.T()).toContain("Giải đấu này ban tổ chức tự nhập tỉ số");

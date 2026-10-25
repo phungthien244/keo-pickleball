@@ -197,6 +197,7 @@ test("vòng bảng lẻ cặp: 7 cặp chia 3 bảng, 4 cặp vào bán kết (n
   await e.tab("san"); await e.click("cset", { k: "fmt", v: "bang" });
   await e.click("gauto");
   expect(e.store.get("app/config").giai.pairs.length).toBe(7);
+  await e.open("cap");
   expect(e.T()).toContain("3 bảng"); // 7 cặp: tự giảm từ 4 xuống 3 bảng
   await e.click("koset", { k: "q", v: "4" });
   await e.click("kodraw");

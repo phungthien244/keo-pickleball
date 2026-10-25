@@ -61,7 +61,7 @@ export function setup({ search = "", path = "/", host = "rr.pikeco.app", user = 
   const H = {};
   globalThis.document = { querySelector: s => mk(s), querySelectorAll: () => [], getElementById: () => null, addEventListener: (t, f) => (H[t] = f), activeElement: null, hidden: false, title: "", body: { prepend() {} } };
   globalThis.localStorage = { getItem: () => "san", setItem() {} };
-  globalThis.window = { FB };
+  globalThis.window = { FB, __PBTEST: true };
   globalThis.FB = FB;
   const loc = { search, hostname: host, origin: "https://" + host, pathname: path, reload: () => env.reloaded++ };
   Object.defineProperty(loc, "href", { set: v => (env.href = v), get: () => loc.origin + loc.pathname + loc.search });
@@ -84,7 +84,11 @@ export function setup({ search = "", path = "/", host = "rr.pikeco.app", user = 
     async ok(act, ds = {}) { await this.click(act, ds); await H.click({ target: { closest: s => (s === "[data-act]" ? { dataset: { act: "cfmok" } } : null) } }); await tick(); },
     CF: () => mk("#cfm").innerHTML,
     // mở một nhóm thu gọn ở tab Hôm nay · Quản lý (nếu đang đóng)
-    async open(k) { if (!mk("#view").innerHTML.includes(`data-v="${k}" aria-expanded="true"`)) await this.click("prow", { v: k }); },
+    async open(k) {
+      const T = { gio: "san", ck: "nguoi", cap: "nguoi", tien: "tien", giai: "tien", tt: "tt", mc: "tt", pre: "luat", san: "luat" };
+      if (T[k]) await this.click("hqtab", { v: T[k] });
+      if (["gio", "tien", "giai", "tt", "mc", "pre"].includes(k) && !mk("#view").innerHTML.includes(`data-v="${k}" aria-expanded="true"`)) await this.click("prow", { v: k });
+    },
     async nav(go, ds = {}) { await H.click({ target: { closest: s => (s === "[data-go]" ? { dataset: { go, ...ds } } : null) }, preventDefault() {} }); await tick(); },
     async tab(t) { await H.click({ target: { closest: s => (s === "[data-tab]" ? { dataset: { tab: t } } : null) } }); await tick(); },
     input(k, v) { H.input({ target: { dataset: { draft: k }, value: v } }); },

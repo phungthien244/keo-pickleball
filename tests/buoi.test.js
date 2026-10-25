@@ -9,7 +9,8 @@ test("luồng giải đấu: chuẩn bị → đang đánh → chốt, quỹ gi�
   // ① Chuẩn bị: thấy điểm danh, thể thức, tiền, nút bắt đầu; chưa có ô xếp trận
   await e.open("gio");
   expect(e.T()).toContain("Giải đấu #1 · chuẩn bị");
-  expect(e.T()).toContain("Điểm danh");
+  await e.open("ck");
+  expect(e.T()).toContain("Ai có mặt");
   expect(e.V()).toContain('data-act="start"');
   expect(e.V()).not.toContain('data-act="gen"');
   await e.click("cset", { k: "thu", v: "phi" }); await e.cfg("phi", 60); await e.cfg("court", 300);
@@ -107,7 +108,7 @@ test("luật điểm: chạm, cách 2, điểm trần; tên giải đấu; tắt
   expect(e.T()).not.toContain("Giải đấu tối thứ 5 · Giải đấu #1");
   await e.click("ptmax", { v: "1" });
   expect(e.store.get("app/config").ptMax).toBe(15);
-  await e.click("prow", { v: "tien" });
+  await e.open("tien");
   await e.click("cphi");
   expect(e.store.get("app/config").cphi).toBe(false);
   expect(e.T()).toContain("Giải đấu này không thu phí");
@@ -146,7 +147,7 @@ test("giải vòng tròn: giải thưởng nhất nhì ba tuỳ chỉnh", async 
   await e.click("gton");
   expect(e.store.get("app/config").gt).toBe("hang");
   await e.cfg("hang1", 500); await e.cfg("hang3", 0);
-  await e.click("prow", { v: "giai" }); expect(e.T()).toContain("Quỹ CLB trả tổng 600k");
+  await e.open("giai"); expect(e.T()).toContain("Quỹ CLB trả tổng 600k");
   await e.click("cset", { k: "gt", v: "trich" });
   await e.cfg("chia1", 70); await e.cfg("chia2", 30); await e.cfg("chia3", 0);
   expect(e.T()).toContain("Tổng 100%");
@@ -172,7 +173,7 @@ test("xoay cặp: giải thưởng chi phí từng hạng hoặc chia % cho hạ
   const e = setup({ pin: true });
   await e.boot();
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF"); await e.click("add");
-  await e.tab("san"); await e.click("gton"); await e.click("prow", { v: "giai" });
+  await e.tab("san"); await e.click("gton"); await e.open("giai");
   await e.click("cset", { k: "gt", v: "hang" });
   expect(e.store.get("app/config")).toMatchObject({ gt: "hang", hang1: 200, hang2: 100, hang3: 50 });
   expect(e.T()).toContain("Quỹ CLB trả tổng 350k");

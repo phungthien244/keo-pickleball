@@ -23,7 +23,7 @@ function vSan(D){
 function queueBox(D,org){
   const Q=waitQueue(D),pos=new Map(Q.map((p,i)=>[p.id,i+1]));
   const col=(t,L)=>`<div class="qcol"><span class="qh">${t} · ${L.length}</span>${L.length?L.map(p=>{const s=D.st.get(p.id);return `<span class="qi${p.id===ME?" me":""}"><b class="qn num">${pos.get(p.id)}</b>${av(p,"xs")}<span class="qnm">${esc(p.name)}</span><small class="num">${s.g}</small></span>`}).join(""):`<small class="rule">Không ai</small>`}</div>`;
-  return `<div><div class="lab"><span class="lbl">Hàng chờ (${Q.length}) · số nhỏ lên trước</span>${org?`<button class="lnk" data-act="sheet">+ Người đến muộn</button>`:""}</div>${Q.length?`<div class="qgrid">${col("Nam",Q.filter(p=>p.gender!=="F"))}${col("Nữ",Q.filter(p=>p.gender==="F"))}</div><small class="rule">Số bên phải là số trận đã đánh.</small>`:`<p class="rule">Không ai đang chờ.</p>`}</div>`;
+  return `<div><div class="lab"><span class="lbl">Hàng chờ (${Q.length}) · số nhỏ lên trước</span>${org?(()=>{const X=ckSched();return X?`<button class="lnk" data-act="hnlate" data-id="${esc(X.id)}">+ Người đến muộn</button>`:`<button class="lnk" data-act="sheet">+ Người đến muộn</button>`})():""}</div>${Q.length?`<div class="qgrid">${col("Nam",Q.filter(p=>p.gender!=="F"))}${col("Nữ",Q.filter(p=>p.gender==="F"))}</div><small class="rule">Số bên phải là số trận đã đánh.</small>`:`<p class="rule">Không ai đang chờ.</p>`}</div>`;
 }
 function doneBox(D){
   const hist=[...D.done].filter(myCourt).reverse();
