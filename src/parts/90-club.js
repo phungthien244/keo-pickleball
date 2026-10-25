@@ -149,7 +149,7 @@ function vCaiDat(D){
   h+=`</div>`;
   if(REF)return h+`<section class="card2"><h2>Quyền trọng tài</h2><div class="cb"><p class="rule">${MYCT.length?`Bạn được giao sân ${MYCT.join(", ")}. Chỉ nhập được tỉ số ở các sân này.`:"Bạn chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào sân</a></div></section>`;
   if(!canWrite)return h+clubLoginBody();
-  if(!cdPage)h+=(MINI?unmergeCard():"")+acctLinkCard();
+  if(!cdPage)h+=acctLinkCard();
   if(!cdPage&&!legacy&&isAdm()){const T=[["Khai ngân hàng nhận phí",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
     if(ok<T.length)h+=`<div class="todo"><b>Bắt đầu · ${ok}/${T.length} việc đã xong</b><div class="bar2x"><i style="width:${Math.round(ok/T.length*100)}%"></i></div>${T.map(([l,d])=>`<div class="it${d?" ok":""}"><span class="ck" aria-hidden="true">${d?"✓":""}</span>${l}</div>`).join("")}</div>`}
   return h+clubAdmin(D);

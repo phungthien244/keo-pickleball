@@ -495,7 +495,7 @@ test("Mini App: chia sẻ thẻ Mini App (ảnh, tiêu đề, mô tả, path) ho
   delete globalThis.window.ZMP; delete globalThis.window.APP_ENV; delete globalThis.window.APP_VERSION;
 });
 
-test("Mini App: máy đổi sang tài khoản Zalo khác thì bỏ phiên cũ, xoá dữ liệu người cũ, không gộp tài khoản", async () => {
+test("Mini App: máy đổi sang tài khoản Zalo khác thì bỏ phiên cũ, xoá dữ liệu người cũ, đăng nhập đúng tài khoản mới", async () => {
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data: base() });
   MINI(e, "#/q7");
   const ls = { "pb-zprof": JSON.stringify({ zid: "111", n: "Người cũ" }), "pb-zuid-ok": "zalo_9", "pb-mini-clubs": "[]", "pb-dev": "d1" };
@@ -511,19 +511,3 @@ test("Mini App: máy đổi sang tài khoản Zalo khác thì bỏ phiên cũ, x
   delete globalThis.window.ZMP;
 });
 
-test("Mini App: tài khoản bị gộp nhầm thấy thẻ Tách ra ở trang Tôi, bấm hai lần gửi yêu cầu tách", async () => {
-  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data: base() });
-  MINI(e, "#/q7/toi");
-  const ls = { "pb-zprof": JSON.stringify({ zid: "222" }), "pb-zuid-ok": "zalo_9",
-    "pb-zsync": JSON.stringify({ at: Date.now(), from: "zalo_old", to: "zalo_9", moved: { members: 1, links: 1, regs: 0, clubs: 0 } }) };
-  globalThis.localStorage = { getItem: k => ls[k] ?? null, setItem: (k, v) => { ls[k] = v; }, removeItem: k => { delete ls[k]; }, length: 0, key: () => null };
-  const calls = [];
-  globalThis.window.ZMP = { getUserID: async () => "222", getAccessToken: async () => "AT" };
-  globalThis.fetch = async (u, o) => { calls.push([u, JSON.parse(o.body)]); return { json: async () => ({ ok: true, from: "zalo_old" }) }; };
-  await e.boot(); await e.nav("app", { t: "toi" });
-  await e.until(() => e.T().includes("đã nhận quyền của tài khoản Zalo khác"));
-  expect(e.T()).toContain("1 quyền CLB, 1 liên kết VĐV");
-  await e.ok("zunmerge");
-  await e.until(() => calls.some(c => String(c[0]).endsWith("/api/zalo-unmerge")));
-  delete globalThis.window.ZMP;
-});
