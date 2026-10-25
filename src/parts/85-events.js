@@ -53,7 +53,7 @@ document.addEventListener("click",onAct=async e=>{
   {const pv=e.target.closest("[data-pid]");if(pv&&!e.target.closest("label")&&!e.target.closest(".ppt")){e.preventDefault&&e.preventDefault();go("vdv",{pid:pv.dataset.pid});return}}
   const tb=e.target.closest("[data-tab]");if(tb){const t=tb.dataset.tab;if(t==="home"){go("home");return}
     try{localStorage.setItem("pb-tab",t)}catch(x){}go("app",{tab:t});return}
-  const gl=e.target.closest("[data-go]");if(gl){e.preventDefault();go(gl.dataset.go,{sid:gl.dataset.id,tab:gl.dataset.t,x:gl.dataset.x});return}
+  const gl=e.target.closest("[data-go]");if(gl){e.preventDefault();if(gl.dataset.go==="caidat")cdPage=null;go(gl.dataset.go,{sid:gl.dataset.id,tab:gl.dataset.t,x:gl.dataset.x});return}
   const b=e.target.closest("[data-act]");if(!b)return;
   const act=b.dataset.act,id=b.dataset.id;
   // Nút dạng <a href="#">: không để trình duyệt đổi đường dẫn (Mini App dùng # để định tuyến, đổi # sẽ nhảy về CLB cũ)
@@ -204,7 +204,8 @@ document.addEventListener("click",onAct=async e=>{
   if(await tvAct(act,b,id))return;
   if(await gtAct(act,b))return;
   if(act==="clubshare"){await shareOut({title:"Chia sẻ CLB",text:`🏓 ${CLUB?.name||"CLB"} trên pikeco.app:`,path:"/"+CID});return}
-  if(act==="cdo"){const k=b.dataset.v;cdOpen.has(k)?cdOpen.delete(k):cdOpen.add(k);render();return}
+  if(act==="cdo"){cdPage=b.dataset.v||null;render();try{window.scrollTo(0,0)}catch(e){}return}
+  if(act==="cdback"){cdPage=null;render();return}
   if(act==="capadd"&&await capAct(act,b,id))return;
   if(await gbAct(act,b,id))return;
   if(await koAct(act,b,id))return;

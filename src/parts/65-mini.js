@@ -437,13 +437,7 @@ function mxMgrNav(){
   if(!canWrite)return `<nav class="mxnav">${it("san","court",`data-go="app" data-t="san"`,pathOf("app",{tab:"san"}),"Sân")}${it("bxh","rank",`data-go="app" data-t="bxh"`,pathOf("app",{tab:"bxh"}),"Xếp hạng")}</nav>`;
   return `<nav class="mxnav">${it("buoi","reg",`data-go="app" data-t="dk"`,pathOf("app",{tab:"dk"}),"Tạo")}${it("san","court",`data-go="app" data-t="san"`,pathOf("app",{tab:"san"}),"Hôm nay",ckPending().length)}${it("tien","money",`data-go="app" data-t="tien"`,pathOf("app",{tab:"tien"}),"Quỹ")}${it("nguoi","ppl",`data-go="app" data-t="nguoi"`,pathOf("app",{tab:"nguoi"}),"Thành viên",pendCount())}${it("them","more",`data-go="caidat"`,pathOf("caidat"),"Thêm")}</nav>`;
 }
-function mxMore(D){
-  return `<div class="mxcard list">
-    <a class="mxli" href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"><span class="t">Lịch sử các giải đấu</span><span>›</span></a>
-    <a class="mxli" href="${pathOf("app",{tab:"bxh"})}" data-go="app" data-t="bxh"><span class="t">Bảng xếp hạng</span><span>›</span></a>
-    <a class="mxli" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><span class="t">Trang giới thiệu CLB</span><span>›</span></a>
-    <button class="mxli" data-act="openweb" data-v="${esc(pathOf("caidat"))}"><span class="t">Mở bản web đầy đủ</span><span>↗</span></button></div>`+vCaiDat(D);
-}
+function mxMore(D){return vCaiDat(D)}
 function mxMgrView(D){
   const ob=mxOnboard(D);if(ob&&(route==="home"||(route==="app"&&(tab==="dk"||tab==="san"))))return ob+mxMgrView0(D);
   return mxMgrView0(D);

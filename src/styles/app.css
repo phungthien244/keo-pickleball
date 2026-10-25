@@ -2453,3 +2453,6 @@ section:not(.mx) .hqtabs{margin:0 0 10px}
 .tvshh{display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}.tvshh .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.tvshh .t b{font-size:17px}.tvshh .tags{display:flex;flex-wrap:wrap;gap:4px}.tvshh .r{text-align:right}.tvshh .r b{display:block;font-size:18px}.tvshh .r small{color:var(--muted);font-size:11px}
 .tvfab{left:16px;right:16px;max-width:528px;margin:0 auto}
 @media (min-width:900px){.tvfab{left:auto;right:24px;width:auto}}
+/* Thêm: trang con */
+.cdsub{display:flex;align-items:center;gap:10px;margin:4px 0 10px;padding:8px 0;border-bottom:1px solid var(--line)}.cdsub .t{flex:1;min-width:0;display:flex;flex-direction:column}.cdsub .t b{font-size:17px}.cdsub .t small{color:var(--muted);font-size:12px}
+a.cdb{text-decoration:none;color:inherit;display:flex;align-items:center}

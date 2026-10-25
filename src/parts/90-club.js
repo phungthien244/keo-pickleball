@@ -62,7 +62,7 @@ function loginBar(){
   return h.replace(/<\/div>$/,qrlBox()+"</div>");
 }
 function bankName(b){const x=BANKS.find(z=>z[0]===b.code);return x?x[2]:(b.name||b.code||"")}
-let cdOpen=new Set();
+let cdOpen=new Set(),cdPage=null;
 function clubAdmin(D){
   if(!canWrite)return "";
   if(legacy){
@@ -107,14 +107,23 @@ function clubAdmin(D){
     ["PHÍ & THANH TOÁN",[
       ["mf","💳","Phí thành viên cố định",mfOn()?`${fmtK(c.k)}/${c.per==="m"?"tháng":c.per==="q"?"quý":"năm"} · ${mfLb(cur)} ${np}/${MM.length} đã đóng`:"Đang tắt · bật để thu phí theo tháng/quý/năm",0,`<section class="card2"><div class="cb">${mfCard(D)}</div></section>`,`<button class="cdsw" data-act="mfon" aria-pressed="${mfOn()}" aria-label="Bật tắt phí thành viên">${gbSw(mfOn())}</button>`],
       ["bank","🏦","Ngân hàng nhận phí",CLUB?.bank?.acc?`${esc(bankName(CLUB.bank))} · ${esc(CLUB.bank.acc)}`:"Chưa khai: người chơi không quét QR được",!CLUB?.bank?.acc,sBank]]],
-    ["BAN TỔ CHỨC & QUYỀN",[
+    ["NGƯỜI & QUYỀN",[
       ["team","👥","Ban tổ chức",`${mem.length} người · mời quản lý, trọng tài`,0,sTeam],
       ["pin","🔑","PIN trọng tài",CLUB?.pinAt?`Đã đặt · ${nEd} máy đang dùng`:"Chưa đặt PIN",!CLUB?.pinAt,sPin],
       ["ref","🎯","Giao sân cho trọng tài",`${nSc+nEd} trọng tài`,0,refCard()]]],
-    ["LOA",[["voice","🔊","Giọng đọc gọi vào sân",esc(vc[1]||""),0,voiceCard()]]],
-    ...(ROLE==="owner"?[["DỮ LIỆU",[["del","🗑","Giải đấu đã xóa",delList&&delList.length?`${delList.length} giải khôi phục được`:"Khôi phục giải đấu lỡ tay xoá",0,delCard()]]]]:[])];
-  return `<div class="cdgrp">${G.map(([gt,R])=>`<h3 class="cdgt">${gt}</h3><div class="cdlist">${R.map(([k,ic,t,sum,warn,html,sw])=>{const o=cdOpen.has(k);
-    return `<div class="cdrow${o?" open":""}"><div class="cdh"><button class="cdb" data-act="cdo" data-v="${k}" aria-expanded="${o}"><i class="cdic" aria-hidden="true">${ic}</i><span class="t"><b>${t}</b><small class="${warn?"warn":""}">${warn?"⚠ ":""}${sum}</small></span>${sw?"":`<i class="cdch" aria-hidden="true">${o?"▴":"▾"}</i>`}</button>${sw?sw+`<button class="cdch b" data-act="cdo" data-v="${k}" aria-label="Mở ${t}">${o?"▴":"▾"}</button>`:""}</div>${o?`<div class="cdbody">${html}</div>`:""}</div>`}).join("")}</div>`).join("")}</div>`;
+    ["GIẢI & DỮ LIỆU",[
+      ["ls","📅","Lịch sử các giải đấu",`${S.hist.length} giải đã chốt`,0,"",0,`href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"`],
+      ["bxh","🏆","Bảng xếp hạng",`${D.players.filter(p=>!p.guest).length} thành viên`,0,"",0,`href="${pathOf("app",{tab:"bxh"})}" data-go="app" data-t="bxh"`],
+      ...(ROLE==="owner"?[["del","🗑","Giải đấu đã xóa",delList&&delList.length?`${delList.length} giải khôi phục được`:"Khôi phục giải đấu lỡ tay xoá",0,delCard()]]:[])]],
+    ["LOA & ỨNG DỤNG",[["voice","🔊","Giọng đọc gọi vào sân",esc(vc[1]||""),0,voiceCard()],
+      ["gt","🪪","Xem trang giới thiệu CLB","Như người mới nhìn thấy",0,"",0,`href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"`],
+      ...(MINI?[["web","↗","Mở bản web đầy đủ","pikeco.app trên trình duyệt",0,"",0,`data-act="openweb" data-v="${esc(pathOf("caidat"))}"`]]:[])]]];
+  const P=cdPage&&G.flatMap(x=>x[1]).find(r=>r[0]===cdPage&&r[5]);
+  if(P)return `<div class="cdsub"><button class="gdback" data-act="cdback" aria-label="Quay lại">‹</button><span class="t"><b>${P[2]}</b><small>${P[3]}</small></span>${P[6]||""}</div><div class="cdbody">${P[5]}</div>`;
+  return `<div class="cdgrp">${G.map(([gt,R])=>`<h3 class="cdgt">${gt}</h3><div class="cdlist">${R.map(([k,ic,t,sum,warn,html,sw,lk])=>{
+    const inner=`<i class="cdic" aria-hidden="true">${ic}</i><span class="t"><b>${t}</b><small class="${warn?"warn":""}">${warn?"⚠ ":""}${sum}</small></span>`;
+    if(lk)return `<div class="cdrow"><div class="cdh">${/data-act=/.test(lk)?`<button class="cdb" ${lk}>${inner}<i class="cdch" aria-hidden="true">↗</i></button>`:`<a class="cdb" ${lk}>${inner}<i class="cdch" aria-hidden="true">›</i></a>`}</div></div>`;
+    return `<div class="cdrow"><div class="cdh"><button class="cdb" data-act="cdo" data-v="${k}">${inner}${sw?"":`<i class="cdch" aria-hidden="true">›</i>`}</button>${sw?sw+`<button class="cdch b" data-act="cdo" data-v="${k}" aria-label="Mở ${t}">›</button>`:""}</div></div>`}).join("")}</div>`).join("")}</div>`;
 }
 async function migrate(){
   const u=authUser,now=Date.now(),base="clubs/"+CID+"/";
@@ -139,8 +148,8 @@ function vCaiDat(D){
   h+=`</div>`;
   if(REF)return h+`<section class="card2"><h2>Quyền trọng tài</h2><div class="cb"><p class="rule">${MYCT.length?`Bạn được giao sân ${MYCT.join(", ")}. Chỉ nhập được tỉ số ở các sân này.`:"Bạn chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào sân</a></div></section>`;
   if(!canWrite)return h+clubLoginBody();
-  h+=acctLinkCard();
-  if(!legacy&&isAdm()){const T=[["Khai ngân hàng nhận phí",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
+  if(!cdPage)h+=acctLinkCard();
+  if(!cdPage&&!legacy&&isAdm()){const T=[["Khai ngân hàng nhận phí",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
     if(ok<T.length)h+=`<div class="todo"><b>Bắt đầu · ${ok}/${T.length} việc đã xong</b><div class="bar2x"><i style="width:${Math.round(ok/T.length*100)}%"></i></div>${T.map(([l,d])=>`<div class="it${d?" ok":""}"><span class="ck" aria-hidden="true">${d?"✓":""}</span>${l}</div>`).join("")}</div>`}
   return h+clubAdmin(D);
 }
