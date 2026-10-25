@@ -45,12 +45,12 @@ const LIVEQ=["q","hq","cq"];
 // Bảng trượt (.mxsheet) đã mở trước đó: vẽ lại không chớp, giữ vị trí cuộn
 function sheetKeep(v){
   if(!v||!v.querySelectorAll)return null;
-  const M=new Map();for(const el of v.querySelectorAll(".mxsheet"))M.set(el.getAttribute("aria-label")||el.className,el.scrollTop);
+  const M=new Map();for(const el of v.querySelectorAll(".mxsheet,.ttfs"))M.set(el.getAttribute("aria-label")||el.className,el.scrollTop);
   return M.size?M:null;
 }
 function sheetStill(v,M){
   if(!M)return;
-  for(const el of v.querySelectorAll(".mxsheet")){const k=el.getAttribute("aria-label")||el.className;if(!M.has(k))continue;
+  for(const el of v.querySelectorAll(".mxsheet,.ttfs")){const k=el.getAttribute("aria-label")||el.className;if(!M.has(k))continue;
     el.classList.add("still");el.scrollTop=M.get(k);const d=el.previousElementSibling;if(d&&d.classList.contains("mxdim"))d.classList.add("still")}
 }
 function setView(html){
