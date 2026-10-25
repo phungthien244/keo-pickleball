@@ -15,12 +15,14 @@ async function miniLogin(quiet){
   let id="";try{id=String(await Z.getUserID()||"")}catch(e){}
   const prev=String(zaloProf().zid||"");
   if(id&&prev&&id!==prev){await zSwitch();return false}
-  if(zl&&(lsGet("pb-zuid-ok")===cu.uid||window.FB_TARGET==="mock")&&(!id||prev===id))return true;
+  // Tên, ảnh Zalo của người đang dùng (không hỏi quyền; chỉ có nếu người này từng cho phép)
+  const zinfo=async()=>{try{const ui=await Z.getUserInfo({autoRequestPermission:false,avatarType:"normal"}),u=ui&&ui.userInfo;if(u&&u.name){saveZProf({n:u.name,p:u.avatar||""});render()}}catch(e){}};
+  if(zl&&(lsGet("pb-zuid-ok")===cu.uid||window.FB_TARGET==="mock")&&(!id||prev===id)){if(id&&!zaloProf().n)zinfo();return true}
   try{
     if(id)saveZProf({zid:id});try{sessionStorage.removeItem("pb-zsw")}catch(e){}
     if(window.FB_TARGET==="mock"){await FB.signInWithCustomToken(FB.auth,String(id||"demo"));authUser={uid:"zalo_"+String(id||"demo"),isAnonymous:false};await refreshRole();render();return true}
     let at="";try{at=await Z.getAccessToken()}catch(e){}
-    try{const ui=await Z.getUserInfo({autoRequestPermission:false}),u=ui&&ui.userInfo;if(u&&u.name)saveZProf({n:u.name,p:u.avatar||""})}catch(e){}
+    await zinfo();
     const r=await fetch(API+"/api/zalo-mini",{method:"POST",headers:{"content-type":"text/plain"},body:JSON.stringify({id:String(id||""),at})});
     const j=await r.json().catch(()=>({}));
     lsSet("pb-zsync",JSON.stringify({at:Date.now(),from:zl?cu.uid:"",to:j.uid||"",err:j.token?"":(j.error||"không có token")}));
