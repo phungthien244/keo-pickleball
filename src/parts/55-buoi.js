@@ -254,31 +254,46 @@ function vSoQuy(D){
 }
 
 /* ----- ③ Chốt buổi ----- */
+// Chốt giải 4 bước: Trao giải → Thu nốt → Chi thật → Tổng kết (xoay cặp và giải cặp dùng chung)
+let chotStep=1;
+const CHOT_ST=["Trao giải","Thu nốt","Chi thật","Tổng kết"];
+function chotBar(){return `<nav class="xstp chst" aria-label="Các bước chốt">${CHOT_ST.map((t,i)=>{const n=i+1,on=n===chotStep,ok=n<chotStep;return `<button data-act="chotgo" data-v="${n}" class="${on?"on":ok?"ok":""}"><b>${ok?"✓":n}</b><span>${t}</span></button>`}).join("")}</nav>`}
+function chotBody(D){
+  const c=D.c,G=isG(c),M0=money(D),R0=recv(D,M0),extra=chotMien?Object.fromEntries(R0.unpaid.map(p=>[p.id,0])):null,M=money(D,extra),R=recv(D,M),pz=prizes(D,M);
+  let h=chotBar();
+  if(D.playing.length)h+=`<div class="warnbox"><b>Còn ${D.playing.length} trận đang đánh.</b>Lưu tỉ số hoặc huỷ trận ở Đang đánh rồi quay lại chốt.</div>`;
+  if(chotStep===1)h+=dhAward(D);
+  if(chotStep===2){
+    let b2=`<div class="srow"><span>Đã nhận</span><b class="num">${R0.np}/${R0.n} · ${fmtK(R0.got)}</b></div>`;
+    if(R0.unpaid.length)b2+=R0.unpaid.map(p=>`<div class="srow"><span>${esc(p.name)}</span><span class="bar" style="gap:6px"><b class="num">${fmtK(M0.payOf(p.id))}</b><button class="ghost" data-act="lpaid" data-p="${esc(p.id)}">Đã nhận</button></span></div>`).join("")
+      +`<div class="opt"><button data-act="chotm" data-v="0" aria-pressed="${!chotMien}"><b>Ghi vào “Còn nợ”</b><span>Hiện ở Quỹ › Còn nợ, đánh dấu khi họ đóng sau.</span></button><button data-act="chotm" data-v="1" aria-pressed="${chotMien}"><b>Miễn</b><span>Không thu của những người này.</span></button></div>`;
+    else if(R0.n)b2+=`<p class="rule">Mọi người đã đóng đủ.</p>`;
+    else b2+=`<p class="rule">Giải này không thu tiền theo người.</p>`;
+    h+=card(`<i class="no">2</i>Thu nốt`,b2);
+    const X=xCur(),RF=X?withX(X,()=>regList(D)).refund:[];
+    if(RF.length)h+=card(`Hoàn tiền người huỷ`,RF.map(x=>`<div class="srow"><span>${esc(x.name||D.pmap.get(x.pid)?.name||"?")}</span><span class="bar" style="gap:6px"><b class="num">${fmtK(withX(X,()=>feeOf(x)))}</b><button class="ghost" data-act="regrefund" data-id="${esc(x.id)}">${armed("regrefund:"+x.id)?"Bấm lần nữa":"Đã hoàn"}</button></span></div>`).join("")+`<small class="rule">Người huỷ sau khi đã chuyển tiền. Bấm “Đã hoàn” khi đã trả lại.</small>`);
+  }
+  if(chotStep===3){
+    h+=card(`<i class="no">3</i>Chi thật`,`<div class="form">${COSTS.map(([k,l])=>cfIn(k,l,c.costs[k])).join("")}</div><small class="rule">Sửa nếu khác dự kiến: thêm sân, ít nước…</small>`);
+    if(pz.length)h+=card("Giải thưởng",pz.map(x=>`<div class="srow"><span>${esc(x.label)} · ${x.ids.map(id=>esc(D.pmap.get(id)?.name||"?")).join(" &amp; ")}</span><b class="num">${fmtK(x.k)}</b></div>`).join(""));
+  }
+  if(chotStep===4){
+    const now=M.club-R.left,ts=D.done.map(m=>m.doneAt||m.createdAt||0).filter(Boolean);
+    h+=`<section class="hqhero"><span class="k">${now<0?"Quỹ bù":"Dư vào quỹ CLB"}</span><b class="num">${now<0?"−":"+"}${fmtK(Math.abs(now))}</b><span class="v">${D.done.length} trận · ${M.att.length} người${ts.length?` · ${hm(Math.min(...ts))}–${hm(Math.max(...ts))}`:""}</span></section>`;
+    h+=`<div class="sumbox"><div><span>Phải thu</span><span class="num">${fmtK(R.tot)}</span></div><div><span>Chi</span><span class="num">−${fmtK(M.cost)}</span></div>${M.pot&&M.gt!=="gop"?`<div><span>Giải</span><span class="num">−${fmtK(M.pot)}</span></div>`:""}${R.left?`<div><span>Còn nợ</span><span class="num">${fmtK(R.left)}</span></div>`:""}
+      <div class="big"><span>Vào quỹ ngay</span><span class="num">${now<0?"−":"+"}${fmtK(Math.abs(now))}</span></div>${R.left?`<div><span>Khi thu đủ nợ</span><span class="num">${M.club<0?"−":"+"}${fmtK(Math.abs(M.club))}</span></div>`:""}</div>`;
+    h+=`<div class="flexnote"><b>Chốt không phải khoá.</b> Sai thì mở lại giải trong Lịch sử, sửa chi phí hoặc ai đã đóng; sổ quỹ tự tính lại.</div>`;
+  }
+  const prev=chotStep>1?`<button class="line" data-act="chotgo" data-v="${chotStep-1}">‹ ${CHOT_ST[chotStep-2]}</button>`:"";
+  const next=chotStep<4?`<button class="ball" data-act="chotgo" data-v="${chotStep+1}">Tiếp: ${CHOT_ST[chotStep]} ›</button>`
+    :G?`<button class="ball" data-act="gend" ${D.playing.length?"disabled":""}>${armed("gend:x")?"Bấm lần nữa để lưu giải":"🔒 Kết thúc và lưu giải"}</button>`
+    :`<button class="ball" data-act="chot" ${D.playing.length?"disabled":""}>${armed("chot:x")?"Bấm lần nữa để chốt":"🔒 Chốt &amp; ghi sổ quỹ"}</button>`;
+  return h+`<div class="hqcta two">${prev}${next}</div>`;
+}
 function vChot(D){
-  const back=`<a class="bk" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">‹ Về Sân</a>`;
+  const back=`<a class="bk" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">‹ Về Hôm nay</a>`;
   if(!canWrite)return `<div class="dhead">${back}<h1>Chốt giải đấu</h1></div>`+clubLoginBody();
-  const c=D.c;
-  if(isG(c))return `<div class="dhead">${back}<h1>Chốt giải đấu #${D.sid}</h1></div>${steps3(3,D)}<div class="empty"><strong>Giải cặp chốt ở tab Sân</strong>Bấm “Kết thúc giải và lưu” ở cuối lịch thi đấu.</div>`;
-  const M0=money(D),R0=recv(D,M0),extra=chotMien?Object.fromEntries(R0.unpaid.map(p=>[p.id,0])):null,M=money(D,extra),R=recv(D,M),pz=prizes(D,M);
-  const ts=D.done.map(m=>m.doneAt||m.createdAt||0).filter(Boolean);
-  let h=`<div class="dhead">${back}<h1>Chốt giải đấu #${D.sid}</h1><span class="dsub num">${c.sname?esc(c.sname)+" · ":""}${D.done.length} trận · ${M.att.length} người · ${c.courts} sân${ts.length?` · ${hm(Math.min(...ts))}–${hm(Math.max(...ts))}`:""}</span></div>`+steps3(3,D);
-  if(D.playing.length)h+=`<div class="warnbox"><b>Còn ${D.playing.length} trận đang đánh.</b>Lưu tỉ số hoặc hủy trận ở tab Sân rồi quay lại chốt.</div>`;
-  else if(!D.done.length)h+=`<div class="warnbox"><b>Giải đấu chưa có trận nào xong.</b>Chốt bây giờ sẽ lưu một giải đấu trống.</div>`;
-  h+=card(`<i class="no">1</i>Chi thật`,`<div class="form">${COSTS.map(([k,l])=>cfIn(k,l,c.costs[k])).join("")}</div><small class="rule">Sửa nếu khác dự kiến: thêm sân, ít nước…</small>`);
-  let b2=`<div class="srow"><span>Đã nhận</span><b class="num">${R0.np}/${R0.n} · ${fmtK(R0.got)}</b></div>`;
-  if(R0.unpaid.length){
-    b2+=`<div class="srow top"><span>Chưa đóng</span><span class="num" style="text-align:right">${R0.unpaid.map(p=>`${esc(p.name)} ${fmtK(M0.payOf(p.id))}`).join(" · ")}</span></div>
-      <div class="opt"><button data-act="chotm" data-v="0" aria-pressed="${!chotMien}"><b>Ghi vào “Còn nợ”</b><span>Hiện ở Sổ quỹ CLB, tick khi họ đóng sau.</span></button><button data-act="chotm" data-v="1" aria-pressed="${chotMien}"><b>Miễn</b><span>Không thu của những người này giải đấu này.</span></button></div>`;
-  }else if(R0.n)b2+=`<p class="rule">Mọi người đã đóng đủ.</p>`;
-  if(pz.length)b2+=pz.map(x=>`<div class="srow"><span>${esc(x.label)} · ${x.ids.map(id=>esc(D.pmap.get(id)?.name||"?")).join(" &amp; ")}</span><b class="num">${fmtK(x.k)}</b></div>`).join("");
-  h+=card(`<i class="no">2</i>Chi phí &amp; giải thưởng`,b2+`<small class="rule">Sửa số riêng hoặc tick ai đã chuyển ở tab Quỹ.</small>`);
-  {const X=xCur(),RF=X?withX(X,()=>regList(D)).refund:[];
-    if(RF.length)h+=card(`<i class="no">3</i>Hoàn tiền người huỷ`,RF.map(x=>`<div class="srow"><span>${esc(x.name||D.pmap.get(x.pid)?.name||"?")}</span><span class="bar" style="gap:6px"><b class="num">${fmtK(withX(X,()=>feeOf(x)))}</b><button class="ghost" data-act="regrefund" data-id="${esc(x.id)}">${armed("regrefund:"+x.id)?"Bấm lần nữa":"Đã hoàn"}</button></span></div>`).join("")+`<small class="rule">Người huỷ sau khi đã chuyển tiền. Bấm “Đã hoàn” khi đã chuyển trả.</small>`)}
-  const now=M.club-R.left;
-  h+=`<div class="sumbox"><div><span>Phải thu</span><span class="num">${fmtK(R.tot)}</span></div><div><span>Chi</span><span class="num">−${fmtK(M.cost)}</span></div>${M.pot&&M.gt!=="gop"?`<div><span>Giải</span><span class="num">−${fmtK(M.pot)}</span></div>`:""}${R.left?`<div><span>Còn nợ (thu sau)</span><span class="num">−${fmtK(R.left)}</span></div>`:""}
-    <div class="big"><span>Vào quỹ ngay</span><span class="num">${now<0?"−":"+"}${fmtK(Math.abs(now))}</span></div>${R.left?`<div><span>Khi thu đủ nợ</span><span class="num">${M.club<0?"−":"+"}${fmtK(Math.abs(M.club))}</span></div>`:""}</div>`;
-  h+=`<button class="ball wide" data-act="chot" ${D.playing.length?"disabled":""}>${armed("chot:x")?"Bấm lần nữa để chốt":"Chốt &amp; ghi sổ quỹ"}</button>`;
-  return h+`<div class="flexnote"><b>Chốt không phải khoá.</b> Sai thì mở lại giải đấu trong Lịch sử, sửa chi phí hoặc ai đã đóng; sổ quỹ tự tính lại và ghi “đã sửa”.</div>`;
+  return `<div class="dhead">${back}<h1>Chốt giải đấu #${D.sid}</h1>${D.c.sname?`<span class="dsub">${esc(D.c.sname)}</span>`:""}</div>`+chotBody(D);
 }
 async function chotBuoi(){
   const D=derive();
@@ -294,7 +309,7 @@ async function chotBuoi(){
     await xFinish(D);
     await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},phase:"prep",sname:"",presets:[],schedId:null});
   },"Đã chốt giải đấu, đây là trang tổng kết để chia sẻ");
-  chotMien=false;go("buoi",{sid:D.sid});
+  chotMien=false;chotStep=1;go("buoi",{sid:D.sid});
 }
 
 /* ----- Sau buổi: mở lại để sửa ----- */
@@ -362,6 +377,7 @@ async function sessionAct(act,id,b,e){
     await write(()=>db.doc("app/"+lid).set({k:sign*k,note,at:Date.now(),by:who()}).then(()=>{ledForm=null;delete drafts["lg-k"];delete drafts["lg-n"]}),sign>0?"Đã ghi thu":"Đã ghi chi");return true}
   if(act==="leddel"){if(!armOr("leddel:"+id))return true;write(()=>db.doc("app/"+id).delete(),"Đã xoá dòng");return true}
   if(act==="chotm"){chotMien=b.dataset.v==="1";render();return true}
+  if(act==="chotgo"){chotStep=Math.max(1,Math.min(4,+b.dataset.v||1));render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="hopen"){editing.add("hx-"+id);render();return true}
   if(act==="hclose"){editing.delete("hx-"+id);COSTS.forEach(([c])=>delete drafts[`hc-${c}-${id}`]);render();return true}
   if(act==="hsave"){const sid=Number(id),h=S.hist.find(z=>z.sid===sid);if(!h||!h.money)return true;

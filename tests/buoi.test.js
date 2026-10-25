@@ -48,6 +48,7 @@ test("luồng giải đấu: chuẩn bị → đang đánh → chốt, quỹ gi�
   await e.nav("chot");
   expect(e.url).toBe("/aep/chot-buoi");
   expect(e.T()).toContain("Chốt giải đấu #1");
+  await e.click("chotgo", { v: "4" });
   expect(e.T()).toContain("Vào quỹ ngay");
   await e.cfg("water", 30);
   await e.click("chot"); await e.click("chot"); await e.until(() => e.store.has("app/hist-1"));

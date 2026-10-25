@@ -2440,3 +2440,4 @@ section:not(.mx) .hqtabs{margin:0 0 10px}
 .xstp .ok b{background:var(--win-bg);color:var(--win)}
 .xstp button:disabled{opacity:.5}
 .xrev .xrevn{font-family:var(--display);font-weight:900;font-size:20px}
+.chst{margin-top:0}
