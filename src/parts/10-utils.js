@@ -42,8 +42,22 @@ const $=s=>document.querySelector(s);
 const hasQ=(q,...xs)=>{const k=noAcc(q).toLowerCase();return !k||xs.some(x=>noAcc(x).toLowerCase().includes(k))};
 // Vẽ trang: đang gõ trong ô tìm thì chỉ cập nhật phần khác, giữ nguyên ô đang gõ (không mất con trỏ, không vỡ bộ gõ tiếng Việt)
 const LIVEQ=["q","hq","cq"];
+// Bảng trượt (.mxsheet) đã mở trước đó: vẽ lại không chớp, giữ vị trí cuộn
+function sheetKeep(v){
+  if(!v||!v.querySelectorAll)return null;
+  const M=new Map();for(const el of v.querySelectorAll(".mxsheet"))M.set(el.getAttribute("aria-label")||el.className,el.scrollTop);
+  return M.size?M:null;
+}
+function sheetStill(v,M){
+  if(!M)return;
+  for(const el of v.querySelectorAll(".mxsheet")){const k=el.getAttribute("aria-label")||el.className;if(!M.has(k))continue;
+    el.classList.add("still");el.scrollTop=M.get(k);const d=el.previousElementSibling;if(d&&d.classList.contains("mxdim"))d.classList.add("still")}
+}
 function setView(html){
-  const v=$("#view");if(!v)return;const ae=document.activeElement;
+  const v=$("#view");if(!v)return;const ae=document.activeElement,keepM=sheetKeep(v);
+  try{return setView0(v,html,ae)}finally{sheetStill(v,keepM)}
+}
+function setView0(v,html,ae){
   const typing=ae&&ae.id&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")&&ae.dataset&&(ae.dataset.live||LIVEQ.includes(ae.dataset.draft))&&v.contains&&v.contains(ae);
   if(!typing||!document.createElement){v.innerHTML=html;return}
   const t=document.createElement("div");t.innerHTML=html;morphKids(v,t,ae);

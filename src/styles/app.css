@@ -2076,3 +2076,15 @@ section:not(.mx) .hqcta{bottom:0;margin:16px -16px 0}
 .hqhd{display:flex;align-items:center;gap:6px;margin:0 0 4px}
 .hqhd button{width:40px;height:40px;min-height:0;padding:0;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:22px;line-height:1;flex:none}
 .hqhd b{font-family:var(--display);font-weight:800;font-size:15px;text-transform:uppercase;letter-spacing:.03em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* hàng người trong trang giải: nhãn tiền không bao giờ bị cắt */
+.xbrow{box-sizing:border-box;overflow:visible}
+.xbrow .xbchip{flex:0 0 auto;min-width:max-content;line-height:1.3}
+.xbrow .t{overflow:hidden}.xbrow .t>b,.xbrow .t>small{overflow:hidden;text-overflow:ellipsis}
+/* chọn người dạng thẻ nhỏ: ảnh nhỏ + tên trên một dòng, gói gọn nhiều hàng */
+.ppg{display:flex;flex-wrap:wrap;gap:6px;max-height:232px;overflow-y:auto;overscroll-behavior:contain;padding:1px}
+.ppt{flex-direction:row;gap:6px;padding:3px 10px 3px 3px;min-height:34px;border-width:1px;font-size:13px;position:relative;max-width:100%}
+.ppt .av{width:26px;height:26px;font-size:11px;flex:none}
+.ppt small{font-size:10px}
+.ppt.on{padding-right:22px}.ppt.on::after{top:50%;right:7px;transform:translateY(-50%);font-size:12px}
+/* bảng trượt vẽ lại tại chỗ: không chạy lại hiệu ứng mở */
+.mxsheet.still,.sheetbg.still,.sheetbg.still .sheet,.mxdim.still{animation:none}
