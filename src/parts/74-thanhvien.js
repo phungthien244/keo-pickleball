@@ -94,8 +94,6 @@ function tvMgr(D,p){
   const N=tvNotes[p.id]||{};
   let h=`<section class="tvmgr"><div class="tvmh"><b>Ban tổ chức</b><small>Chỉ quản lý thấy phần này</small></div>`;
   h+=tvRoleBox(D,p,I);
-  {const LK=(S.links||[]).filter(x=>x.status==="ok"&&x.pid===p.id);
-    if(LK.length)h+=`<div class="tvbox"><h3>Tài khoản Zalo đã liên kết</h3>${LK.map(x=>`<div class="tvli"><span class="t">${esc(x.zname||x.newName||"Tài khoản Zalo")}<small>${x.at?`liên kết ${dmy(x.at)}`:""}</small></span><button class="line sm" data-act="tvunlink" data-id="${p.id}" data-v="${esc(x.id)}">${armed("tvunlink:"+x.id)?"Bấm lần nữa":"Gỡ liên kết"}</button></div>`).join("")}<small class="rule">Gỡ khi liên kết nhầm người: tài khoản Zalo đó không còn là ${esc(p.name)}, phải xin tham gia lại.</small></div>`}
   h+=`<div class="tvbox"><div class="tvbh"><h3>Tiền</h3>${tot?`<b class="neg">Đang nợ ${fmtK(tot)}</b>`:`<b class="pos">Không nợ</b>`}</div>`;
   if(mf)h+=keys.map(k=>{const ok=mfPaid(p.id,k);return `<div class="tvli"><span class="t">Phí thành viên ${mfLb(k)}<small>${fmtK(mfCfg().k)}${k===cur?` · hạn ngày ${mfCfg().due}`:""}</small></span>${ok?`<button class="ghost sm pos" data-act="mfpaid" data-id="${p.id}" data-v="${k}">✓ đã đóng</button>`:`<button class="primary sm" data-act="mfpaid" data-id="${p.id}" data-v="${k}">ĐÃ THU</button>`}</div>`}).join("");
   h+=dts.map(x=>`<div class="tvli"><span class="t">Giải đấu #${x.sid}<small>còn nợ ${fmtK(x.k)}</small></span><button class="primary sm" data-act="paid" data-id="${x.sid}" data-p="${p.id}">ĐÃ NHẬN</button></div>`).join("");
@@ -124,8 +122,6 @@ async function tvAct(act,b,id){
     if(!p.zuid||cur==="owner"||cur===v)return true;if(!armOr("tvrole:"+id+"|"+v))return true;
     const ref=FB.doc(FB.fs,PFX+"members/"+p.zuid);
     await write(()=>!v?FB.deleteDoc(ref):cur?FB.updateDoc(ref,{role:v}):FB.setDoc(ref,{role:v,name:p.name,via:"zalo",pid:p.id,at:Date.now(),by:who()}),v?`${p.name} là ${ROLE_LB[v]}`:`Đã thu quyền của ${p.name}`);return true}
-  if(act==="tvunlink"){const u=String(b.dataset.v||"");if(!u||!armOr("tvunlink:"+u))return true;
-    await write(async()=>{await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+u));if(p.zuid===u)await db.collection("players").doc(id).update({zuid:""})},`Đã gỡ liên kết Zalo khỏi ${p.name}`);return true}
   if(act==="tvmem"){await write(()=>db.collection("players").doc(id).update({guest:false}),`${p.name} đã là thành viên CLB`);return true}
   if(act==="tvhold"){const on=!p.hold;if(on&&D.playing.some(m=>[...m.a,...m.b].includes(id))){toast("Người này đang trên sân.");return true}
     await write(()=>db.collection("players").doc(id).update(on?{hold:true,active:false}:{hold:false}),on?`${p.name} tạm nghỉ dài ngày`:`${p.name} đã quay lại`);return true}
