@@ -1,10 +1,11 @@
 /* ---------- Quản lý thành viên (ban tổ chức): danh sách gọn, lọc nhanh, hồ sơ có tiền, ghi chú, tạm nghỉ ----------
    players/{id}.hold = true: tạm nghỉ dài ngày (ẩn khỏi điểm danh, không tính nợ phí thành viên)
    notes/{pid} = {t, at, by}: ghi chú nội bộ, chỉ ban tổ chức đọc */
-let tvF="all",tvSort="rt",tvAdd=false,tvG="";
-const TVF=[["all","Tất cả"],["here","Có mặt"],["btc","Ban tổ chức"],["debt","Còn nợ"],["nozalo","Chưa Zalo"],["guest","Ngoài CLB"],["hold","Tạm nghỉ"]];
+let tvF="all",tvSort="rt",tvAdd=false,tvG="",tvSel=null;
+const TVF=[["all","Tất cả"],["pend","Chờ duyệt"],["btc","BTC"],["debt","Còn nợ"],["nozalo","Chưa Zalo"],["here","Có mặt"],["guest","Ngoài CLB"],["hold","Tạm nghỉ"]];
+const TV_MAIN=["all","pend","btc","debt","nozalo"];
 const tvRole=(p,I)=>p.zuid?I.role.get(p.zuid)||"":"";
-const tvFlt=I=>({all:p=>!p.guest&&!p.hold,here:p=>p.active!==false,btc:p=>!!tvRole(p,I),debt:p=>I.debtOf(p.id)>0||I.mfNo(p),nozalo:p=>!p.guest&&!p.zuid,guest:p=>p.guest,hold:p=>p.hold});
+const tvFlt=I=>({pend:()=>false,all:p=>!p.guest&&!p.hold,here:p=>p.active!==false,btc:p=>!!tvRole(p,I),debt:p=>I.debtOf(p.id)>0||I.mfNo(p),nozalo:p=>!p.guest&&!p.zuid,guest:p=>p.guest,hold:p=>p.hold});
 function tvInfo(D){
   const dt=new Map();for(const x of debts())dt.set(x.id,(dt.get(x.id)||0)+x.k);
   const role=new Map((S.members||[]).map(m=>[m.id,m.role]));
@@ -32,21 +33,32 @@ function vTV(D){
   const L=D.players.filter(p=>flt(p)&&gOk(p)&&hasQ(q,p.name,p.code,p.nick)).sort(tvSort==="nm"?(a,b)=>a.name.localeCompare(b.name,"vi"):(a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating);
   const cnt=k=>D.players.filter(p=>FL[k](p)&&gOk(p)).length,gc=g=>D.players.filter(p=>flt(p)&&(p.gender==="F"?"F":"M")===g).length;
   let h=`<div class="tvstat">${[[mem.length,"THÀNH VIÊN",""],[here.length,"CÓ MẶT",""],[pend,"CHỜ DUYỆT",pend?"y":""],[nDebt,"CÒN NỢ",nDebt?"r":""]].map(([a,b,c])=>`<span><b class="num ${c}">${a}</b><small>${b}</small></span>`).join("")}</div>`;
-  h+=approvals(D);
+  h+=`<nav class="hqtabs qtabs tvtabs" aria-label="Lọc thành viên">${TV_MAIN.map(k=>{const l=TVF.find(x=>x[0]===k)[1],n=k==="pend"?pend:k==="all"?null:cnt(k);
+    return `<button data-act="tvf" data-v="${k}" aria-pressed="${tvF===k}">${l}${n?`<i>${n}</i>`:""}</button>`}).join("")}</nav>`;
+  if(tvF==="pend"){const A=approvals(D);return h+(A||`<div class="empty"><strong>Không có ai chờ duyệt</strong>Người bấm link mời và chọn tên sẽ hiện ở đây để bạn duyệt.</div>`)+`<button class="tvfab" data-act="tvadd">＋ Thêm thành viên</button>`+rrPanel()}
+  if(pend&&tvF==="all")h+=`<button class="qnolink tvpend" data-act="tvf" data-v="pend"><span>${pend} người chờ duyệt</span><b>Duyệt ›</b></button>`;
   h+=`<label class="tvq"><span class="sr">Tìm thành viên</span><input id="tvq" data-draft="tvq" data-live="1" type="search" placeholder="🔍 Tìm tên, biệt danh, mã…" value="${esc(val("tvq",""))}" autocomplete="off"></label>
-    <div class="tvchips">${TVF.map(([k,l])=>{const n=cnt(k);return k!=="all"&&!n&&tvF!==k?"":`<button data-act="tvf" data-v="${k}" aria-pressed="${tvF===k}">${l} ${n}</button>`}).join("")}</div>
-    <div class="seg segw tvg">${[["","Nam & nữ"],["M",`Nam ${gc("M")}`],["F",`Nữ ${gc("F")}`]].map(([v,l])=>`<button data-act="tvg" data-v="${v}" aria-pressed="${tvG===v}">${l}</button>`).join("")}</div>
+    <div class="tvchips">${TVF.filter(([k])=>!TV_MAIN.includes(k)).map(([k,l])=>{const n=cnt(k);return !n&&tvF!==k?"":`<button data-act="tvf" data-v="${tvF===k?"all":k}" aria-pressed="${tvF===k}">${l} ${n}</button>`}).join("")}${[["M",`Nam ${gc("M")}`],["F",`Nữ ${gc("F")}`]].map(([v,l])=>`<button data-act="tvg" data-v="${tvG===v?"":v}" aria-pressed="${tvG===v}">${l}</button>`).join("")}</div>
     <div class="tvsort"><span>Xếp theo: <button class="lnk" data-act="tvsort">${tvSort==="nm"?"Tên A–Z":"Rating"} ▾</button></span><span>${L.length} người</span></div>
-    ${tvF==="btc"?`<small class="rule">Mở hồ sơ một người để giao hoặc thu quyền Quản lý, Trọng tài. Người cần đã liên kết Zalo.</small>`:""}`;
-  h+=L.length?`<div class="tvlist">${L.map(p=>{const on=p.active!==false,b=busy.has(p.id);
-    return `<div class="tvrow"><a class="tvm" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}"><span class="tvav">${av(p,"md",1)}${on?`<i class="dot"></i>`:""}</span>
+    ${tvF==="btc"?`<small class="rule">Mở một người để giao hoặc thu quyền Quản lý, Trọng tài. Người cần đã liên kết Zalo.</small>`:""}`;
+  h+=L.length?`<div class="tvlist">${L.map(p=>{const on=p.active!==false;
+    return `<div class="tvrow"><button class="tvm" data-act="tvsel" data-id="${p.id}" data-pid="${p.id}"><span class="tvav">${av(p,"md",1)}${on?`<i class="dot"></i>`:""}</span>
       <span class="t"><span class="n"><b>${esc(p.name)}</b><small class="${p.gender==="F"?"f":"m"}">${p.gender==="F"?"Nữ":"Nam"}</small></span><span class="tags">${tvTags(D,p,I)}</span></span>
-      <span class="r"><b class="num">${r2(D.st.get(p.id).rating)}</b><small>rating</small></span></a>
-      ${p.hold?"":`<button class="tvatt${on?" on":""}" data-act="att" data-id="${p.id}" aria-pressed="${on}" aria-label="${on?"Có mặt · bấm để cho nghỉ":"Thêm vào giải đấu hôm nay"}" ${b?"disabled":""}>${on?"✓":"＋"}</button>`}</div>`}).join("")}</div>`
-    :`<div class="empty"><strong>${D.players.length?"Không có ai khớp":"Chưa có thành viên"}</strong>${D.players.length?"Đổi bộ lọc hoặc từ khoá.":"Bấm “＋ Thêm” để thêm người."}</div>`;
-  h+=`<small class="rule">Chạm một người để xem hồ sơ, tiền, ghi chú. Nút ✓/＋ bên phải: có mặt hôm nay.</small>`;
-  h+=`<button class="tvfab" data-act="tvadd">＋ THÊM</button>`;
-  return h+rrPanel();
+      <span class="r"><b class="num">${r2(D.st.get(p.id).rating)}</b><small>rating</small></span></button></div>`}).join("")}</div>`
+    :`<div class="empty"><strong>${D.players.length?"Không có ai khớp":"Chưa có thành viên"}</strong>${D.players.length?"Đổi bộ lọc hoặc từ khoá.":"Bấm “＋ Thêm thành viên” để thêm người."}</div>`;
+  h+=`<small class="rule">Chạm một người để xem nhanh tiền, quyền, ghi chú.</small>`;
+  h+=`<button class="tvfab" data-act="tvadd">＋ Thêm thành viên</button>`;
+  return h+tvSheet(D,I,busy)+rrPanel();
+}
+// Bảng xem nhanh một người (trượt từ dưới lên)
+function tvSheet(D,I,busy){
+  const p=tvSel&&D.pmap.get(tvSel);if(!p)return "";
+  const st=D.st.get(p.id)||{},on=p.active!==false,b=busy.has(p.id);
+  return `<div class="mxdim" data-act="tvselx"></div><div class="mxsheet dhsh tvsh" role="dialog" aria-label="${esc(p.name)}"><span class="grab"></span>
+    <div class="tvshh">${av(p,"md",1)}<span class="t"><b>${esc(p.name)}</b><span class="tags">${tvTags(D,p,I)}</span></span><span class="r"><b class="num">${r2(st.rating||0)}</b><small>${st.g||0} trận</small></span></div>
+    ${p.hold?"":`<button class="gbopt" data-act="att" data-id="${p.id}" aria-pressed="${on}" ${b?"disabled":""}><span><b>Có mặt hôm nay</b><br><small class="rule">${b?"Đang trên sân":on?"Được xếp trận":"Không xếp trận"}</small></span>${gbSw(on)}</button>`}
+    ${tvMgr(D,p)}
+    <div class="two"><button class="line" data-act="tvselx">Đóng</button><a class="btn-line" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">Hồ sơ đầy đủ ›</a></div></div>`;
 }
 // Trang thêm thành viên: link mời Zalo, thêm nhanh nhiều người, chuyển VĐV ngoài CLB thành thành viên
 function qrSvgText(t,px=96){let q;try{q=qrcode(0,"M");q.addData(t);q.make()}catch(e){return ""}
@@ -97,10 +109,12 @@ function tvMgr(D,p){
 }
 async function tvAct(act,b,id){
   if(!/^tv/.test(act))return false;
-  if(act==="tvf"){tvF=TVF.some(x=>x[0]===b.dataset.v)?b.dataset.v:"all";render();return true}
+  if(act==="tvf"){tvF=TVF.some(x=>x[0]===b.dataset.v)?b.dataset.v:"all";tvSel=null;render();return true}
+  if(act==="tvsel"){tvSel=id||null;render();return true}
+  if(act==="tvselx"){tvSel=null;render();return true}
   if(act==="tvg"){tvG=["M","F"].includes(b.dataset.v)?b.dataset.v:"";render();return true}
   if(act==="tvsort"){tvSort=tvSort==="nm"?"rt":"nm";render();return true}
-  if(act==="tvadd"){tvAdd=!tvAdd;render();try{window.scrollTo(0,0)}catch(e){}return true}
+  if(act==="tvadd"){tvAdd=!tvAdd;tvSel=null;render();try{window.scrollTo(0,0)}catch(e){}return true}
   if(!canWrite)return true;
   if(act==="tvshare"){await shareOut({title:"Mời vào CLB",text:`🏓 Mời mọi người tham gia ${CLUB?.name||"CLB"} trên Pikeco (Zalo): chọn tên của mình, đăng ký giải đấu, xem rating.`,path:"/"+CID,miniOnly:true});return true}
   const D=derive(),p=D.pmap.get(id);if(!p)return true;

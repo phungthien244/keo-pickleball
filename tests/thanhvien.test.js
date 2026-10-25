@@ -17,6 +17,12 @@ test("danh sách thành viên: lọc, nợ phí, chuyển thành viên, tạm ng
   await e.nav("app", { t: "nguoi" });
   await e.until(() => e.V().includes('class="tvstat"'));
   expect(e.T()).toMatch(/NỢ PHÍ T\d+/);
+  await e.click("tvsel", { id: "p1" });
+  expect(e.T()).toContain("Hồ sơ đầy đủ"); expect(e.T()).toContain("Có mặt hôm nay");
+  await e.click("tvselx");
+  expect(e.T()).not.toContain("Hồ sơ đầy đủ");
+  await e.click("tvf", { v: "pend" });
+  expect(e.T()).toContain("Không có ai chờ duyệt");
   await e.click("tvf", { v: "guest" });
   expect(e.T()).toContain("Khách"); expect(e.T()).not.toContain("Bình");
   await e.click("tvmem", { id: "g1" }); await e.until(() => e.store.get("clubs/aep/players/g1").guest === false);
