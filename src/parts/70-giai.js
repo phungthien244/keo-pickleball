@@ -92,6 +92,7 @@ function validG(a,b){
 const saveG=patch=>saveCfg({giai:{...(cfg().giai||{}),...patch}});
 const courtStep=c=>`<span class="lbl">Số sân</span><span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân" ${canWrite?"":"disabled"}>−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân" ${canWrite?"":"disabled"}>+</button></span>`;
 function vGiaiSan(D){
+  if(REF&&!canWrite)return vSanToi(D);
   const G=D.c.giai||{pairs:[]};
   if(canWrite&&(phaseOf(D)==="prep"||stepView==="prep"))return hnShowPick(D)?hnPick(D):steps3(1,D)+vPrep(D);
   if(canWrite&&!G.locked)return steps3(2,D)+hqLive(D)+gSetup(D,G)+undoBar();

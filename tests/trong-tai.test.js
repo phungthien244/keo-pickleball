@@ -79,3 +79,11 @@ test("trọng tài nhận sân trước giờ khai mạc vẫn thấy Sân của
   expect(e.T()).toContain("Chờ BTC đưa trận vào sân");
   expect(e.V()).toContain('data-act="dhcb"');
 });
+
+test("giải cặp: trọng tài cũng vào Sân của tôi, không thấy nút sửa số sân", async () => {
+  const data = { ...club, "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "live", fmt: "giai", giai: { pairs: [["p1", "p3"], ["p2", "p4"]], locked: true } } };
+  const e = setup({ host: "pikeco.app", path: "/q7/san", data, user: { uid: "ref1", isAnonymous: true } });
+  await e.boot(); await e.until(() => e.T().includes("Sân của tôi"));
+  expect(e.V()).toContain('data-act="tt" data-id="m1"');
+  expect(e.T()).not.toContain("Số sân");
+});
