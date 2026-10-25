@@ -21,4 +21,9 @@ test("điều hành: ô sân, nghỉ giữa giờ chặn đưa trận mới, đ�
   expect(e.V()).toContain('class="dhct g on"');
   await e.click("dhan"); e.input("dh-ann", "Thử loa"); await e.click("dhango");
   expect(e.T()).not.toContain("Câu mẫu");
+  await e.click("dhqr");
+  await e.until(() => e.V().includes('class="dhqr one"><b>SÂN 1</b>'));
+  expect(e.V()).not.toContain('class="dhqrs"');
+  await e.click("dhqrk", { v: "2" });
+  expect(e.V()).toContain('class="dhqr one"><b>SÂN 2</b>');
 });

@@ -2467,3 +2467,6 @@ a.cdb{text-decoration:none;color:inherit;display:flex;align-items:center}
 .phbox .zalobtn{margin:0}
 .phtag{display:inline-block;margin-top:4px;font-size:13px;font-weight:700;color:var(--navy);text-decoration:none}
 .lnkme{display:flex;align-items:center;gap:8px}
+.dhqrct{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.dhqrct button{flex:none;min-height:40px;padding:0 14px;font-family:var(--body);font-weight:700;text-transform:none;letter-spacing:0}
+.dhqrct button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.dhqr.one{max-width:280px;margin:0 auto;width:100%}.dhqr.one b{font-size:22px}.dhqr.one small{color:var(--muted);text-align:center}
