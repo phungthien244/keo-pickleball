@@ -494,3 +494,19 @@ test("Mini App: chia sẻ thẻ Mini App (ảnh, tiêu đề, mô tả, path) ho
   expect(shares[1].data.text).toMatch(/\nhttps:\/\/zalo\.me\/s\/180913816434821856\/\?clb=q7&p=vdv\/p1&env=TESTING&version=12$/);
   delete globalThis.window.ZMP; delete globalThis.window.APP_ENV; delete globalThis.window.APP_VERSION;
 });
+
+test("Mini App: máy đổi sang tài khoản Zalo khác thì bỏ phiên cũ, xoá dữ liệu người cũ, không gộp tài khoản", async () => {
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data: base() });
+  MINI(e, "#/q7");
+  const ls = { "pb-zprof": JSON.stringify({ zid: "111", n: "Người cũ" }), "pb-zuid-ok": "zalo_9", "pb-mini-clubs": "[]", "pb-dev": "d1" };
+  globalThis.localStorage = { getItem: k => ls[k] ?? null, setItem: (k, v) => { ls[k] = v; }, removeItem: k => { delete ls[k]; } };
+  Object.defineProperty(globalThis.localStorage, "length", { get: () => Object.keys(ls).length });
+  globalThis.localStorage.key = i => Object.keys(ls)[i];
+  const calls = [];
+  globalThis.window.ZMP = { getUserID: async () => "222", getAccessToken: async () => "AT", getUserInfo: async () => ({ userInfo: {} }) };
+  globalThis.fetch = async (u, o) => { calls.push(JSON.parse(o.body)); return { json: async () => ({ token: "x", uid: "zalo_new" }) }; };
+  await e.boot(); await e.until(() => e.reloaded === 1);
+  expect(ls["pb-zprof"] || "").not.toContain("Người cũ"); expect(ls["pb-zuid-ok"]).toBeUndefined(); expect(ls["pb-dev"]).toBe("d1");
+  expect(calls.some(c => c.old)).toBe(false);
+  delete globalThis.window.ZMP;
+});
