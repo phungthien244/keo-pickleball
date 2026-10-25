@@ -2404,3 +2404,31 @@ section:not(.mx) .hqtabs{margin:0 0 10px}
 .okc{color:#15803d}.wac{color:#b45309}
 .ttfs.main .tttools{grid-template-columns:repeat(5,minmax(0,1fr))}
 .dhqr svg{width:100%;height:auto}
+/* ---------- Trực tiếp cho người chơi ---------- */
+.vlc{background:var(--surface);border:1px solid var(--line);margin:0 0 10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.vlc.me{border-left:0;border-top:4px solid #f2b705}
+.vlh{display:flex;align-items:center;gap:8px}.vlh b{font-family:var(--display);font-weight:800;font-size:13px;text-transform:uppercase}.vlh>span{font-size:12px;color:var(--muted)}
+.vlh .lv{color:#dc2626;font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.08em}
+.vlh .res{margin-left:auto;font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.06em;padding:3px 7px}.vlh .res.w{background:var(--win-bg);color:var(--win)}.vlh .res.l{background:#fee2e2;color:#991b1b}
+.vlh .fol{margin-left:auto;min-height:34px;width:38px;padding:0;border:1px solid var(--line-2);background:var(--surface);color:var(--muted);font-size:18px}.vlh .fol.on{color:#ca8a04;border-color:#f2b705}
+.vlt{display:flex;align-items:center;gap:8px;min-height:40px}.vlt b{flex:1;min-width:0;font-size:14px;font-weight:600}.vlt.w b{font-weight:800}
+.vlt .sv{font-style:normal;color:#ca8a04}
+.vlt .g{font-family:var(--display);font-weight:800;font-size:13px;color:var(--muted);width:20px;text-align:center}
+.vlt .p{font-family:var(--display);font-weight:900;font-size:26px;min-width:36px;text-align:right;color:var(--navy)}
+.vlmore{align-self:stretch;min-height:38px;border:0;border-top:1px solid var(--line);background:none;color:var(--blue);font-family:var(--body);font-size:13px;font-weight:600;text-transform:none;letter-spacing:0;text-align:left;padding:8px 0 0}
+.vlno{font-size:12px;color:var(--muted)}
+.vle{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px dashed var(--line-2);margin:0 0 10px;font-size:13px}.vle b{font-family:var(--display);font-weight:800;font-size:12px;text-transform:uppercase}.vle span{color:var(--muted)}
+.vlm{background:var(--navy);color:#fff}
+.vlm .tthd{background:var(--navy)}
+.vlsb{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}.vlsb .tm{display:flex;align-items:center;gap:6px;min-width:0}.vlsb .tm.r{justify-content:flex-end;text-align:right}.vlsb .tm b{font-size:12px}
+.vlsb .gs{font-family:var(--display);font-weight:900;font-size:12px;background:#1f8fe5;padding:3px 6px}
+.vlsb .ttavs .av{box-shadow:0 0 0 2px var(--navy)}
+.vlcall{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0}.vlcall .cap{color:#fca5a5;font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em}
+.vlcall b{font-family:var(--display);font-weight:900;font-size:56px;letter-spacing:4px;line-height:1.05;color:#f2e205}.vlcall span{font-size:13px;color:#cfe0ee}
+.vlm .ttcourt{border-color:#fff}.vlm .ttcourt .net{background:#fff}.vlm .ttc.ta{background:#1e3a5f}.vlm .ttc.tb{background:#3b2a1a}.vlm .ttc .n b{color:#fff}.vlm .ttc .n small{color:#cfe0ee}
+.vlm .ttc.sv{background:#1f8fe5}.vlm .ttc.tb.sv{background:#c2410c}.vlm .ttc.rc{outline:2px dashed #f2e205;outline-offset:-5px}
+.vllog{background:var(--surface);color:var(--ink)}
+.vllog .hh{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}.vllog .cap{color:var(--muted);font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em}
+.vllog .hr{display:grid;grid-template-columns:40px 52px 1fr;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12px;align-items:baseline}.vllog .hr:first-of-type{background:#fffbeb}
+.vllog .hr.kto,.vllog .hr.kmt{color:#b45309}.vllog .hr.kun{color:var(--muted);font-style:italic}.vllog .hr.kg{background:var(--win-bg)}
+.vlbt{display:grid;grid-template-columns:1fr 1fr;gap:8px}.vlbt button{min-height:46px}.vlm .vlbt .line{background:transparent;color:#fff;border-color:#34536d}

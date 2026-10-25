@@ -188,12 +188,7 @@ function mxLive(D){
   if(!live){const nx=schedUp().find(x=>x.st!=="draft");
     return mxShell(D,`<div class="mxcard muted"><b>Chưa có giải đấu đang đánh</b><span>${nx?`Giải đấu tới: ${esc(dowVN(nx.at))} ${esc(dmy(nx.at))} · ${esc(xTime(nx))}`:regOpen()?`Giải đấu tới: ${esc(whenFull(regCfg()))}`:"Khi giải đấu bắt đầu, sân và tỉ số hiện ở đây, cập nhật ngay."}</span></div>`+(nx?xPlayerCards(D,{max:1}):regOpen()?mxSessCard(D,true):""))}
   if(isG(D.c))return mxShell(D,`<div class="mxlivewrap">${vGiaiSan(D)}</div>`);
-  const seg=mxSeg.live,sb=(v,l)=>`<button data-act="mxseg" data-k="live" data-v="${v}" aria-pressed="${seg===v}">${l}</button>`;
-  let h=`<div class="mxseg">${sb("san",`Sân · ${D.playing.length}`)}${sb("cho",`Hàng chờ · ${waitQueue(D).length}`)}${sb("xong",`Đã xong · ${D.done.length}`)}</div>`;
-  const me=mxPid();
-  if(seg==="san")h+=D.playing.length?`<div class="courts">${D.playing.map(m=>`<div class="${[...m.a,...m.b].includes(me)?"mxminecourt":""}">${courtCard(D,m)}</div>`).join("")}</div>`:`<div class="mxcard muted"><b>Sân đang trống</b><span>Chờ ban tổ chức xếp trận.</span></div>`;
-  else if(seg==="cho")h+=queueBox(D,false);
-  else h+=doneBox(D);
+  const h=vlLive(D);
   return mxShell(D,`<div class="mxlivewrap">${h}</div>`,`<div class="mxacts">${liveShareBtn()}</div>`);
 }
 
