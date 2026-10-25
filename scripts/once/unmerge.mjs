@@ -68,6 +68,7 @@ async function acct(uid) {
   const d = t => t ? new Date(+t).toISOString().slice(0, 16).replace("T", " ") : "-";
   return u ? `tạo ${d(u.createdAt)} · đăng nhập ${d(u.lastLoginAt)}` : "không có tài khoản";
 }
+console.log("::notice::Bắt đầu " + MODE);
 if (MODE === "list") {
   for (const c of await F.list("clubs", "owner")) {
     const cid = tail(c.name).split("/")[1];
@@ -75,11 +76,11 @@ if (MODE === "list") {
       const f = m.fields || {}, from = f.movedFrom && f.movedFrom.stringValue;
       if (!from) continue;
       const to = tail(m.name).split("/").pop();
-      console.log(`CLB ${cid} · ${f.role?.stringValue} · ${f.name?.stringValue || ""}\n  TO   ${to} (${await acct(to)})\n  FROM ${from} (${await acct(from)})`);
+      console.log(`::notice::CLB ${cid} · ${f.role?.stringValue} · ${f.name?.stringValue || ""} | TO ${to} (${await acct(to)}) | FROM ${from} (${await acct(from)})`);
     }
   }
 } else if (MODE === "apply") {
   const TO = process.env.TO, FROM = process.env.FROM;
   if (!/^zalo_[0-9a-f]+$/.test(TO || "") || !/^zalo_[0-9a-f]+$/.test(FROM || "")) throw new Error("TO/FROM sai");
-  console.log("Chuyển trả", TO, "→", FROM, await moveAccount(sa, TO, FROM));
+  console.log("::notice::Chuyển trả " + TO + " → " + FROM + " " + JSON.stringify(await moveAccount(sa, TO, FROM)));
 }
