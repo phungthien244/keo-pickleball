@@ -1,0 +1,85 @@
+// Chạy MỘT LẦN trên GitHub Actions: trả lại dữ liệu bị gộp nhầm (Zalo cũ → Zalo mới trên máy ảo) về tài khoản Zalo cũ.
+// MODE=list: liệt kê các quyền CLB có dấu movedFrom kèm ngày tạo tài khoản. MODE=apply TO=<tài khoản nhận nhầm> FROM=<tài khoản gốc>: chuyển trả.
+import { gToken } from "../../lib/fbtoken.js";
+// Firestore REST bằng khoá dịch vụ
+function fsApi(sa, at) {
+  const base = `https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents`;
+  const H = { authorization: "Bearer " + at, "content-type": "application/json" };
+  return {
+    base,
+    get: async path => { const r = await fetch(`${base}/${path}`, { headers: H }); return r.ok ? r.json() : null; },
+    create: async (path, fields) => (await fetch(`${base}/${path}?currentDocument.exists=false`, { method: "PATCH", headers: H, body: JSON.stringify({ fields }) })).ok,
+    patch: async (path, fields, mask) => (await fetch(`${base}/${path}?${mask.map(m => "updateMask.fieldPaths=" + m).join("&")}`, { method: "PATCH", headers: H, body: JSON.stringify({ fields }) })).ok,
+    del: async path => (await fetch(`${base}/${path}`, { method: "DELETE", headers: H })).ok,
+    list: async (path, mask) => { const r = await fetch(`${base}/${path}?pageSize=300${mask ? "&mask.fieldPaths=" + mask : ""}`, { headers: H }); return r.ok ? ((await r.json()).documents || []) : []; },
+    query: async (parent, coll, field, value) => {
+      const r = await fetch(`${base}/${parent}:runQuery`, { method: "POST", headers: H, body: JSON.stringify({ structuredQuery: { from: [{ collectionId: coll }], where: { fieldFilter: { field: { fieldPath: field }, op: "EQUAL", value: { stringValue: value } } }, limit: 200 } }) });
+      return r.ok ? (await r.json()).filter(x => x.document).map(x => x.document) : [];
+    }
+  };
+}
+const tail = name => name.split("/documents/")[1];
+
+// Chuyển dữ liệu của tài khoản cũ sang tài khoản mới. Đã có ở tài khoản mới thì giữ bản mới (chỉ bỏ bản cũ khi trùng vai trò).
+async function moveAccount(sa, from, to) {
+  if (!from || !to || from === to) return null;
+  const F = fsApi(sa, await gToken(sa));
+  const n = { members: 0, links: 0, regs: 0, clubs: 0 };
+  // Đã có ở tài khoản mới: chỉ ghi đè khi bản cũ "tốt hơn" (better(cũ, mới)), rồi bỏ bản cũ
+  const move = async (a, b, edit, better) => {
+    const d = await F.get(a);if (!d) return false;
+    const f = edit ? edit(d.fields || {}) : (d.fields || {});
+    if (await F.create(b, f)) { await F.del(a); return true; }
+    const cur = better && await F.get(b);
+    if (cur && better(d.fields || {}, cur.fields || {}) && await F.patch(b, f, [])) { await F.del(a); return true; }
+    return false;
+  };
+  const RANK = { owner: 4, admin: 3, scorer: 2 }, sv = (f, k) => (f[k] && f[k].stringValue) || "";
+  const roleBetter = (o, nw) => (RANK[sv(o, "role")] || 0) > (RANK[sv(nw, "role")] || 0);
+  const linkBetter = (o, nw) => sv(o, "status") === "ok" && sv(nw, "status") !== "ok";
+  // Mỗi tài khoản một CLB đã tạo
+  const u = await F.get("users/" + from);
+  if (u && await move("users/" + from, "users/" + to)) n.users = 1;
+  const clubs = await F.list("clubs", "owner");
+  for (const c of clubs) {
+    const cid = tail(c.name).split("/")[1], P = "clubs/" + cid;
+    if ((c.fields?.owner?.stringValue) === from && await F.patch(P, { owner: { stringValue: to } }, ["owner"])) n.clubs++;
+    if (await move(`${P}/members/${from}`, `${P}/members/${to}`, f => { const g = { ...f }; delete g.movedFrom; return g; }, roleBetter)) n.members++;
+    if (await move(`${P}/links/${from}`, `${P}/links/${to}`, null, linkBetter)) n.links++;
+    for (const r of await F.query(P, "regs", "uid", from)) {
+      const id = tail(r.name).split("/").pop(), nid = id.endsWith("_" + from) ? id.slice(0, -from.length) + to : id + "_m";
+      if (await F.create(`${P}/regs/${nid}`, { ...r.fields, uid: { stringValue: to } })) {
+        await F.del(`${P}/regs/${id}`); n.regs++;
+        const pic = await F.get(`${P}/regpics/${id}`);
+        if (pic && await F.create(`${P}/regpics/${nid}`, { ...pic.fields, uid: { stringValue: to } })) await F.del(`${P}/regpics/${id}`);
+      }
+    }
+  }
+  return n;
+}
+
+const sa = JSON.parse(process.env.SA);
+const MODE = process.env.MODE || "list";
+const at = await gToken(sa, "https://www.googleapis.com/auth/cloud-platform");
+const F = fsApi(sa, at);
+async function acct(uid) {
+  const r = await fetch(`https://identitytoolkit.googleapis.com/v1/projects/${sa.project_id}/accounts:lookup`, { method: "POST", headers: { authorization: "Bearer " + at, "content-type": "application/json" }, body: JSON.stringify({ localId: [uid] }) });
+  const u = ((await r.json()).users || [])[0];
+  const d = t => t ? new Date(+t).toISOString().slice(0, 16).replace("T", " ") : "-";
+  return u ? `tạo ${d(u.createdAt)} · đăng nhập ${d(u.lastLoginAt)}` : "không có tài khoản";
+}
+if (MODE === "list") {
+  for (const c of await F.list("clubs", "owner")) {
+    const cid = tail(c.name).split("/")[1];
+    for (const m of await F.list(`clubs/${cid}/members`)) {
+      const f = m.fields || {}, from = f.movedFrom && f.movedFrom.stringValue;
+      if (!from) continue;
+      const to = tail(m.name).split("/").pop();
+      console.log(`CLB ${cid} · ${f.role?.stringValue} · ${f.name?.stringValue || ""}\n  TO   ${to} (${await acct(to)})\n  FROM ${from} (${await acct(from)})`);
+    }
+  }
+} else if (MODE === "apply") {
+  const TO = process.env.TO, FROM = process.env.FROM;
+  if (!/^zalo_[0-9a-f]+$/.test(TO || "") || !/^zalo_[0-9a-f]+$/.test(FROM || "")) throw new Error("TO/FROM sai");
+  console.log("Chuyển trả", TO, "→", FROM, await moveAccount(sa, TO, FROM));
+}
