@@ -2432,3 +2432,11 @@ section:not(.mx) .hqtabs{margin:0 0 10px}
 .vllog .hr{display:grid;grid-template-columns:40px 52px 1fr;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12px;align-items:baseline}.vllog .hr:first-of-type{background:#fffbeb}
 .vllog .hr.kto,.vllog .hr.kmt{color:#b45309}.vllog .hr.kun{color:var(--muted);font-style:italic}.vllog .hr.kg{background:var(--win-bg)}
 .vlbt{display:grid;grid-template-columns:1fr 1fr;gap:8px}.vlbt button{min-height:46px}.vlm .vlbt .line{background:transparent;color:#fff;border-color:#34536d}
+/* Tạo giải 4 bước */
+.xstp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:0 0 12px;padding:10px 0;background:var(--surface);border-bottom:1px solid var(--line)}
+.xstp button{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:0;padding:0;border:0;background:none;color:var(--muted);font-family:var(--body);font-size:11px;font-weight:600;text-transform:none;letter-spacing:0}
+.xstp b{width:26px;height:26px;display:grid;place-items:center;background:var(--line);color:var(--muted);font-family:var(--display);font-weight:900;font-size:12px}
+.xstp .on{color:var(--navy);font-weight:800}.xstp .on b{background:var(--navy);color:#fff}
+.xstp .ok b{background:var(--win-bg);color:var(--win)}
+.xstp button:disabled{opacity:.5}
+.xrev .xrevn{font-family:var(--display);font-weight:900;font-size:20px}

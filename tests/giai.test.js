@@ -210,3 +210,18 @@ test("vòng bảng lẻ cặp: 7 cặp chia 3 bảng, 4 cặp vào bán kết (n
   const ko = e.docs("matches/", m => m.ko && m.status === "done").map(([, m]) => m.ko).sort();
   expect(ko).toEqual(["k0-0", "k0-1", "k1-0", "k3"]);
 });
+
+test("nội dung đôi nam nữ: ghép tay sai giới bị chặn, ghép tự động 1 nam 1 nữ", async () => {
+  const e = setup({ pin: true });
+  await e.boot();
+  e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ"); await e.click("add");
+  await e.tab("san"); await e.click("cset", { k: "fmt", v: "giai" }); await e.click("cset", { k: "dt", v: "mix" });
+  e.input("gp1", e.pid("A")); e.input("gp2", e.pid("B")); await e.click("gadd");
+  await e.open("cap");
+  expect(e.V()).toContain("mỗi cặp phải có 1 nam 1 nữ");
+  await e.click("gauto");
+  const P = e.store.get("app/config").giai.pairs;
+  expect(P.length).toBe(3);
+  const g = id => e.store.get("players/" + id).gender || "M";
+  for (const p of P) expect([g(p.a), g(p.b)].sort().join("")).toBe("FM");
+});

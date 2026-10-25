@@ -92,7 +92,7 @@ function hqNguoi(D){
       <div class="two hqbt"><button class="nv" data-act="ckall">⌗ Mở bàn đón</button><button class="line" data-act="hnlate" data-id="${esc(X.id)}">＋ Đến muộn</button></div><div class="hqopts">${hnOpts(X)}</div>`;
     h+=`<div class="hqcks">${hqCkShort(D,X)}</div>`}
   h+=`<span class="xsec">Ai có mặt · bấm để cho vào hoặc nghỉ</span>`+attChips(D);
-  if(G){const g=c.giai||{pairs:[]};h+=`<span class="xsec">${isKO(g)?"Cặp, chia bảng":"Các cặp"}</span>`+(g.locked?gRun(D,gDerive(D),"ql"):gSetup(D,g,{prep:!live}))}
+  if(G){const g=c.giai||{pairs:[]},dt=c.dt||"free";h+=`<span class="xsec">${isKO(g)?"Cặp, chia bảng":"Các cặp"}</span>`+(g.locked?"":`<div class="fld"><span class="lbl">Nội dung</span><span class="seg segw">${[["free","Hỗn hợp"],["MM","Đôi nam"],["FF","Đôi nữ"],["mix","Đôi nam nữ"]].map(([v,l])=>sgB("dt",v,dt,l)).join("")}</span></div>`)+(g.locked?gRun(D,gDerive(D),"ql"):gSetup(D,g,{prep:!live}))}
   return h;
 }
 function hqTien(D){const M=hqMoney(D);return `<section class="hqbox"><span class="cap">Thu · ${M.sum}</span>${M.body}</section>`+prepRows(D,["tien","giai"])}

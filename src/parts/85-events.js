@@ -205,14 +205,20 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="gaddopen"){gAddOpen=true;delete drafts.gp1;delete drafts.gp2;delete drafts["gp-q"];delete errs.gadd;render();return}
   if(act==="gaddx"){gAddOpen=false;render();return}
   if(act==="gauto"){const D=derive(),P=cfg().giai?.pairs||[],used=new Set(P.flatMap(p=>[p.a,p.b])),rt=id=>D.st.get(id)?.rating??2.5;
-    const F=D.players.filter(p=>p.active!==false&&!used.has(p.id)).sort((a,b)=>rt(b.id)-rt(a.id)),add=[];
+    const dt=cfg().dt||"free",isF=p=>p.gender==="F";
+    const F=D.players.filter(p=>p.active!==false&&!used.has(p.id)&&(dt==="MM"?!isF(p):dt==="FF"?isF(p):true)).sort((a,b)=>rt(b.id)-rt(a.id)),add=[];
+    if(dt==="mix"){// Đôi nam nữ: nam mạnh nhất ghép nữ yếu nhất
+      const M=F.filter(p=>!isF(p)),W=F.filter(isF).reverse();for(let i=0;i<Math.min(M.length,W.length)&&P.length+add.length<gMax(cfg().giai);i++)add.push({id:"c"+Date.now().toString(36)+i,a:M[i].id,b:W[i].id})}
     // Mạnh nhất ghép yếu nhất cho các cặp cân trình
-    for(let i=0,j=F.length-1;i<j&&P.length+add.length<gMax(cfg().giai);i++,j--)add.push({id:"c"+Date.now().toString(36)+i,a:F[i].id,b:F[j].id});
+    else for(let i=0,j=F.length-1;i<j&&P.length+add.length<gMax(cfg().giai);i++,j--)add.push({id:"c"+Date.now().toString(36)+i,a:F[i].id,b:F[j].id});
     if(!add.length){toast("Không còn đủ người để ghép.");return}
     write(()=>saveG({pairs:[...P,...add]}),`Đã ghép ${add.length} cặp cân trình`);return}
   if(act==="gadd"){const a=String(drafts.gp1||""),bb=String(drafts.gp2||""),P=cfg().giai?.pairs||[];
     if(!a||!bb){errs.gadd="Chọn đủ 2 người.";render();return}
     if(a===bb){errs.gadd="Hai người phải khác nhau.";render();return}
+    {const D=derive(),dt=cfg().dt||"free",g=id=>D.pmap.get(id)?.gender==="F"?"F":"M",gs=[g(a),g(bb)].sort().join("");
+      const bad=dt==="mix"&&gs!=="FM"?"Đôi nam nữ: mỗi cặp phải có 1 nam 1 nữ.":dt==="MM"&&gs!=="MM"?"Đôi nam: cả hai phải là nam.":dt==="FF"&&gs!=="FF"?"Đôi nữ: cả hai phải là nữ.":"";
+      if(bad){errs.gadd=bad;render();return}}
     if(P.length>=gMax(cfg().giai)){errs.gadd=`Tối đa ${gMax(cfg().giai)} cặp.`;render();return}
     if(P.some(p=>[p.a,p.b].includes(a)||[p.a,p.b].includes(bb))){errs.gadd="Người này đã có cặp.";render();return}
     delete errs.gadd;gAddOpen=b.dataset.v==="more";delete drafts["gp-q"];write(()=>saveG({pairs:[...P,{id:"c"+Date.now().toString(36),a,b:bb}]}).then(()=>{delete drafts.gp1;delete drafts.gp2}),"Đã thêm cặp");return}

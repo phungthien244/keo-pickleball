@@ -44,7 +44,7 @@ test("chủ CLB: Lịch giải đấu, tạo giải đấu Xoay cặp và mở �
 test("lặp lại hằng tuần, tự mở đăng ký: tạo lịch lặp và các giải đấu 2 tuần tới, giải đấu lặp tự mở trước 2 ngày", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data: base() });
   await e.boot(); await e.until(() => e.V().includes('data-act="xnew"'));
-  await e.click("xnew"); await e.click("xfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-k="rep"'));
+  await e.click("xnew"); await e.click("xfmt", { v: "xoay" }); await e.click("xfgo", { v: "2" }); await e.until(() => e.V().includes('data-k="rep"'));
   e.input("xf-date", iso(tmr())); e.input("xf-time", "19:00");
   await e.click("xfset", { k: "rep", v: "1" }); await e.until(() => e.V().includes('data-act="xfday"'));
   await e.click("xsave", { v: "open" });
@@ -369,7 +369,7 @@ test("tab Sân: hôm nay 2 giải đấu theo lịch thì tự chọn giải đ�
 
 test("tạo giải đấu: tùy chọn bật/tắt (chi phí, giải thưởng hạng 1-2-3, luật nâng cao, trọng tài) được áp vào giải đấu khi chuẩn bị", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data: base() });
-  await e.boot(); await e.click("xnew"); await e.click("xfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-k="gton"'));
+  await e.boot(); await e.click("xnew"); await e.click("xfmt", { v: "xoay" }); await e.click("xfgo", { v: "3" }); await e.until(() => e.V().includes('data-k="gton"'));
   // Giải đấu hôm nay: 30 phút nữa, nhưng không qua nửa đêm (chạy test lúc khuya)
   const d = new Date(Math.min(Date.now() + 30 * 6e4, new Date().setHours(23, 59, 0, 0)));
   e.input("xf-date", iso(d)); e.input("xf-time", `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`);
