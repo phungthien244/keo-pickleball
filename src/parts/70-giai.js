@@ -65,6 +65,7 @@ function gPick(D,GD,busy,rest){
   return best;
 }
 async function gFill(quiet){
+  if(pausedNow())return 0;
   await new Promise(r=>setTimeout(r,30));
   const D=derive(),GD=gDerive(D);if(!GD||!GD.locked)return 0;
   const used=new Set(D.playing.map(m=>m.court)),free=[];for(let i=1;i<=D.c.courts;i++)if(!used.has(i))free.push(i);
@@ -174,7 +175,8 @@ function gRun(D,GD,part){
   if(GD.complete){const t=GD.table[0];h+=`<div class="champ"><div class="k"><span>${GD.isKO?"VÔ ĐỊCH":"ĐÃ ĐÁNH XONG VÒNG TRÒN · DẪN ĐẦU"}</span><span>${(()=>{const p=prizes(D,money(D))[0];return p?fmtK(p.k):""})()}</span></div><div class="p">${pairAv(D,t.p,"lg")}<span><span class="n">${pairNm(D,t.p)}</span><span class="s num" style="display:block">${t.w} thắng · ${t.l} thua · HS ${t.pf-t.pa>0?"+":""}${t.pf-t.pa}</span></span></div>${canWrite?`<div class="champb">${champBtn("champ:live")}<button class="endbtn" data-act="gend">${armed("gend:x")?"Bấm lần nữa để lưu giải":"Kết thúc giải và lưu"}</button></div>`:""}</div>`}
   const top=h;h="";
   h+=`<div class="bar">${courtStep(c)}<span class="grow"></span>${canWrite&&!GD.complete&&live.length<c.courts&&gPick(D,GD,new Set(live.flatMap(m=>[m.pa,m.pb])),new Set())?`<button class="ball" data-act="gfill">Đưa trận kế vào sân trống</button>`:""}</div>`;
-  if(liveV.length)h+=`<div class="courts">${liveV.map(m=>gCourt(D,GD,m)).join("")}</div>`;
+  if(canWrite)h+=dhLive(D,{live,card:m=>`<div class="courts">${gCourt(D,GD,m)}</div>`,fill:!GD.complete&&gPick(D,GD,new Set(live.flatMap(m=>[m.pa,m.pb])),new Set())?"gfill":null});
+  else if(liveV.length)h+=`<div class="courts">${liveV.map(m=>gCourt(D,GD,m)).join("")}</div>`;
   if(canWrite&&!GD.complete)h+=gPickNow(D,GD,live);
   else if(REF&&!GD.complete)h+=`<div class="empty"><strong>Sân của bạn đang trống</strong>Trận kế tiếp của sân ${MYCT.join(", ")||"được giao"} sẽ hiện ở đây.</div>`;
   else if(!GD.complete&&!REF)h+=`<div class="empty"><strong>Sân đang trống</strong>${canWrite?"Bấm “Đưa trận kế vào sân trống” để gọi trận tiếp theo theo lịch.":"Chờ người tổ chức gọi trận tiếp theo."}</div>`;

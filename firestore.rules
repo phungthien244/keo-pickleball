@@ -91,12 +91,14 @@ service cloud.firestore {
         return isMember() ? get(memberPath(request.auth.uid)).data.get('courts', [])
           : get(/databases/$(database)/documents/clubs/$(c)/editors/$(request.auth.uid)).data.get('courts', []);
       }
+      function qrRef() { return signedIn() && exists(/databases/$(database)/documents/clubs/$(c)/refs/$(request.auth.uid)); }
       function scoreOk() {
-        return active() && (isMember() || isPinEditor())
-          && resource.data.court in refCourts()
+        return active()
+          && (((isMember() || isPinEditor()) && resource.data.court in refCourts())
+              || (qrRef() && get(/databases/$(database)/documents/clubs/$(c)/refs/$(request.auth.uid)).data.court == resource.data.court))
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sa', 'sb', 'status', 'doneAt', 'ref']);
       }
-      function canRead() { return (active() && clubDoc().public == true) || isMember() || isPinEditor() || isPA(); }
+      function canRead() { return (active() && clubDoc().public == true) || isMember() || isPinEditor() || isPA() || qrRef(); }
 
       function newClubOk() {
         let d = request.resource.data;
@@ -355,6 +357,31 @@ service cloud.firestore {
       // Mã check-in đang hiện trên máy ban tổ chức: chỉ ban tổ chức đọc, ghi
       match /ci/{sid} {
         allow read, write: if canEdit();
+      }
+      // Mã QR trọng tài từng sân: chỉ ban tổ chức đọc, ghi
+      match /refqr/{court} {
+        allow read, write: if canEdit();
+      }
+      // Trọng tài nhận sân bằng QR: tự ghi hồ sơ của mình khi mã khớp mã BTC đang dùng cho sân đó
+      match /refs/{uid} {
+        allow read: if canRead() || (signedIn() && request.auth.uid == uid);
+        allow create, update: if active() && signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['court', 'code', 'name', 'at', 'sid'])
+          && request.resource.data.court is int
+          && request.resource.data.name is string && request.resource.data.name.size() <= 60
+          && exists(/databases/$(database)/documents/clubs/$(c)/refqr/$(string(request.resource.data.court)))
+          && get(/databases/$(database)/documents/clubs/$(c)/refqr/$(string(request.resource.data.court))).data.code == request.resource.data.code;
+        allow delete: if canEdit() || (signedIn() && request.auth.uid == uid);
+      }
+      // Yêu cầu gọi loa / gọi BTC từ trọng tài và BTC
+      match /calls/{id} {
+        allow read: if canEdit() || qrRef() || isMember() || isPinEditor();
+        allow create: if active() && signedIn() && (canEdit() || isMember() || isPinEditor() || qrRef())
+          && request.resource.data.keys().hasOnly(['k', 'court', 'txt', 'why', 'by', 'uid', 'at', 'sid', 'st'])
+          && request.resource.data.k in ['loa', 'btc'] && request.resource.data.st == 'new'
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.get('txt', '') is string && request.resource.data.get('txt', '').size() <= 400;
+        allow update, delete: if canEdit();
       }
       // Ảnh của VĐV ngoài CLB lúc đăng ký: chỉ ban tổ chức và chính người đó xem
       match /regpics/{id} {

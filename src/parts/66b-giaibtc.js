@@ -2,7 +2,7 @@
    Đầu trang: trạng thái + đếm ngược · 4 ô tóm tắt · Việc cần làm · bộ lọc danh sách · bấm 1 người mở bảng thao tác ·
    menu ··· (cài nhanh, nhân bản, xuất, nhật ký, tạm dừng, huỷ) · chia sẻ (mời, QR, gửi danh sách vào nhóm, nhắc chưa trả) ·
    nút chính đổi theo giai đoạn. Dữ liệu: regs (đăng ký), sched (giải), sched.log (thao tác BTC). */
-let xbFl="all",xbSel=null,xbMenu=false,xbShare=false,xbLog=false,xbLogF="all",xbSendMode="tien",xbRemind=null;
+let xbBulk=null,xbFl="all",xbSel=null,xbMenu=false,xbShare=false,xbLog=false,xbLogF="all",xbSendMode="tien",xbRemind=null;
 const xbName=(D,x)=>x.guest?(x.name||"?"):(D.pmap.get(x.pid)?.name||x.name||"?");
 const xbG=(D,x)=>{const p=x.pid&&D.pmap.get(x.pid);return (p&&p.gender)||x.gender||""};
 const xbLv=(D,x)=>{const p=x.pid&&D.pmap.get(x.pid);if(p){const s=D.st.get(p.id);return s?s.rating:+p.rating0||0}return +x.lv||0};
@@ -22,7 +22,7 @@ function xbStatus(X){
 function xbTodo(D,X,R){
   const T=[],now=Date.now(),po=payOn(),due=x=>po&&feeOf(x)>0&&x.pay!=="ok"&&x.pay!=="sent"&&x.pay!=="refund";
   const sent=R.all.filter(x=>x.pay==="sent");
-  if(sent.length)T.push(["w",`<b>${sent.length} người</b> báo đã chuyển khoản`,"Đối chiếu",`data-act="xbsel" data-id="${esc(sent[0].id)}"`]);
+  if(sent.length)T.push(["w",`<b>${sent.length} người</b> báo đã chuyển khoản`,sent.length>1?"Duyệt hàng loạt":"Đối chiếu",sent.length>1?`data-act="xbbulk"`:`data-act="xbsel" data-id="${esc(sent[0].id)}"`]);
   const hold=R.all.filter(x=>due(x)&&!x.arrived&&(x.hold||regPayMode()==="req"));
   if(hold.length){const m=Math.min(...hold.map(x=>HOLD_MS-(now-(x.at||0))));T.push(["r",`<b>${hold.length} người</b> chưa trả · hết giữ chỗ sau ${Math.max(0,Math.round(m/6e4))}′`,"Nhắc Zalo",`data-act="xbremind"`])}
   const unpaid=R.conf.filter(x=>due(x)&&!hold.includes(x));
@@ -95,6 +95,11 @@ function xBtc(D,X){
 /* ----- Các bảng trượt: 1 người · menu ··· · chia sẻ · nhật ký ----- */
 function xbSheets(D,X,R){
   if(xbLog)return xbLogView(D,X);
+  if(xbBulk){const L=R.all.filter(x=>x.pay==="sent"),sel=L.filter(x=>xbBulk.has(x.id)),tot=withX(X,()=>sel.reduce((a,x)=>a+feeOf(x),0));
+    return xbDim("xbbulkx")+`<div class="mxsheet xbsh" role="dialog" aria-label="Duyệt tiền hàng loạt"><span class="grab"></span><b class="mxh">Duyệt tiền · ${L.length} báo chuyển</b>
+      <small class="rule">Đối chiếu sao kê ngân hàng, bỏ tích người chưa thấy tiền rồi duyệt một lần.</small>
+      ${L.map(x=>{const on=xbBulk.has(x.id);return `<button class="xbli xbck${on?" on":""}" data-act="xbbulkt" data-id="${esc(x.id)}" aria-pressed="${on}"><i aria-hidden="true">${on?"✓":""}</i><span>${esc(xbName(D,x))}<small>${x.sentAt?`báo ${hm(x.sentAt)} · `:""}${x.note?esc(x.note):""}</small></span><b>${fmtK(withX(X,()=>feeOf(x)))}</b></button>`}).join("")}
+      <button class="primary wide" data-act="xbbulkok" ${sel.length?"":"disabled"}>✓ Duyệt ${sel.length} người · ${fmtK(tot)}</button><button class="line wide" data-act="xbbulkx">Đóng</button></div>`}
   if(xbSel){const x=(S.regs||[]).find(r=>r.id===xbSel);if(!x){xbSel=null;return ""}return xbPerson(D,X,R,x)}
   if(xbMenu)return xbMenuView(D,X,R);
   if(xbShare)return xbShareView(D,X,R);
@@ -129,6 +134,7 @@ function xbMenuView(D,X,R){
   h+=sw("walkin",hnWalkOn(X),"Nhận vãng lai tại sân")+sw("payFirst",hnPayFirst(X),"Khách ngoài CLB trả trước")+`</div><span class="mxsec">Giải này</span><div class="xbacts">`;
   h+=`<button class="xbli" data-act="xedit" data-id="${X.id}"><span>Sửa cài đặt giải</span><span>›</span></button>`;
   h+=`<button class="xbli" data-act="xbdup" data-id="${X.id}"><span>Nhân bản sang tuần sau</span><span>›</span></button>`;
+  h+=`<button class="xbli" data-act="xbtpl" data-id="${X.id}"><span>${X.tpl?"Bỏ khỏi mẫu giải":"Lưu làm mẫu giải"}<small>${X.tpl?"đang là mẫu · hiện ở đầu tab Tạo":"tạo nhanh giải giống vậy ở tab Tạo"}</small></span><span>›</span></button>`;
   h+=`<button class="xbli" data-act="xbexport" data-id="${X.id}"><span>Xuất danh sách <small>· Excel</small></span><span>›</span></button>`;
   h+=`<button class="xbli" data-act="xblog"><span>Nhật ký giải</span><span>›</span></button>`;
   if(s==="open")h+=`<button class="xbli" data-act="xpause" data-id="${X.id}"><span>Tạm dừng đăng ký</span><span>›</span></button>`;
@@ -141,6 +147,14 @@ function xbMenuView(D,X,R){
 function xbGroupText(D,X,R,mode){
   const club=(CLUB&&CLUB.name)||"",left=+X.max?Math.max(0,+X.max-R.conf.length):null,po=payOn();
   const L=[`🏓 ${club}: ${xName(X)}${X.at?` · ${dowVN(X.at)} ${dmy(X.at).slice(0,5)} ${hm(X.at)}`:""}`,`Đã đăng ký ${R.conf.length}${+X.max?`/${X.max}`:""}${left?` · còn ${left} chỗ`:""}`];
+  if(mode==="nhac"){const L2=[`⏰ ${club}: ${xName(X)}${X.at?` · ${dowVN(X.at)} ${dmy(X.at).slice(0,5)} · ${hm(X.at)}`:""}`];if(X.place)L2.push(`📍 ${X.place}`);
+    if(X.at)L2.push(`Có mặt ${hm(X.at-20*6e4)} để check-in · mở Mini App, quét mã trên máy BTC`);
+    const due=R.conf.filter(x=>po&&feeOf(x)>0&&x.pay!=="ok"&&x.pay!=="sent");if(due.length)L2.push(`Chưa trả lệ phí: ${due.map(x=>xbName(D,x)).join(", ")} · chuyển trước để vào nhanh`);
+    L2.push(`Danh sách: ${R.conf.map(x=>xbName(D,x)).join(", ")}`);return L2.join("\n")}
+  if(mode==="cb"){const L2=[`📣 ${club}: ${xName(X)}${X.at?` · ${dowVN(X.at)} ${dmy(X.at).slice(0,5)} · ${hm(X.at)}`:""}`,`${R.conf.length} người${+X.max?`/${X.max}`:""} · đã chốt danh sách`];
+    if(pairRegOn(X)){const seen=new Set();let i=0;for(const x of R.conf){if(seen.has(x.id))continue;const m=capMate(x);seen.add(x.id);if(m)seen.add(m.id);L2.push(`${++i}. ${xbName(D,x)}${m?` & ${xbName(D,m)}`:""}`)}}
+    else R.conf.forEach((x,i)=>L2.push(`${i+1}. ${xbName(D,x)}`));
+    if(R.wait.length)L2.push(`Dự bị: ${R.wait.map(x=>xbName(D,x)).join(", ")}`);if(X.at)L2.push(`⏰ Có mặt ${hm(X.at-20*6e4)} để check-in`);L2.push("Lịch từng trận xem trong Mini App khi giải bắt đầu.");return L2.join("\n")}
   if(mode==="cap"&&pairRegOn(X)){const seen=new Set();let i=0;for(const x of R.conf){if(seen.has(x.id))continue;const m=capMate(x);seen.add(x.id);if(m)seen.add(m.id);L.push(`${++i}. ${xbName(D,x)}${m?` & ${xbName(D,m)}`:" (tìm cặp)"}`)}}
   else R.conf.forEach((x,i)=>L.push(`${i+1}. ${xbName(D,x)}${mode==="tien"&&po&&feeOf(x)?(x.pay==="ok"?" ✓":x.pay==="sent"?" ⏳":" ✗ chưa trả"):""}`));
   if(R.wait.length)L.push(`Chờ chỗ: ${R.wait.map(x=>xbName(D,x)).join(", ")}`);
@@ -154,7 +168,7 @@ function xbShareView(D,X,R){
     <div class="two"><button class="xbbig" data-act="regshare" data-id="${X.id}"><b>Mời đăng ký</b><small>Thẻ có poster, mở thẳng trang giải</small></button><button class="xbbig" data-act="xqr" data-id="${X.id}"><b>${xQr===X.id?"Ẩn mã QR":"Mã QR · Copy link"}</b><small>Dán ở sân hoặc gửi web</small></button></div>
     ${xQr===X.id?`<div class="dkqr">${qrSvgText(link,180)}<button class="line sm" data-act="cplink" data-v="${esc(link)}">Copy link</button></div>`:""}
     <span class="mxsec">Gửi danh sách vào nhóm Zalo</span><pre class="xbpre">${esc(xbGroupText(D,X,R,xbSendMode))}</pre>
-    <div class="mxseg sm">${md("tien","Kèm tiền",po)}${md("ten","Chỉ tên")}${md("cap","Theo cặp",pairRegOn(X))}</div>
+    <div class="mxseg sm">${md("tien","Kèm tiền",po)}${md("ten","Chỉ tên")}${md("cap","Theo cặp",pairRegOn(X))}${md("cb","Công bố chốt")}${md("nhac","Nhắc giờ đánh")}</div>
     <button class="primary wide" data-act="xbsend">Gửi vào nhóm Zalo</button>`;
   if(due.length){const nz=due.filter(x=>zidOf(D,x)).length;
     h+=`<span class="mxsec">Nhắc người chưa trả · ${due.length}</span><div class="xbrem"><span>Mở chat Zalo lần lượt từng người, có sẵn lời nhắc kèm số tiền.</span><small>${esc(due.slice(0,5).map(x=>xbName(D,x)).join(" · "))}${due.length>5?"…":""}${nz<due.length?` · ${due.length-nz} người chưa liên kết Zalo`:""}</small>${nz?`<button class="line wide" data-act="xbremind">${xbRemind&&xbRemind.i>0?`Nhắc tiếp (${Math.min(xbRemind.i+1,nz)}/${nz})`:`Bắt đầu nhắc (1/${nz})`}</button>`:`<small>Chưa ai trong số này liên kết Zalo: gửi danh sách vào nhóm để nhắc chung.</small>`}</div>`}
@@ -197,6 +211,12 @@ async function xbAct(act,b,id,D){
   if(act==="xblog"){xbLog=true;xbMenu=false;render();return true}
   if(act==="xblogx"){xbLog=false;render();return true}
   if(act==="xblogf"){xbLogF=b.dataset.v||"all";render();return true}
+  if(act==="xbbulk"){const R=withX(X,()=>regList(D));xbBulk=new Set(R.all.filter(x=>x.pay==="sent").map(x=>x.id));render();return true}
+  if(act==="xbbulkx"){xbBulk=null;render();return true}
+  if(act==="xbbulkt"){if(xbBulk){xbBulk.has(id)?xbBulk.delete(id):xbBulk.add(id)}render();return true}
+  if(act==="xbbulkok"){const L=(S.regs||[]).filter(x=>xbBulk&&xbBulk.has(x.id)&&x.pay==="sent");xbBulk=null;
+    await write(async()=>{for(const x of L){await db.collection("regs").doc(x.id).update({pay:"ok",okAt:Date.now(),okBy:who()});if(x.pid&&xPaySid(x,D))await savePay(D.sid,nx=>{nx.paid[x.pid]=true})}await xbLogAdd(X,`duyệt tiền ${L.length} người`)},`Đã xác nhận tiền ${L.length} người`);return true}
+  if(act==="xbtpl"){const on=!X.tpl;await write(()=>db.collection("sched").doc(X.id).update({tpl:on}),on?"Đã lưu làm mẫu giải":"Đã bỏ khỏi mẫu");return true}
   if(act==="xbmode"){xbSendMode=b.dataset.v||"tien";render();return true}
   if(!X)return true;
   if(act==="xbsend"){const R=withX(X,()=>regList(D));await sendText(withX(X,()=>xbGroupText(D,X,R,xbSendMode)));return true}

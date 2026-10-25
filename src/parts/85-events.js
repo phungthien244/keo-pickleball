@@ -161,6 +161,7 @@ document.addEventListener("click",onAct=async e=>{
     render();return}
   // Trọng tài chỉ được lưu tỉ số ở sân được giao
   if(act.startsWith("tt")&&await ttAct(act,b))return;
+  if(act.startsWith("dh")&&await dhAct(act,b))return;
   const REF_ACTS=["savechk","savex","save","cancelx"];
   if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
   if(canWrite&&hqAct(act,b))return;

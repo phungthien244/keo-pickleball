@@ -79,7 +79,7 @@ function hqTabsBar(D,cur,live){
 function hqSanSang(D){
   const c=D.c,X=xCur(),live=phaseOf(D)==="live",C=hqChecks(D),done=C.filter(x=>x[1]).length,left=X&&X.at?X.at-Date.now():0;
   const T=isAdm()?xToday():[],many=T.length>1&&!live&&!D.SM.length;
-  let h=`<section class="hqhero"><span class="k">${esc(X?xName(X):(c.sname||"Giải đấu nhanh"))}${X&&X.at?` · ${hm(X.at)}`:""}</span><b>${live?"Đang đánh":left>0?`còn ${left>=36e5?`${Math.floor(left/36e5)} giờ `:""}${Math.round(left%36e5/6e4)}′`:"Tới giờ đánh"}</b><span class="v">${done}/${C.length} mục xong · bấm dòng để sửa</span>${(X&&!live&&!D.SM.length)||many?`<button class="lnk hnchg" data-act="hnunpick">⇄ Đổi giải khác</button>`:""}</section>`;
+  let h=`<section class="hqhero"><span class="k">${esc(X?xName(X):(c.sname||"Giải đấu nhanh"))}${X&&X.at?` · ${hm(X.at)}`:""}</span><b>${live?"Đang đánh":left>0?`còn ${left>=36e5?`${Math.floor(left/36e5)} giờ `:""}${Math.round(left%36e5/6e4)}′`:"Tới giờ đánh"}</b><span class="v">${done}/${C.length} mục xong · bấm dòng để sửa</span><span class="lk">${(X&&!live&&!D.SM.length)||many?`<button class="lnk hnchg" data-act="hnunpick">⇄ Đổi giải khác</button>`:""}${live?`<button class="lnk hnchg" data-act="lshare">↗ Chia sẻ trực tiếp</button>`:X?`<button class="lnk hnchg" data-act="regshare" data-id="${esc(X.id)}">↗ Chia sẻ giải</button>`:""}</span></section>`;
   h+=`<div class="hqchk">${C.map(([k,ok,t,b])=>`<button class="r" data-act="hqtab" data-v="${k}"><i class="${ok?"ok":"no"}">${ok?"✓":"!"}</i><span>${esc(t)}</span>${b?`<em>${b}</em>`:`<span class="go" aria-hidden="true">›</span>`}</button>`).join("")}</div>`;
   h+=`<div class="hqgs">${hqGrp("gio","Thông tin giải",esc(fmtTxt(c)),xPrepHero(D))}</div>`;
   if(!X)h+=xNoSched(D)+card(live?"Giải đấu này":"Giải đấu nhanh · không cần đăng ký trước",buoiBlock(D));
@@ -97,12 +97,13 @@ function hqNguoi(D){
 }
 function hqTien(D){const M=hqMoney(D);return `<section class="hqbox"><span class="cap">Thu · ${M.sum}</span>${M.body}</section>`+prepRows(D,["tien","giai"])}
 function hqLuat(D){return `<section class="hqbox">${fmtBlock(D)}</section>`+prepRows(D,["pre"])}
-function hqTT(D){return prepRows(D,["tt","mc"])}
+function hqTT(D){return (legacy||!isAdm()?"":dhTTBox(D))+prepRows(D,["tt","mc"])}
 function hqChotTab(D){
   if(phaseOf(D)!=="live")return `<div class="empty"><strong>Mở khi giải đã bắt đầu</strong>Trao giải, chi thật, gửi kết quả và chốt sổ nằm ở đây.</div>`;
   const G=isG(D.c),GD=G&&(D.c.giai||{}).locked?gDerive(D):null,M=money(D),pz=prizes(D,M);
   const st=(n,t,s)=>`<button class="hqst" data-act="step" data-v="chot"><span class="n">${n}</span><span class="t"><b>${t}</b> · ${s}</span><span aria-hidden="true">›</span></button>`;
-  return `<section class="hqbox"><span class="cap">${GD?`Đã đánh xong ${GD.resolved}/${GD.total} trận`:`${D.done.length} trận đã xong${D.playing.length?` · ${D.playing.length} đang đánh`:""}`}</span><div class="hqsts">${st(1,"Trao thưởng",pz.length?pz.slice(0,3).map(p=>`${esc(p.label||"")} ${fmtK(p.k)}`).join(" · "):"không trao giải")}${st(2,"Chi thật",COSTS.filter(([k])=>+D.c.costs[k]>0).map(([k,l])=>`${l.toLowerCase()} ${fmtK(+D.c.costs[k])}`).join(" · ")||"nhập chi phí sân, bóng, nước")}${st(3,"Gửi kết quả","vào nhóm Zalo, thẻ thành tích")}</div>
+  if(dhAw)return `<button class="lnk hnback" data-act="dhaw0">‹ Về các bước chốt</button>`+dhAward(D);
+  return `<section class="hqbox"><span class="cap">${GD?`Đã đánh xong ${GD.resolved}/${GD.total} trận`:`${D.done.length} trận đã xong${D.playing.length?` · ${D.playing.length} đang đánh`:""}`}</span><div class="hqsts">${`<button class="hqst" data-act="dhaw0"><span class="n">1</span><span class="t"><b>Trao giải</b> · bục 1-2-3, loa đọc từ hạng 3</span><span aria-hidden="true">›</span></button>`}${st(2,"Chi thật",COSTS.filter(([k])=>+D.c.costs[k]>0).map(([k,l])=>`${l.toLowerCase()} ${fmtK(+D.c.costs[k])}`).join(" · ")||"nhập chi phí sân, bóng, nước")}${st(3,"Gửi kết quả","vào nhóm Zalo, thẻ thành tích")}</div>
     ${D.playing.length?`<p class="rule">Còn ${D.playing.length} trận trên sân: lưu hoặc huỷ trước khi chốt.</p>`:""}<p class="rule">Chưa chốt thì vẫn đánh tiếp được. Chốt rồi vẫn mở lại để sửa được.</p></section>`;
 }
 function hqView(D){
@@ -110,7 +111,7 @@ function hqView(D){
   xAutoPrep(D);
   let cur=hqTab||(live?"nguoi":"san");if(cur==="chot"&&!live)cur="san";
   let h=(!X&&!live&&hnQuick&&isAdm()&&hnList().length?`<button class="lnk hnback" data-act="hnquickx">‹ Về danh sách giải</button>`:"");
-  h+=hqTabsBar(D,cur,live)+hqQuick(D);
+  h+=hqTabsBar(D,cur,live);
   h+=({san:hqSanSang,nguoi:hqNguoi,tien:hqTien,luat:hqLuat,tt:hqTT,chot:hqChotTab}[cur])(D);
   if(live)return h+`<div class="hqcta">${cur==="chot"?`<button class="ball wide" data-act="step" data-v="chot">🏆 Kết thúc và chốt giải</button>`:`<button class="ball wide" data-act="step" data-v="live">← Về Đang đánh</button>`}</div>`;
   if(G)return h+gStartBar(D,c.giai||{pairs:[]});

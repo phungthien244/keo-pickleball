@@ -39,6 +39,7 @@ function muteFab(){
   const m=loaMuted();return `<button class="mutefab${m?" off":""}" data-act="mute" aria-pressed="${m}" aria-label="${m?"Bật loa":"Tắt loa"}">${m?"🔇 Loa tắt":"🔊 Loa bật"}</button>`;
 }
 function speak(text,voice,key,force){
+  if(!force&&typeof loaRoute==="function"&&loaRoute(text))return;
   if(loaMuted()&&!force){toast("Loa đang tắt. Bấm nút 🔇 ở góc dưới để bật.");return}
   stopSpeak();const tok=LOA.tok;LOA.key=key||"x";render();
   voice=voice||cfg().voice||"";const ck=voice+"|"+text;

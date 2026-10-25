@@ -86,6 +86,9 @@ function ttPre(D,m,X){
   const f=m.ref,T=f.toss||{},tn=t=>esc(ttTN(D,m,t));
   let h=ttHead(D,m,`Sân ${esc(cName(m.court))} · trước trận`);
   const tossTx=T.w?`<b>${tn(T.w)}</b> thắng bốc thăm${T.pick?`, chọn ${{serve:"giao trước",recv:"nhận trước",side:"bên sân",defer:"nhường"}[T.pick]||""}`:""}`:"Chưa bốc thăm";
+  {const X0=ckSched(),reg=pid=>X0?(S.regs||[]).find(r=>r.sid===X0.id&&r.pid===pid&&!r.cancel):null;
+    h+=`<section class="ttbox"><span class="cap">0 · Kiểm tra người · bấm ảnh để so mặt</span>${[...m.a,...m.b].map(pid=>{const r=reg(pid),ok=!X0||(r&&r.arrived);
+      return `<div class="ttrow">${ttAv(D,pid,"sm")}<span class="grow"><b>${esc(ttPN(D,pid))}</b><br><small class="${ok?"okc":"wac"}">${!X0?"có mặt":r&&r.arrived?`đã check-in ${r.arrivedAt?hm(r.arrivedAt):""}`:"chưa check-in"}</small></span>${spkBtn("tt:"+pid,`<button class="ttln" data-act="ttcallp" data-v="${esc(pid)}">📣 Gọi</button>`)}</div>`}).join("")}<small>Ai chưa có mặt: bấm Gọi để nhờ máy loa mời vào sân.</small></section>`}
   h+=`<section class="ttbox"><span class="cap">1 · Bốc thăm</span><div class="ttrow"><span class="coin sm${T.res?"":" off"}">${T.res==="N"?"NGỬA":T.res==="S"?"SẤP":"?"}</span><span class="grow">${tossTx}</span><button class="ttln" data-act="ttv" data-v="toss">${T.w?"Bốc lại":"🪙 Bốc thăm"}</button></div>
     <span class="cap">Đội giao trước</span><div class="ttseg">${["a","b"].map(t=>`<button data-act="ttfirst" data-v="${t}" aria-pressed="${X.st===t}">${ttAvs(D,t==="a"?m.a:m.b,"xs")}${tn(t)}</button>`).join("")}</div></section>`;
   h+=`<section class="ttbox"><span class="cap">2 · Vị trí đứng ban đầu · bấm ô để đổi chỗ</span>${ttCourt(D,m,X,{pre:true})}
@@ -125,7 +128,7 @@ function ttMain(D,m,X){
   const tile=t=>{const on=t===st;return `<div class="tttile t${t}${on?" on":""}"><span class="h">${ttAvs(D,t==="a"?m.a:m.b,"xs")}<span class="n">${esc(ttTN(D,m,t))}</span></span><b class="num">${X.s[t]}</b><span class="k">${on?(X.rally?"● ĐANG GIAO":`● ĐANG GIAO · TAY ${X.sn}`):"đang nhận"}</span></div>`};
   h+=`<div class="ttsbd"><div class="tttiles">${tile(X.left)}${tile(ttO(X.left))}</div><span class="meta num">Chạm ${X.R.to}${X.R.w2?" · cách 2":""} · đổi bên ở ${X.half} · ⏱ <b data-ttel="${X.t0||Date.now()}">${el}</b>′</span></div>
     <div class="ttwhite"><div class="ttcall"><b class="num">${X.call()}</b><span><b>${esc(ttPN(D,X.sv))}</b> giao từ ô ${X.srvRight?"phải":"trái"} · ${esc(ttPN(D,X.rcv))} nhận</span></div>${ttCourt(D,m,X)}</div>`;
-  h+=`<div class="tttools"><button data-act="tttoo">Timeout</button><button data-act="ttmt">✚ Y tế</button><button data-act="ttv" data-v="hist">Lịch sử</button><button class="red" data-act="ttff">Bỏ cuộc</button></div>
+  h+=`<div class="tttools"><button data-act="tttoo">Timeout</button><button data-act="ttmt">✚ Y tế</button><button data-act="ttv" data-v="hist">Lịch sử</button><button data-act="dhcb" data-v="${Number(m.court)||1}">📣 Gọi BTC</button><button class="red" data-act="ttff">Bỏ cuộc</button></div>
     <div class="ttlast">${last?`Pha trước: ${esc(last.tx)} (${last.before} → ${last.after})`:"Chưa có pha nào · bấm nút dưới sau mỗi pha bóng"}</div>`;
   // đáy cố định: Hoàn tác trên; +1 nằm cùng phía đội đang giao, nút còn lại phía kia
   const lose=X.rally?{c:"so",l:"ĐỘI NHẬN GHI ĐIỂM",s:`+1 cho ${esc(ttTN(D,m,rt))} · đổi giao`}:X.sn===1?{c:"t2",l:"TAY 2",s:`${esc(ttPN(D,mate(X.sv)))} giao`}:{c:"so",l:"ĐỔI GIAO",s:`sang ${esc(ttTN(D,m,rt))}`};
@@ -198,7 +201,7 @@ function ttLayer(D){
   let v=ttV||(f.started?"main":"pre");if(X.done&&v==="main")v="end";if(!f.started&&(v==="main"||v==="end"))v="pre";
   const body=ttFace?ttFaceV(D,m):v==="toss"?ttToss(D,m,X):v==="pre"?ttPre(D,m,X):v==="hist"?ttHist(D,m,X):v==="end"?ttEnd(D,m,X):ttMain(D,m,X);
   ttTickOn();
-  return `<div class="ttfs${v==="main"&&!ttFace?" main":""}" role="dialog" aria-label="Màn trọng tài · ${ttFace?"mat":v}">${body}${ttFF?ttFFV(D,m,X):""}</div>`;
+  return `<div class="ttfs${v==="main"&&!ttFace?" main":""}" role="dialog" aria-label="Màn trọng tài · ${ttFace?"mat":v}">${body}${ttFF?ttFFV(D,m,X):""}${dhCB!=null?dhSheets(D):""}</div>`;
 }
 function ttTickOn(){if(ttTick||typeof setInterval!=="function"||typeof document==="undefined"||!document.querySelectorAll)return;
   ttTick=setInterval(()=>{if(!ttId){clearInterval(ttTick);ttTick=null;return}let re=false;
@@ -222,6 +225,7 @@ async function ttAct(act,b){
   if(act==="ttmain"){ttV=null;render();return true}
   if(act==="tthg"){ttHG=+v;render();return true}
   if(act==="ttface"){ttFace=v;render();return true}
+  if(act==="ttcallp"){speak(`Mời vận động viên ${ttPN(D,v)} vào sân ${cName(m.court)} chuẩn bị thi đấu.`,"","tt:"+v);return true}
   if(act==="ttfacex"){ttFace=null;render();return true}
   if(act==="ttnotme"){ttFace=null;toast(`Đã ghi chú: ${ttPN(D,v)} không đúng người. Báo BTC kiểm tra.`);await ttWrite(m,{...f,un:[...(f.un||[]),{at:Date.now(),g:X.g,tx:`Không đúng người: ${ttPN(D,v)}`}]});return true}
   // trước trận

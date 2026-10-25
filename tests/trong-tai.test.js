@@ -19,8 +19,8 @@ const club = {
 
 test("trọng tài chỉ nhập điểm sân được giao, không sửa giải đấu, không xếp trận, không điểm danh", async () => {
   const e = setup({ host: "pikeco.app", path: "/q7/san", data: club, user: { uid: "ref1", isAnonymous: true } });
-  await e.boot(); await e.until(() => e.T().includes("Bạn là trọng tài"));
-  expect(e.T()).toContain("sân 1");
+  await e.boot(); await e.until(() => e.T().includes("Sân của tôi"));
+  expect(e.T()).toContain("Sân 1");
   const V = e.V();
   expect(V).not.toContain('data-act="gen"');
   expect(V).not.toContain('data-act="sheet"');
@@ -29,7 +29,7 @@ test("trọng tài chỉ nhập điểm sân được giao, không sửa giải 
   expect(V).toContain('data-act="savechk" data-id="m1"');
   expect(V).not.toContain('data-act="savechk" data-id="m2"');
   expect(V).not.toContain('id="sa-m2"');
-  expect(e.T()).toContain("Sân của bạn");
+  expect(e.V()).toContain('data-act="tt" data-id="m1"');
   // không lưu được sân 2 kể cả bấm thẳng
   e.input("sa-m2", "11"); e.input("sb-m2", "5"); await e.click("save", { id: "m2" });
   expect(e.store.get("clubs/q7/matches/m2").status).toBe("playing");

@@ -14,8 +14,8 @@ function vSan(D){
   if(sg==="cho")return h+queueBox(D,true)+genB+undoBar();
   if(sg==="xong")return h+doneBox(D)+undoBar();
   if(sg==="bxh")return h+vBxh(D)+undoBar();
-  if(!D.playing.length)h+=`<div class="lab"><span class="lbl">Sân</span><span class="bar">${courtStep(c)}</span></div><div class="empty"><strong>Sân đang trống</strong>Bấm “Xếp trận” để app ghép đôi tự động: ai chờ lâu, đánh ít được vào trước; ưu tiên đôi nam nữ hoặc cùng giới theo cài đặt; không bao giờ đôi nam gặp đôi nữ.</div>`;
-  else h+=`<div class="lab"><span class="lbl">Sân đang đánh</span><span class="bar">${courtStep(c)}</span></div><div class="courts">${D.playing.map(m=>courtCard(D,m)).join("")}</div>`;
+  h+=`<div class="lab"><span class="lbl">${D.playing.length?"Sân đang đánh":"Sân"}</span><span class="bar">${courtStep(c)}</span></div>`;
+  h+=dhLive(D,{live:D.playing,card:m=>`<div class="courts">${courtCard(D,m)}</div>`,fill:can?"gen":null});
   if(can&&D.playing.length){const Q=waitQueue(D).slice(0,4);h+=`<div class="hqfree"><span><b>${free} sân trống</b>${Q.length?` · kế: ${Q.map(p=>esc(p.name)).join(", ")}`:""}</span><button class="ball" data-act="gen">Đưa vào</button></div>${errs.gen?`<p class="err">${esc(errs.gen)}</p>`:""}`}else h+=genB;
   {const Q=waitQueue(D).slice(0,8);if(Q.length)h+=`<button class="nextq" data-act="lseg" data-v="cho"><span class="lbl">Vào sân tiếp theo</span><span class="t">${Q.map(p=>esc(p.name)).join(", ")}</span><span aria-hidden="true">›</span></button>`}
   return h+undoBar();
@@ -35,6 +35,7 @@ function refNote(){
   return `<div class="refnote${MYCT.length?"":" warn"}"><b>Bạn là trọng tài${MYCT.length?` · sân ${MYCT.join(", ")}`:""}</b><span>${MYCT.length?"Chỉ nhập được tỉ số ở sân được giao. Sân khác chỉ xem.":"Chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</span></div>`;
 }
 function vSanView(D){
+  if(REF&&!canWrite&&phaseOf(D)==="live")return vSanToi(D);
   const c=D.c,act=D.players.filter(p=>p.active!==false);
   if(phaseOf(D)==="prep"){
     const last=[...S.hist].sort((a,b)=>b.sid-a.sid)[0],meIn=ME&&act.some(p=>p.id===ME),thu=c.thu||"keo";

@@ -8,10 +8,10 @@ const inApp=()=>/Zalo|FBAN|FBAV|Instagram|Line\//i.test(navigator.userAgent||"")
 let unsubAdm=[],unsubRef=null;
 // Trọng tài: theo dõi sân được giao (ban tổ chức đổi là máy trọng tài cập nhật ngay)
 function watchRef(){
-  if(unsubRef){try{unsubRef()}catch(e){}unsubRef=null}MYCT=[];
-  if(!REF||!authUser)return;
+  if(unsubRef){try{unsubRef()}catch(e){}unsubRef=null}MYCT0=[];applyRef();
+  if(!(ROLE==="scorer"||ROLE==="pin")||legacy||!authUser)return;
   const path=PFX+(ROLE==="scorer"?"members/":"editors/")+authUser.uid;
-  try{unsubRef=FB.onSnapshot(FB.doc(FB.fs,path),{},s=>{MYCT=((s.exists()&&s.data().courts)||[]).map(Number);render()},()=>{})}catch(e){}
+  try{unsubRef=FB.onSnapshot(FB.doc(FB.fs,path),{},s=>{MYCT0=((s.exists()&&s.data().courts)||[]).map(Number);applyRef();render()},()=>{})}catch(e){}
 }
 function watchAdmin(){
   unsubAdm.forEach(f=>{try{f()}catch(e){}});unsubAdm=[];
@@ -19,6 +19,8 @@ function watchAdmin(){
   unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"members"),{},q=>{S.members=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
   unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"editors"),{},q=>{S.editors=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
   unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"links"),{},q=>{S.links=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
+  unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"refqr"),{},q=>{S.refqr=Object.fromEntries(q.docs.map(d=>[d.id,d.data()]));render()},()=>{}));
+  unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"refs"),{},q=>{const t0=Date.now()-20*36e5;S.refsQ=q.docs.map(d=>({id:d.id,...d.data()})).filter(r=>(r.at||0)>t0);render()},()=>{}));
 }
 async function refreshRole(){
   // Tính xong mới gán một lần: không để trang nháy sang giao diện người chơi trong lúc chờ
@@ -31,7 +33,7 @@ async function refreshRole(){
   if(u!==authUser)return;
   ROLE=role;canWrite=!!role;REF=!legacy&&(ROLE==="scorer"||ROLE==="pin");if(REF)canWrite=false;S.authReady=true;
   if(MINI&&!legacy)lsSet("pb-role-"+CID,role||"");
-  watchRef();watchAdmin();watchLink();
+  watchRef();watchRefQ();watchAdmin();watchLink();watchCalls();
 }
 // Bỏ mã mời khỏi địa chỉ sau khi đã dùng (Mini App giữ ?clb=… trên địa chỉ)
 function dropInviteTok(){try{sessionStorage.removeItem("pb-inv-"+CID)}catch(e){}try{const q=new URLSearchParams(location.search);q.delete("moi");history.replaceState(null,"",location.pathname+(q.toString()?"?"+q:"")+location.hash)}catch(e){}}

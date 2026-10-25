@@ -272,6 +272,8 @@ function vChot(D){
   }else if(R0.n)b2+=`<p class="rule">Mọi người đã đóng đủ.</p>`;
   if(pz.length)b2+=pz.map(x=>`<div class="srow"><span>${esc(x.label)} · ${x.ids.map(id=>esc(D.pmap.get(id)?.name||"?")).join(" &amp; ")}</span><b class="num">${fmtK(x.k)}</b></div>`).join("");
   h+=card(`<i class="no">2</i>Chi phí &amp; giải thưởng`,b2+`<small class="rule">Sửa số riêng hoặc tick ai đã chuyển ở tab Quỹ.</small>`);
+  {const X=xCur(),RF=X?withX(X,()=>regList(D)).refund:[];
+    if(RF.length)h+=card(`<i class="no">3</i>Hoàn tiền người huỷ`,RF.map(x=>`<div class="srow"><span>${esc(x.name||D.pmap.get(x.pid)?.name||"?")}</span><span class="bar" style="gap:6px"><b class="num">${fmtK(withX(X,()=>feeOf(x)))}</b><button class="ghost" data-act="regrefund" data-id="${esc(x.id)}">${armed("regrefund:"+x.id)?"Bấm lần nữa":"Đã hoàn"}</button></span></div>`).join("")+`<small class="rule">Người huỷ sau khi đã chuyển tiền. Bấm “Đã hoàn” khi đã chuyển trả.</small>`)}
   const now=M.club-R.left;
   h+=`<div class="sumbox"><div><span>Phải thu</span><span class="num">${fmtK(R.tot)}</span></div><div><span>Chi</span><span class="num">−${fmtK(M.cost)}</span></div>${M.pot&&M.gt!=="gop"?`<div><span>Giải</span><span class="num">−${fmtK(M.pot)}</span></div>`:""}${R.left?`<div><span>Còn nợ (thu sau)</span><span class="num">−${fmtK(R.left)}</span></div>`:""}
     <div class="big"><span>Vào quỹ ngay</span><span class="num">${now<0?"−":"+"}${fmtK(Math.abs(now))}</span></div>${R.left?`<div><span>Khi thu đủ nợ</span><span class="num">${M.club<0?"−":"+"}${fmtK(Math.abs(M.club))}</span></div>`:""}</div>`;
