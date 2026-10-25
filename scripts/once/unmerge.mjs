@@ -92,7 +92,7 @@ if (MODE === "list") {
   }
 } else if (MODE === "detach") {
   // Gỡ liên kết VĐV và quyền CLB đã bị chuyển nhầm sang tài khoản UID (chỉ trong CLB CID)
-  const UID = process.env.UID, CID = process.env.CID;
+  const UID = process.env.TUID, CID = process.env.CID;
   if (!/^zalo_[0-9a-f]{40}$/.test(UID || "") || !/^[a-z0-9-]+$/.test(CID || "")) throw new Error("UID/CID sai");
   const P = `clubs/${CID}`, l = await F.get(`${P}/links/${UID}`), m = await F.get(`${P}/members/${UID}`);
   const pid = l?.fields?.pid?.stringValue;
