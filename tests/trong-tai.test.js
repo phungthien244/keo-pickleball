@@ -70,3 +70,12 @@ test("Chuẩn bị: mục Trọng tài mặc định tắt, bật lên giao sân
   await e.click("refct", { k: "e:pin1", c: "1" });
   await e.until(() => (e.store.get("clubs/q7/editors/pin1").courts || []).includes(1));
 });
+
+test("trọng tài nhận sân trước giờ khai mạc vẫn thấy Sân của tôi: chờ BTC đưa trận, Gọi BTC, bàn giao", async () => {
+  const data = { ...club, "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep" } };
+  delete data["clubs/q7/matches/m1"]; delete data["clubs/q7/matches/m2"];
+  const e = setup({ host: "pikeco.app", path: "/q7/san", data, user: { uid: "ref1", isAnonymous: true } });
+  await e.boot(); await e.until(() => e.T().includes("Sân của tôi"));
+  expect(e.T()).toContain("Chờ BTC đưa trận vào sân");
+  expect(e.V()).toContain('data-act="dhcb"');
+});

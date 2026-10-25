@@ -52,7 +52,7 @@ function mxShell(D,body,cta=""){
 }
 function mxNav(){
   const it=(k,t,go,lb)=>`<a class="${mxCur()===k?"on":""}" href="${go}" ${t}>${mxSvg(k==="hist"?"hist":k)}<span>${lb}</span></a>`;
-  return `<nav class="mxnav">${it("home",`data-go="home"`,pathOf("home"),"Trang chủ")}${it("live",`data-go="app" data-t="san"`,pathOf("app",{tab:"san"}),"Trực tiếp")}${it("rank",`data-go="app" data-t="bxh"`,pathOf("app",{tab:"bxh"}),"Xếp hạng")}${it("hist",`data-go="app" data-t="ls"`,pathOf("app",{tab:"ls"}),"Lịch sử")}${it("me",`data-go="app" data-t="toi"`,pathOf("app",{tab:"toi"}),"Tôi")}</nav>`;
+  return `<nav class="mxnav">${it("home",`data-go="home"`,pathOf("home"),"Trang chủ")}${it("live",`data-go="app" data-t="san"`,pathOf("app",{tab:"san"}),REF&&!canWrite?"Sân của tôi":"Trực tiếp")}${it("rank",`data-go="app" data-t="bxh"`,pathOf("app",{tab:"bxh"}),"Xếp hạng")}${it("hist",`data-go="app" data-t="ls"`,pathOf("app",{tab:"ls"}),"Lịch sử")}${it("me",`data-go="app" data-t="toi"`,pathOf("app",{tab:"toi"}),"Tôi")}</nav>`;
 }
 // Đang nạp CLB (vừa chuyển CLB): dựng sẵn khung Mini App, không lộ giao diện web
 function mxLoading(){
@@ -194,7 +194,7 @@ function mxWho(D,R){
 
 /* ----- 3 · Trực tiếp ----- */
 function mxLive(D){
-  if(REF&&!canWrite&&phaseOf(D)==="live")return mxShell(D,vSanToi(D)+dhSheets(D));
+  if(REF&&!canWrite)return mxShell(D,vSanToi(D)+dhSheets(D));
   const live=phaseOf(D)==="live";
   if(!live){const nx=schedUp().find(x=>x.st!=="draft");
     return mxShell(D,`<div class="mxcard muted"><b>Chưa có giải đấu đang đánh</b><span>${nx?`Giải đấu tới: ${esc(dowVN(nx.at))} ${esc(dmy(nx.at))} · ${esc(xTime(nx))}`:regOpen()?`Giải đấu tới: ${esc(whenFull(regCfg()))}`:"Khi giải đấu bắt đầu, sân và tỉ số hiện ở đây, cập nhật ngay."}</span></div>`+(nx?xPlayerCards(D,{max:1}):regOpen()?mxSessCard(D,true):""))}

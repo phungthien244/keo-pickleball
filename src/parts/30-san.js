@@ -35,7 +35,7 @@ function refNote(){
   return `<div class="refnote${MYCT.length?"":" warn"}"><b>Bạn là trọng tài${MYCT.length?` · sân ${MYCT.join(", ")}`:""}</b><span>${MYCT.length?"Chỉ nhập được tỉ số ở sân được giao. Sân khác chỉ xem.":"Chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</span></div>`;
 }
 function vSanView(D){
-  if(REF&&!canWrite&&phaseOf(D)==="live")return vSanToi(D);
+  if(REF&&!canWrite)return vSanToi(D);
   const c=D.c,act=D.players.filter(p=>p.active!==false);
   if(phaseOf(D)==="prep"){
     const last=[...S.hist].sort((a,b)=>b.sid-a.sid)[0],meIn=ME&&act.some(p=>p.id===ME),thu=c.thu||"keo";
