@@ -132,7 +132,13 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="speakrules"){const D=derive();const el=document.getElementById&&document.getElementById("cf-mc");speak((el&&el.value.trim())||mcText(D),"","rules");return}
   if(act==="mcreset"){if(!canWrite)return;if(!armOr("mcreset:x"))return;delete drafts["cf-mc"];write(()=>saveCfg({mc:""}),"Đã về mẫu tự tạo");return}
   if(act==="speak"){const D=derive(),m=D.SM.find(x=>x.id===id);if(m)speak(callText(D,m),"","c:"+id);return}
-  if(act==="qv"){qView=b.dataset.v==="so"?"so":"buoi";render();return}
+  if(act==="qv"){qView=["so","no","phi","bc"].includes(b.dataset.v)?b.dataset.v:"nay";render();return}
+  if(act==="qmon"){qMon=Math.min(0,qMon+(+b.dataset.v||0));render();return}
+  if(act==="qsend"){await sendText(qReportText(qReport(qMon)));return}
+  if(act==="qremind"){const L=debts();await sendText(`Nhắc đóng lệ phí ${CLUB?.name||""}:\n`+L.map(x=>`· ${x.name}: ${fmtK(x.k)} (giải đấu #${x.sid})`).join("\n"));return}
+  if(act==="qcsv"){const r=qReport(qMon),rows=[["Ngày","Nội dung","Nguồn","Số tiền (k)"],...r.T.map(x=>[dmy(x.at),String(x.t).replace(/<[^>]*>/g,"").replace(/&amp;/g,"&"),{giai:"Giải đấu",phi:"Phí thành viên",tay:"Ghi tay"}[x.g],x.k])];
+    if(!MINI&&typeof Blob!=="undefined"){try{const csv="\ufeff"+rows.map(z=>z.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download=`quy-${r.y}-${String(r.m).padStart(2,"0")}.csv`;a.click();toast("Đã tải báo cáo (mở bằng Excel)");return}catch(e){}}
+    const tsv=rows.map(z=>z.join("\t")).join("\n");try{await navigator.clipboard.writeText(tsv);toast("Đã chép: dán vào Excel hoặc Google Sheets")}catch(e){await sendText(tsv)}return}
   if(act==="payx"){if(b.classList.contains("sheetbg")&&e.target.closest("[data-stop]")&&!e.target.closest('[data-act="payx"]:not(.sheetbg)'))return;payOpen=null;showSheet();return}
   if(act==="pay"){payOpen={sid:Number(b.dataset.sid),name:b.dataset.n,k:Number(b.dataset.k)};showSheet();return}
   if(act==="saveqr"){await saveQr(+b.dataset.a||0,b.dataset.n||"");return}

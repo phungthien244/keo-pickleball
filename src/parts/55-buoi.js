@@ -4,7 +4,7 @@
      app/pay-<giải đấu>  { paid:{id:true}, adj:{id:k} }   ai đã chuyển, số riêng từng người
      app/led-<mã>    { k, note, at, by }               dòng thu (+) / chi (−) ghi tay vào sổ quỹ
      app/hist-<giải đấu> thêm paid, adj, track, closedAt, closedBy, editedAt, editedBy        */
-let sheetOpen=false,qView="buoi",ledForm=null,chotMien=false;
+let sheetOpen=false,qView="nay",ledForm=null,chotMien=false;
 const payDoc=sid=>(S.pays&&S.pays["pay-"+sid])||{};
 const phaseOf=D=>(D.SM.length||D.c.phase==="live"||(isG(D.c)&&D.c.giai&&D.c.giai.locked))?"live":"prep";
 const fmtTxt=c=>isG(c)?(isKO(c.giai)?"Vòng bảng → Knockout":"Cặp cố định xoay vòng"):"Xoay cặp";
@@ -190,9 +190,57 @@ function moneyMini(D){
   return `<div class="lab"><span class="lbl">Chi phí trong giải đấu</span></div><div class="tiles"><a class="tile" href="${q}" data-go="app" data-t="tien"><span class="k">Đã nhận</span><b class="num">${R.np}/${R.n}</b><small class="num">${fmtK(R.got)}</small></a><a class="tile${R.left>0?" warn":""}" href="${q}" data-go="app" data-t="tien"><span class="k">Còn thiếu</span><b class="num">${fmtK(R.left)}</b><small>Bấm để tick ai đã chuyển</small></a></div>`;
 }
 
-/* ----- Tab Quỹ: Buổi này | Sổ quỹ CLB ----- */
+/* ----- Tab Quỹ: 5 thẻ ngang Hôm nay · Sổ quỹ · Còn nợ · Phí TV · Báo cáo ----- */
+let qMon=0;
+function qTabs(){
+  const FVm=fundView(),L=[["nay","Hôm nay"]];
+  if(FVm!=="off")L.push(["so","Sổ quỹ"]);
+  if(FVm==="full")L.push(["no","Còn nợ"]);
+  if(canWrite)L.push(["phi","Phí TV"],["bc","Báo cáo"]);
+  return L;
+}
 function vTien(D){
-  return `<div class="seg qseg" role="group" aria-label="Xem quỹ"><button data-act="qv" data-v="buoi" aria-pressed="${qView!=="so"}">Giải đấu #${D.sid} · hôm nay</button><button data-act="qv" data-v="so" aria-pressed="${qView==="so"}">Sổ quỹ CLB</button></div>`+(qView==="so"?vSoQuy(D):vQuyBuoi(D));
+  const L=qTabs();if(!L.some(x=>x[0]===qView))qView="nay";
+  const DN=debts().length+(canWrite?mfDebts(D).length:0);
+  const bar=L.length>1?`<nav class="hqtabs qtabs" aria-label="Xem quỹ">${L.map(([k,l])=>`<button data-act="qv" data-v="${k}" aria-pressed="${qView===k}">${l}${k==="no"&&DN?`<i>${DN}</i>`:""}</button>`).join("")}</nav>`:"";
+  return bar+(qView==="so"?vSoQuy(D):qView==="no"?vQuyNo(D):qView==="phi"?vQuyPhi(D):qView==="bc"?vQuyBC(D):vQuyBuoi(D));
+}
+function vQuyNo(D){
+  const DB=debts(),MF=canWrite?mfDebts(D):[],dt=DB.reduce((a,x)=>a+x.k,0)+MF.reduce((a,x)=>a+x.k,0);
+  let h=`<section class="hqhero"><span class="k">Còn nợ</span><b class="num">${fmtK(dt)}</b><span class="v">${DB.length} khoản lệ phí giải${MF.length?` · ${MF.length} phí thành viên ${mfLb(mfKey())}`:""}</span></section>`;
+  if(!DB.length&&!MF.length)return h+`<div class="empty"><strong>Không ai còn nợ</strong>Người chưa đóng khi chốt giải sẽ hiện ở đây.</div>`;
+  if(DB.length)h+=card(`Lệ phí giải · ${fmtK(DB.reduce((a,x)=>a+x.k,0))}`,DB.map(x=>`<div class="lrow"><span class="t"><b>${esc(x.name)}</b><small>Giải đấu #${x.sid}</small></span><b class="num neg">${fmtK(x.k)}</b>${canWrite?`<button class="sm" data-act="paid" data-id="${x.sid}" data-p="${x.id}">Đã nhận</button>`:""}</div>`).join(""));
+  if(MF.length)h+=card(`Phí thành viên ${mfLb(mfKey())} · ${fmtK(MF.reduce((a,x)=>a+x.k,0))}`,MF.map(x=>`<div class="lrow"><span class="t"><b>${esc(x.name)}</b><small>Hạn ngày ${mfCfg().due}</small></span><b class="num neg">${fmtK(x.k)}</b><button class="sm" data-act="mfpaid" data-id="${x.id}" data-v="${x.key}">Đã nhận</button></div>`).join("")+`<div class="two"><button class="line" data-act="mfremind">💬 Nhắc ${MF.length} người chưa đóng</button></div>`);
+  if(canWrite&&DB.length)h+=`<div class="two"><button class="line" data-act="qremind">💬 Copy tin nhắc nợ lệ phí</button></div>`;
+  return h;
+}
+function vQuyPhi(D){
+  if(!mfOn())return `<div class="empty"><strong>Chưa thu phí thành viên</strong>Bật để thu phí cố định theo tháng, quý hoặc năm; người đã đóng được giảm lệ phí giải.</div>`+mfCard(D);
+  return mfCard(D);
+}
+function qEntries(){
+  return [...S.hist.filter(x=>x.money&&(x.money.on!==false||hClub(x))).map(x=>({at:x.endedAt||x.startedAt||0,t:(x.type==="giai"?"Giải · giải đấu #":"Giải đấu #")+x.sid,auto:true,k:hClub(x),g:"giai",
+      sub:`Thu ${fmtK(x.money.collected!=null?x.money.collected:x.money.fund)} · chi ${fmtK(x.money.cost)}${x.money.pot?` · giải ${fmtK(x.money.pot)}`:""}${x.editedAt?` · đã sửa ${dmy(x.editedAt)}`:""}`})),
+    ...(S.led||[]).map(x=>({at:x.at||0,t:esc(x.note||""),auto:false,k:+x.k||0,g:"tay",sub:x.by?`Ghi bởi ${esc(x.by)}`:"",id:x.id})),
+    ...(mfCfg().fund===false?[]:(S.mfee||[]).map(d=>{const P=Object.values(d.paid||{});return {at:P.reduce((m,x)=>Math.max(m,+x.at||0),0),t:`Phí thành viên ${mfLb(d.id.slice(5))}`,auto:true,g:"phi",k:P.reduce((a,x)=>a+(+x.k||0),0),sub:`${P.length} người đã đóng`}}).filter(x=>x.k))].sort((a,b)=>b.at-a.at);
+}
+function qMonth(off){const a=new Date();a.setDate(1);a.setHours(0,0,0,0);a.setMonth(a.getMonth()+off);const b=new Date(a);b.setMonth(b.getMonth()+1);return {a:a.getTime(),b:b.getTime(),m:a.getMonth()+1,y:a.getFullYear()}}
+function qReport(off){
+  const R=qMonth(off),T=qEntries().filter(x=>x.at>=R.a&&x.at<R.b),tin=T.filter(x=>x.k>0).reduce((a,x)=>a+x.k,0),tout=T.filter(x=>x.k<0).reduce((a,x)=>a-x.k,0);
+  const by=g=>T.filter(x=>x.g===g).reduce((a,x)=>a+x.k,0);
+  return {...R,T,tin,tout,net:tin-tout,giai:by("giai"),phi:by("phi"),tay:by("tay"),n:T.filter(x=>x.g==="giai").length};
+}
+const qSg=k=>(k<0?"−":"+")+fmtK(Math.abs(k));
+function qReportText(r){
+  return `📒 ${CLUB?.name||"CLB"} · Báo cáo quỹ tháng ${r.m}/${r.y}\nThu: +${fmtK(r.tin)}\nChi: −${fmtK(r.tout)}\nChênh lệch: ${qSg(r.net)}\n· ${r.n} giải đấu: ${qSg(r.giai)}${r.phi?`\n· Phí thành viên: ${qSg(r.phi)}`:""}${r.tay?`\n· Ghi tay: ${qSg(r.tay)}`:""}\nQuỹ hiện có: ${qSg(fundNow())}`;
+}
+function vQuyBC(D){
+  const r=qReport(qMon);
+  let h=`<div class="qmon"><button class="line" data-act="qmon" data-v="-1" aria-label="Tháng trước">‹</button><b>Tháng ${r.m}/${r.y}</b><button class="line" data-act="qmon" data-v="1" ${qMon>=0?"disabled":""} aria-label="Tháng sau">›</button></div>`;
+  h+=`<div class="kpis k3q"><div class="kpi"><div class="lbl">Thu</div><div class="v num pos">+${fmtK(r.tin)}</div></div><div class="kpi"><div class="lbl">Chi</div><div class="v num neg">−${fmtK(r.tout)}</div></div><div class="kpi"><div class="lbl">Chênh lệch</div><div class="v num ${r.net>=0?"pos":"neg"}">${qSg(r.net)}</div></div></div>`;
+  h+=card("Theo nguồn",`<div class="srow"><span>${r.n} giải đấu</span><b class="num">${qSg(r.giai)}</b></div><div class="srow"><span>Phí thành viên</span><b class="num">${qSg(r.phi)}</b></div><div class="srow"><span>Ghi tay</span><b class="num">${qSg(r.tay)}</b></div><div class="srow"><span><b>Quỹ hiện có</b></span><b class="num">${qSg(fundNow())}</b></div>`);
+  h+=card(`Các khoản · ${r.T.length}`,r.T.length?r.T.map(x=>`<div class="lrow"><span class="d num">${new Date(x.at).getDate()}</span><span class="t"><b>${x.t}</b><small>${x.sub}</small></span><b class="num ${x.k>=0?"pos":"neg"}">${qSg(x.k)}</b></div>`).join(""):`<p class="rule">Tháng này chưa có khoản nào.</p>`);
+  return h+`<div class="hqcta two"><button class="line" data-act="qcsv">⬇ Tải CSV</button><button class="ball" data-act="qsend">💬 Gửi nhóm</button></div>`;
 }
 function vQuyBuoi(D){
   const c=D.c,M=money(D),R=recv(D,M),pz=prizes(D,M);
@@ -242,11 +290,8 @@ function vSoQuy(D){
     else h+=`<div class="two2"><button class="ball" data-act="ledf" data-v="thu">+ Ghi thu</button><button class="line2" data-act="ledf" data-v="chi">− Ghi chi</button></div>`;
   }
   if(FVm==="bal")return h+`<p class="rule" style="text-align:center">Chủ CLB chỉ công khai số dư quỹ.</p>`;
-  if(DB.length&&FVm==="full")h+=card(`Còn nợ · ${fmtK(dt)}`,DB.map(x=>`<div class="lrow"><span class="t"><b>${esc(x.name)}</b><small>Giải đấu #${x.sid}</small></span><b class="num neg">${fmtK(x.k)}</b>${canWrite?`<button class="sm" data-act="paid" data-id="${x.sid}" data-p="${x.id}">Đã nhận</button>`:""}</div>`).join(""));
-  const E=[...S.hist.filter(x=>x.money&&(x.money.on!==false||hClub(x))).map(x=>({at:x.endedAt||x.startedAt||0,t:(x.type==="giai"?"Giải · giải đấu #":"Giải đấu #")+x.sid,auto:true,k:hClub(x),
-      sub:`Thu ${fmtK(x.money.collected!=null?x.money.collected:x.money.fund)} · chi ${fmtK(x.money.cost)}${x.money.pot?` · giải ${fmtK(x.money.pot)}`:""}${x.editedAt?` · đã sửa ${dmy(x.editedAt)}`:""}`})),
-    ...(S.led||[]).map(x=>({at:x.at||0,t:esc(x.note||""),auto:false,k:+x.k||0,sub:x.by?`Ghi bởi ${esc(x.by)}`:"",id:x.id})),
-    ...(mfCfg().fund===false?[]:(S.mfee||[]).map(d=>{const P=Object.values(d.paid||{});return {at:P.reduce((m,x)=>Math.max(m,+x.at||0),0),t:`Phí thành viên ${mfLb(d.id.slice(5))}`,auto:true,k:P.reduce((a,x)=>a+(+x.k||0),0),sub:`${P.length} người đã đóng`}}).filter(x=>x.k))].sort((a,b)=>b.at-a.at);
+  if(DB.length&&FVm==="full")h+=`<button class="qnolink" data-act="qv" data-v="no"><span>Còn nợ · ${DB.length} khoản</span><b class="num neg">${fmtK(dt)} ›</b></button>`;
+  const E=qEntries();
   {const m0=new Date();m0.setDate(1);m0.setHours(0,0,0,0);const T=E.filter(x=>x.at>=m0.getTime()),tin=T.filter(x=>x.k>0).reduce((a,x)=>a+x.k,0),tout=T.filter(x=>x.k<0).reduce((a,x)=>a-x.k,0);
     if(T.length)h+=`<div class="kpis k2q"><div class="kpi"><div class="lbl">Thu tháng ${m0.getMonth()+1}</div><div class="v num pos">+${fmtK(tin)}</div></div><div class="kpi"><div class="lbl">Chi tháng ${m0.getMonth()+1}</div><div class="v num neg">−${fmtK(tout)}</div></div></div>`}
   h+=card("Sổ thu chi",E.length?E.map(x=>{const d=x.at?new Date(x.at):null;return `<div class="lrow"><span class="d num">${d?`${d.getDate()}<br>T${d.getMonth()+1}`:"–"}</span><span class="t"><b>${x.t}</b><span class="tag ${x.auto?"a":"m"}">${x.auto?"Tự động":"Ghi tay"}</span><small>${x.sub}</small></span><b class="num ${x.k>=0?"pos":"neg"}">${x.k>=0?"+":"−"}${fmtK(Math.abs(x.k))}</b>${canWrite&&!x.auto?delBtn("leddel",x.id,"Xoá"):""}</div>`}).join(""):`<p class="rule">Chưa có khoản nào. Mỗi giải đấu chốt xong tự ghi một dòng.</p>`);

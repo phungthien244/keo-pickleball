@@ -2441,3 +2441,7 @@ section:not(.mx) .hqtabs{margin:0 0 10px}
 .xstp button:disabled{opacity:.5}
 .xrev .xrevn{font-family:var(--display);font-weight:900;font-size:20px}
 .chst{margin-top:0}
+/* Quỹ 5 thẻ */
+.qtabs{position:static;margin:0 0 10px!important;padding:2px 0 10px;background:none;border-bottom:0}
+.qmon{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px}.qmon b{font-size:16px}.qmon button{min-width:44px}
+.qnolink{display:flex;width:100%;justify-content:space-between;align-items:center;padding:12px 14px;margin:0 0 10px;border:1px solid #f0c9c4;background:#fff6f5;color:var(--ink);font-family:var(--body);font-size:14px;text-transform:none;letter-spacing:0}

@@ -62,10 +62,14 @@ test("luồng giải đấu: chuẩn bị → đang đánh → chốt, quỹ gi�
   expect(e.store.get("app/config").session).toBe(2);
   // Sổ quỹ: số dư = 120 − nợ (450 − 120 đã nhận = 330) = −210
   await e.tab("tien"); await e.click("qv", { v: "so" });
-  expect(e.T()).toContain("Còn nợ · 330k");
   expect(e.T()).toContain("Quỹ CLB hiện có −210k");
+  await e.click("qv", { v: "no" });
+  expect(e.T()).toContain("Lệ phí giải · 330k");
   await e.click("paid", { id: "1", p: chi });
-  expect(e.T()).toContain("Còn nợ · 300k");
+  expect(e.T()).toContain("Lệ phí giải · 300k");
+  await e.click("qv", { v: "bc" });
+  expect(e.T()).toContain("Theo nguồn");
+  await e.click("qv", { v: "so" });
   // ghi tay
   await e.click("ledf", { v: "chi" }); e.input("lg-k", "50"); e.input("lg-n", "Mua bóng"); await e.click("ledsave");
   const led = e.docs("app/led-");
