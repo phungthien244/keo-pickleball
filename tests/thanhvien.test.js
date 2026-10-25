@@ -66,6 +66,9 @@ test("lọc nam/nữ, giao quyền trọng tài/quản lý cho người đã li�
   expect(e.T()).toContain("An");
   await e.ok("tvrole", { id: "p1", v: "" });
   await e.until(() => !e.store.has("clubs/aep/members/zalo_an"));
+  await e.click("tvunlink", { id: "p1", v: "zalo_an" }); await e.click("tvunlink", { id: "p1", v: "zalo_an" });
+  await e.until(() => !e.store.has("clubs/aep/links/zalo_an"));
+  expect(e.store.get("clubs/aep/players/p1").zuid).toBe("");
 });
 
 test("chủ CLB đăng nhập Google tạo mã liên kết Zalo (cùng quyền, 10 phút), Zalo nhận là có quyền chủ", async () => {

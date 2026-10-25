@@ -44,8 +44,12 @@ async function zSwitch(){
 }
 let unsubLink=null;
 let ZPROF=null;
-function zaloProf(){if(ZPROF)return ZPROF;try{return JSON.parse(localStorage.getItem("pb-zprof")||"{}")||{}}catch(e){return {}}}
-function saveZProf(o){ZPROF={...zaloProf(),...o};o=ZPROF;try{localStorage.setItem("pb-zprof",JSON.stringify(o))}catch(e){}}
+// Tên, ảnh Zalo lưu kèm mã Zalo của người có tên đó (nz): đổi tài khoản Zalo thì không hiện tên, ảnh của người trước
+function zaloProf(){let o=ZPROF;if(!o){try{o=JSON.parse(localStorage.getItem("pb-zprof")||"{}")||{}}catch(e){o={}}}
+  if(o.zid&&(o.n||o.p)&&o.nz!==o.zid){const {n,p,nz,...r}=o;return r}return o}
+function saveZProf(o){const cur=zaloProf(),nx={...cur,...o};if(o.n!==undefined||o.p!==undefined)nx.nz=nx.zid||"";
+  else if(o.zid&&o.zid!==cur.zid){delete nx.n;delete nx.p;delete nx.nz}
+  ZPROF=nx;try{localStorage.setItem("pb-zprof",JSON.stringify(nx))}catch(e){}}
 async function zaloStart(){
   if(!PLAYER_ON())return;
   if(ZALO_ON){if(window.FB_TARGET==="mock"){FB.signInWithCustomToken(FB.auth,"demo").then(()=>location.reload());return}
