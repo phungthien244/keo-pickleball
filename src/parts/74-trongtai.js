@@ -117,18 +117,20 @@ function ttToss(D,m,X){
   return h;
 }
 function ttMain(D,m,X){
-  const tn=t=>esc(ttShort(D,m,t)),A=ttTN(D,m,"a"),B=ttTN(D,m,"b"),last=[...X.log].reverse().find(l=>l.k==="p");
-  const el=X.t0?Math.max(0,Math.round((Date.now()-X.t0)/6e4)):0;
-  let h=ttHead(D,m,`Sân ${esc(cName(m.court))} · Ván ${X.g+1}`);
-  h+=`<div class="ttsb"><span class="tm a">${ttAvs(D,m.a)}<b>${esc(A)}</b><small>Ván thắng: ${X.gw.a}</small></span><span class="gw num">${X.R.sets>1?`VÁN ${X.gw.a}–${X.gw.b}`:"1 VÁN"}</span><span class="tm b">${ttAvs(D,m.b)}<b>${esc(B)}</b><small>Ván thắng: ${X.gw.b}</small></span></div>
-    <div class="ttcall"><b class="num">${X.call()}</b><span>${esc(ttPN(D,X.sv))} giao${X.rally?"":` · người giao ${X.sn}`} · từ ô ${X.srvRight?"phải":"trái"}</span></div>`;
+  const tn=t=>esc(ttShort(D,m,t)),last=[...X.log].reverse().find(l=>l.k==="p"),st=X.st,rt=ttO(st);
+  const el=X.t0?Math.max(0,Math.round((Date.now()-X.t0)/6e4)):0,mate=id=>{const L=st==="a"?m.a:m.b;return L[0]===id?L[1]:L[0]};
+  let h=`<div class="tthd"><button class="ttbk" data-act="ttx" aria-label="Quay lại">‹</button><b>Sân ${esc(cName(m.court))} · Ván ${X.g+1}${X.R.sets>1?` · ${X.gw.a}–${X.gw.b}`:""}</b><button class="ttun" data-act="ttundo" ${(m.ref.ev||[]).length?"":"disabled"}>↶ Hoàn tác</button></div>`;
+  // ô điểm hai đội, xếp theo bên sân; đội đang giao tô đậm màu đội
+  const tile=t=>{const on=t===st;return `<div class="tttile t${t}${on?" on":""}">${ttAvs(D,t==="a"?m.a:m.b,"xs")}<span class="n">${esc(ttTN(D,m,t))}</span><b class="num">${X.s[t]}</b><span class="k">${on?(X.rally?"ĐANG GIAO":`ĐANG GIAO · TAY ${X.sn}`):"đang nhận"}</span></div>`};
+  h+=`<div class="tttiles">${tile(X.left)}${tile(ttO(X.left))}</div>
+    <div class="ttcall"><b class="num">${X.call()}</b><span><b>${esc(ttPN(D,X.sv))}</b> giao từ ô ${X.srvRight?"phải":"trái"} · ${esc(ttPN(D,X.rcv))} nhận</span></div>`;
   h+=ttCourt(D,m,X);
-  h+=`<div class="ttsc num"><span>${tn("a")} · ${X.s.a}</span><span>Chạm ${X.R.to}${X.R.sets>1||true?` · đổi bên ở ${X.half}`:""}</span><span>${tn("b")} · ${X.s.b}</span></div>`;
-  const sub=t=>t===X.st?"+1 điểm, đổi chỗ":X.rally?"+1 điểm, giành giao":X.sn===1?"giao sang người 2":"đổi giao";
-  h+=`<div class="ttwin">${["a","b"].map(t=>`<button class="w${t}" data-act="ttp" data-v="${t}"><span class="cap">${esc(ttTN(D,m,t))}</span><b>thắng pha</b><small>${sub(t)}</small></button>`).join("")}</div>
-    <div class="tttools"><button data-act="ttundo" ${(m.ref.ev||[]).length?"":"disabled"}>↶ Hoàn tác</button>${["a","b"].map(t=>`<button data-act="ttto" data-v="${t}" ${X.to[t]?"":"disabled"}>Timeout ${tn(t)}<small>còn ${X.to[t]}</small></button>`).join("")}
-      <button data-act="ttmt">✚ Timeout y tế</button><button data-act="ttv" data-v="hist">Lịch sử</button><button class="red" data-act="ttff">Bỏ cuộc</button></div>
-    <div class="ttlast"><span>${last?`Pha trước: ${esc(last.tx)} (${last.before} → ${last.after})`:"Chưa có pha nào"}</span><span>⏱ <b data-ttel="${X.t0||Date.now()}">${el}</b>′</span></div>`;
+  h+=`<div class="ttsc"><span>Ô vàng: đang giao · khung gạch: nhận bóng</span><span class="num">Chạm ${X.R.to} · đổi bên ở ${X.half} · ⏱ <b data-ttel="${X.t0||Date.now()}">${el}</b>′</span></div>
+    <div class="tttools">${["a","b"].map(t=>`<button data-act="ttto" data-v="${t}" ${X.to[t]?"":"disabled"}>Timeout<small>${tn(t)} · còn ${X.to[t]}</small></button>`).join("")}<button data-act="ttmt">✚ Y tế</button><button data-act="ttv" data-v="hist">Lịch sử</button><button class="red" data-act="ttff">Bỏ cuộc</button></div>
+    <div class="ttlast">${last?`Pha trước: ${esc(last.tx)} (${last.before} → ${last.after})`:"Chưa có pha nào · bấm nút dưới sau mỗi pha bóng"}</div>`;
+  // 2 nút cố định: trái = mất giao (tay 2 / đổi giao), phải = +1 điểm cho đội đang giao
+  const lose=X.rally?{c:"so",l:"ĐỘI NHẬN GHI ĐIỂM",s:`+1 cho ${esc(ttTN(D,m,rt))} · đổi giao`}:X.sn===1?{c:"t2",l:`TAY 2 · ${esc(ttPN(D,mate(X.sv)))} giao`,s:`${esc(ttPN(D,X.sv))} mất lượt giao`}:{c:"so",l:"ĐỔI GIAO",s:`sang ${esc(ttTN(D,m,rt))}`};
+  h+=`<div class="ttbar"><button class="${lose.c}" data-act="ttp" data-v="${rt}"><b>${lose.l}</b><small>${lose.s}</small></button><button class="p1 t${st}" data-act="ttp" data-v="${st}"><b>+1 ĐIỂM</b><small>${esc(ttTN(D,m,st))} ghi điểm</small></button></div>`;
   // lớp phủ: timeout, timeout y tế, đổi bên
   if(X.toAct&&Date.now()-X.toAct.at<60e3)h+=`<div class="ttov"><div class="ttovb"><span class="cap">Timeout · ${esc(ttTN(D,m,X.toAct.t))}</span><b class="big num" data-ttcd="${X.toAct.at+60e3}">${gdMMSS(X.toAct.at+60e3-Date.now())}</b><small>${esc(ttTN(D,m,X.toAct.t))} còn ${X.to[X.toAct.t]} timeout ván này</small><div class="two"><button data-act="tttoe">Kết thúc sớm</button><button class="ln" data-act="ttundo">Huỷ (bấm nhầm)</button></div></div></div>`;
   else if(X.mtAct)h+=`<div class="ttov"><div class="ttovb"><span class="cap">✚ Timeout y tế · đếm lên</span>${ttAv(D,X.mtAct.pid,"lg")}<b>${esc(ttPN(D,X.mtAct.pid))} đang được chăm sóc</b><b class="big num" data-ttcu="${X.mtAct.at}">${gdMMSS(Date.now()-X.mtAct.at)}</b><small>Không giới hạn thời gian · bắt đầu ${hm(X.mtAct.at)} · không trừ timeout thường</small><button class="go" data-act="ttmte">✓ Tiếp tục thi đấu · ${X.call()}</button><button class="ln red" data-act="ttff" data-v="${(m.a.includes(X.mtAct.pid)?"a":"b")}" data-why="inj">Không thể tiếp tục → Bỏ cuộc</button></div></div>`;
@@ -187,7 +189,7 @@ function ttLayer(D){
   let v=ttV||(f.started?"main":"pre");if(X.done&&v==="main")v="end";if(!f.started&&(v==="main"||v==="end"))v="pre";
   const body=ttFace?ttFaceV(D,m):v==="toss"?ttToss(D,m,X):v==="pre"?ttPre(D,m,X):v==="hist"?ttHist(D,m,X):v==="end"?ttEnd(D,m,X):ttMain(D,m,X);
   ttTickOn();
-  return `<div class="ttfs${v==="main"&&!ttFace?" dark":""}" role="dialog" aria-label="Màn trọng tài · ${ttFace?"mat":v}">${body}${ttFF?ttFFV(D,m,X):""}</div>`;
+  return `<div class="ttfs${v==="main"&&!ttFace?" main":""}" role="dialog" aria-label="Màn trọng tài · ${ttFace?"mat":v}">${body}${ttFF?ttFFV(D,m,X):""}</div>`;
 }
 function ttTickOn(){if(ttTick||typeof setInterval!=="function"||typeof document==="undefined"||!document.querySelectorAll)return;
   ttTick=setInterval(()=>{if(!ttId){clearInterval(ttTick);ttTick=null;return}let re=false;
