@@ -20,6 +20,7 @@ import "../miniapp/src/mini.css";
   window.ZMP = {
     getUserID: async () => zid,
     getAccessToken: async () => "",
+    getPhoneNumber: async () => ({ token: "demo" }),
     getUserInfo: async () => ({ userInfo: { id: zid, name: zid === "demo" ? "Người chơi Zalo" : "Người chơi " + zid.slice(1, 4).toUpperCase(), avatar: "" } }),
     openWebview: async ({ url }) => { window.open(url, "_blank"); },
     openShareSheet: async o => { const t = document.createElement("pre"); t.className = "pvshare"; t.textContent = "(Bản thử) Zalo chia sẻ · " + o.type + "\n\n" + (o.data.text || o.data.link || JSON.stringify(o.data, null, 1)); t.style.cssText = "position:fixed;left:12px;right:12px;bottom:80px;z-index:99;background:#fff;color:#111;border:2px solid #0068ff;padding:12px;font:13px/1.45 system-ui;white-space:pre-wrap;max-height:60vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.25)"; document.body.appendChild(t); setTimeout(() => t.remove(), 6000); return {}; },

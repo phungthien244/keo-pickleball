@@ -236,6 +236,16 @@ service cloud.firestore {
         allow write: if isAdmin() && request.resource.data.keys().hasOnly(['t', 'at', 'by']) && request.resource.data.t is string && request.resource.data.t.size() <= 500;
       }
 
+      // Số điện thoại người chơi: chỉ chính người đó và chủ CLB, quản lý đọc
+      match /contacts/{uid} {
+        allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();
+        allow create, update: if active() && signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['phone', 'at', 'src'])
+          && request.resource.data.phone is string && request.resource.data.phone.matches('^0[0-9]{9}$')
+          && request.resource.data.get('src', 'tay') in ['zalo', 'tay'];
+        allow delete: if (signedIn() && request.auth.uid == uid) || isAdmin();
+      }
+
       // Người chơi Zalo xin nhận hồ sơ VĐV, chủ CLB hoặc quản lý duyệt
       match /links/{uid} {
         allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();

@@ -2462,3 +2462,8 @@ a.cdb{text-decoration:none;color:inherit;display:flex;align-items:center}
 .vlwait{border-left:4px solid #f2b705}
 .tvtabs{margin-bottom:0!important;padding-bottom:4px}
 .mini .kpi .v{color:var(--ink)}.mini .kpi .v.pos{color:var(--win)}.mini .kpi .v.neg{color:var(--lose)}.mini .kpi.warn .v{color:#a15c00}
+/* Số điện thoại */
+.phbox{display:flex;flex-direction:column;gap:6px;margin:6px 0}.phbox .lbl small{font-weight:500;color:var(--muted);text-transform:none;letter-spacing:0}
+.phbox .zalobtn{margin:0}
+.phtag{display:inline-block;margin-top:4px;font-size:13px;font-weight:700;color:var(--navy);text-decoration:none}
+.lnkme{display:flex;align-items:center;gap:8px}

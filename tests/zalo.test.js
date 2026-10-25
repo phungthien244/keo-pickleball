@@ -72,9 +72,10 @@ test("người chơi: Trang chủ Mini App liệt kê các giải đấu sắp t
   expect(e.T()).toContain("THỂ THỨC"); expect(e.T()).toContain("Hủy và hoàn phí"); expect(e.T()).toContain("Luật thi đấu");
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
   expect(e.T()).toContain("Bạn đăng ký với tư cách");
-  await e.click("regin"); expect(e.T()).toContain("Đánh dấu đã đọc chính sách hủy");
-  await e.click("gdagree"); await e.click("regin");
+  e.input("ph", "0901234567"); await e.click("regin"); expect(e.T()).toContain("Đánh dấu đã đọc chính sách hủy");
+  await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("regin");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.sid === "s1");
+  await e.until(() => e.store.get("clubs/q7/contacts/zalo_9")?.phone === "0901234567");
   await e.until(() => e.T().includes("Vé của bạn"));
   expect(e.T()).toContain("QUÉT MÃ CHECK-IN");
 });
@@ -103,7 +104,7 @@ test("Mini App: người chơi xin tham gia CLB, chờ duyệt, đăng ký, vào
   await e.click("mxsheetreg"); await e.until(() => e.V().includes('data-act="mxdk" data-v="pick"'));
   await e.click("mxdk", { v: "pick" }); await e.until(() => e.T().includes("Gửi yêu cầu tham gia"));
   expect(e.V()).not.toContain('data-act="lnkpick"');
-  e.input("lnk-name", "An"); await e.click("lnksend");
+  e.input("lnk-name", "An"); e.input("ph", "0901234567"); await e.click("lnksend");
   await e.until(() => e.store.get("clubs/q7/links/zalo_9")?.status === "pending");
   expect(e.store.get("clubs/q7/links/zalo_9")).toMatchObject({ newName: "An" });
   expect(e.store.get("clubs/q7/links/zalo_9").pid).toBeUndefined();
@@ -111,7 +112,7 @@ test("Mini App: người chơi xin tham gia CLB, chờ duyệt, đăng ký, vào
   await e.FB.setDoc(e.FB.doc(e.FB.fs, "clubs/q7/links/zalo_9"), { status: "ok", pid: "p1" });
   await e.until(() => e.V().includes('data-act="regin"'));
   expect(e.T()).toContain("Vào danh sách chờ");
-  await e.click("regin");
+  e.input("ph", "0901234567"); await e.click("regin");
   await e.until(() => e.store.get("clubs/q7/regs/1_zalo_9"));
   await e.until(() => e.T().includes("Bạn đang chờ"));
   await e.click("regout"); await e.click("regout");
@@ -139,7 +140,7 @@ test("Mini App không có Zalo SDK (bản thử): vào bằng máy mình, chọn
   await e.until(() => e.V().includes('data-act="mxsheetreg"'));
   await e.click("mxsheetreg"); await e.click("mxdk", { v: "pick" });
   await e.until(() => e.T().includes("Gửi yêu cầu tham gia"));
-  e.input("lnk-name", "Bình"); await e.click("lnksend");
+  e.input("lnk-name", "Bình"); e.input("ph", "0901234567"); await e.click("lnksend");
   await e.until(() => e.store.get("clubs/q7/links/anon")?.newName === "Bình");
 });
 
@@ -204,7 +205,7 @@ test("Zalo Mini App: tự vào bằng ID Zalo, mở thẳng CLB, xin tham gia b�
   expect(sent.u).toBe("https://pikeco.app/api/zalo-mini");
   await e.click("mxdk", { v: "pick" }); await e.until(() => e.T().includes("Gửi yêu cầu tham gia"));
   expect(sent.body).toEqual({ id: "5550001112", at: "AT" });
-  e.input("lnk-name", "Lan"); await e.click("lnksend");
+  e.input("lnk-name", "Lan"); e.input("ph", "0901234567"); await e.click("lnksend");
   await e.until(() => e.store.get("clubs/q7/links/zalo_9")?.newName === "Lan");
   delete globalThis.window.ZMP;
 });
@@ -221,7 +222,7 @@ test("thu phí trước: người chơi chuyển khoản lúc đăng ký, chủ 
   await e.until(() => e.V().includes('data-act="gdreg"'));
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin" data-v="hold"'));
   expect(e.T()).toContain("GIỮ CHỖ CHẮC"); expect(e.T()).toContain("Trả tại sân");
-  await e.click("gdagree"); await e.click("regin", { v: "hold" });
+  await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("regin", { v: "hold" });
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.hold === true);
   await e.until(() => e.V().includes("class=\"vqr\""));
   expect(e.T()).toContain("60.000đ"); expect(e.T()).toContain("Đang giữ chỗ #1");
@@ -253,7 +254,7 @@ test("vận động viên ngoài CLB đăng ký không cần duyệt, bắt đ�
   await e.boot(); await e.until(() => e.V().includes('data-act="mxsheetreg"'));
   await e.click("mxsheetreg"); await e.click("mxdk", { v: "guest" }); await e.until(() => e.V().includes('id="gs-name"'));
   e.input("gs-name", "Tuấn vận động viên ngoài CLB"); await e.click("gsg", { v: "M" });
-  await e.click("guestin", { v: "none" });
+  e.input("ph", "0901234567"); await e.click("guestin", { v: "none" });
   await e.until(() => e.store.get("clubs/q7/regs/1_zalo_9")?.guest === true);
   expect(e.store.get("clubs/q7/regs/1_zalo_9").name).toBe("Tuấn vận động viên ngoài CLB");
   const o = setup({ host: "pikeco.app", path: "/q7/san", user: OWNER, data: Object.fromEntries(e.store) });
@@ -399,7 +400,7 @@ test("giải đăng ký theo cặp: người rủ chọn đồng đội trong CL
   expect(e.T()).toContain("Tôi rủ đồng đội");
   const p2 = Object.keys(data).find(k => k.startsWith("clubs/q7/players/") && k !== "clubs/q7/players/p1").split("/").pop();
   await e.click("gdmate", { v: p2 });
-  await e.click("gdagree"); await e.click("regin");
+  await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("regin");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.team === "s1_zalo_9");
   expect(e.store.get("clubs/q7/regs/s1_zalo_9").want).toBe(p2);
   await e.until(() => e.T().includes("MỜI ĐỒNG ĐỘI QUA ZALO"));
@@ -437,7 +438,7 @@ test("web: VĐV vãng lai đăng ký không cần đăng nhập, bắt buộc ch
   expect(e.V()).not.toContain('data-v="mem"');
   expect(e.V()).toContain('data-act="guestin" data-v="hold"');
   e.input("gs-name", "Khách Web"); await e.click("gdagree");
-  await e.click("guestin", { v: "hold" });
+  e.input("ph", "0901234567"); await e.click("guestin", { v: "hold" });
   expect(e.T()).toContain("Thêm ảnh rõ mặt");
 });
 
@@ -459,7 +460,7 @@ test("nhắn tin: người chơi nhắn người tạo giải từ vé, BTC nh�
   await e.boot(); await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
   expect(e.T()).toContain("Liên hệ ban tổ chức"); expect(e.T()).toContain("Anh Chủ");
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
-  await e.click("gdagree"); await e.click("regin");
+  await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("regin");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.zid === "zid9");
   await e.until(() => e.T().includes("Vé của bạn"));
   expect(e.T()).not.toContain("THÊM LỊCH");

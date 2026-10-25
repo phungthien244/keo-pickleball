@@ -19,6 +19,7 @@ function watchAdmin(){
   unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"members"),{},q=>{S.members=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
   unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"editors"),{},q=>{S.editors=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
   unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"links"),{},q=>{S.links=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{}));
+  unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"contacts"),{},q=>{S.contacts=Object.fromEntries(q.docs.map(d=>[d.id,String(d.data().phone||"")]));render()},()=>{}));
   unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"refqr"),{},q=>{S.refqr=Object.fromEntries(q.docs.map(d=>[d.id,d.data()]));render()},()=>{}));
   unsubAdm.push(FB.onSnapshot(FB.collection(FB.fs,PFX+"refs"),{},q=>{const t0=Date.now()-20*36e5;S.refsQ=q.docs.map(d=>({id:d.id,...d.data()})).filter(r=>(r.at||0)>t0);render()},()=>{}));
 }

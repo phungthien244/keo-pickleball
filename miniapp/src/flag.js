@@ -1,7 +1,7 @@
-import { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery, scanQRCode, openOutApp, openChat, events, EventName, configAppView } from "zmp-sdk";
+import { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery, scanQRCode, openOutApp, openChat, getPhoneNumber, openPhone, events, EventName, configAppView } from "zmp-sdk";
 import BODY from "./body.html?raw";
 window.ZMINI = 1;
-window.ZMP = { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery, scanQRCode, openOutApp, openChat, events, EventName, configAppView };
+window.ZMP = { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery, scanQRCode, openOutApp, openChat, getPhoneNumber, openPhone, events, EventName, configAppView };
 document.documentElement.classList.add("mini");
 // Thanh trạng thái trong suốt: thanh đầu xanh / poster giải tràn lên tận mép trên như các app khác.
 // Đo độ cao thanh trạng thái (Android: Zalo đặt --zaui-safe-area-inset-top; iOS: env()); đo không ra thì giữ thanh thường.

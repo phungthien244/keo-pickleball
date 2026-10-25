@@ -68,13 +68,13 @@ function regAction(D,R){
   const linked=S.link&&S.link.status==="ok";
   if(!linked)return r.guests?`<button class="primary wide" data-act="guestopen">Đăng ký làm vận động viên ngoài CLB giải đấu này</button>`:`<a class="primary wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">Tham gia CLB để đăng ký</a>`;
   if(regClosed())return `<small class="rule">Đã hết hạn đăng ký giải đấu này.</small>`;
-  const full=R.conf.length>=R.max,lb=full?"Vào danh sách chờ":"Đăng ký tham gia",k=feeMem();
+  const full=R.conf.length>=R.max,lb=full?"Vào danh sách chờ":"Đăng ký tham gia",k=feeMem(),ph=myPhone()?"":phBox();
   if(payOn()&&k>0&&!full){
     const nm=D.pmap.get(S.link.pid)?.name;
-    return payBox(D,nm,k)+`<button class="primary wide" data-act="regin" data-v="sent">Đăng ký và đã chuyển khoản</button>
+    return ph+payBox(D,nm,k)+`<button class="primary wide" data-act="regin" data-v="sent">Đăng ký và đã chuyển khoản</button>
       <button class="line wide" data-act="regin" data-v="none">${regPayMode()==="req"?"Giữ chỗ 30 phút, chuyển sau":"Đăng ký, trả phí tại sân"}</button>`;
   }
-  return `<button class="primary wide" data-act="regin" data-v="none">${lb}</button>`;
+  return ph+`<button class="primary wide" data-act="regin" data-v="none">${lb}</button>`;
 }
 // Khách vãng lai: nhập tên, giới tính, trình độ rồi đăng ký luôn
 let guestOpen=false;
@@ -84,6 +84,7 @@ function guestForm(D){
     <label class="fld"><span class="lbl">Tên của bạn</span><input id="gs-name" data-draft="gs-name" data-live="1" maxlength="30" value="${esc(val("gs-name",zaloProf().n||""))}"></label>
     <div class="fld"><span class="lbl">Giới tính</span><span class="seg"><button data-act="gsg" data-v="M" aria-pressed="${val("gs-g","M")==="M"}">Nam</button><button data-act="gsg" data-v="F" aria-pressed="${val("gs-g","M")==="F"}">Nữ</button></span></div>
     <label class="fld"><span class="lbl">Trình độ tự đánh giá</span><select id="gs-lv" data-draft="gs-lv">${["2.0","2.5","3.0","3.5","4.0","4.5","5.0"].map(v=>`<option ${v===lv?"selected":""}>${v}</option>`).join("")}</select></label>
+    ${phBox()}
     ${payOn()&&k>0?payBox(D,val("gs-name",zaloProf().n||"KHACH"),k)+`<button class="primary wide" data-act="guestin" data-v="sent">Đăng ký và đã chuyển khoản</button><button class="line wide" data-act="guestin" data-v="none">${regPayMode()==="req"?"Giữ chỗ 30 phút, chuyển sau":"Đăng ký, trả phí tại sân"}</button>`:`<button class="primary wide" data-act="guestin" data-v="none">Đăng ký làm vận động viên ngoài CLB</button>`}
     <button class="ghost" data-act="guestopen">Quay lại</button></section>`;
 }
@@ -193,7 +194,7 @@ function approvals(D){
   const free=D.players.filter(p=>!p.zuid).sort((a,b)=>String(a.name).localeCompare(String(b.name),"vi"));
   const row=x=>{
     const nm=x.newName||x.zname||"Người dùng Zalo",sug=(x.pid&&D.pmap.get(x.pid))||free.find(p=>nameKey(p.name)===nameKey(nm)),op=apvOpen===x.id;
-    let h=`<div class="apvrow"><div class="refrow">${x.photo?`<img class="av md" src="${esc(x.photo)}" alt="">`:av({name:nm},"md")}<span class="t"><b>${esc(nm)}</b><small>${x.zname&&x.zname!==nm?`Zalo: ${esc(x.zname)} · `:""}gửi ${esc(regWhen(x.at||0))}</small></span></div>`;
+    let h=`<div class="apvrow"><div class="refrow">${x.photo?`<img class="av md" src="${esc(x.photo)}" alt="">`:av({name:nm},"md")}<span class="t"><b>${esc(nm)}</b><small>${x.zname&&x.zname!==nm?`Zalo: ${esc(x.zname)} · `:""}gửi ${esc(regWhen(x.at||0))}</small>${phTag(x.id)}</span></div>`;
     if(sug&&!sug.zuid)h+=`<button class="primary wide" data-act="lnkok" data-id="${x.id}" data-v="${sug.id}">Ghép với ${esc(sug.name)}${x.pid?"":" (trùng tên)"}</button>`;
     h+=`<div class="two"><button class="line" data-act="apvpick" data-id="${x.id}" aria-pressed="${op&&apvMode==="pick"}">${sug?"Ghép với người khác":"Ghép với thành viên cũ"}</button><button class="line" data-act="apvnew" data-id="${x.id}" aria-pressed="${op&&apvMode==="new"}">Tạo hồ sơ mới</button></div>`;
     if(op&&apvMode==="pick"){h+=pplPick(D,free,{act:"apvp",key:"apv",sel:apvSel?[apvSel]:[]});
@@ -244,6 +245,7 @@ async function regAct(act,b,id){
     const R0=regList(D),full0=R0.conf.length>=R0.max,mustPay=!MINI&&guest&&feeGuest()>0&&!full0;
     if(mustPay&&!(BANK&&BANK.acc)){toast("CLB chưa khai ngân hàng. Đăng ký trong Zalo nhé.");return true}
     const pay=mustPay?"none":b.dataset.v==="sent"?"sent":"none",hold=mustPay||b.dataset.v==="hold",rid=regKey(D)+"_"+u.uid;
+    if(isPlayer(u)&&!canWrite&&!phTake())return true;
     let d={sid:regKey(D),uid:u.uid,at:Date.now(),pay};if(hold)d.hold=true;if(myZid())d.zid=myZid();
     if(guest){const el=document.getElementById&&document.getElementById("gs-name"),nm=String((el&&el.value)||drafts["gs-name"]||zaloProf().n||"").trim().slice(0,30);
       if(!nm){toast("Nhập tên của bạn.");return true}

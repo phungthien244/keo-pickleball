@@ -55,7 +55,7 @@ function tvSheet(D,I,busy){
   const p=tvSel&&D.pmap.get(tvSel);if(!p)return "";
   const st=D.st.get(p.id)||{},on=p.active!==false,b=busy.has(p.id);
   return `<div class="mxdim" data-act="tvselx"></div><div class="mxsheet dhsh tvsh" role="dialog" aria-label="${esc(p.name)}"><span class="grab"></span>
-    <div class="tvshh">${av(p,"md",1)}<span class="t"><b>${esc(p.name)}</b><span class="tags">${tvTags(D,p,I)}</span></span><span class="r"><b class="num">${r2(st.rating||0)}</b><small>${st.g||0} trận</small></span></div>
+    <div class="tvshh">${av(p,"md",1)}<span class="t"><b>${esc(p.name)}</b><span class="tags">${tvTags(D,p,I)}</span>${phTag(p.zuid)}</span><span class="r"><b class="num">${r2(st.rating||0)}</b><small>${st.g||0} trận</small></span></div>
     ${p.hold?"":`<button class="gbopt" data-act="att" data-id="${p.id}" aria-pressed="${on}" ${b?"disabled":""}><span><b>Có mặt hôm nay</b><br><small class="rule">${b?"Đang trên sân":on?"Được xếp trận":"Không xếp trận"}</small></span>${gbSw(on)}</button>`}
     ${tvMgr(D,p)}
     <div class="two"><button class="line" data-act="tvselx">Đóng</button><a class="btn-line" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">Hồ sơ đầy đủ ›</a></div></div>`;

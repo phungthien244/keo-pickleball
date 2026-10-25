@@ -77,7 +77,9 @@ function linkCard(D){
   if(L&&L.status==="ok")return "";
   if(L&&L.status==="pending")return `<div class="lnkcard wait"><b>Đã gửi yêu cầu tham gia</b><span>Chủ CLB sẽ xác nhận bạn là <b>${esc(L.newName||L.zname||"")}</b>: ghép với hồ sơ cũ nếu bạn đã chơi ở CLB, hoặc tạo hồ sơ mới. Xong là bạn tự đăng ký giải đấu được.</span><button class="lnk" data-act="lnkcancel">Huỷ yêu cầu</button></div>`;
   return `<div class="lnkcard"><b>Tham gia ${esc(CLUB?.name||"CLB")}</b><span>Nhập tên mọi người ở CLB hay gọi bạn. Chủ CLB sẽ ghép với hồ sơ cũ của bạn (rating, lịch sử) hoặc tạo hồ sơ mới.</span>
+    ${window.ZMP&&!zp.n?`<button class="zalobtn" data-act="zinfo"><b>Z</b>Dùng tên và ảnh đại diện Zalo</button><small class="rule">Để chủ CLB nhận ra bạn. Bạn có thể từ chối và tự nhập tên.</small>`:zp.p||zp.n?`<span class="lnkme">${zp.p?`<img class="av sm" src="${esc(zp.p)}" alt="">`:""}<small>Zalo: ${esc(zp.n||"")}</small></span>`:""}
     <label class="fld"><span class="lbl">Tên của bạn</span><input id="lnk-name" data-draft="lnk-name" maxlength="30" placeholder="VD: Dũng" value="${esc(val("lnk-name",zp.n||""))}"></label>
+    ${phBox()}
     <button class="primary wide" data-act="lnksend">Gửi yêu cầu tham gia</button></div>`;
 }
 
@@ -116,9 +118,12 @@ async function zaloAct(act,b,id){
   if(act==="miniexplore"){quickNext();setPath("/clb");location.reload();return true}
   if(act==="openweb"){const u="https://pikeco.app"+(b.dataset.v||"/");if(window.ZMP&&window.ZMP.openWebview){try{await window.ZMP.openWebview({url:u})}catch(e){location.href=u}}else location.href=u;return true}
   if(act==="lnkcancel"){if(!armOr("lnkcancel:x"))return true;try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid))}catch(e){}return true}
+  if(act==="zinfo"){mxAskedName=false;await mxAskName(true);return true}
+  if(await phAct(act,b))return true;
   if(act==="lnksend"){if(!isPlayer(authUser))return true;const zp=zaloProf();
     const el=document.getElementById&&document.getElementById("lnk-name"),nn=String((el&&el.value)||drafts["lnk-name"]||zp.n||"").trim().slice(0,30);
     if(!nn){toast("Nhập tên của bạn.");return true}
+    if(!phTake())return true;
     const d={status:"pending",zname:String(zp.n||"").slice(0,40),photo:String(zp.p||"").slice(0,400),at:Date.now(),newName:nn,...(myZid()?{zid:myZid()}:{})};
     try{await FB.setDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid),d);toast("Đã gửi, chờ chủ CLB duyệt")}catch(e){toast("Chưa gửi được, thử lại.")}
     return true}

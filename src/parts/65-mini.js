@@ -177,6 +177,7 @@ function mxSessionX(D){
   if(regClosed())return mxShell(D,h+`<div class="mxcard muted"><b>Đã hết hạn đăng ký</b></div>`);
   const full=R.conf.length>=R.max,k=feeMem();
   if(linked){
+    h+=`<div class="mxcard">${phBox()}</div>`;
     if(payOn()&&k>0&&!full){h+=`<div class="mxcard"><div class="mxch"><b>Chuyển khoản ${kVND(k)}</b></div>${payBox(D,D.pmap.get(S.link.pid)?.name,k)}</div>`;
       return mxShell(D,h,`<button class="primary wide" data-act="regin" data-v="sent">Đăng ký và đã chuyển khoản</button><button class="line wide" data-act="regin" data-v="none">${regPayMode()==="req"?"Giữ chỗ 30 phút, chuyển sau":"Đăng ký, trả tại sân"}</button>`)}
     return mxShell(D,h,`<button class="primary wide" data-act="regin" data-v="none">${full?"Vào danh sách chờ":"Đăng ký tham gia"}</button>`);
@@ -384,9 +385,9 @@ function mxExploreMe(){
 }
 /* ----- Tạo CLB ngay trong Mini App (chủ CLB = tài khoản Zalo) ----- */
 let mxAskedName=false;
-async function mxAskName(){
-  if(mxAskedName||zaloProf().n||!window.ZMP)return;mxAskedName=true;
-  try{const ui=await window.ZMP.getUserInfo({autoRequestPermission:true}),u=ui&&ui.userInfo;if(u&&u.name){saveZProf({n:u.name,p:u.avatar||""});render()}}catch(e){}
+async function mxAskName(force){
+  if(mxAskedName||(zaloProf().n&&!force)||!window.ZMP)return;mxAskedName=true;
+  try{const ui=await window.ZMP.getUserInfo({autoRequestPermission:true,avatarType:"normal"}),u=ui&&ui.userInfo;if(u&&u.name){saveZProf({n:u.name,p:u.avatar||""});delete drafts["lnk-name"];render()}}catch(e){if(force)toast("Chưa lấy được tên Zalo. Bạn tự nhập tên nhé.")}
 }
 function mxCreate(){
   if(isZaloU(authUser)&&S.myClub===undefined)loadMyClub();
@@ -503,7 +504,7 @@ async function mxAct2(act,b,id){
   if(act==="mxsheet"){mxSheet=mxSheet==="club"?null:"club";render();return true}
   if(act==="mxsheetx"){mxSheet=null;render();return true}
   if(act==="mxsheetreg"){mxSheet="reg";render();return true}
-  if(act==="mxdk"){mxSheet=null;mxDk=b.dataset.v||null;if(mxDk==="guest")guestOpen=true;if(route!=="app"||tab!=="dk")go("app",{tab:"dk"});else render();return true}
+  if(act==="mxdk"){mxSheet=null;mxDk=b.dataset.v||null;if(mxDk==="pick")mxAskName();if(mxDk==="guest")guestOpen=true;if(route!=="app"||tab!=="dk")go("app",{tab:"dk"});else render();return true}
   if(act==="mxseg"){mxSeg[b.dataset.k]=b.dataset.v;render();return true}
   if(act==="mxtien"){mxSeg.hist="tien";go("app",{tab:"ls"});return true}
   if(act==="mxexme"){mxSeg.exTab="me";render();return true}
@@ -528,6 +529,7 @@ async function mxAct2(act,b,id){
   if(act==="mxleave"){const pid=myPid();if(!armOr("mxleave:x"))return true;
     try{if(pid)await FB.updateDoc(FB.doc(FB.fs,PFX+"players/"+pid),{photo:"",nick:"",bio:"",paddle:"",since:"",hand:""}).catch(()=>{});
       await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid));
+      await FB.deleteDoc(FB.doc(FB.fs,PFX+"contacts/"+authUser.uid)).catch(()=>{});
       try{localStorage.setItem("pb-mini-clubs",JSON.stringify(myClubs().filter(x=>x.id!==CID)));localStorage.removeItem("pb-mini-last")}catch(e){}
       toast("Đã rời CLB và xoá thông tin của bạn");setPath("/clb");location.reload()}catch(e){toast("Chưa thực hiện được, thử lại.")}
     return true}

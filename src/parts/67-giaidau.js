@@ -166,6 +166,7 @@ function gdReg1(D){
       <div class="gd2"><div class="fld"><span class="lbl">Giới tính</span><span class="seg"><button data-act="gsg" data-v="M" aria-pressed="${g==="M"}">Nam</button><button data-act="gsg" data-v="F" aria-pressed="${g==="F"}">Nữ</button></span></div>
       <label class="fld"><span class="lbl">Trình độ tự đánh giá</span><select id="gs-lv" data-draft="gs-lv">${["2.0","2.5","3.0","3.5","4.0","4.5","5.0"].map(v=>`<option ${v===lv?"selected":""}>${v}</option>`).join("")}</select></label></div>
       ${lvTxt(r)?`<span class="gdnote">${esc(lvTxt(r))} cho giải đấu này. Ghi sai trình, BTC có thể xếp lại cặp.</span>`:""}</div>`}
+  if(who==="guest"||linked)h+=`<div class="gdbox">${phBox()}</div>`;
   if(!W)h+=capReg1(D);
   if(k>0&&canPay&&!full){h+=`<span class="xsec">Cách thanh toán</span>`+opt("pay","now",`Chuyển khoản ngay <em class="gdtag">${W?"BẮT BUỘC":"GIỮ CHỖ CHẮC"}</em>`,W?"Chỗ của bạn được giữ 15 phút để chuyển khoản. Quá giờ chưa chuyển, chỗ được nhả cho người khác.":"Quét QR bằng app ngân hàng bất kỳ. BTC xác nhận là có vé.",null);
     if(!req)h+=opt("pay","site","Trả tại sân","Giữ chỗ tạm. Gần giờ đánh nếu đầy, người đã trả trước được ưu tiên.",null)}
