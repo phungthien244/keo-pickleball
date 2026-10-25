@@ -25,7 +25,9 @@ test("màn trọng tài: gọi điểm theo luật giao bóng, đổi bên, time
   await e.click("ttp", { v: "b" }); expect(e.T()).toContain("0-1-1");   // người 2 mất giao → đổi giao
   await e.click("ttp", { v: "a" }); expect(e.T()).toContain("0-1-2");   // người 1 mất → người 2
   await e.click("ttundo"); expect(e.T()).toContain("0-1-1");
-  await e.click("ttto", { v: "a" }); expect(e.T()).toContain("Timeout");
+  await e.click("tttoo"); expect(e.T()).toContain("Đội nào xin timeout?");
+  await e.click("tttox"); expect(e.store.get("matches/" + id).ref.ev.length).toBe(2);
+  await e.click("tttoo"); await e.click("tttos", { v: "a" }); await e.click("tttogo"); expect(e.T()).toContain("Kết thúc sớm");
   await e.click("tttoe");
   expect(e.store.get("matches/" + id).ref.ev.length).toBe(4);
   // b ghi liên tiếp tới 6 → đổi bên (ván quyết định duy nhất)

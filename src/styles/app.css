@@ -2241,3 +2241,69 @@ section:not(.mx) .hqcta{bottom:0;margin:16px -16px 0}
 .ttbar .t2{background:#f2b705;color:#3d2a00}.ttbar .so{background:#b91c1c}
 .ttbar button:active{transform:scale(.97)}
 .ttfs .ttbar button small{color:inherit;opacity:.92}.ttbar .t2 small{color:#3d2a00}
+/* ===== Màn nhập điểm bản duyệt (28–31): bảng điểm nền đậm, sân xanh, +1 theo phía đội giao ===== */
+.ttfs.main{background:#eef1f4;padding-bottom:calc(178px + env(safe-area-inset-bottom,0px));gap:0}
+.ttsbd{margin:0 -12px;background:var(--navy);padding:4px 10px 10px;display:flex;flex-direction:column;gap:6px}
+.ttsbd .meta{font-size:11px;color:#a9cbe6;text-align:center}
+.ttfs.main .tttiles{margin:0;gap:8px}
+.ttfs.main .tttile{min-height:112px;padding:10px 12px;background:#163a57;border:0;border-top:4px solid #163a57;color:#a9cbe6;gap:4px}
+.ttfs.main .tttile .h{display:flex;align-items:center;gap:6px;min-width:0}
+.ttfs.main .tttile .n{font-size:12px;font-weight:700;color:#cfe0ee;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ttfs.main .tttile b{font-size:52px;color:#7f9ab3}
+.ttfs.main .tttile .k{font-family:var(--body);font-size:11px;font-weight:400;letter-spacing:0;color:#a9cbe6}
+.ttfs.main .tttile .ttavs{opacity:.8}.ttfs.main .tttile .ttavs .av{box-shadow:0 0 0 2px #163a57}
+.ttfs.main .tttile.on{background:#fff}.ttfs.main .tttile.on .ttavs{opacity:1}.ttfs.main .tttile.on .ttavs .av{box-shadow:0 0 0 2px #fff}
+.ttfs.main .tttile.on .n,.ttfs.main .tttile.on b{color:var(--navy)}
+.ttfs.main .tttile.on .k{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.1em}
+.ttfs.main .tttile.ta.on{border-top-color:#1f6fd1}.ttfs.main .tttile.ta.on .k{color:#1f6fd1}
+.ttfs.main .tttile.tb.on{border-top-color:#e8590c}.ttfs.main .tttile.tb.on .k{color:#c2410c}
+.ttwhite{margin:0 -12px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ttfs.main .ttcall{padding:0}.ttfs.main .ttcall b{font-size:52px;letter-spacing:6px;color:var(--navy)}
+.ttfs.main .ttcall span{font-size:13px;color:#4b5b6b}
+.ttfs.main .ttcourt{background:#2f7d4f;border:0;padding:6px;row-gap:4px;grid-template-rows:66px 66px}
+.ttfs.main .ttcourt .net{background:#fff}
+.ttfs.main .ttc,.ttfs.main .ttc.ta,.ttfs.main .ttc.tb{background:#3c9a62;margin:0 3px;color:#fff}
+.ttfs.main .ttc .n b{color:#fff;display:flex;align-items:center;gap:4px}.ttfs.main .ttc .n small{color:#e7f5ec}
+.ttfs.main .ttc .av{box-shadow:0 0 0 2px #fff!important}
+.ttfs.main .ttc.sv{background:#fff3b0}.ttfs.main .ttc.sv .n b{color:#3d2a00}.ttfs.main .ttc.sv .n small{color:#7a5a00}
+.ttfs.main .ttc.sv .av{box-shadow:0 0 0 3px #ca8a04!important}
+.ttfs.main .ttc.rc{outline:2px dashed #fff;outline-offset:-5px}.ttfs.main .ttc.rc .n b{color:#fff}
+.tthand{flex:none;color:#7a5a00}
+.ttfs.main .tttools{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+.ttfs.main .tttools button{min-height:44px;font-size:12px;font-weight:600}
+.ttfs.main .ttlast{margin-top:8px;font-size:12px}
+.ttfs .ttbar{display:flex;flex-direction:column;gap:8px;padding:10px 12px calc(14px + env(safe-area-inset-bottom,0px))}
+.ttbar .ttun{margin:0;width:100%;min-height:40px;border:1px solid var(--line-2);background:#f4f6f8;color:var(--navy);font-family:var(--body);font-size:13px;font-weight:600;text-transform:none;letter-spacing:0}
+.ttbar .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ttbar .two button{min-height:100px}
+.ttbar .p1 b{font-size:28px}.ttbar .p1.ta{background:#1f6fd1}.ttbar .p1.tb{background:#e8590c}
+.ttbar .t2{background:#fff;border:3px solid #f2b705;color:#7a5a00}.ttbar .t2 b{font-size:22px}
+.ttbar .so{background:#fff;border:3px solid #b91c1c;color:#b91c1c}.ttbar .so b{font-size:22px}
+.ttfs .ttbar .t2 small{color:#7a5a00}.ttfs .ttbar .so small{color:#b91c1c}
+/* hộp thoại timeout */
+.tttod{z-index:90;gap:12px;padding:12px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.tttod .ttq{font-family:var(--display);font-weight:900;font-size:22px}
+.tttod .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tttm{min-height:118px;padding:12px;border:2px solid var(--line-2);background:#fff;color:var(--navy);display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;font-family:var(--body);text-transform:none;letter-spacing:0}
+.tttm b{font-size:14px}.tttm small{font-size:12px;color:#4b5b6b}
+.tttm .bars{display:flex;gap:4px}.tttm .bars i{width:26px;height:8px;background:var(--line-2)}
+.tttm.ta .bars i.l{background:#1f6fd1}.tttm.tb .bars i.l{background:#e8590c}
+.tttm.ta.on{border:3px solid #1f6fd1;background:#e8f1fc}.tttm.tb.on{border:3px solid #e8590c;background:#fdeee5}
+.tttm:disabled{opacity:.45}
+.ttsel{background:#f4f6f8;padding:10px 12px;font-size:13px;color:var(--navy);width:100%;box-sizing:border-box}
+.tttod .two.b{grid-template-columns:1fr 1.7fr}.tttod .two.b button{min-height:56px;font-size:13px}
+.tttod .ln{background:#fff;border:1px solid var(--navy);color:var(--navy)}
+.tttod .go{background:#16a34a;border-color:#16a34a;color:#fff}.tttod .go:disabled{background:#b8c4cf;border-color:#b8c4cf}
+.tttod small{text-align:center}
+/* timeout đang chạy */
+.ttorun{background:#fff;flex-direction:column;justify-content:flex-start;gap:14px;padding:calc(56px + var(--sat,0px)) 20px calc(24px + env(safe-area-inset-bottom,0px));color:var(--navy);text-align:center}
+.ttorun.ta .cap{color:#1f6fd1}.ttorun.tb .cap{color:#c2410c}
+.ttring{width:220px;height:220px;border-radius:50%;border:14px solid #e6ecf1;display:grid;place-items:center;box-sizing:border-box;margin-top:4px}
+.ttorun.ta .ttring{border-top-color:#1f6fd1;border-right-color:#1f6fd1}.ttorun.tb .ttring{border-top-color:#e8590c;border-right-color:#e8590c}
+.ttorun .ttring.warn{border-color:#dc2626}
+.ttring b{font-family:var(--display);font-weight:900;font-size:64px;color:var(--navy)}
+.ttorun small{color:var(--muted);font-size:12px}
+.ttorun .two{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;width:100%;margin-top:auto}
+.ttorun .two button{min-height:56px;font-size:13px}
+.ttorun .ln.red{background:#fff;border:1px solid #c0262d;color:#c0262d}.ttorun .nv{background:var(--navy);border-color:var(--navy);color:#fff}
+.tttm[aria-pressed="true"],.tttm.on{color:var(--navy)}.tttm.on b{color:var(--navy)}
