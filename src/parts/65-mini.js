@@ -91,6 +91,7 @@ function mxHome(D){
   const p=mxMe(D),live=phaseOf(D)==="live",H=lastHist(D);
   let h="";
   if(!p&&!(S.link&&S.link.status==="pending")&&!mxMyReg(D))h+=mxIntroTeaser(D);
+  if(!live)h+=mxTickets(D);
   if(live){const s=p&&D.st.get(p.id),M=p&&money(D),k=p&&M.att.some(x=>x.id===p.id)?payRow(D,M,p.id).pay:0;
     h+=`<a class="mxcard live" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san"><span class="lbl"><span class="dot"></span>Đang đánh</span><b>${esc(sessTitle(D.c,D.sid))}</b><span>${D.playing.length} sân · ${D.players.filter(x=>x.active!==false).length} người · ${D.done.length} trận xong</span></a>`;
     if(s&&s.g){const all=[...D.players].filter(x=>D.st.get(x.id).g).sort((a,b)=>D.st.get(b.id).w/D.st.get(b.id).g-D.st.get(a.id).w/D.st.get(a.id).g),rk=all.findIndex(x=>x.id===p.id)+1;
@@ -110,6 +111,15 @@ function mxHome(D){
   h+=`<div class="mxtiles">${fundView()==="off"?"":`<a class="mxtile" href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"><small>Quỹ CLB</small><b class="num">${(fundNow()<0?"−":"")+fmtK(Math.abs(fundNow()))}</b></a>`}<a class="mxtile" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><small>Thành viên</small><b class="num">${D.players.filter(x=>!x.guest).length}</b></a><a class="mxtile" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><small>Giới thiệu</small><b>CLB ›</b></a></div>`;
   const cta=!live&&!XC&&regOpen()?mxRegCta(D):"";
   return mxShell(D,h,cta);
+}
+// Vé của tôi: các giải sắp tới mình đã đăng ký (ghim đầu Trang chủ)
+function mxTickets(D){
+  const T=[];
+  for(const X of schedUp().filter(x=>x.st!=="draft")){const m=withX(X,()=>mxMyReg(D));if(!m)continue;
+    const R=withX(X,()=>regList(D)),pos=R.all.indexOf(m),k=withX(X,()=>feeOf(m)),pay=m.pay||"none";
+    T.push(`<a class="mxcard mxtk" href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}"><span class="lbl">🎟 Vé của bạn</span><div class="mxsess">${mxDate(X.at)}<span class="t"><b>${esc(xName(X))}</b><span>${hm(X.at)}${X.place?` · ${esc(X.place)}`:""}</span></span></div>
+      <div class="mxkv"><span>${pos<R.max?`Giữ chỗ #${pos+1}`:`Đang chờ · thứ ${pos-R.max+1}`}</span><b>${payOn()&&k>0?`${kVND(k)} · ${PAYLB[pay]}`:"✓ Đã đăng ký"}</b></div></a>`)}
+  return T.join("");
 }
 const mxMyReg=D=>authUser&&(S.regs||[]).find(x=>x.sid===regKey(D)&&x.uid===authUser.uid&&!x.cancel&&!isHeldOut(x));
 function mxIntroTeaser(D){
@@ -220,7 +230,8 @@ function mxHist(D){
     return mxShell(D,h);
   }
   if(seg==="quy")return mxShell(D,h+`<div class="mxlivewrap">${vSoQuy(D)}</div>`);
-  const L=sessList(D);
+  const mf=mxSeg.hm==="me"&&me,L0=sessList(D),L=mf?L0.filter(x=>(x.rows||[]).some(z=>z.id===me)):L0;
+  if(me)h+=`<div class="mxseg sm"><button data-act="mxseg" data-k="hm" data-v="all" aria-pressed="${!mf}">Tất cả ${L0.length}</button><button data-act="mxseg" data-k="hm" data-v="me" aria-pressed="${!!mf}">Có tôi ${L0.filter(x=>(x.rows||[]).some(z=>z.id===me)).length}</button></div>`;
   h+=L.length?`<div class="mxcard list">${L.map(x=>{const r=me&&(x.rows||[]).find(z=>z.id===me),rk=r?(x.rows||[]).indexOf(r)+1:0,s=x.snap;
     return `<a class="mxli" href="${pathOf("buoi",{sid:x.sid})}" data-go="buoi" data-id="${x.sid}"><span class="t"><b>${esc(s?.sname||`Giải đấu #${x.sid}`)}</b><small>${dmy(x.at)} · ${x.ms.length||s?.matchCount||0} trận${s?.type==="giai"?" · giải cặp":x.rows&&x.rows[0]?` · nhất ${esc(x.rows[0].name)}`:""}</small></span>${rk?`<span class="t2">Hạng ${rk}</span>`:""}<span aria-hidden="true">›</span></a>`}).join("")}</div>`:`<div class="mxcard muted"><b>Chưa có giải đấu nào</b></div>`;
   return mxShell(D,h);
@@ -232,7 +243,7 @@ function mxMeTab(D){
   let h=dbgCard();
   if(p){const s=D.st.get(p.id),A=D.all.get(p.id),rk=[...D.players].filter(x=>!x.guest).sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating).findIndex(x=>x.id===p.id)+1;
     h+=`<div class="mxcard prof">${av(p,"lg",1)}<span class="t"><b>${esc(p.name)}</b><small>${esc(CLUB?.name||"")} · ${mxRole()}</small></span><a class="line sm" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">Hồ sơ</a></div>
-    <div class="mxstats"><div><b class="num">${r2(s.rating)}</b><small>Rating</small></div><div><b class="num">#${rk}</b><small>Hạng</small></div><div><b class="num">${A.ses.size}</b><small>Giải đấu</small></div><div><b class="num">${pct(A.w,A.g)}%</b><small>Thắng</small></div></div>${mfMe(D,p)}`;
+    <div class="mxstats"><div><b class="num">${r2(s.rating)}</b><small>Rating</small></div><div><b class="num">#${rk}</b><small>Hạng</small></div><div><b class="num">${A.ses.size}</b><small>Giải đấu</small></div><div><b class="num">${pct(A.w,A.g)}%</b><small>Thắng</small></div></div>${mfMe(D,p)}${(()=>{const dt=debts().filter(x=>x.id===p.id),sum=dt.reduce((a,x)=>a+x.k,0);return sum?`<button class="mxcard warn" data-act="mxtien"><b>Bạn còn ${fmtK(sum)} lệ phí chưa trả</b><span>${dt.length} giải đấu · bấm để chuyển khoản</span></button>`:""})()}${mxTickets(D)}`;
   }else h+=`<div class="mxcard prof">${mxSvg("me")}<span class="t"><b>${esc(zaloProf().n||"Người dùng Zalo")}</b><small>${L&&L.status==="pending"?"Đang chờ chủ CLB duyệt":mxRole()==="VĐV ngoài CLB"?"Vận động viên ngoài CLB":"Chưa tham gia CLB này"}</small></span></div>${L&&L.status==="pending"?"":`<button class="primary wide" data-act="mxdk" data-v="pick">Tham gia CLB</button>`}`;
   const C=myClubs();
   h+=`<div class="mxcard list">

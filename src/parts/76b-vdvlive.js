@@ -14,7 +14,12 @@ function vlCourt(D,m,me,fol){
 function vlSan(D){
   const me=mxPid(),F=vlFol(),L=[...D.playing].sort((a,b)=>(F.has(Number(b.court))-F.has(Number(a.court)))||([...b.a,...b.b].includes(me)-[...a.a,...a.b].includes(me))||a.court-b.court);
   const used=new Set(D.playing.map(m=>Number(m.court))),last=[...D.done].sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
-  let h=dhPauseBar()+L.map(m=>vlCourt(D,m,me,F.has(Number(m.court)))).join("");
+  const my=me&&L.find(m=>[...m.a,...m.b].includes(me)),rest=L.filter(m=>m!==my);
+  let h=dhPauseBar();
+  if(my)h+=`<span class="mxsec vlsec">● Trận của bạn</span>`+vlCourt(D,my,me,F.has(Number(my.court)));
+  else if(me&&!isG(D.c)){const q=waitQueue(D).findIndex(x=>x.id===me);if(q>=0)h+=`<div class="mxcard vlwait"><b>${q<4?"Bạn sắp vào sân":`Bạn chờ thứ ${q+1}`}</b><span>Loa gọi tên khi tới lượt · xem ở “Tiếp theo”.</span></div>`}
+  if(my&&rest.length)h+=`<span class="mxsec vlsec">Các sân khác</span>`;
+  h+=rest.map(m=>vlCourt(D,m,me,F.has(Number(m.court)))).join("");
   for(let k=1;k<=Math.max(1,+D.c.courts||1);k++)if(!used.has(k)){const x=last.find(m=>Number(m.court)===k);
     h+=`<div class="vle"><b>Sân ${esc(cName(k))}</b><span>${x?`Vừa xong · ${x.a.map(id=>nm(D,id)).join(" &amp; ")} ${x.sa}–${x.sb} ${x.b.map(id=>nm(D,id)).join(" &amp; ")}`:"Đang trống"}</span></div>`}
   return h;

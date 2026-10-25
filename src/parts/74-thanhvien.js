@@ -42,7 +42,7 @@ function vTV(D){
     <div class="tvsort"><span>Xếp theo: <button class="lnk" data-act="tvsort">${tvSort==="nm"?"Tên A–Z":"Rating"} ▾</button></span><span>${L.length} người</span></div>
     ${tvF==="btc"?`<small class="rule">Mở một người để giao hoặc thu quyền Quản lý, Trọng tài. Người cần đã liên kết Zalo.</small>`:""}`;
   h+=L.length?`<div class="tvlist">${L.map(p=>{const on=p.active!==false;
-    return `<div class="tvrow"><button class="tvm" data-act="tvsel" data-id="${p.id}" data-pid="${p.id}"><span class="tvav">${av(p,"md",1)}${on?`<i class="dot"></i>`:""}</span>
+    return `<div class="tvrow"><button class="tvm" data-act="tvsel" data-id="${p.id}"><span class="tvav">${av(p,"md",1)}${on?`<i class="dot"></i>`:""}</span>
       <span class="t"><span class="n"><b>${esc(p.name)}</b><small class="${p.gender==="F"?"f":"m"}">${p.gender==="F"?"Nữ":"Nam"}</small></span><span class="tags">${tvTags(D,p,I)}</span></span>
       <span class="r"><b class="num">${r2(D.st.get(p.id).rating)}</b><small>rating</small></span></button></div>`}).join("")}</div>`
     :`<div class="empty"><strong>${D.players.length?"Không có ai khớp":"Chưa có thành viên"}</strong>${D.players.length?"Đổi bộ lọc hoặc từ khoá.":"Bấm “＋ Thêm thành viên” để thêm người."}</div>`;
