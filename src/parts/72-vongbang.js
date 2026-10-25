@@ -104,7 +104,11 @@ function koCount(G){const K=koK(G),N=koNEff(G),n=((G&&G.pairs)||[]).length,gs=ko
   const grp=gs.reduce((a,k)=>a+k*(k-1)/2,0),size=koQEff(G);return {grp,ko:size-1+(K.third!==false&&size>=4?1:0),size}}
 
 /* ----- Bốc chia bảng: hạt giống mỗi bảng 1 cặp, còn lại chia theo trình rồi bốc ngẫu nhiên ----- */
-function koDraw(D,P,n,sel){
+function koDraw(D,P,n,sel,mode){
+  // Ngẫu nhiên: chia lần lượt theo thứ tự xáo trộn, không hạt giống
+  if(mode==="rand"){const G=Array.from({length:n},()=>[]);gbShuffle(P.slice()).forEach((p,i)=>G[i%n].push(p.id));return {groups:G,seeds:[]}}
+  // Cân trình: xếp rắn theo rating (1→n, n→1…), tổng trình các bảng gần bằng nhau
+  if(mode==="bal"){const L=P.slice().sort((a,b)=>pairR(D,b)-pairR(D,a)),G=Array.from({length:n},()=>[]);L.forEach((p,i)=>{const r=Math.floor(i/n),k=i%n;G[r%2?n-1-k:k].push(p.id)});return {groups:G,seeds:G.map(g=>g[0]).filter(Boolean)}}
   const L=P.slice().sort((a,b)=>pairR(D,b)-pairR(D,a)),G=Array.from({length:n},()=>[]),ok=new Set(P.map(p=>p.id)),used=new Set(),seeds=[];
   for(let i=0;i<n;i++){const s0=sel&&sel[i];if(s0&&ok.has(s0)&&!used.has(s0)){seeds[i]=s0;used.add(s0)}}
   for(let i=0;i<n;i++)if(!seeds[i]){const p=L.find(x=>!used.has(x.id));if(p){seeds[i]=p.id;used.add(p.id)}}
@@ -155,7 +159,9 @@ function koSetup(D,G){
     h+=`<div class="kogrid">${K.groups.map((g,gx)=>`<div class="kog"><b>BẢNG ${KOG[gx]}</b>${g.map(id=>{const p=pm.get(id);return p?`<div class="kop mfade">${seeds.has(id)?`<span class="hg">HG</span>`:""}${pair2(D,p)}<small class="num">${r2(pairR(D,p))}</small></div>`:""}).join("")}</div>`).join("")}</div>
       <div class="gbinfo"><span>🎲 Chia bảng lúc ${K.gat?hm(K.gat):""} · ${esc(K.gby||"BTC")}${K.gn>1?` · bốc lại lần ${K.gn}`:""} · HG = hạt giống</span><button class="lnk" data-act="koreplay">Xem lại</button>${canWrite&&!G.locked?`<button class="lnk" data-act="kodraw">Bốc lại</button>`:""}</div>`}
   else if(canWrite){const N=koNEff(G),need=Math.max(4,N*2);
-    h+=`${stale?`<div class="gbwarn">Danh sách cặp đã thay đổi sau khi chia bảng. Bốc chia bảng lại nhé.</div>`:""}<div class="kobd">${n>=need?koSeedSel(D,G,N):""}
+    const dm=K.dm||"seed";
+    h+=`${stale?`<div class="gbwarn">Danh sách cặp đã thay đổi sau khi chia bảng. Bốc chia bảng lại nhé.</div>`:""}<div class="kobd"><b class="lbl">Cách chia bảng</b><span class="seg segw">${[["rand","Ngẫu nhiên"],["seed","Có hạt giống"],["bal","Cân trình"]].map(([v,l])=>`<button data-act="kodm" data-v="${v}" aria-pressed="${dm===v}">${l}</button>`).join("")}</span>
+      <small class="rule">${dm==="rand"?"Bốc hoàn toàn ngẫu nhiên, không tách cặp mạnh.":dm==="bal"?"Xếp rắn theo trình: tổng trình các bảng gần bằng nhau, không ngẫu nhiên.":"Mỗi bảng 1 hạt giống (cặp mạnh nhất), các cặp còn lại bốc theo nhóm trình."}</small>${n>=need&&dm==="seed"?koSeedSel(D,G,N):""}
       <button class="gbbtn kodraw" data-act="kodraw" ${n<need?"disabled":""}>🎲 BỐC CHIA ${N} BẢNG</button>${n<need?`<small class="rule">Cần ít nhất ${need} cặp (đang có ${n}). Ghép thêm cặp ở trên.</small>`:""}</div>`}
   if(ok&&koShow)h+=koShowScr(D,G,K,pm);
   h+=`<details class="kodet"${canWrite?" open":""}><summary>Luật điểm từng vòng</summary><div class="kobd">${canWrite?koRules(K):`<small class="rule">Vòng bảng: ${esc(ruleTx(koRule(K,"g")))} · Knockout: ${esc(ruleTx(koRule(K,"k")))} · Chung kết: ${esc(ruleTx(koRule(K,"f")))}</small>`}</div></details>`;
@@ -213,9 +219,10 @@ async function koAct(act,b,id){
       await write(()=>saveKo(G,{n:v,groups:null,seeds:null}));return true}
     if(k==="q"){const v=+b.dataset.v;if(!KOQ.includes(v))return true;await write(()=>saveKo(G,{q:v}));return true}
     return true}
+  if(act==="kodm"){await write(()=>saveKo(G,{dm:["rand","seed","bal"].includes(b.dataset.v)?b.dataset.v:"seed"}));return true}
   if(act==="kodraw"){const D=derive(),P=G.pairs||[],N=koNEff(G);if(P.length<Math.max(4,N*2)){toast(`Cần ít nhất ${Math.max(4,N*2)} cặp.`);return true}
     if(koGroupsOk(G)&&!armOr("kodraw:x"))return true;
-    const r=koDraw(D,P,N,K.seedSel);
+    const r=koDraw(D,P,N,K.seedSel,K.dm);
     await write(()=>saveKo(G,{n:N,groups:r.groups,seeds:r.seeds,gat:Date.now(),gby:who(),gn:(K.gn||0)+1}),null);koShow=Date.now();render();try{window.scrollTo(0,0)}catch(e){}koFollow();return true}
   return false;
 }

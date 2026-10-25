@@ -201,7 +201,7 @@ function gCourt(D,GD,m){
   return `<article class="court${isNew(m.id+"p")?" new":""}" style="--cc:${cColor(m.court)}"><div class="court-h"><h3>Sân ${esc(cName(m.court))}</h3>${canWrite?hqStale(m):""}<span class="num">${m.ko?esc(koMName(GD,m.ko)):GD.isKO?`Bảng ${KOG[(GD.games.find(g=>!g.ko&&g.key===gk(m.pa,m.pb))||{}).grp]||""} · lượt ${m.round}`:`Lượt ${m.round}`} · Trận #${m.seq}</span>${canScore(m)?spkBtn("c:"+m.id,`<button class="spk" data-act="speak" data-id="${m.id}" aria-label="Đọc loa mời vào sân ${esc(cName(m.court))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>Mời</button>`):""}</div>${refTag(m.court)}
     ${side(X,ka,"Điểm đội 1")}${side(Y,kb,"Điểm đội 2")}
     <div class="court-f"><span class="meta" style="flex:1">${esc(mRuleTx(m)||ruleTxt(D.c))}</span>${canWrite?`<button class="ghost danger" data-act="cancel" data-id="${m.id}">Hủy</button>`:""}${canScore(m)?`<button class="primary" data-act="savechk" data-id="${m.id}">Lưu tỉ số</button>`:""}</div>${saveConfirm(D,m)}${cancelConfirm(D,m)}
-    ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}</article>`;
+    ${errs[m.id]?`<p class="err" style="padding:0 14px 12px">${esc(errs[m.id])}</p>`:""}${ttCourtLine(D,m)}</article>`;
 }
 function gRounds(D,GD){
   const by=[];for(const g of GD.games)(by[g.r-1]=by[g.r-1]||[]).push(g);

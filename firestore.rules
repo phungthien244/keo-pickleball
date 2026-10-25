@@ -94,7 +94,7 @@ service cloud.firestore {
       function scoreOk() {
         return active() && (isMember() || isPinEditor())
           && resource.data.court in refCourts()
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sa', 'sb', 'status', 'doneAt']);
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sa', 'sb', 'status', 'doneAt', 'ref']);
       }
       function canRead() { return (active() && clubDoc().public == true) || isMember() || isPinEditor() || isPA(); }
 

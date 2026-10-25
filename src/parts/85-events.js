@@ -160,6 +160,7 @@ document.addEventListener("click",onAct=async e=>{
     catch(x){errs.pinset=x&&x.code==="permission-denied"?"Tài khoản này chưa có quyền quản lý CLB. Đăng nhập Google bằng tài khoản chủ CLB rồi thử lại.":"Chưa lưu được PIN ("+((x&&x.code)||"mất kết nối")+"). Thử lại."}
     render();return}
   // Trọng tài chỉ được lưu tỉ số ở sân được giao
+  if(act.startsWith("tt")&&await ttAct(act,b))return;
   const REF_ACTS=["savechk","savex","save","cancelx"];
   if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
   if(canWrite&&!legacy&&hqAct(act,b))return;
