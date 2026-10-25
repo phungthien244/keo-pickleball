@@ -9,7 +9,7 @@ async function miniLogin(quiet){
   const Z=window.ZMP;if(!Z)return false;
   // Chờ Firebase đọc lại phiên đăng nhập đã lưu: đã có tài khoản Zalo thì không cần đăng nhập lại qua máy chủ
   try{if(FB.auth&&FB.auth.authStateReady)await FB.auth.authStateReady()}catch(e){}
-  // Phiên Zalo đã đối chiếu với mã Zalo trên máy này thì dùng lại; phiên cũ chưa đối chiếu → hỏi máy chủ một lần (gộp tài khoản nếu lệch)
+  // Phiên Zalo đã đối chiếu với mã Zalo trên máy này thì dùng lại; chưa đối chiếu → hỏi máy chủ, lệch thì vào đúng tài khoản của mã Zalo đang dùng
   const cu=(FB.auth&&FB.auth.currentUser)||authUser,zl=cu&&/^zalo_/.test(String(cu.uid||""));
   // Luôn hỏi mã Zalo hiện tại (không cần xin quyền): máy đổi sang tài khoản Zalo khác thì bỏ phiên và dữ liệu của người cũ
   let id="";try{id=String(await Z.getUserID()||"")}catch(e){}
@@ -17,7 +17,8 @@ async function miniLogin(quiet){
   if(id&&prev&&id!==prev){await zSwitch();return false}
   // Tên, ảnh Zalo của người đang dùng (không hỏi quyền; chỉ có nếu người này từng cho phép)
   const zinfo=async()=>{try{const ui=await Z.getUserInfo({autoRequestPermission:false,avatarType:"normal"}),u=ui&&ui.userInfo;if(u&&u.name){saveZProf({n:u.name,p:u.avatar||""});render()}}catch(e){}};
-  if(zl&&(lsGet("pb-zuid-ok")===cu.uid||window.FB_TARGET==="mock")&&(!id||prev===id)){if(id&&!zaloProf().n)zinfo();return true}
+  // Dùng lại phiên chỉ khi máy chủ đã xác nhận đúng cặp (tài khoản, mã Zalo hiện tại)
+  if(zl&&(window.FB_TARGET==="mock"||(lsGet("pb-zuid-ok")===cu.uid&&(!id||lsGet("pb-zuid-zid")===id)))&&(!id||!prev||prev===id)){if(id&&!zaloProf().n)zinfo();return true}
   try{
     if(id)saveZProf({zid:id});try{sessionStorage.removeItem("pb-zsw")}catch(e){}
     if(window.FB_TARGET==="mock"){await FB.signInWithCustomToken(FB.auth,String(id||"demo"));authUser={uid:"zalo_"+String(id||"demo"),isAnonymous:false};await refreshRole();render();return true}
@@ -27,20 +28,28 @@ async function miniLogin(quiet){
     const j=await r.json().catch(()=>({}));
     lsSet("pb-zsync",JSON.stringify({at:Date.now(),from:zl?cu.uid:"",to:j.uid||"",err:j.token?"":(j.error||"không có token")}));
     if(!j.token){if(zl)return true;throw new Error(j.error||"no token")}
+    // Phiên trên máy là của tài khoản khác với mã Zalo đang mở: bỏ dữ liệu người trước, vào đúng tài khoản rồi tải lại
+    const other=zl&&cu.uid!==j.uid;
+    if(other)zClear(true);
     if(!(zl&&cu.uid===j.uid))await FB.signInWithCustomToken(FB.auth,j.token);
-    lsSet("pb-zuid-ok",j.uid);
+    lsSet("pb-zuid-ok",j.uid);if(id)lsSet("pb-zuid-zid",id);
+    if(other){toast("Đã vào bằng tài khoản Zalo đang dùng");setTimeout(()=>{try{location.reload()}catch(e){}},300)}
     return true;
   }catch(e){if(zl)return true;if(!quiet)toast("Chưa vào được bằng Zalo, thử lại.");return false}
+}
+// Xoá dữ liệu riêng của người dùng trước trên máy (giữ cài đặt máy; keepZ: giữ mã, tên, ảnh Zalo vừa lấy của người đang dùng)
+function zClear(keepZ){
+  const keep=keepZ?/^pb-(dev|mute|tab|rd|ttq|fol-|zprof)/:/^pb-(dev|mute|tab|rd|ttq|fol-)/;
+  try{const ks=["pb-zprof","pb-zuid-ok","pb-zuid-zid","pb-zsync","pb-mini-clubs","pb-mini-last","pb-mxtao","pb-newclub","pb-doi"];
+    for(let i=0;i<(localStorage.length||0);i++){const k=localStorage.key(i);if(k)ks.push(k)}
+    for(const k of ks)if(/^pb-/.test(k)&&!keep.test(k))localStorage.removeItem(k)}catch(e){}
+  if(!keepZ)ZPROF=null;
 }
 // Máy đổi tài khoản Zalo: đăng xuất, xoá dữ liệu riêng của người dùng trước trên máy (giữ cài đặt máy), tải lại
 async function zSwitch(){
   try{if(sessionStorage.getItem("pb-zsw")==="1")return;sessionStorage.setItem("pb-zsw","1")}catch(e){}
   try{await FB.signOut(FB.auth)}catch(e){}
-  const keep=/^pb-(dev|mute|tab|rd|ttq|fol-)/;
-  try{const ks=["pb-zprof","pb-zuid-ok","pb-zsync","pb-mini-clubs","pb-mini-last","pb-mxtao","pb-newclub","pb-doi"];
-    for(let i=0;i<(localStorage.length||0);i++){const k=localStorage.key(i);if(k)ks.push(k)}
-    for(const k of ks)if(/^pb-/.test(k)&&!keep.test(k))localStorage.removeItem(k)}catch(e){}
-  ZPROF=null;authUser=null;
+  zClear(false);authUser=null;
   toast("Đã đổi sang tài khoản Zalo khác");
   setTimeout(()=>{try{location.reload()}catch(e){}},300);
 }

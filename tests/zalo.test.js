@@ -511,3 +511,20 @@ test("Mini App: máy đổi sang tài khoản Zalo khác thì bỏ phiên cũ, x
   delete globalThis.window.ZMP;
 });
 
+
+test("Mini App: phiên trên máy chưa đối chiếu với mã Zalo đang dùng → hỏi máy chủ, lệch tài khoản thì vào đúng tài khoản mới", async () => {
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data: base() });
+  MINI(e, "#/q7");
+  const ls = { "pb-zprof": JSON.stringify({ zid: "222", n: "Người cũ" }), "pb-zuid-ok": "zalo_9", "pb-mini-clubs": "[]" };
+  globalThis.localStorage = { getItem: k => ls[k] ?? null, setItem: (k, v) => { ls[k] = v; }, removeItem: k => { delete ls[k]; }, get length() { return Object.keys(ls).length; }, key: i => Object.keys(ls)[i] };
+  e.FB.auth = { currentUser: { uid: "zalo_9", isAnonymous: false } };
+  let asked = 0;
+  globalThis.window.ZMP = { getUserID: async () => "222", getAccessToken: async () => "AT", getUserInfo: async () => ({ userInfo: { name: "Người mới", avatar: "" } }) };
+  globalThis.fetch = async () => { asked++; return { json: async () => ({ token: "new", uid: "zalo_new" }) }; };
+  await e.boot(); await e.until(() => e.reloaded === 1);
+  expect(asked).toBe(1);
+  expect(ls["pb-zuid-ok"]).toBe("zalo_new"); expect(ls["pb-zuid-zid"]).toBe("222");
+  expect(ls["pb-mini-clubs"]).toBeUndefined();
+  expect(ls["pb-zprof"]).toContain("Người mới");
+  delete globalThis.window.ZMP;
+});
