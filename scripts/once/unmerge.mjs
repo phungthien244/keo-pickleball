@@ -90,6 +90,17 @@ if (MODE === "list") {
       console.log(`::notice::CLB ${cid} · VĐV ${P[pid]?.name?.stringValue || pid} | LINK ${uid} (${await acct(uid)}) | ZUID ${z} (${await acct(z)})`);
     }
   }
+} else if (MODE === "detach") {
+  // Gỡ liên kết VĐV và quyền CLB đã bị chuyển nhầm sang tài khoản UID (chỉ trong CLB CID)
+  const UID = process.env.UID, CID = process.env.CID;
+  if (!/^zalo_[0-9a-f]{40}$/.test(UID || "") || !/^[a-z0-9-]+$/.test(CID || "")) throw new Error("UID/CID sai");
+  const P = `clubs/${CID}`, l = await F.get(`${P}/links/${UID}`), m = await F.get(`${P}/members/${UID}`);
+  const pid = l?.fields?.pid?.stringValue;
+  console.log(`::notice::Trước: link ${l ? l.fields.status?.stringValue + " pid " + pid : "không"} · quyền ${m ? m.fields.role?.stringValue + " movedFrom " + (m.fields.movedFrom?.stringValue || "-") : "không"}`);
+  for (const x of await F.list(`${P}/links`)) { const f = x.fields || {}; if (pid && f.pid?.stringValue === pid) console.log(`::notice::Liên kết của VĐV ${pid}: ${tail(x.name).split("/").pop()} · ${f.status?.stringValue}`); }
+  for (const r of await F.query(P, "regs", "uid", UID)) console.log(`::notice::Đăng ký của tài khoản: ${tail(r.name).split("/").pop()}`);
+  if (l) console.log(`::notice::Xoá liên kết: ${await F.del(`${P}/links/${UID}`)}`);
+  if (m && m.fields.movedFrom) console.log(`::notice::Xoá quyền chuyển nhầm: ${await F.del(`${P}/members/${UID}`)}`);
 } else if (MODE === "apply") {
   const TO = process.env.TO, FROM = process.env.FROM;
   if (!/^zalo_[0-9a-f]+$/.test(TO || "") || !/^zalo_[0-9a-f]+$/.test(FROM || "")) throw new Error("TO/FROM sai");
