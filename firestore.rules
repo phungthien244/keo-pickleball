@@ -392,6 +392,10 @@ service cloud.firestore {
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.get('txt', '') is string && request.resource.data.get('txt', '').size() <= 400;
         allow update, delete: if canEdit();
+        // Người gọi tự huỷ yêu cầu của mình (trọng tài bấm Huỷ gọi)
+        allow update: if signedIn() && resource.data.uid == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['st', 'doneAt'])
+          && request.resource.data.st == 'skip';
       }
       // Ảnh của VĐV ngoài CLB lúc đăng ký: chỉ ban tổ chức và chính người đó xem
       match /regpics/{id} {

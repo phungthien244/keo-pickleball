@@ -412,3 +412,15 @@ describe("người chơi tự sửa hồ sơ", () => {
     await assertFails(updateDoc(doc(zalo("zalo_2"), "clubs/aep/players/p2"), { bio: "x" }));
   });
 });
+
+describe("yêu cầu gọi BTC", () => {
+  test("người gọi tự huỷ được yêu cầu của mình (chỉ sang skip); không huỷ của người khác; BTC xử lý được", async () => {
+    await seed({ "clubs/aep/calls/c1": { k: "btc", court: 1, why: "Tranh cãi điểm", by: "TT", uid: "sc", at: 1, sid: 1, st: "new" },
+      "clubs/aep/calls/c2": { k: "btc", court: 2, why: "x", by: "TT2", uid: "ad", at: 1, sid: 1, st: "new" } });
+    await assertSucceeds(updateDoc(doc(google("sc"), "clubs/aep/calls/c1"), { st: "skip", doneAt: 2 }));
+    await assertFails(updateDoc(doc(google("sc"), "clubs/aep/calls/c2"), { st: "skip", doneAt: 2 }));
+    await seed({ "clubs/aep/calls/c3": { k: "btc", court: 1, why: "x", by: "TT", uid: "sc", at: 1, sid: 1, st: "new" } });
+    await assertFails(updateDoc(doc(google("sc"), "clubs/aep/calls/c3"), { st: "done", doneAt: 2 }));
+    await assertSucceeds(updateDoc(doc(google("own"), "clubs/aep/calls/c3"), { wait: 99 }));
+  });
+});

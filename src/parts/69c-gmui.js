@@ -258,12 +258,14 @@ function gmPlayV(D,X){
   if(g4V&&g4V.startsWith("m:")){const m=(S.matches||[]).find(x=>x.id===g4V.slice(2));if(m&&(m.status!=="done"||editing.has(m.id)))return g4Score(D,m.id);g4V=g4Back;g4Back=null;if(g4V)return gmPlayV(D,X)}
   const busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
   const fill=G?(!GD.complete&&gPick(D,GD,new Set(D.playing.flatMap(m=>[m.pa,m.pb])),new Set())?"gfill":null):(Math.floor(waiting.length/4)>0?"gen":null);
-  let h="";
-  for(let k=1;k<=n;k++){const m=D.playing.find(x=>Number(x.court)===k);
+  let h="",red="";const calls=ycBtc();
+  for(let k=1;k<=n;k++){const m=D.playing.find(x=>Number(x.court)===k),cx=calls.find(x=>Number(x.court)===k);
+    if(m&&cx){red+=ycCourt(D,m,cx,m.ko&&GD?esc(koMName(GD,m.ko)):"");continue}
     if(!m){h+=`<div class="g4c e"><span class="h"><b>SÂN ${esc(cName(k))}</b><small>trống</small></span><span class="t">Sân trống</span>${fill?`<button class="ball nv" data-act="${fill}">▶ Đưa trận tiếp vào sân</button>`:`<small class="rule">Hết người chờ hoặc hết trận.</small>`}</div>`;continue}
     const age=typeof m.createdAt==="number"?Math.max(0,Math.round((now-m.createdAt)/6e4)):0,R=m.ref&&m.ref.started?ttRun(D,m):null;
     const lb=m.ko&&GD?esc(koMName(GD,m.ko)):"";
     h+=`<div class="g4c"><span class="h"><b>SÂN ${esc(cName(k))}</b>${lb?`<em>${lb}</em>`:""}<small class="live">● ${age}′${R?` · ${R.s.a}–${R.s.b}`:""}</small></span><span class="t"><b>${g4Nm(D,m.a)}</b> <span>gặp</span> <b>${g4Nm(D,m.b)}</b></span>${canScore(m)?`<button class="ball go" data-act="g4m" data-id="${esc(m.id)}">Nhập điểm</button>`:""}</div>`}
+  h=red+h;
   // Lượt sau
   let nx="";
   if(G){const g=gPick(D,GD,new Set(D.playing.flatMap(m=>[m.pa,m.pb])),new Set());if(g){const A=GD.T.get(g.x),B=GD.T.get(g.y);nx=`${A?pairNm(D,A.p):"?"} · ${B?pairNm(D,B.p):"?"}`}}

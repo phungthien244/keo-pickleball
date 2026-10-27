@@ -123,7 +123,7 @@ function ttToss(D,m,X){
 function ttMain(D,m,X){
   const last=[...X.log].reverse().find(l=>l.k==="p"),st=X.st,rt=ttO(st);
   const el=X.t0?Math.max(0,Math.round((Date.now()-X.t0)/6e4)):0,mate=id=>{const L=st==="a"?m.a:m.b;return L[0]===id?L[1]:L[0]};
-  let h=ttHead(D,m,`Sân ${esc(cName(m.court))} · Ván ${X.g+1}${X.R.sets>1?` · ${X.gw.a}–${X.gw.b}`:""}`);
+  let h=ttHead(D,m,`Sân ${esc(cName(m.court))} · Ván ${X.g+1}${X.R.sets>1?` · ${X.gw.a}–${X.gw.b}`:""}`)+ycMine();
   // bảng điểm nền đậm: ô đội đang giao bật sáng, vạch màu đội
   const tile=t=>{const on=t===st;return `<div class="tttile t${t}${on?" on":""}"><span class="h">${ttAvs(D,t==="a"?m.a:m.b,"xs")}<span class="n">${esc(ttTN(D,m,t))}</span></span><b class="num">${X.s[t]}</b><span class="k">${on?(X.rally?"● ĐANG GIAO":`● ĐANG GIAO · TAY ${X.sn}`):"đang nhận"}</span></div>`};
   h+=`<div class="ttsbd"><div class="tttiles">${tile(X.left)}${tile(ttO(X.left))}</div><span class="meta num">Chạm ${X.R.to}${X.R.w2?" · cách 2":""} · đổi bên ở ${X.half} · ⏱ <b data-ttel="${X.t0||Date.now()}">${el}</b>′</span></div>

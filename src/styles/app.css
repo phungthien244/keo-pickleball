@@ -2623,3 +2623,12 @@ a.mxbk,.mxdr .mxbk{color:#fff;text-decoration:none;font-size:28px;line-height:1}
 .g5ck{display:flex;align-items:center;gap:10px;width:100%;padding:12px;background:var(--surface);border:1px solid var(--line);text-align:left;font-family:var(--body);font-size:14px;text-transform:none;letter-spacing:0;color:var(--ink)}
 .g5ck i{width:22px;height:22px;display:grid;place-items:center;font-style:normal;border:2px solid var(--line-2);color:#fff;font-weight:900}.g5ck.on i{background:#16a34a;border-color:#16a34a}
 .gmchips.c2{grid-template-columns:repeat(2,1fr)}
+/* Yêu cầu của trọng tài trên máy BTC */
+.ycban{display:flex;align-items:center;gap:8px;width:100%;margin:-12px -12px 10px;width:calc(100% + 24px);padding:10px 12px;border:0;background:#dc2626;color:#fff;text-align:left;font-family:var(--body);font-size:13px;text-transform:none;letter-spacing:0;min-height:0}
+.ycban b{font-weight:800;white-space:nowrap}.ycban span{flex:1;min-width:0;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ycban i{font-style:normal;font-weight:800;background:#fff;color:#dc2626;padding:4px 10px}
+.gmst+.ycban,.gmst+.gmback+.ycban{margin-top:-10px}
+.g4c.red{border:2px solid #dc2626;background:#fff5f5}.g4c.red .h b{color:#dc2626}.g4c .why{color:#dc2626;font-weight:700;font-size:13px}
+.ycrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #eef1f4}.ycrow .t{flex:1;min-width:0;display:flex;flex-direction:column}.ycrow .t b{font-size:14px}.ycrow .t small{font-size:12px;color:var(--muted)}
+.ycrow .g2tag.o{background:#c7770b;color:#fff}.ycrow .g2tag.r{background:#dc2626;color:#fff}
+.ycmine{background:#fef3c7;border:2px solid #f2b705;padding:12px;display:flex;flex-direction:column;gap:3px;margin:0 0 10px;color:var(--ink)}
+.ycmine .cap{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#92400e}.ycmine b{font-size:15px}.ycmine small{font-size:12.5px}.ycmine button{align-self:flex-start;margin-top:4px}

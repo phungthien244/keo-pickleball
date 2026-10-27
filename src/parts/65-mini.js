@@ -60,7 +60,7 @@ function mxShell(D,body,cta=""){
   let h=(nh?mxHeadQL(D,nm):mxHead(D,ql,sw,p,nm))+`<div class="mxbody${dr?" dr":""}">${body}</div>`;
   if(cta)h+=`<div class="mxcta">${cta}</div>`;
   h+=dr?"":ql?mxMgrNav():mxNav();
-  return h+mxSheetHtml()+(ql?ckPopup(D):wkSheet(D));
+  return h+mxSheetHtml()+(ql?ycSheets(D)+ckPopup(D):wkSheet(D));
 }
 function mxNav(){
   const it=(k,t,go,lb)=>`<a class="${mxCur()===k?"on":""}" href="${go}" ${t}>${mxSvg(k==="hist"?"hist":k)}<span>${lb}</span></a>`;

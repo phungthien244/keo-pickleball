@@ -81,7 +81,7 @@ const DH_ANN=["Mời các vận động viên chưa check-in tới bàn ban tổ
 const DH_WHY=[["Tranh cãi điểm","Trận tạm dừng · BTC xem lịch sử từng pha"],["Chấn thương","Gửi kèm timeout y tế"],["Thiếu người, bỏ cuộc","BTC xác nhận xử thua"],["Cần bóng, nước, việc khác",""]];
 function dhSheets(D){
   let h="";
-  if(dhSC){const x=(S.calls||[]).find(z=>z.id===dhSC);if(!x){dhSC=null}else{
+  if(dhSC&&!(MINI&&canWrite)){const x=(S.calls||[]).find(z=>z.id===dhSC);if(!x){dhSC=null}else{
     const m=D.playing.find(z=>Number(z.court)===Number(x.court)),X=m&&m.ref&&m.ref.started?ttRun(D,m):null,last=X?X.log.filter(l=>l.k==="p").slice(-3).reverse():[];
     const used=new Set(D.playing.map(z=>Number(z.court))),free=Array.from({length:Math.max(1,+D.c.courts||1)},(_,i)=>i+1).filter(k=>!used.has(k));
     h+=dhDim("dhscx")+`<div class="mxsheet dhsh" role="dialog" aria-label="Sự cố sân ${esc(cName(x.court))}"><span class="grab"></span>
@@ -140,7 +140,7 @@ function dhClaimLayer(D){
 /* ----- Sân của tôi (trọng tài) ----- */
 function vSanToi(D){
   const cs=[...MYCT].sort((a,b)=>a-b);
-  let h=dhPauseBar()+`<div class="dhme"><span class="cap">Sân của tôi</span><b>${cs.length?cs.map(k=>"Sân "+esc(cName(k))).join(", "):"Chưa được giao sân"}</b>${REFQ?`<small>Nhận qua QR lúc ${hm(REFQ.at||Date.now())}</small>`:""}</div>`;
+  let h=dhPauseBar()+ycMine()+`<div class="dhme"><span class="cap">Sân của tôi</span><b>${cs.length?cs.map(k=>"Sân "+esc(cName(k))).join(", "):"Chưa được giao sân"}</b>${REFQ?`<small>Nhận qua QR lúc ${hm(REFQ.at||Date.now())}</small>`:""}</div>`;
   for(const k of cs){const m=D.playing.find(x=>Number(x.court)===k);
     if(m){const X=m.ref&&m.ref.started?ttRun(D,m):null;
       h+=`<section class="dhnew"><span class="cap">${X?"● Đang nhập":"● Trận mới vào sân"}${typeof m.createdAt==="number"?` · ${hm(m.createdAt)}`:""}</span>

@@ -44,6 +44,7 @@ function gmNext(D,X){
 const gmNextBox=(n,btn)=>`<div class="gmnext"><span class="cap">👉 Việc tiếp theo</span><b>${n.t}</b>${n.s?`<small>${esc(n.s)}</small>`:""}${btn&&n.b?n.b:""}</div>`;
 // Dải đỏ: giải đang đánh, ghim ở các trang khác
 function gmLiveBan(D){
+  {const y=ycBan(D);if(y)return y}
   if(!canWrite||legacy||REF||!(gmLive(D)||D.SM.length))return "";
   const X=xCur();
   return `<a class="gmlive" ${gmLink(X)}><b>● ĐANG ĐÁNH</b><span>${esc(X?xName(X):(D.c.sname||"Giải đánh nhanh"))} · ${D.playing.length} sân · ${D.done.length} trận xong</span><i>Mở ›</i></a>`;
@@ -169,6 +170,7 @@ function vGiaiMgr(D,X){
   let h=mxDrOn()?mxDr({t:nm,tact:"gmsw",sub:esc(sub),go:`href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk"`})
     :`<div class="gmhd">${MINI?"":`<a class="gmbk" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk" aria-label="Về danh sách giải">‹</a>`}<button class="gmname" data-act="gmsw"><b>${esc(nm)}</b><i aria-hidden="true">▾</i></button><button class="gmed" data-act="gmedit">✎ Sửa</button></div>`;
   h+=`<nav class="gmst" aria-label="Các chặng của giải">${GM_ST.map((t,i)=>`<button data-act="gmst" data-v="${i}" aria-pressed="${i===st}" class="${i<nat||(X&&X.st==="done")?"ok":i===nat?"now":""}">${i<nat||(X&&X.st==="done")?"✓ ":i===nat?"● ":""}${t}</button>`).join("")}</nav>`;
+  h+=ycBan(D);
   if(st!==nat&&!(X&&X.st==="done"))h+=`<button class="gmback" data-act="gmst" data-v="${nat}"><span>Đang xem lại <b>${GM_ST[st]}</b> · giải đang ở <b>${GM_ST[nat]}</b></span><b>Về ${GM_ST[nat]} ›</b></button>`;
   h+=[gmS0,gmS1,gmS2,gmS3][st](D,X,cur);
   return h+gmSheets(D,X,st,cur)+hnLate(D)+dhSheets(D);
