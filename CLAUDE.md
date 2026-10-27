@@ -5,7 +5,7 @@
 - **Mặc định mỗi lần sửa (việc nhỏ): chỉ sửa → test → đẩy `dev` + `dev:demo` → gửi link demo để người dùng xem, rồi dừng.** Không đẩy `main`, không chép file sang máy người dùng, không nhắc `zmp deploy`. Gom dần các thay đổi cho tới khi người dùng nói "xuất bản".
   - Link demo web: https://demo.pikeco.pages.dev/aep · Mini App: https://demo.pikeco.pages.dev/mini?clb=aep (thêm `&nguoi=moi&moi=demo-ql&lam-lai` để vào vai quản lý). Đưa link thẳng tới trang vừa sửa nếu được.
   - Gọn: không chụp ảnh/không chờ CI cho việc nhỏ trừ khi cần tự kiểm; báo kết quả ngắn.
-- Khi người dùng nói **"xuất bản"**: đẩy `dev:main`, chờ CI, chép tất cả file đã đổi kể từ lần xuất bản trước (`git diff --name-only <commit xuất bản trước>..dev` trong `src/`, `miniapp/`, `vite.parts.js`, `firebase.config.js`) sang máy, rồi nhắc chạy `zmp deploy`. Lần xuất bản gần nhất: commit `39f611f`.
+- Khi người dùng nói **"xuất bản"**: đẩy `dev:main`, chờ CI, chép tất cả file đã đổi kể từ lần xuất bản trước (`git diff --name-only <commit xuất bản trước>..dev` trong `src/`, `miniapp/`, `vite.parts.js`, `firebase.config.js`) sang máy, rồi nhắc chạy `zmp deploy`. Lần xuất bản gần nhất: commit `617642e`.
 - **"Xuất bản" = xuất bản cả web và Zalo Mini App:**
   1. Web: `git push origin dev:main` (Cloudflare Pages + CI deploy Firestore rules).
   2. Mini App (ID 180913816434821856, tên Pikeco): chép mã mới (`src/`, `vite.parts.js`, `firebase.config.js`, `miniapp/`) vào máy người dùng `C:\Users\LLG\pikeco\app` qua cầu nối thiết bị, rồi nhờ người dùng chạy trong PowerShell `cd $HOME\pikeco\app\miniapp; npx zmp deploy` chọn **Testing** (máy chủ zmp-api của Zalo không vào được từ môi trường cloud). Sau đó vào trang quản lý Mini App bấm Submit for review.
