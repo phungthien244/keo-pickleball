@@ -177,7 +177,7 @@ function xPeople(D,X){
 }
 
 /* ----- Form tạo / sửa buổi ----- */
-const XF_KEYS=["koN","koQ","koThird","koGt","koGw","koGc","koGs","koKt","koKw","koKc","koKs","koFt","koFw","koFc","koFs","pairReg","name","date","time","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","h1","h2","h3","rep","days","auto","openD","reg","cp","gton","gt","gtv","trao","c1","c2","c3","adv","win2","ptMax","gmode","refOn","preOn","noteOn","incl"];
+const XF_KEYS=["koTouched","koN","koQ","koThird","koGt","koGw","koGc","koGs","koKt","koKw","koKc","koKs","koFt","koFw","koFc","koFs","pairReg","name","date","time","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","h1","h2","h3","rep","days","auto","openD","reg","cp","gton","gt","gtv","trao","c1","c2","c3","adv","win2","ptMax","gmode","refOn","preOn","noteOn","incl"];
 // Các trường của buổi được chép từ buổi trước (Dùng lại) và lưu vào lịch lặp
 const XCOPY=["dt","ko","koN","koQ","koThird","koGt","koGw","koGc","koGs","koKt","koKw","koKc","koKs","koFt","koFw","koFc","koFs","pairReg","name","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","reg","cp","gton","gt","gtv","trao","adv","win2","ptMax","gmode","refOn","preOn","incl"];
 function xFmtLast(f,ko){return schedAll().filter(x=>x.fmt===f&&x.st!=="cancel"&&(f!=="giai"||!!x.ko===!!ko)).pop()||null}
@@ -324,7 +324,7 @@ function xRead(D){
   const n=(k,d=0)=>{const x=parseFloat(v(k));return Number.isFinite(x)?x:d},b=k=>v(k)==="1"||v(k)==="true";
   const fmt=xEdit?(schedById(xEdit)?.fmt||"xoay"):xSEdit?((S.series||[]).find(z=>z.id===xSEdit)?.tpl?.fmt||"xoay"):(xNew==="giai"||xNew==="bang"?"giai":"xoay");
   const f={name:v("name").slice(0,60),fmt,ko:fmt==="giai"&&xIsKo(),pairReg:fmt==="giai"&&v("pairReg")==="pair"?"pair":"solo",dt:fmt==="giai"&&["MM","FF","mix"].includes(v("dt"))?v("dt"):"free",
-    ...(fmt==="giai"&&xIsKo()?(()=>{const o={koN:String(Math.max(1,Math.min(16,Math.round(n("koN",4))))),koQ:["2","4","8","16"].includes(v("koQ"))?v("koQ"):"8",koThird:v("koThird")==="0"?"0":"1"};
+    ...(fmt==="giai"&&xIsKo()?(()=>{const o={koN:String(Math.max(1,Math.min(16,Math.round(n("koN",4))))),koQ:["2","4","8","16","32","64"].includes(v("koQ"))?v("koQ"):"8",koThird:v("koThird")==="0"?"0":"1"};
       for(const X of ["G","K","F"]){o["ko"+X+"t"]=String(Math.max(5,Math.min(31,Math.round(n("ko"+X+"t",11)))));o["ko"+X+"w"]=v("ko"+X+"w")==="1"?"1":"0";o["ko"+X+"c"]=String(Math.max(0,Math.min(51,Math.round(n("ko"+X+"c",0)))));o["ko"+X+"s"]=["1","3","5"].includes(v("ko"+X+"s"))?v("ko"+X+"s"):"1"}
       return o})():{}),
     courts:Math.max(1,Math.round(n("courts",2))),target:Math.max(5,Math.round(n("target",11))),max:Math.max(0,Math.round(n("max",0))),lvMin:v("lvMin"),lvMax:v("lvMax"),guests:v("guests")==="1",
@@ -457,12 +457,12 @@ async function xAct(act,b,id,D){
   if(act==="xsedit"){xSEdit=id;xNew=null;xEdit=null;xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xfgo"){const n=Math.max(1,Math.min(4,+b.dataset.v||1));if(xNew==="pick")return true;
     xStep=n;render();try{scrollTo({top:0})}catch(e){}return true}
-  if(act==="xfset"){if(b.dataset.k==="date")gsDO=false;if(b.dataset.k==="time")gsTO=false;drafts["xf-"+b.dataset.k]=b.dataset.v;if(XOK.has(b.dataset.k)){if(b.dataset.v==="1")xfOpen.add(b.dataset.k);else xfOpen.delete(b.dataset.k)}render();return true}
+  if(act==="xfset"){if(/^ko/.test(b.dataset.k))drafts["xf-koTouched"]="1";if(b.dataset.k==="date")gsDO=false;if(b.dataset.k==="time")gsTO=false;drafts["xf-"+b.dataset.k]=b.dataset.v;if(XOK.has(b.dataset.k)){if(b.dataset.v==="1")xfOpen.add(b.dataset.k);else xfOpen.delete(b.dataset.k)}render();return true}
   if(act==="xpmode"){if(xfPoster){xfPoster.mode=b.dataset.v==="fill"?"fill":"fit";xPosterRedo()}return true}
   if(act==="xppos"){if(xfPoster){xfPoster.pos=Math.max(0,Math.min(1,+b.dataset.v||0));xPosterRedo()}return true}
   if(act==="xpdel"){if(!armOr("xpdel:x"))return true;xfPoster={del:true};render();return true}
   if(act==="xfo"){const k=b.dataset.k;if(XOK.has(k)&&String(xv(derive(),k))!=="1"){drafts["xf-"+k]="1";xfOpen.add(k)}else xfOpen.has(k)?xfOpen.delete(k):xfOpen.add(k);render();return true}
-  if(act==="xfstep"){const k=b.dataset.k,cur=parseFloat(xv(D,k))||0;drafts["xf-"+k]=String(Math.min(+b.dataset.max,Math.max(+b.dataset.min,cur+Number(b.dataset.d))));render();return true}
+  if(act==="xfstep"){if(/^ko/.test(b.dataset.k))drafts["xf-koTouched"]="1";const k=b.dataset.k,cur=parseFloat(xv(D,k))||0;drafts["xf-"+k]=String(Math.min(+b.dataset.max,Math.max(+b.dataset.min,cur+Number(b.dataset.d))));render();return true}
   if(act==="xfday"){const d=Number(b.dataset.v),L=String(xv(D,"days")).split(",").filter(Boolean).map(Number),i=L.indexOf(d);if(i>=0)L.splice(i,1);else L.push(d);drafts["xf-days"]=L.join(",");render();return true}
   if(act==="xsave"){await xSave(D,b.dataset.v);return true}
   if(act==="xday"){const t=Number(b.dataset.v);xDay=xDay&&sameDay(xDay,t)?null:t;render();return true}

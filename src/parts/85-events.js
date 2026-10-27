@@ -177,6 +177,7 @@ document.addEventListener("click",onAct=async e=>{
   const REF_ACTS=["savechk","savex","save","cancelx"];
   if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
   if(canWrite&&hqAct(act,b))return;
+  if(canWrite&&/^k(sh|pg|7|8|9|10|x)/.test(act)&&await kAct(act,b))return;
   if(canWrite&&act.startsWith("gs")&&await gsAct(act,b))return;
   if(canWrite&&act.startsWith("g4")&&await g4Act(act,b))return;
   if(canWrite&&act.startsWith("g5")&&await g5Act(act,b))return;

@@ -56,6 +56,7 @@ function gsDefs(D,X){
     incl:{i:"🧾",t:"Lệ phí gồm",val:v("incl")||"—",body:()=>gsIn(D,"incl","Lệ phí gồm những gì",'maxlength="120" placeholder="Sân, bóng, nước"')},
     gmode:{i:"⚥",t:"Ưu tiên ghép",val:v("gmode")==="same"?"Cùng giới":"Khác giới",body:()=>gsChips("gmode",[["mix","Khác giới"],["same","Cùng giới"]],v("gmode")==="same"?"same":"mix",2)},
     dt:{i:"👫",t:"Nội dung",val:DT_LB[v("dt")||"free"],body:()=>gsChips("dt",[["free","Hỗn hợp"],["MM","Đôi nam"],["FF","Đôi nữ"],["mix","Nam nữ"]],v("dt")||"free",4)},
+    ko:{i:"▦",t:"Thể thức",val:`${v("koN")||4} bảng · ${koRName(+v("koQ")||8).toLowerCase()}`,body:()=>kbKoBody(D),save:"✓ Lưu thể thức"},
     pairReg:{i:"🤝",t:"Cách đăng ký",val:v("pairReg")==="pair"?"Theo cặp":"Từng người",body:()=>gsChips("pairReg",[["pair","Theo cặp"],["solo","Từng người, BTC ghép"]],v("pairReg")==="pair"?"pair":"solo",2)}
   };
 }
@@ -63,13 +64,13 @@ const GS_NEW=["lv","guests","pay","dl","luat","gt","rep","poster","note"];
 const gsRow=(k,o,act="gsopt")=>`<button class="gmli gsrow" data-act="${act}" data-v="${k}"><i>${o.i}</i><span class="t"><b>${o.t}</b></span><em>${esc(o.val)}</em><span aria-hidden="true">›</span></button>`;
 function gsSheet(D,X){
   if(!gsOpt)return "";const o=gsDefs(D,X)[gsOpt];if(!o){gsOpt=null;return ""}
-  return `<div class="mxdim" data-act="gsx"></div><div class="mxsheet gmsh gssh" role="dialog" aria-label="${esc(o.t)}"><span class="grab"></span><b class="mxh">${o.t}</b>${o.body()}${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}<button class="ball go wide" data-act="gsok">✓ Lưu</button></div>`;
+  return `<div class="mxdim" data-act="gsx"></div><div class="mxsheet gmsh gssh" role="dialog" aria-label="${esc(o.t)}"><span class="grab"></span><b class="mxh">${o.t}</b>${o.body()}${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}<button class="ball go wide" data-act="gsok">${o.save||"✓ Lưu"}</button></div>`;
 }
 // T4 · Tuỳ chọn thêm (lúc tạo giải)
 function gsNewPage(D){
   const T=gsDefs(D,null),nm=String(xv(D,"name")||"").trim()||gmAutoName(D);
   mxDr({t:"Tuỳ chọn thêm",back:"gspgx",sub:esc(nm)});
-  return `<div class="gmlist">${GS_NEW.map(k=>gsRow(k,T[k])).join("")}</div><small class="rule">Để nguyên cũng được: app đã điền sẵn theo giải trước.</small>
+  return `<div class="gmlist">${(xNew==="bang"?GS_KB:GS_NEW).map(k=>gsRow(k,T[k])).join("")}</div><small class="rule">Để nguyên cũng được: app đã điền sẵn theo giải trước.</small>
     <div class="hqcta"><button class="ball" data-act="gspgx">Xong</button></div>`+gsSheet(D,null);
 }
 // S1–S4 · Sửa giải (Mini App, giải trong lịch)
@@ -107,6 +108,7 @@ async function gsAct(act,b){
     const rd=k=>{const el=document.getElementById&&document.getElementById("xf-"+k);if(el&&el.value!=null)drafts["xf-"+k]=el.value};
     for(const k of ["name","date","time","end","place","map","lvMin","lvMax","feeG","fee","phi","incl","note","h1","h2","h3","gtv","c1","c2","c3"])rd(k);
     if(gsOpt==="luat")drafts["xf-adv"]="1";
+    if(gsOpt==="ko")drafts["xf-koTouched"]="1";
     if(gsOpt==="note")drafts["xf-noteOn"]=String(drafts["xf-note"]||"").trim()?"1":"0";
     if(gsOpt==="lv"||gsOpt==="guests"||gsOpt==="dl")drafts["xf-reg"]="1";
     if(gsOpt==="fee"){const f=+(drafts["xf-phi"]||drafts["xf-fee"]||0);if(f>0){drafts["xf-cp"]="1";drafts["xf-phi"]=String(f);drafts["xf-fee"]=String(f)}}
@@ -127,6 +129,7 @@ function g2Row(D,X,x,wait){
   return `<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>${esc(sub)}</small></span>${wait?g2Tag("CHỜ CHỖ","y"):g2PayTag(x,feeOf(x),payOn())}</button>`;
 }
 function gmRegV(D,X){
+  if(kOn(X))return kRegV(D,X);
   return withX(X,()=>{
     const R=regList(D),po=payOn(),s=xState(X),cap=pairRegOn(X),cancel=(S.regs||[]).filter(r=>r.sid===X.id&&r.cancel);
     const paid=R.all.filter(x=>x.pay==="ok").length,unpaid=R.all.filter(x=>po&&feeOf(x)>0&&x.pay!=="ok");
@@ -345,4 +348,39 @@ async function g5Act(act,b){
   if(act==="g5done"){if(!armOr("chot:x"))return true;const sid=derive().sid;await chotBuoi();
     if(g5Send)setTimeout(()=>onAct({target:{closest:s=>s==="[data-act]"?{dataset:{act:"share",id:String(sid)},closest:()=>null}:null}}),400);return true}
   return false;
+}
+
+/* ----- Tạo giải Chia bảng → Knockout (K2–K5) ----- */
+// Gợi ý thể thức theo số cặp: ≤8 cặp 2 bảng, ≤16 cặp 4 bảng, ≤32 cặp 8 bảng; nhất nhì mỗi bảng vào vòng trong
+function kbSuggest(n){const N=n<=8?2:n<=16?4:n<=32?8:16;let q=N*2;while(q>n&&q>4)q/=2;return {N,q:Math.min(64,q)}}
+function kbSync(D){if(drafts["xf-koTouched"])return;const n=Math.max(2,Math.round((+xv(D,"max")||16)/2)),s=kbSuggest(n);drafts["xf-koN"]=String(s.N);drafts["xf-koQ"]=String(s.q)}
+function kbMatches(n,N,q,third){const a=Math.floor(n/N),r=n%N,grp=r*(a+1)*a/2+(N-r)*a*(a-1)/2;return grp+(q-1)+(third&&q>=4?1:0)}
+function kbEst(D){kbSync(D);const n=Math.max(2,Math.round((+xv(D,"max")||16)/2)),c=Math.max(1,+xv(D,"courts")||1),N=+xv(D,"koN")||4,q=+xv(D,"koQ")||8,t=Math.ceil(kbMatches(n,N,q,xv(D,"koThird")!=="0")/c)*GSLOT,h=Math.floor(t/60),m=Math.round(t%60/10)*10;
+  return `<small class="rule">Ước tính: ${n} cặp, ${c} sân · khoảng ${h} giờ${m?` ${m}`:""}.</small>`}
+const kbRounds=q=>{const L=[];for(let k=q;k>=2;k/=2)L.push(k===2?"chung kết":koRName(k).toLowerCase());return L};
+function kbQ3(D,q){
+  kbSync(D);const v=k=>xv(D,k),cp=gsOnV(v("cp")),amt=cp?(+v("phi")||+v("fee")||0):0,fc=!cp?"0":[100,200,300].includes(amt)?String(amt):"khac",T=gsDefs(D,null),n=Math.round((+v("max")||0)/2);
+  const chip=(act,k,val2,l,on)=>`<button class="gmchip${on?" on":""}" data-act="${act}" data-k="${k}" data-v="${esc(val2)}" aria-pressed="${!!on}">${l}</button>`;
+  let h=q(3,"Bao nhiêu cặp, đánh nội dung gì?");
+  h+=`<div class="gmstp"><span><b>Tối đa bao nhiêu cặp?</b><small>${+v("max")||0} người</small></span><span class="stepper big"><button data-act="xfstep" data-k="max" data-d="-2" data-min="4" data-max="256" aria-label="Bớt">−</button><b class="num">${n}</b><button data-act="xfstep" data-k="max" data-d="2" data-min="4" data-max="256" aria-label="Thêm">＋</button></span></div>
+    <span class="gmlb">Nội dung</span><div class="gmchips c4">${[["free","Hỗn hợp"],["MM","Đôi nam"],["FF","Đôi nữ"],["mix","Nam nữ"]].map(([k,l])=>chip("xfset","dt",k,l,(v("dt")||"free")===k)).join("")}</div>
+    <span class="gmlb">Đăng ký</span><div class="gmchips c2">${[["pair","Theo cặp"],["solo","Từng người, BTC ghép"]].map(([k,l])=>chip("xfset","pairReg",k,l,(v("pairReg")==="pair"?"pair":"solo")===k)).join("")}</div>
+    <span class="gmlb">Lệ phí mỗi người</span><div class="gmchips c4">${[["100","100k"],["200","200k"],["300","300k"],["khac","Khác"]].map(([k,l])=>chip("xqfee","",k,l,fc===k)).join("")}</div>
+    ${fc==="khac"?`<label class="fld gmsm"><span class="lbl">Số tiền mỗi người (k)</span><input id="xf-phi" data-draft="xf-phi" type="number" min="0" inputmode="numeric" value="${esc(amt||"")}"></label>`:""}
+    <div class="gmlist"><button class="gmli gsrow" data-act="gsopt" data-v="ko"><i>▦</i><span class="t"><b>Thể thức</b><small>App gợi ý theo ${n} cặp, chạm để đổi</small></span><em>${esc(T.ko.val)}</em><span aria-hidden="true">›</span></button>
+      <button class="gmli gsrow" data-act="gspg"><i>⚙</i><span class="t"><b>Tuỳ chọn thêm</b><small>Giải thưởng, trình độ, luật điểm…</small></span><em>${GS_KB.length} mục</em><span aria-hidden="true">›</span></button></div>`;
+  return h+`${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}<div class="hqcta two"><button class="btn-line" data-act="xqgo" data-v="2">‹ Lại</button><button class="ball go" data-act="xsave" data-v="open">✓ Tạo giải</button></div>`+gsSheet(D,null);
+}
+const GS_KB=["gt","lv","guests","pay","dl","poster","note"];
+// Bảng Thể thức (K4): sơ đồ, số bảng, vào vòng trong, hạng ba, luật điểm từng vòng
+function kbKoBody(D){
+  const v=k=>xv(D,k),n=Math.max(2,Math.round((+v("max")||16)/2)),N=+v("koN")||4,q=+v("koQ")||8,per=Math.max(1,Math.round(n/N));
+  const R=kbRounds(q),col=["#1f6fd1","#7a4cc2","#c7770b","#16a34a","#127a8a","#b0337a"];
+  const dg=`<div class="kbdg"><span style="background:${col[0]}">${N} bảng × ${per} cặp</span>${R.map((t,i)=>`<span style="background:${col[(i+1)%col.length]}">${t==="chung kết"?"Chung kết":`${t.charAt(0).toUpperCase()+t.slice(1)} ${q>>i}`}</span>`).join("")}</div>`;
+  const rr=(X,t)=>{const to=v("ko"+X+"t")||"11",w=v("ko"+X+"w")==="1",s=v("ko"+X+"s")||"1";
+    return `<div class="kbrr"><div class="h"><b>${t}</b><em>${s!=="1"?`${s} set, `:""}chạm ${to}${w?", cách 2":""}</em></div><div class="r">${["11","15","21"].map(x=>`<button class="gmchip${to===x?" on":""}" data-act="xfset" data-k="ko${X}t" data-v="${x}">${x}</button>`).join("")}<button class="gmchip${w?" on":""}" data-act="xfset" data-k="ko${X}w" data-v="${w?"0":"1"}">Cách 2</button>${["1","3"].map(x=>`<button class="gmchip${s===x?" on":""}" data-act="xfset" data-k="ko${X}s" data-v="${x}">${x} set</button>`).join("")}</div></div>`};
+  return dg+`<div class="gmstp"><span><b>Số bảng</b><small>Mỗi bảng ${per} cặp, đánh vòng tròn</small></span><span class="stepper big"><button data-act="xfstep" data-k="koN" data-d="-1" data-min="1" data-max="16" aria-label="Bớt">−</button><b class="num">${N}</b><button data-act="xfstep" data-k="koN" data-d="1" data-min="1" data-max="16" aria-label="Thêm">＋</button></span></div>`
+    +gsLb("Vào vòng trong")+gsChips("koQ",[["4","4"],["8","8"],["16","16"],["32","32"],["64","64"]],String(q),5)
+    +`<small class="rule">${q} cặp: ${q/N===2?`nhất, nhì mỗi bảng vào ${koRName(q).toLowerCase()}`:q/N===1?`nhất mỗi bảng vào ${koRName(q).toLowerCase()}`:`top ${Math.round(q/N)} mỗi bảng vào ${koRName(q).toLowerCase()}`}. 32, 64 dùng cho giải lớn (từ 48 cặp).</small>`
+    +gsSw(D,"koThird","Tranh hạng ba")+gsLb("Luật điểm")+rr("G","Vòng bảng")+rr("K","Tứ kết, bán kết")+rr("F","Chung kết");
 }

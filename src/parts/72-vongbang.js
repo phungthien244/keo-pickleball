@@ -5,7 +5,7 @@
    m.to = điểm chạm, m.bo = 3 nếu chung kết 3 ván (nhập số ván thắng). */
 const isKO=G=>!!(G&&G.ko);
 const KOG="ABCDEFGHIJKLMNOP";
-const KOQ=[2,4,8,16];
+const KOQ=[2,4,8,16,32,64];
 const koDef=()=>({n:4,q:8,third:true,groups:null});
 // Đọc cấu hình (kể cả kiểu cũ: adv, gto, kto, fin; bảng lưu dạng [{p:[…]}] vì Firestore không cho mảng lồng mảng)
 function koK(G){const raw=(G&&G.ko)||{},K={...koDef(),...raw};
@@ -29,7 +29,7 @@ function koRule(K,st,c){const b=koBase(c),r=st==="g"?K.rg:st==="f"?K.rf:K.rk;ret
 const ruleTx=R=>`${R.sets>1?`${R.sets} set · `:""}chạm ${R.to}${R.w2?`, cách 2${R.cap?`, tối đa ${R.cap}`:", không giới hạn"}`:""}`;
 // Thứ tự hạt giống trong nhánh: 1–8, 4–5, 2–7, 3–6…
 function seedOrder(Q){let o=[1];while(o.length<Q){const n=o.length*2+1,x=[];for(const s of o)x.push(s,n-s);o=x}return o}
-const koRName=n=>n===2?"Chung kết":n===4?"Bán kết":n===8?"Tứ kết":n===16?"Vòng 1/8":`Vòng ${n} cặp`;
+const koRName=n=>n===2?"Chung kết":n===4?"Bán kết":n===8?"Tứ kết":n===16?"Vòng 1/8":n===32?"Vòng 1/16":n===64?"Vòng 1/32":`Vòng ${n} cặp`;
 const koAbbr=n=>n===2?"CK":n===4?"BK":n===8?"TK":"V"+n;
 const POS=["Nhất","Nhì","Ba","Tư"];
 // Xếp chỗ trong nhánh: lấy nhất các bảng trước (bảng nào thành tích tốt hơn đứng trước), rồi nhì, rồi ba…; tránh 2 cặp cùng bảng gặp nhau ở vòng đầu
@@ -58,12 +58,14 @@ function koDerive(D,G,pairs,pm,out){
   const gG=games.slice();gStats(T,gG);
   const snap=new Map([...T].map(([k,v])=>[k,{...v}]));
   const gt=groups.map((ids,gx)=>gRankL(D,ids.map(id=>snap.get(id)),gG.filter(g=>g.grp===gx)));
-  const gDone=gG.length>0&&gG.every(g=>g.st==="done"||g.st==="wo");
+  // koForce: BTC tạo nhánh sớm (trận vòng bảng còn lại không đánh nữa)
+  const gDone=gG.length>0&&(gG.every(g=>g.st==="done"||g.st==="wo")||!!G.koForce);
+  if(G.koForce)for(const g of gG)if(g.st==="wait")g.st="hold";
   const size=koQEff(G),R=Math.max(1,Math.round(Math.log2(size))),pl=koPlace(gt,size,gDone);
   const ko=[];let prev=null;
   for(let r=0;r<R;r++){const L=[],cnt=size>>(r+1),last=r===R-1;
     for(let i=0;i<cnt;i++){let x,y,lx,ly;
-      if(r===0){x=pl.ids[2*i]||null;y=pl.ids[2*i+1]||null;lx=pl.lbs[2*i];ly=pl.lbs[2*i+1]}
+      if(r===0){const fx=gDone&&Array.isArray(G.koIds)&&G.koIds.length===size?G.koIds:pl.ids;x=fx[2*i]||null;y=fx[2*i+1]||null;lx=pl.lbs[2*i];ly=pl.lbs[2*i+1]}
       else{const A=prev[2*i],B=prev[2*i+1];x=gWin(A)||null;y=gWin(B)||null;lx=`Thắng ${A.ab}`;ly=`Thắng ${B.ab}`}
       const code=`k${r}-${i}`,g=x&&y?gGame(byKo.get(code),x,y,out,{}):{x,y,m:null,st:"tbd",wo:null,sx:null,sy:null};
       Object.assign(g,{r:gR+r+1,i,ko:code,key:code,kr:r,lx,ly,ab:koAbbr(cnt*2)+(cnt>1?i+1:""),rn:koRName(cnt*2),rule:last?RF:RK});
@@ -73,15 +75,17 @@ function koDerive(D,G,pairs,pm,out){
   if(K.third!==false&&R>=2){const S2=ko[R-2],lo=g=>{const w=gWin(g);return w?(w===g.x?g.y:g.x):null},x=lo(S2[0]),y=lo(S2[1]);
     third=x&&y?gGame(byKo.get("k3"),x,y,out,{}):{x,y,m:null,st:"tbd",wo:null,sx:null,sy:null};
     Object.assign(third,{r:gR+R,i:1,ko:"k3",key:"k3",kr:R-1,lx:`Thua ${S2[0].ab}`,ly:`Thua ${S2[1].ab}`,ab:"H3",rn:"Tranh hạng ba",rule:RK});games.push(third)}
+  // Nhánh chờ BTC bấm "Tạo nhánh" (giải bắt đầu từ Mini App có koGate)
+  if(G.koGate&&!G.koGo)for(const g of games)if(g.ko&&g.st==="wait")g.st="hold";
   gStats(T,games.filter(g=>g.ko));
   const F=ko[R-1][0],champ=gWin(F),ru=champ?(champ===F.x?F.y:F.x):null,tw=third?gWin(third):null,tl=tw?(tw===third.x?third.y:third.x):null;
   const reach=new Map();for(const g of games)if(g.ko&&g.ko!=="k3")for(const p of [g.x,g.y])if(p)reach.set(p,Math.max(reach.get(p)||0,g.kr+1));
   const top=[champ,ru,tw,tl].filter(Boolean),gpos=new Map();gt.forEach(t=>t.forEach((x,i)=>gpos.set(x.p.id,i)));
   const rest=[...T.values()].filter(t=>!top.includes(t.p.id)).sort((a,b)=>(a.out-b.out)||((reach.get(b.p.id)||0)-(reach.get(a.p.id)||0))||((gpos.get(a.p.id)||0)-(gpos.get(b.p.id)||0))||(b.w-a.w)||((b.pf-b.pa)-(a.pf-a.pa)));
   const table=[...top.map(id=>T.get(id)),...rest];
-  const resolved=games.filter(g=>g.st==="done"||g.st==="wo").length;
+  const resolved=games.filter(g=>g.st==="done"||g.st==="wo").length,skipped=games.filter(g=>g.st==="hold"&&!g.ko).length;
   const curR=(games.find(g=>g.st!=="done"&&g.st!=="wo")||{r:gR+R}).r;
-  return {G,pairs,pm,out,rounds:gR+R,games,T,table,win:gWin,resolved,total:games.length,complete:games.length>0&&resolved===games.length,curR,locked:!!G.locked,
+  return {G,pairs,pm,out,rounds:gR+R,games,T,table,win:gWin,resolved,total:games.length-skipped,complete:games.length>0&&resolved===games.length-skipped,curR,locked:!!G.locked,
     isKO:true,K,groups,gt,gDone,ko,third,R,size,gR,RG,RK,RF};
 }
 // Trường thêm vào trận khi đưa vào sân: luật điểm của vòng đó (và mã nhánh nếu là knockout)

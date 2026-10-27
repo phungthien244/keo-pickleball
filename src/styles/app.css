@@ -2633,3 +2633,21 @@ a.mxbk,.mxdr .mxbk{color:#fff;text-decoration:none;font-size:28px;line-height:1}
 .ycmine{background:#fef3c7;border:2px solid #f2b705;padding:12px;display:flex;flex-direction:column;gap:3px;margin:0 0 10px;color:var(--ink)}
 .ycmine .cap{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#92400e}.ycmine b{font-size:15px}.ycmine small{font-size:12.5px}.ycmine button{align-self:flex-start;margin-top:4px}
 .g4c small.why{display:block;background:none;border:0;padding:0;margin:0}
+/* Chia bảng → Knockout: thể thức */
+.kbdg{display:flex;gap:4px;margin:0 0 4px}.kbdg span{flex:1;text-align:center;padding:8px 2px;color:#fff;font-size:11px;font-weight:700}
+.kbrr{background:var(--surface);border:1px solid var(--line);padding:10px;margin:0 0 6px;display:flex;flex-direction:column;gap:6px}
+.kbrr .h{display:flex;justify-content:space-between;font-size:14px}.kbrr .h em{font-style:normal;font-weight:700}
+.kbrr .r{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}.kbrr .gmchip{min-height:38px;font-size:12.5px}
+.gmmade.kb{background:linear-gradient(135deg,var(--navy),#7a4cc2)}.gmmade small{color:#e9d5ff;font-size:13px}
+/* Chia bảng: lưới bảng, bốc thăm */
+.kbg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 10px}
+.kbgb{background:var(--surface);border:1px solid var(--line);padding:8px;display:flex;flex-direction:column;gap:3px}.kbgb.can{border:2px solid var(--blue)}
+.kbgb .h{display:flex;justify-content:space-between}.kbgb .h b{font-family:var(--display);font-size:13px}.kbgb .h small{font-size:11px;color:var(--muted)}
+.kbgp{border:0;background:none;padding:3px 0;min-height:0;text-align:left;font-family:var(--body);font-size:12.5px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--ink)}
+.kbgp.on{background:#eef4fa;outline:2px solid var(--blue)}.kbgp.hl{color:#16a34a;font-weight:800}
+.kbgb .put{font-size:12px;color:var(--blue);font-weight:800}
+.kbdraw{margin:-12px -12px 10px;background:var(--navy);color:#fff;padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.kbdraw .cap{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow)}
+.kbdraw .n{font-family:var(--display);font-size:20px}.kbdraw span{font-size:13px;color:var(--sky)}.kbdraw .g{font-family:var(--display);font-weight:900;font-size:44px;color:var(--yellow)}
+.g2fl.wrap{flex-wrap:wrap;overflow:visible}
+.g2p.sel{background:#eef4fa;outline:2px solid var(--blue);outline-offset:-2px}.g2on{font-size:11px;color:var(--blue)}.g2add{font-size:12px;color:var(--blue);font-weight:800}

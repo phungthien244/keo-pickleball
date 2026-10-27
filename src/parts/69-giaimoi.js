@@ -116,16 +116,17 @@ function xQuickForm(D){
     return h+`<div class="hqcta"><button class="ball go" data-act="xqgo" data-v="2">Tiếp ›</button></div>`;
   }
   if(xQs===2){
-    const ds=gmDays().slice(0,3),dv=v("date"),tv=v("time"),T3=["18:00","19:00","19:30"],dO=gsDO||(!!dv&&!ds.some(t=>isoDay(t)===dv)),tO=gsTO||(!!tv&&!T3.includes(tv));
+    const KB=xNew==="bang",ds=gmDays().slice(0,3),dv=v("date"),tv=v("time"),T3=KB?["07:00","07:30","08:00"]:["18:00","19:00","19:30"],dO=gsDO||(!!dv&&!ds.some(t=>isoDay(t)===dv)),tO=gsTO||(!!tv&&!T3.includes(tv));
     h+=q(2,"Đánh khi nào, ở đâu?");
     h+=`<span class="gmlb">Ngày</span><div class="gmchips c4">${ds.map((t,i)=>chip("xfset","date",isoDay(t),i===0?"Hôm nay":i===1?"Mai":`${DOW[new Date(t).getDay()]} ${dmy(t).slice(0,5)}`,!dO&&dv===isoDay(t))).join("")}${chip("gsk","","d","📅 Khác",dO)}</div>
       ${dO?`<label class="fld gmsm"><span class="lbl">Ngày khác</span><input id="xf-date" data-draft="xf-date" type="date" value="${esc(dv)}"></label>`:""}
       <span class="gmlb">Giờ bắt đầu</span><div class="gmchips c4">${T3.map(t=>chip("xfset","time",t,t,!tO&&tv===t)).join("")}${chip("gsk","","t","Khác",tO)}</div>
       ${tO?`<label class="fld gmsm"><span class="lbl">Giờ khác</span><input id="xf-time" data-draft="xf-time" type="time" value="${esc(tv)}"></label>`:""}
       <label class="fld"><span class="lbl">Sân${v("place")?" · nhớ từ lần trước":""}</span><input id="xf-place" data-draft="xf-place" maxlength="60" placeholder="📍 Sân Kỳ Hòa, Q10" value="${esc(v("place"))}"></label>
-      <div class="gmstp"><span><b>Mấy sân?</b><small>Mỗi sân 4 người một lúc</small></span><span class="stepper big"><button data-act="xfstep" data-k="courts" data-d="-1" data-min="1" data-max="30" aria-label="Bớt sân">−</button><b class="num">${esc(v("courts"))}</b><button data-act="xfstep" data-k="courts" data-d="1" data-min="1" data-max="30" aria-label="Thêm sân">＋</button></span></div>`;
+      <div class="gmstp"><span><b>Mấy sân?</b><small>${KB?"Giải chia bảng nên có 3–4 sân":"Mỗi sân 4 người một lúc"}</small></span><span class="stepper big"><button data-act="xfstep" data-k="courts" data-d="-1" data-min="1" data-max="30" aria-label="Bớt sân">−</button><b class="num">${esc(v("courts"))}</b><button data-act="xfstep" data-k="courts" data-d="1" data-min="1" data-max="30" aria-label="Thêm sân">＋</button></span></div>${KB?kbEst(D):""}`;
     return h+`${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}<div class="hqcta two"><button class="btn-line" data-act="xqgo" data-v="1">‹ Lại</button><button class="ball" data-act="xqgo" data-v="3">Tiếp ›</button></div>`;
   }
+  if(xNew==="bang")return h+kbQ3(D,q);
   const G=xNew!=="xoay",cp=String(v("cp"))==="1"||v("cp")===true,thu=v("thu"),amt=cp?(thu==="phi"?+v("phi")||0:+v("fee")||0):0,F=[0,50,60,100];
   const fc=!cp?"0":F.includes(amt)?String(amt):"khac";
   h+=q(3,"Bao nhiêu người, mỗi người bao nhiêu?");
@@ -144,6 +145,10 @@ function gmAutoName(D){
 // Tạo xong: thiệp mời, gửi nhóm một chạm
 function gmMadeView(D,X){
   const fee=xFee(X),link=miniLink(CID,X.id);
+  if(X.ko&&mxDrOn()){const n=Math.round((+X.max||0)/2),q=+X.koQ||8;mxDr({t:"Đã tạo giải",back:"gmmadex",x:true});
+    return `<section class="gmmade kb"><span class="cap">✓ ${xState(X)==="open"?"Đã mở đăng ký":"Đã lưu nháp"}</span><b>${esc(xName(X))}</b><span>${esc([X.at&&`${dowVN(X.at)} ${dmy(X.at).slice(0,5)}`,X.at&&hm(X.at),X.place].filter(Boolean).join(" · "))}</span><span>${esc([DT_LB[X.dt||"free"],n&&`${n} cặp`,fee?`${fmtK(fee)}/người`:"miễn phí"].filter(Boolean).join(" · "))}</span><small>${+X.koN||4} bảng → ${kbRounds(q).join(" → ")}</small></section>
+      <div class="gmbox"><span class="cap">Tin nhắn gửi vào nhóm</span><p>🏆 ${esc(xName(X))} · ${esc(DT_LB[X.dt||"free"].toLowerCase())}${X.at?`, ${esc(dowVN(X.at))} ${dmy(X.at).slice(0,5)} ${hm(X.at)}`:""}${X.place?` tại ${esc(X.place)}`:""}.${n?` ${n} cặp`:""}${fee?`, ${fmtK(fee)}/người`:""}. Rủ đồng đội rồi đăng ký: ${esc(link)}</p></div>
+      <div class="hqcta two"><button class="btn-line" data-act="cplink" data-v="${esc(link)}">Copy link</button><button class="ball go" data-act="regshare" data-id="${esc(X.id)}">💬 Gửi vào nhóm Zalo</button></div>`}
   return (mxDrOn()?mxDr({t:"Đã tạo giải",back:"gmmadex",x:true}):"")+`<section class="gmmade"><span class="cap">✓ ${xState(X)==="open"?"Đã mở đăng ký":"Đã lưu nháp"}</span><b>${esc(xName(X))}</b><span>${esc([X.at&&`${dowVN(X.at)} ${dmy(X.at).slice(0,5)}`,xTime(X),X.place].filter(Boolean).join(" · "))}</span><span>${esc([X.courts&&`${X.courts} sân`,+X.max&&`${X.max} chỗ`,fee?`${fmtK(fee)}/người`:"miễn phí"].filter(Boolean).join(" · "))}</span></section>
     <div class="gmbox"><span class="cap">Tin nhắn gửi vào nhóm</span><p>🏓 ${esc(xName(X))}${X.at?`, ${esc(dowVN(X.at))} ${dmy(X.at).slice(0,5)} ${hm(X.at)}`:""}${X.place?` tại ${esc(X.place)}`:""}.${+X.max?` ${X.max} chỗ`:""}${fee?`, ${fmtK(fee)}/người`:""}. Bấm để đăng ký: ${esc(link)}</p></div>
     ${mxDrOn()?`<div class="hqcta two"><button class="btn-line" data-act="cplink" data-v="${esc(link)}">Copy link</button><button class="ball go" data-act="regshare" data-id="${esc(X.id)}">💬 Gửi vào nhóm Zalo</button></div>`
@@ -155,6 +160,7 @@ function vGiaiMgr(D,X){
   if(mxDrOn()&&gmEdit&&X&&!xNew&&!xSEdit)return gsEdit(D,X,gmCur(X))+dhSheets(D);
   if(xNew||xEdit||xSEdit)return xQ&&xNew&&!xEdit&&!xSEdit?xQuickForm(D):xForm(D);
   if(mxDrOn()&&X&&xbBulk)return gmBulkPg(D,X);
+  if(mxDrOn()&&X&&kPg&&kOn(X)){const k=kPage(D,X);if(k!=null)return k}
   if(mxDrOn()&&X&&regAddOpen)return gmAddPg(D,X);
   if(ciOpen)return ckScreen(D);
   if(ckAllOpen&&ckSched())return ckAll(D)+hnLate(D)+dhSheets(D);
