@@ -331,7 +331,7 @@ function gmChotV(D,X){
       <div class="g2list"><div class="g5s"><span><b>Thu</b><small>${M.att.length} × ${fmtK(per)}</small></span><b class="num">${fmtK(R.tot)}</b></div><div class="g5s"><span><b>Chi</b></span><b class="num">−${fmtK(M.cost)}</b></div>${R.left?`<div class="g5s"><span><b>Còn nợ</b><small>${R.unpaid.map(p=>esc(p.name)).join(", ")} · ghi sổ</small></span><b class="num">${fmtK(R.left)}</b></div>`:""}</div>
       <button class="g5ck${g5Send?" on":""}" data-act="g5send" aria-pressed="${g5Send}"><i>${g5Send?"✓":""}</i><span>Gửi kết quả vào nhóm Zalo</span></button>`}
   const prev=st>1?`<button class="btn-line gmdot" data-act="chotgo" data-v="${st-1}" aria-label="Quay lại">‹</button>`:"";
-  const next=st<4?`<button class="ball${st===1?" go":""}" data-act="chotgo" data-v="${st+1}">Tiếp: ${CHOT_ST[st]} ›</button>`
+  const next=st<4?`<button class="ball go" data-act="chotgo" data-v="${st+1}">Tiếp: ${CHOT_ST[st]} ›</button>`
     :G?`<button class="ball go" data-act="gend" ${D.playing.length?"disabled":""}>${armed("gend:x")?"Bấm lần nữa để lưu giải":"✓ Xong giải · ghi sổ quỹ"}</button>`
     :`<button class="ball go" data-act="g5done" ${D.playing.length?"disabled":""}>${armed("chot:x")?"Bấm lần nữa để chốt":"✓ Xong giải · ghi sổ quỹ"}</button>`;
   return h+`<div class="hqcta two">${prev}${next}</div>`;
