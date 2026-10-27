@@ -65,14 +65,14 @@ function xbList(D,X,R){
   h+=`<button class="xaddp" data-act="regadd">${regAddOpen?"Đóng":"+ Thêm người vào giải"}</button>${regAddOpen?`<div class="gadd" style="padding:0 12px 12px">${pplPick(D,D.players.filter(p=>!R.all.some(x=>x.pid===p.id)),{act:"regaddp",key:"rga"})}</div>`:""}`;
   return h;
 }
-function xBtc(D,X){
+function xBtc(D,X,o={}){
   return withX(X,()=>{
     const R=regList(D),st=xbStatus(X),s=xState(X),po=payOn();
     const got=R.all.filter(x=>x.pay==="ok").reduce((a,x)=>a+feeOf(x),0),exp=R.conf.reduce((a,x)=>a+feeOf(x),0);
     const g={M:0,F:0};for(const x of R.conf){const v=xbG(D,x);if(v==="F")g.F++;else g.M++}
     const L=R.conf.map(x=>xbLv(D,x)).filter(v=>v>0),avg=L.length?L.reduce((a,b)=>a+b,0)/L.length:0;
-    let h=`<a class="xback" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">‹ Lịch giải đấu</a>`;
-    h+=`<section class="xbhd"><div class="r"><span class="xbst ${st.c}">${st.lb}</span><span class="t">${esc(st.t)}</span><button class="xbmore" data-act="xbmenu" aria-label="Thêm thao tác">···</button></div>
+    let h=o.bare?"":`<a class="xback" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">‹ Lịch giải đấu</a>`;
+    if(!o.bare)h+=`<section class="xbhd"><div class="r"><span class="xbst ${st.c}">${st.lb}</span><span class="t">${esc(st.t)}</span><button class="xbmore" data-act="xbmenu" aria-label="Thêm thao tác">···</button></div>
       <h1>${esc(xName(X))}</h1><span class="sub">${esc([X.at&&`${dowVN(X.at)} ${dmy(X.at).slice(0,5)} · ${xTime(X)}`,xFmt(X),X.courts&&`${X.courts} sân`,xFee(X)&&fmtK(xFee(X)),X.place].filter(Boolean).join(" · "))}</span></section>`;
     const tile=(l,v,sub,bar,c)=>`<div class="xbt"><span class="l">${l}</span><b class="num">${v}${sub?`<small>${sub}</small>`:""}</b>${bar!=null?`<i class="bar"><b class="${c||""}" style="width:${Math.max(0,Math.min(100,bar))}%"></b></i>`:""}</div>`;
     h+=`<div class="xbtiles">${tile("Chỗ",R.conf.length,+X.max?`/${X.max}`:"",+X.max?R.conf.length/X.max*100:null,"g")}${po?tile("Đã nhận",fmtK(got),exp?`/${fmtK(exp)}`:"",exp?got/exp*100:null):tile("Chờ chỗ",R.wait.length,"")}${tile("Nam · Nữ",`${g.M} · ${g.F}`,"")}${tile("Trình TB",avg?r2(avg):"–",L.length>1?` ${r2(Math.min(...L))}–${r2(Math.max(...L))}`:"")}</div>`;
@@ -87,7 +87,7 @@ function xBtc(D,X){
     else if(s==="live")main=`<a class="primary btnlike" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Về Hôm nay ›</a>`;
     else if(s==="open"&&xOpen(X)&&!today)main=`<button class="primary navy" data-act="xbclose" data-id="${X.id}">Đóng đăng ký</button>`;
     else if(s!=="done"&&s!=="cancel")main=`<button class="primary yel" data-act="xbcheck" data-id="${X.id}">⌗ Điểm danh tại sân</button>`;
-    if(s!=="done"&&s!=="cancel")h+=`<div class="xbcta"><button class="line" data-act="xbshare">Chia sẻ</button>${main}</div>`;
+    if(s!=="done"&&s!=="cancel"&&!o.bare)h+=`<div class="xbcta"><button class="line" data-act="xbshare">Chia sẻ</button>${main}</div>`;
     return h+xbSheets(D,X,R);
   });
 }

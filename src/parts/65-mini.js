@@ -440,14 +440,14 @@ let mxModeV=null,mxAs=null;
 function mxMode(){if(!mxMgr())return "choi";if(mxModeV)return mxModeV;let m=null;try{m=localStorage.getItem("pb-mxm-"+CID)}catch(e){}return m==="choi"?"choi":"ql"}
 function mxSetMode(m){mxModeV=m==="choi"?"choi":"ql";try{localStorage.setItem("pb-mxm-"+CID,mxModeV)}catch(e){}}
 function mxMgrCur(){
-  if(route==="caidat"||route==="buoi")return "them";if(route==="chot")return "san";if(route==="vdv")return canWrite?"nguoi":"bxh";
+  if(route==="caidat"||route==="buoi")return "them";if(route==="chot")return canWrite?"buoi":"san";if(route==="vdv")return canWrite?"nguoi":"bxh";
   if(route==="home")return canWrite?"buoi":"san";
-  return {dk:"buoi",san:"san",tien:"tien",nguoi:"nguoi",ls:"them",gt:"them",bxh:canWrite?"them":"bxh"}[tab]||(canWrite?"buoi":"san");
+  return {dk:"buoi",san:canWrite?"buoi":"san",tien:"tien",nguoi:"nguoi",ls:"them",gt:"them",bxh:canWrite?"them":"bxh"}[tab]||(canWrite?"buoi":"san");
 }
 function mxMgrNav(){
   const cur=mxMgrCur(),it=(k,ic,attrs,href,lb,n)=>`<a class="${cur===k?"on":""}" href="${href}" ${attrs}>${mxSvg(ic)}<span>${lb}</span>${n?`<i class="mxbadge">${n}</i>`:""}</a>`;
   if(!canWrite)return `<nav class="mxnav">${it("san","court",`data-go="app" data-t="san"`,pathOf("app",{tab:"san"}),"Sân")}${it("bxh","rank",`data-go="app" data-t="bxh"`,pathOf("app",{tab:"bxh"}),"Xếp hạng")}</nav>`;
-  return `<nav class="mxnav">${it("buoi","reg",`data-go="app" data-t="dk"`,pathOf("app",{tab:"dk"}),"Tạo")}${it("san","court",`data-go="app" data-t="san"`,pathOf("app",{tab:"san"}),"Hôm nay",ckPending().length)}${it("tien","money",`data-go="app" data-t="tien"`,pathOf("app",{tab:"tien"}),"Quỹ")}${it("nguoi","ppl",`data-go="app" data-t="nguoi"`,pathOf("app",{tab:"nguoi"}),"Thành viên",pendCount())}${it("them","more",`data-go="caidat"`,pathOf("caidat"),"Thêm")}</nav>`;
+  return `<nav class="mxnav n4">${it("buoi","reg",`data-go="app" data-t="dk"`,pathOf("app",{tab:"dk",x:null}),"Giải",ckPending().length)}${it("nguoi","ppl",`data-go="app" data-t="nguoi"`,pathOf("app",{tab:"nguoi"}),"Thành viên",pendCount())}${it("tien","money",`data-go="app" data-t="tien"`,pathOf("app",{tab:"tien"}),"Quỹ")}${it("them","more",`data-go="caidat"`,pathOf("caidat"),"Thêm")}</nav>`;
 }
 function mxMore(D){return vCaiDat(D)}
 function mxMgrView(D){
@@ -460,8 +460,9 @@ function mxMgrView0(D){
   if(route==="buoi")return vBuoi(D,routeSid);
   if(!canWrite)return (route==="app"&&tab==="bxh"?bxh:san)(D);
   if(route==="chot")return vChot(D);
-  if(route==="caidat")return mxMore(D);
+  if(route==="caidat")return gmLiveBan(D)+mxMore(D);
   if(route==="home")return vDk(D);
+  if(route==="caidat"||(route==="app"&&["tien","nguoi","ls","bxh"].includes(tab)))return gmLiveBan(D)+({tien:vTien,nguoi:vTV,ls:vLs,bxh}[tab]||mxMore)(D);
   return ({dk:vDk,san,tien:vTien,nguoi:vTV,ls:vLs,bxh}[tab]||vDk)(D);
 }
 function renderMini(D){

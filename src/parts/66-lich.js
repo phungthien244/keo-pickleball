@@ -96,8 +96,11 @@ function vLichAdm(D){
   if(legacy)return `<div class="empty"><strong>Chưa dùng được</strong>CLB cần chuyển sang tài khoản CLB trước.</div>`;
   if(!isAdm())return vLichPlayer(D);
   xEnsure(D);
-  if(xNew||xEdit||xSEdit)return xForm(D);
-  if(routeX){const X=schedById(routeX);if(X)return xBtc(D,X);if(S.schedReady)return `<div class="empty"><strong>Không thấy giải đấu này</strong>Giải đấu đã bị xoá.</div><a class="line wide" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Về lịch giải đấu</a>`}
+  if(xNew||xEdit||xSEdit)return xQ&&xNew&&!xEdit&&!xSEdit?xQuickForm(D):xForm(D);
+  if(routeX){const X=schedById(routeX);if(X)return vGiaiMgr(D,X);if(S.schedReady)return `<div class="empty"><strong>Không thấy giải đấu này</strong>Giải đấu đã bị xoá.</div><a class="line wide" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Về lịch giải đấu</a>`}
+  return vGiaiHub(D);
+}
+function vLichAdmOld(D){
   let h=approvals(D);
   h+=`<button class="xnewbtn" data-act="xnew">+ Tạo giải đấu mới</button>`;
   for(const s of (S.series||[]).filter(s=>s.on))h+=`<div class="xser"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>
@@ -333,6 +336,7 @@ function xRead(D){
   return {f,t,d,rep:v("rep")==="1",days:String(xv(D,"days")).split(",").filter(Boolean).map(Number),auto:v("auto")!=="0",openD:Math.max(1,n("openD",2))};
 }
 async function xSave(D,mode){
+  if(xNew&&!xEdit&&!xSEdit&&!String(xv(D,"name")||"").trim())drafts["xf-name"]=gmAutoName(D);
   const {f,t,d,rep,days,auto,openD}=xRead(D);
   if(!/^\d{1,2}:\d{2}$/.test(t)){errs.xf="Nhập giờ bắt đầu.";render();return}
   if(xSEdit){
@@ -361,6 +365,7 @@ async function xSave(D,mode){
     {const nid=rep?sid+"-"+ymd(at):id,pv=await posterCommit(nid);if(pv)await db.collection("sched").doc(nid).update({poster:pv})}
     if(rep)await xMaterialize({id:sid,days,time:t,end:f.end,tpl:f,auto,openD,from:dayStart(at)});
   },mode==="open"?"Đã tạo giải đấu và mở đăng ký":"Đã lưu nháp");
+  gmMade=rep?sid+"-"+ymd(at):id;xQ=false;
   xNew=null;xClearDraft();go("app",{tab:"dk",x:rep?sid+"-"+ymd(at):id});
 }
 const xClearDraft=()=>{for(const k of XF_KEYS)delete drafts["xf-"+k];xSrcCache=null;xfPoster=null};
@@ -444,9 +449,9 @@ async function xFinish(D){const X=xCur();if(X)await db.collection("sched").doc(X
 
 /* ----- Bấm ----- */
 async function xAct(act,b,id,D){
-  if(act==="xnew"){xNew="pick";xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;if(route!=="app"||tab!=="dk"||routeX)go("app",{tab:"dk"});else{render();try{scrollTo({top:0})}catch(e){}}return true}
-  if(act==="xfmt"){xNew=["giai","bang"].includes(b.dataset.v)?b.dataset.v:"xoay";xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
-  if(act==="xclose"){xNew=null;xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;render();return true}
+  if(act==="xnew"){xQ=true;xQs=1;gmSw=false;xNew="pick";xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;if(route!=="app"||tab!=="dk"||routeX)go("app",{tab:"dk"});else{render();try{scrollTo({top:0})}catch(e){}}return true}
+  if(act==="xfmt"){xQ=false;xNew=["giai","bang"].includes(b.dataset.v)?b.dataset.v:"xoay";xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
+  if(act==="xclose"){xQ=false;xNew=null;xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;render();return true}
   if(act==="xedit"){xbMenu=false;xbSel=null;xEdit=id;xNew=null;xSEdit=null;xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xsedit"){xSEdit=id;xNew=null;xEdit=null;xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xfgo"){const n=Math.max(1,Math.min(4,+b.dataset.v||1));if(xNew==="pick")return true;

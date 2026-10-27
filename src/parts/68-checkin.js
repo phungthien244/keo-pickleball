@@ -164,7 +164,8 @@ async function ckScan(){
 }
 
 // Tab Sân của ban tổ chức: màn mã check-in khi đang mở, thẻ check-in khi giải đấu đang diễn ra
-const vSanCk=D=>(ciOpen&&canWrite?ckScreen(D):ckAllOpen&&canWrite&&ckSched()?ckAll(D):(isG(D.c)?vGiaiSan:vSan)(D))+hnLate(D)+dhSheets(D);
+const vSanCk=D=>canWrite&&!REF&&!legacy&&isAdm()&&(xCur()||phaseOf(D)==="live"||D.SM.length||hnQuick)?vGiaiMgr(D,xCur()):vSanCk0(D);
+const vSanCk0=D=>(ciOpen&&canWrite?ckScreen(D):ckAllOpen&&canWrite&&ckSched()?ckAll(D):(isG(D.c)?vGiaiSan:vSan)(D))+hnLate(D)+dhSheets(D);
 if(MINI)ckParam();
 // Màn mã đang mở: giữ màn hình sáng cả khi quay lại app
 try{if(typeof document!=="undefined"&&document.addEventListener)document.addEventListener("visibilitychange",()=>{if(ciOpen&&document.visibilityState==="visible"){ckWake=null;ckWakeOn()}})}catch(e){}

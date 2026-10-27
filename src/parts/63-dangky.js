@@ -110,7 +110,7 @@ function dkBanner(D){
 /* ----- Trang Đăng ký (tab dk) ----- */
 function vDk(D){
   if(legacy)return `<div class="empty"><strong>Chưa dùng được</strong>CLB cần chuyển sang tài khoản CLB trước.</div>`;
-  if(isAdm())return dhTplStrip(D)+vLichAdm(D);
+  if(isAdm())return (xNew||xEdit||xSEdit?"":dhTplStrip(D))+vLichAdm(D);
   return vLichPlayer(D);
 }
 function dkPlayer(D){
