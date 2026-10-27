@@ -39,7 +39,7 @@ test("quản lý nhận lời mời, đặt PIN, lưu ngân hàng", async () => 
   await e.boot(); await e.until(() => e.store.has("clubs/aep/members/u9"));
   expect(e.store.get("clubs/aep/members/u9")).toMatchObject({ role: "admin", invite: "tok1", email: "ql@x.vn" });
   await e.nav("caidat");
-  expect(e.T()).toContain("Ngân hàng nhận phí");
+  expect(e.T()).toContain("Nhận tiền");
   expect(e.V()).not.toContain('data-act="vgrp"');
   for (const k of ["team", "pin", "bank", "voice"]) await e.click("cdo", { v: k });
   expect(e.V()).toContain('data-act="vgrp"');
@@ -48,7 +48,7 @@ test("quản lý nhận lời mời, đặt PIN, lưu ngân hàng", async () => 
   expect(e.V()).toContain("Charon");
   expect(e.V()).not.toContain("Leda ·");
   await e.click("cdback");
-  expect(e.T()).toContain("NGƯỜI & QUYỀN");
+  expect(e.T()).toContain("Người giúp việc");
   await e.click("cdo", { v: "team" });
   await e.click("inv", { v: "scorer" });
   expect(e.T()).toMatch(/Link mời Trọng tài/);

@@ -15,10 +15,11 @@ test("danh sách thành viên: lọc, nợ phí, chuyển thành viên, tạm ng
   const e = setup({ user: OWNER, data: data() });
   await e.boot(); await e.until(() => e.V().includes("Cài đặt CLB") || true);
   await e.nav("app", { t: "nguoi" });
-  await e.until(() => e.V().includes('class="tvstat"'));
-  expect(e.T()).toMatch(/NỢ PHÍ T\d+/);
+  await e.until(() => e.V().includes('class="tvmain"'));
+  expect(e.T()).toMatch(/Còn nợ/);
   await e.click("tvsel", { id: "p1" });
-  expect(e.T()).toContain("Hồ sơ đầy đủ"); expect(e.T()).toContain("Có mặt hôm nay");
+  expect(e.T()).toContain("Hồ sơ đầy đủ"); expect(e.T()).toContain("Nhắn Zalo");
+  await e.click("tvmore"); expect(e.T()).toContain("Có mặt hôm nay");
   await e.click("tvselx");
   expect(e.T()).not.toContain("Hồ sơ đầy đủ");
   await e.click("tvf", { v: "pend" });
@@ -39,7 +40,7 @@ test("danh sách thành viên: lọc, nợ phí, chuyển thành viên, tạm ng
 test("cài đặt nhóm gọn + giới thiệu: ngày đánh, nhãn", async () => {
   const e = setup({ user: OWNER, data: data() });
   await e.boot(); await e.nav("caidat");
-  expect(e.T()).toContain("PHÍ & THANH TOÁN");
+  expect(e.T()).toContain("Nhận tiền");
   await e.click("cdo", { v: "intro" });
   await e.click("gtday", { v: "2" }); await e.until(() => (e.store.get("clubs/aep").days || []).includes(2));
   await e.click("gttag", { v: "Nhận người mới" }); await e.until(() => (e.store.get("clubs/aep").tags || []).length === 1);
@@ -52,6 +53,7 @@ test("lọc nam/nữ, giao quyền trọng tài/quản lý cho người đã li�
   d["clubs/aep/links/zalo_an"] = { status: "ok", pid: "p1" };
   const e = setup({ user: OWNER, data: d });
   await e.boot(); await e.nav("app", { t: "nguoi" });
+  await e.until(() => e.V().includes('data-act="tvfltx"')); await e.click("tvfltx");
   await e.until(() => e.V().includes('data-act="tvg"'));
   await e.click("tvg", { v: "F" });
   expect(e.T()).toContain("Bình"); expect(e.T()).not.toContain("An\n");

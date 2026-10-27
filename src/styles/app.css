@@ -2528,3 +2528,21 @@ section:not(.mx) .gmst{margin:0 0 10px;top:0}
 .gmlist .gmli{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border:0;border-top:1px solid var(--line);background:none;text-align:left;font-family:var(--body);font-weight:400;text-transform:none;letter-spacing:0;min-height:0}.gmlist .gmli:first-child{border-top:0}
 .gmgbar{display:flex;flex-direction:column;gap:6px}.gmwarn{display:block;text-align:center}
 .gmrow{display:flex;gap:6px}.gmrow>*{flex:1}
+/* Quỹ mới */
+.qhero{display:flex;flex-direction:column;gap:2px;margin:-12px -12px 12px;padding:18px 16px;background:var(--navy);color:#fff}.qhero .cap{color:var(--sky);font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase}.qhero b{font-family:var(--display);font-size:40px;font-weight:900;color:var(--yellow);line-height:1.1}.qhero small{color:#cfe0ee;font-size:13px}
+button.qnext{width:100%;text-align:left;border:0;border-left:5px solid #f2b705;font-family:var(--body);font-weight:400;text-transform:none;letter-spacing:0;min-height:0}
+.qcur{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 10px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);text-align:left;font-family:var(--body);font-weight:400;text-transform:none;letter-spacing:0}.qcur .t{flex:1;display:flex;flex-direction:column}.qcur b{font-size:15px}.qcur small{color:var(--muted);font-size:13px}
+.qrec{background:var(--surface);border:1px solid var(--line);padding:12px;margin:0 0 10px;display:flex;flex-direction:column}.qrec .cap{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}.qrec .lnk{align-self:flex-start;margin-top:6px}
+.qli{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.qli .t{flex:1;display:flex;flex-direction:column;min-width:0}.qli b{font-size:15px}.qli small{color:var(--muted);font-size:12px}.qli .num{font-family:var(--display);font-size:15px}.qli .pos{color:var(--win)}.qli .neg{color:var(--lose)}
+.qtg{display:grid;grid-template-columns:1fr 1fr;gap:6px}.qtg button{min-height:54px;font-family:var(--body);font-size:16px;font-weight:800;text-transform:none;letter-spacing:0}.qtg .t[aria-pressed="true"]{border:3px solid var(--win);color:var(--win);background:#f0fdf4}.qtg .c[aria-pressed="true"]{border:3px solid var(--lose);color:var(--lose);background:#fef2f2}
+input.qbig{font-family:var(--display);font-size:26px;font-weight:900;min-height:56px}
+/* Thành viên mới */
+.tvmain{display:flex;gap:6px;margin:0 0 8px}.tvmain button{flex:none;min-height:42px;padding:0 12px;font-family:var(--body);font-size:14px;font-weight:700;text-transform:none;letter-spacing:0}
+.tvmain button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}.tvmain .tvflt{margin-left:auto;color:var(--blue);border-color:transparent;background:none}
+.tvrow .tvm .t{flex:1;display:flex;flex-direction:column;min-width:0}.tvrow .tvm .t b{font-size:16px}.tvrow .tvm .t small{color:var(--muted);font-size:13px}
+.tvt.d{background:#fef3c7;color:#92400e}.tvt.z0{background:#dbeafe;color:#1e40af}
+.tvbigs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.tvbig{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:76px;padding:8px 4px;font-family:var(--body);font-size:13px;font-weight:700;text-transform:none;letter-spacing:0}.tvbig i{font-style:normal;font-size:24px}
+.tvmorebtn{width:100%;font-family:var(--body);text-transform:none;letter-spacing:0;font-size:14px}.tvmorebtn small{font-weight:400;color:var(--muted);margin-left:4px}
+.apvq{display:block;font-family:var(--display);font-size:17px;font-weight:900;margin:10px 0 8px}.apvf{display:flex;flex-direction:column;gap:8px;margin:-4px 0 10px;padding:12px;background:var(--sunk)}
+.tvshh small{color:var(--muted);font-size:12px}
+.cdq{margin:0 0 8px}.cdqa{border-top:1px solid var(--line);padding:12px 0}.cdqa:first-child{border-top:0}.cdqa summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;font-size:15px}.cdqa summary::-webkit-details-marker{display:none}.cdqa summary i{font-style:normal}.cdqa p{margin:8px 0;color:var(--muted);font-size:14px;line-height:1.5}

@@ -53,7 +53,7 @@ document.addEventListener("click",onAct=async e=>{
   {const pv=e.target.closest("[data-pid]");if(pv&&!e.target.closest("label")&&!e.target.closest(".ppt")){e.preventDefault&&e.preventDefault();go("vdv",{pid:pv.dataset.pid});return}}
   const tb=e.target.closest("[data-tab]");if(tb){const t=tb.dataset.tab;if(t==="home"){go("home");return}
     try{localStorage.setItem("pb-tab",t)}catch(x){}go("app",{tab:t});return}
-  const gl=e.target.closest("[data-go]");if(gl){e.preventDefault();if(gl.dataset.go==="caidat")cdPage=null;go(gl.dataset.go,{sid:gl.dataset.id,tab:gl.dataset.t,x:gl.dataset.x});return}
+  const gl=e.target.closest("[data-go]");if(gl){e.preventDefault();if(gl.dataset.go==="caidat"){cdPage=null;cdGrp=null}go(gl.dataset.go,{sid:gl.dataset.id,tab:gl.dataset.t,x:gl.dataset.x});return}
   const b=e.target.closest("[data-act]");if(!b)return;
   const act=b.dataset.act,id=b.dataset.id;
   // Nút dạng <a href="#">: không để trình duyệt đổi đường dẫn (Mini App dùng # để định tuyến, đổi # sẽ nhảy về CLB cũ)
@@ -132,7 +132,11 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="speakrules"){const D=derive();const el=document.getElementById&&document.getElementById("cf-mc");speak((el&&el.value.trim())||mcText(D),"","rules");return}
   if(act==="mcreset"){if(!canWrite)return;if(!armOr("mcreset:x"))return;delete drafts["cf-mc"];write(()=>saveCfg({mc:""}),"Đã về mẫu tự tạo");return}
   if(act==="speak"){const D=derive(),m=D.SM.find(x=>x.id===id);if(m)speak(callText(D,m),"","c:"+id);return}
-  if(act==="qv"){qView=["so","no","phi","bc"].includes(b.dataset.v)?b.dataset.v:"nay";render();return}
+  if(act==="qv"){qView=["so","no","phi","bc","nay","fv","main"].includes(b.dataset.v)?b.dataset.v:"nay";qMore=false;ledForm=null;render();try{scrollTo({top:0})}catch(e){}return}
+  if(act==="qmore"){qMore=true;render();return}
+  if(act==="qmorex"){qMore=false;render();return}
+  if(act==="qamt"){drafts["lg-k"]=b.dataset.v;render();return}
+  if(act==="qnote"){drafts["lg-n"]=b.dataset.v;render();return}
   if(act==="qmon"){qMon=Math.min(0,qMon+(+b.dataset.v||0));render();return}
   if(act==="qsend"){await sendText(qReportText(qReport(qMon)));return}
   if(act==="qremind"){const L=debts();await sendText(`Nhắc đóng lệ phí ${CLUB?.name||""}:\n`+L.map(x=>`· ${x.name}: ${fmtK(x.k)} (giải đấu #${x.sid})`).join("\n"));return}
@@ -208,6 +212,8 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="clubshare"){await shareOut({title:"Chia sẻ CLB",text:`🏓 ${CLUB?.name||"CLB"} trên pikeco.app:`,path:"/"+CID});return}
   if(act==="cdo"){cdPage=b.dataset.v||null;render();try{window.scrollTo(0,0)}catch(e){}return}
   if(act==="cdback"){cdPage=null;render();return}
+  if(act==="cdgrp"){cdGrp=b.dataset.v||null;cdPage=null;render();try{scrollTo({top:0})}catch(e){}return}
+  if(act==="cdgrpx"){cdGrp=null;cdPage=null;render();return}
   if(act==="capadd"&&await capAct(act,b,id))return;
   if(await gbAct(act,b,id))return;
   if(await koAct(act,b,id))return;

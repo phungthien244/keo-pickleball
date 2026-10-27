@@ -337,7 +337,7 @@ test("trang Cài đặt: link mời gửi qua Zalo mở Mini App", async () => {
   delete globalThis.window.ZMINI;
   await new Promise(r => setTimeout(r, 700)); // chờ hẹn giờ vẽ lại của bài Mini App trước chạy xong
   const e = setup({ host: "pikeco.app", path: "/q7/cai-dat", user: OWNER, data: base() });
-  await e.boot(); await e.until(() => e.V().includes('data-act="cdo" data-v="team"'));
+  await e.boot(); await e.until(() => e.V().includes('data-act="cdgrp" data-v="nguoi"'));
   await e.click("cdo", { v: "team" });
   await e.click("inv", { v: "admin" });
   await e.until(() => e.V().includes("zalo.me/s/180913816434821856/?clb=q7&amp;moi="));

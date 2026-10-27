@@ -63,7 +63,7 @@ function loginBar(){
   return h.replace(/<\/div>$/,qrlBox()+"</div>");
 }
 function bankName(b){const x=BANKS.find(z=>z[0]===b.code);return x?x[2]:(b.name||b.code||"")}
-let cdOpen=new Set(),cdPage=null;
+let cdOpen=new Set(),cdPage=null,cdGrp=null;
 function clubAdmin(D){
   if(!canWrite)return "";
   if(legacy){
@@ -121,10 +121,30 @@ function clubAdmin(D){
       ...(MINI?[["web","↗","Mở bản web đầy đủ","pikeco.app trên trình duyệt",0,"",0,`data-act="openweb" data-v="${esc(pathOf("caidat"))}"`]]:[])]]];
   const P=cdPage&&G.flatMap(x=>x[1]).find(r=>r[0]===cdPage&&r[5]);
   if(P)return `<div class="cdsub"><button class="gdback" data-act="cdback" aria-label="Quay lại">‹</button><span class="t"><b>${P[2]}</b><small>${P[3]}</small></span>${P[6]||""}</div><div class="cdbody">${P[5]}</div>`;
-  return `<div class="cdgrp">${G.map(([gt,R])=>`<h3 class="cdgt">${gt}</h3><div class="cdlist">${R.map(([k,ic,t,sum,warn,html,sw,lk])=>{
+  const ALL=G.flatMap(x=>x[1]);
+  const rows=R=>`<div class="cdlist">${R.map(([k,ic,t,sum,warn,html,sw,lk])=>{
     const inner=`<i class="cdic" aria-hidden="true">${ic}</i><span class="t"><b>${t}</b><small class="${warn?"warn":""}">${warn?"⚠ ":""}${sum}</small></span>`;
     if(lk)return `<div class="cdrow"><div class="cdh">${/data-act=/.test(lk)?`<button class="cdb" ${lk}>${inner}<i class="cdch" aria-hidden="true">↗</i></button>`:`<a class="cdb" ${lk}>${inner}<i class="cdch" aria-hidden="true">›</i></a>`}</div></div>`;
-    return `<div class="cdrow"><div class="cdh"><button class="cdb" data-act="cdo" data-v="${k}">${inner}${sw?"":`<i class="cdch" aria-hidden="true">›</i>`}</button>${sw?sw+`<button class="cdch b" data-act="cdo" data-v="${k}" aria-label="Mở ${t}">›</button>`:""}</div></div>`}).join("")}</div>`).join("")}</div>`;
+    return `<div class="cdrow"><div class="cdh"><button class="cdb" data-act="cdo" data-v="${k}">${inner}${sw?"":`<i class="cdch" aria-hidden="true">›</i>`}</button>${sw?sw+`<button class="cdch b" data-act="cdo" data-v="${k}" aria-label="Mở ${t}">›</button>`:""}</div></div>`}).join("")}</div>`;
+  const GR=[["clb","🏠","CLB của tôi","Tên, ảnh, giới thiệu cho người mới, ai xem quỹ",["info","intro","fv"]],["nguoi","🤝","Người giúp việc","Mời quản lý, trọng tài, PIN nhập điểm",["team","pin","ref"]],
+    ["tien","🏦","Nhận tiền","Ngân hàng, phí thành viên hằng tháng",["bank","mf"]],["loa","🔊","Loa","Giọng đọc gọi vào sân",["voice"]],["ls","📅","Lịch sử, xếp hạng","Các giải đã xong, rating, trang giới thiệu",["ls","bxh","gt","web","del"]],["help","❓","Hướng dẫn, hỏi đáp","Làm sao để… · lỡ bấm nhầm thì sao",[]]];
+  const hd=(t,a)=>`<div class="gmhd"><button class="gmbk" data-act="${a}" aria-label="Quay lại">‹</button><b>${t}</b></div>`;
+  if(cdGrp==="help")return hd("Hướng dẫn, hỏi đáp","cdgrpx")+cdHelp();
+  const g=GR.find(x=>x[0]===cdGrp);
+  if(g)return hd(g[2],"cdgrpx")+`<small class="rule">${g[3]}</small>`+rows(ALL.filter(r=>g[4].includes(r[0])));
+  const q=noAcc(String(val("cdq","")).trim().toLowerCase());
+  let h=`<label class="tvq cdq"><span class="sr">Tìm cài đặt</span><input id="cdq" data-draft="cdq" data-live="1" type="search" placeholder="🔍 Tìm: “ngân hàng”, “PIN”, “loa”…" value="${esc(val("cdq",""))}" autocomplete="off"></label>`;
+  if(q){const M=ALL.filter(r=>noAcc((r[2]+" "+String(r[3]).replace(/<[^>]*>/g,"")).toLowerCase()).includes(q));return h+(M.length?rows(M):`<p class="rule">Không thấy mục nào. Thử từ khác.</p>`)}
+  return h+`<div class="gmlist">${GR.map(([k,i,t,s2,ks])=>{const w=ALL.some(r=>ks.includes(r[0])&&r[4]);
+    return `<button class="gmli" data-act="${k==="loa"?"cdo":"cdgrp"}" data-v="${k==="loa"?"voice":k}"><i>${i}</i><span class="t"><b>${t}</b><small>${s2}</small></span>${w?`<span class="gmtag y">THIẾU</span>`:`<span aria-hidden="true">›</span>`}</button>`}).join("")}</div>`;
+}
+function cdHelp(){
+  const Q=[["Tạo giải giao lưu thế nào?","Vào tab Giải › Tạo giải mới, trả lời 3 câu là xong. App gửi sẵn tin nhắn vào nhóm Zalo.",`data-act="xnew"`,"Tạo giải ngay"],
+    ["Người chơi đăng ký ra sao?","Người chơi bấm link giải trong nhóm Zalo, chọn tên mình, bấm Đăng ký. Không cần cài gì.",MINI?`data-act="mxmode" data-v="choi"`:"","Xem như người chơi"],
+    ["Thu tiền, ai chưa trả?","Vào Quỹ › ô vàng “còn nợ”. Chạm Đã nhận khi nhận tiền, hoặc nhắc cả nhóm qua Zalo.",`data-go="app" data-t="tien"`,"Mở Quỹ"],
+    ["Nhờ người nhập điểm?","Trong giải, chặng Ngày đánh › Thêm việc › Trọng tài: đưa mã QR từng sân cho người nhập điểm quét.","",""],
+    ["Lỡ bấm nhầm thì sao?","Không có gì khoá chết: giải sửa lúc nào cũng được, chốt rồi vẫn mở lại trong Lịch sử, trận lưu nhầm thì hoàn tác.","",""]];
+  return `<div class="gmlist cdhelp">${Q.map(([t,a,act,bl])=>`<details class="cdqa"><summary><i>❓</i><b>${t}</b></summary><p>${a}</p>${act?`<button class="btn-line" ${act}>${bl} ›</button>`:""}</details>`).join("")}</div>`;
 }
 async function migrate(){
   const u=authUser,now=Date.now(),base="clubs/"+CID+"/";
@@ -150,8 +170,8 @@ function vCaiDat(D){
   if(REF)return h+`<section class="card2"><h2>Quyền trọng tài</h2><div class="cb"><p class="rule">${MYCT.length?`Bạn được giao sân ${MYCT.join(", ")}. Chỉ nhập được tỉ số ở các sân này.`:"Bạn chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào sân</a></div></section>`;
   if(!canWrite)return h+clubLoginBody();
   if(!cdPage)h+=acctLinkCard();
-  if(!cdPage&&!legacy&&isAdm()){const T=[["Khai ngân hàng nhận phí",!!CLUB?.bank?.acc],["Đặt PIN trọng tài",(S.editors||[]).length>0],["Thêm thành viên",D.players.length>0],["Mời người cùng quản lý",(S.members||[]).length>1]],ok=T.filter(t=>t[1]).length;
-    if(ok<T.length)h+=`<div class="todo"><b>Bắt đầu · ${ok}/${T.length} việc đã xong</b><div class="bar2x"><i style="width:${Math.round(ok/T.length*100)}%"></i></div>${T.map(([l,d])=>`<div class="it${d?" ok":""}"><span class="ck" aria-hidden="true">${d?"✓":""}</span>${l}</div>`).join("")}</div>`}
+  if(!cdPage&&!cdGrp&&!legacy&&isAdm()){const T=[["Khai ngân hàng nhận phí","Để người chơi quét QR chuyển tiền",!!CLUB?.bank?.acc,`data-act="cdo" data-v="bank"`],["Thêm thành viên","Gửi link mời vào nhóm Zalo",D.players.length>0,`data-go="app" data-t="nguoi"`],["Mời người cùng quản lý","Quản lý, trọng tài giúp anh",(S.members||[]).length>1,`data-act="cdo" data-v="team"`]],m=T.filter(t=>!t[2]);
+    if(m.length)h+=`<button class="gmnext qnext" ${m[0][3]}><span class="cap">👉 Còn ${m.length} việc để CLB chạy trơn tru</span><b>${m[0][0]}</b><small>${m[0][1]}</small></button>`}
   return h+clubAdmin(D);
 }
 const clubFoot=()=>`<footer class="pfoot"><a href="/">pikeco.app</a> · quản lý CLB pickleball${isPA()?` · <a href="/quan-tri">Quản trị nền tảng</a>`:""}</footer>`;

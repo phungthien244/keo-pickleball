@@ -4,7 +4,7 @@
      app/pay-<giải đấu>  { paid:{id:true}, adj:{id:k} }   ai đã chuyển, số riêng từng người
      app/led-<mã>    { k, note, at, by }               dòng thu (+) / chi (−) ghi tay vào sổ quỹ
      app/hist-<giải đấu> thêm paid, adj, track, closedAt, closedBy, editedAt, editedBy        */
-let sheetOpen=false,qView="nay",ledForm=null,chotMien=false;
+let sheetOpen=false,qView="main",ledForm=null,chotMien=false;
 const payDoc=sid=>(S.pays&&S.pays["pay-"+sid])||{};
 const phaseOf=D=>(D.SM.length||D.c.phase==="live"||(isG(D.c)&&D.c.giai&&D.c.giai.locked))?"live":"prep";
 const fmtTxt=c=>isG(c)?(isKO(c.giai)?"Vòng bảng → Knockout":"Cặp cố định xoay vòng"):"Xoay cặp";
@@ -199,7 +199,7 @@ function qTabs(){
   if(canWrite)L.push(["phi","Phí TV"],["bc","Báo cáo"]);
   return L;
 }
-function vTien(D){
+function vTienOld(D){
   const L=qTabs();if(!L.some(x=>x[0]===qView))qView="nay";
   const DN=debts().length+(canWrite?mfDebts(D).length:0);
   const bar=L.length>1?`<nav class="hqtabs qtabs" aria-label="Xem quỹ">${L.map(([k,l])=>`<button data-act="qv" data-v="${k}" aria-pressed="${qView===k}">${l}${k==="no"&&DN?`<i>${DN}</i>`:""}</button>`).join("")}</nav>`:"";

@@ -195,13 +195,15 @@ function approvals(D){
   const row=x=>{
     const nm=x.newName||x.zname||"Người dùng Zalo",sug=(x.pid&&D.pmap.get(x.pid))||free.find(p=>nameKey(p.name)===nameKey(nm)),op=apvOpen===x.id;
     let h=`<div class="apvrow"><div class="refrow">${x.photo?`<img class="av md" src="${esc(x.photo)}" alt="">`:av({name:nm},"md")}<span class="t"><b>${esc(nm)}</b><small>${x.zname&&x.zname!==nm?`Zalo: ${esc(x.zname)} · `:""}gửi ${esc(regWhen(x.at||0))}</small>${phTag(x.id)}</span></div>`;
-    if(sug&&!sug.zuid)h+=`<button class="primary wide" data-act="lnkok" data-id="${x.id}" data-v="${sug.id}">Ghép với ${esc(sug.name)}${x.pid?"":" (trùng tên)"}</button>`;
-    h+=`<div class="two"><button class="line" data-act="apvpick" data-id="${x.id}" aria-pressed="${op&&apvMode==="pick"}">${sug?"Ghép với người khác":"Ghép với thành viên cũ"}</button><button class="line" data-act="apvnew" data-id="${x.id}" aria-pressed="${op&&apvMode==="new"}">Tạo hồ sơ mới</button></div>`;
-    if(op&&apvMode==="pick"){h+=pplPick(D,free,{act:"apvp",key:"apv",sel:apvSel?[apvSel]:[]});
-      if(apvSel)h+=`<button class="primary wide" data-act="lnkok" data-id="${x.id}" data-v="${apvSel}">Ghép với ${esc(D.pmap.get(apvSel)?.name||"")}</button>`}
-    if(op&&apvMode==="new")h+=`<label class="fld"><span class="lbl">Tên trong CLB</span><input id="apv-name-${x.id}" data-draft="apv-name-${x.id}" maxlength="30" value="${esc(val("apv-name-"+x.id,nm))}"></label>
+    h+=`<b class="apvq">Người này là ai trong CLB?</b>`;
+    if(sug&&!sug.zuid)h+=`<button class="gmopt on" data-act="lnkok" data-id="${x.id}" data-v="${sug.id}"><i>✅</i><span><b>Là ${esc(sug.name)}${sug.code?` · ${esc(sug.code)}`:""} (đã có)</b><small>${x.pid?"Người này tự chọn tên":"Trùng tên"} với hồ sơ cũ: giữ nguyên rating, lịch sử</small></span><em>GỢI Ý</em></button>`;
+    h+=`<button class="gmopt${op&&apvMode==="new"?" on":""}" data-act="apvnew" data-id="${x.id}" aria-pressed="${op&&apvMode==="new"}"><i>🆕</i><span><b>Người mới</b><small>Tạo hồ sơ mới, rating bắt đầu 2.5</small></span></button>`;
+    if(op&&apvMode==="new")h+=`<div class="apvf"><label class="fld"><span class="lbl">Tên trong CLB</span><input id="apv-name-${x.id}" data-draft="apv-name-${x.id}" maxlength="30" value="${esc(val("apv-name-"+x.id,nm))}"></label>
       <div class="fld"><span class="lbl">Giới tính</span><span class="seg"><button data-act="apvg" data-v="M" aria-pressed="${val("apv-g",x.gender||"M")!=="F"}">Nam</button><button data-act="apvg" data-v="F" aria-pressed="${val("apv-g",x.gender||"M")==="F"}">Nữ</button></span></div>
-      <button class="primary wide" data-act="lnkok" data-id="${x.id}" data-v="new">Tạo hồ sơ và duyệt</button>`;
+      <button class="ball wide go" data-act="lnkok" data-id="${x.id}" data-v="new">✓ Tạo hồ sơ và duyệt</button></div>`;
+    h+=`<button class="gmopt${op&&apvMode==="pick"?" on":""}" data-act="apvpick" data-id="${x.id}" aria-pressed="${op&&apvMode==="pick"}"><i>🔍</i><span><b>Là người khác trong CLB</b><small>Chọn trong danh sách thành viên chưa liên kết Zalo</small></span></button>`;
+    if(op&&apvMode==="pick"){h+=pplPick(D,free,{act:"apvp",key:"apv",sel:apvSel?[apvSel]:[]});
+      if(apvSel)h+=`<button class="ball wide go" data-act="lnkok" data-id="${x.id}" data-v="${apvSel}">Ghép với ${esc(D.pmap.get(apvSel)?.name||"")}</button>`}
     return h+`<button class="ghost danger" data-act="lnkno" data-id="${x.id}">${armed("lnkno:"+x.id)?"Bấm lần nữa để từ chối":"Từ chối"}</button></div>`;
   };
   return `<section class="card2 apv"><h2>Xin tham gia CLB (${L.length})</h2><div class="cb">${L.map(row).join("")}<small class="rule">Ghép với hồ sơ cũ để người chơi giữ rating và lịch sử. Người mới thì tạo hồ sơ mới.</small></div></section>`;
