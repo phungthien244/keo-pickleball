@@ -323,3 +323,38 @@ async function kSetAct(act,b){
   delete drafts[`st-${id}-0`];delete drafts[`st-${id}-1`];
   if(done&&m.giai){g4V=null;await new Promise(r=>setTimeout(r,60));await gFill()}return true;
 }
+
+/* ----- Người chơi (K22a–K23): check-in bằng quét mã, trận tiếp của tôi, bảng của tôi, nhánh ----- */
+function mxCkCard(D,X){
+  const mine=gdMine(X);if(!mine)return "";const m=capMate(mine),kd=kdOf(X),gx=(kd.groups||[]).findIndex(g=>g.includes(mine.team)),pn=m?`Bạn &amp; ${esc(xbName(D,m))}`:"";
+  if(!mine.ci&&!mine.arrived)return `<div class="mxkh"><span class="cap">Hôm nay · ${X.at?hm(X.at):""}</span><b>${esc(xName(X))}</b>${pn?`<span>${pn}${gx>=0?` · Bảng ${KOG[gx]}`:""}</span>`:""}</div>
+    <div class="mxcard"><b>Tới sân rồi thì check-in</b><span class="t2">Quét mã đang hiện trên máy của ban tổ chức.</span><button class="ball go wide" data-act="mxscan">⌗ Quét mã check-in</button></div>`;
+  if(!mine.arrived)return `<div class="mxkst y"><span class="cap">⏳ Đã quét · ${hm(mine.ci)}</span><b>Chờ ban tổ chức xác nhận</b><span>Đưa mặt cho BTC nhìn, trả lệ phí nếu chưa trả.</span></div>`;
+  let h=`<div class="mxkst g"><span class="cap">✓ Đã check-in ${mine.arrivedAt?hm(mine.arrivedAt):""}</span><b>${m?m.arrived?"Cặp đã đủ người":`Đang chờ ${esc(xbName(D,m))}`:"Chờ ban tổ chức xếp sân"}</b>${m&&!m.arrived?`<span>Cặp chưa đủ người thì chưa xếp sân</span>`:""}</div>`;
+  if(gx>=0){const T=kTeams(D,X),g=kd.groups[gx],opp=g.filter(c=>c!==mine.team).map(c=>kTeamOf(T,c)).filter(Boolean);
+    if(opp[0])h+=`<div class="mxcard"><span class="t2">TRẬN ĐẦU CỦA BẠN</span><b>${pn} gặp ${opp[0].nm}</b><span class="t2">Bảng ${KOG[gx]} · loa sẽ gọi</span></div>`;
+    h+=`<div class="mxcard"><span class="t2">BẢNG ${KOG[gx]}</span>${g.map(c=>{const t=kTeamOf(T,c);return t?`<span>${(kd.seeds||[]).includes(c)?"★ ":""}${c===mine.team?pn:t.nm}</span>`:""}).join("")}</div>`}
+  const zid=m&&!m.arrived&&zidOf(D,m);if(zid)h+=`<button class="btn-line wide" data-act="zchat" data-v="${esc(zid)}" data-n="${esc(xbName(D,m))}">💬 Nhắn ${esc(xbName(D,m))}</button>`;
+  return h;
+}
+function mxLiveKO(D,GD){
+  const me=mxPid(),P=GD.pairs.find(p=>p.a===me||p.b===me),seg=["san","bang","nhanh"].includes(mxSeg.live)?mxSeg.live:"san",nmMe=p=>{const o=p.a===me?p.b:p.a;return `Bạn &amp; ${esc(nm(D,o))}`};
+  let h="";
+  if(P){const gx=GD.groups.findIndex(g=>g.includes(P.id)),next=GD.games.find(g=>(g.x===P.id||g.y===P.id)&&(g.st==="wait"||g.st==="live"));
+    const inKO=GD.gDone&&(!GD.G.koGate||GD.G.koGo),pos=gx>=0?GD.gt[gx].findIndex(r=>r.p.id===P.id):-1;
+    if(next&&next.ko&&inKO){const op=next.x===P.id?next.y:next.x,after=GD.games.find(g=>g.ko&&g.kr===next.kr+1&&(g.lx===`Thắng ${next.ab}`||g.ly===`Thắng ${next.ab}`));
+      const sib=after?(after.lx===`Thắng ${next.ab}`?after.ly:after.lx).replace("Thắng ",""):"";
+      h+=`<div class="mxkst g"><span class="cap">Bạn vào ${esc(GD.ko[0][0].rn.toLowerCase())}${pos>=0?` · ${POS[pos]||""} bảng ${KOG[gx]}`:""}</span><b>${esc(koMName(GD,next.ko))}: gặp ${op?kPN(D,GD,op):"…"}</b>${after?`<span>Thắng thì gặp người thắng ${esc(sib)} ở ${esc(after.rn.toLowerCase())}</span>`:""}</div>`}
+    else if(next){const op=next.x===P.id?next.y:next.x,ahead=GD.games.filter(g=>g.st==="wait"&&g.r<next.r).length,eta=Date.now()+Math.ceil(ahead/Math.max(1,+D.c.courts||1))*GSLOT*6e4;
+      h+=`<div class="mxkst y"><span class="cap">${next.st==="live"?`● Đang đánh · sân ${esc(cName(next.m.court))}`:`Trận tiếp của bạn · khoảng ${hm(eta)}`}</span><b>${nmMe(P)} gặp ${op?kPN(D,GD,op):"…"}</b><span>${next.ko?esc(koMName(GD,next.ko)):`Bảng ${KOG[next.grp]}`} · sân sẽ báo qua loa</span></div>`}}
+  h+=`<div class="kseg">${[["san","Sân"],["bang","Bảng của tôi"],["nhanh","Nhánh"]].map(([k,l])=>`<button data-act="mxseg" data-k="live" data-v="${k}" aria-pressed="${seg===k}">${l}</button>`).join("")}</div>`;
+  if(seg==="san")return h+`<div class="mxlivewrap">${vGiaiSan(D)}</div>`;
+  if(seg==="bang"){const gx=P?GD.groups.findIndex(g=>g.includes(P.id)):-1,L=gx>=0?[gx]:GD.gt.map((_,i)=>i),per=Math.max(1,Math.round(GD.size/Math.max(1,GD.groups.length)));
+    h+=L.map(gx=>{const t=GD.gt[gx],left=GD.games.filter(g=>g.grp===gx&&g.st!=="done"&&g.st!=="wo"&&g.st!=="hold").length;
+      return `<div class="ktb"><div class="h"><b>BẢNG ${KOG[gx]}</b><small>${left?`● còn ${left} trận`:"xong"}</small></div><div class="r hd"><span>#</span><span>CẶP</span><span>T</span><span>B</span><span>HS</span></div>${t.map((r,i)=>{const d=r.pf-r.pa,mine=P&&r.p.id===P.id;return `<div class="r${i<per?" q":""}"><b>${i+1}</b><span>${mine?`<b>${nmMe(P)}</b>`:pairNm(D,r.p)}</span><span>${r.w}</span><span>${r.l}</span><span>${d>0?"+":d<0?"−":""}${Math.abs(d)}</span></div>`}).join("")}</div>`}).join("");
+    if(P&&gx>=0){const pos=GD.gt[gx].findIndex(r=>r.p.id===P.id);h+=`<small class="rule">${per===2?"Nhất, nhì":per===1?"Nhất bảng":`Top ${per}`} vào ${esc(GD.ko[0][0].rn.toLowerCase())}. Bạn đang ${POS[pos]?POS[pos].toLowerCase():"hạng "+(pos+1)} bảng.</small>`}
+    return h}
+  const box=g=>{const w=gWin(g),n2=(id,lb)=>id?(P&&id===P.id?`<b>${nmMe(P)}</b>`:kPN(D,GD,id)):`<em>${esc(lb||"…")}</em>`,sc=(id,v)=>g.st==="done"?`<b>${v}</b>`:"";
+    return `<div class="kbm${g.st==="live"?" live":""}"><span class="${w&&w===g.x?"w":""}">${n2(g.x,g.lx)}${sc(g.x,g.sx)}</span><span class="${w&&w===g.y?"w":""}">${n2(g.y,g.ly)}${sc(g.y,g.sy)}</span></div>`};
+  return h+`<div class="kbr">${GD.ko.map((L,r)=>`<div class="col" style="gap:${8+r*24}px">${L.map(box).join("")}</div>`).join("")}</div>${GD.gDone?"":`<small class="rule">Nhánh điền tên khi đánh xong vòng bảng.</small>`}`;
+}

@@ -2673,3 +2673,7 @@ a.mxbk,.mxdr .mxbk{color:#fff;text-decoration:none;font-size:28px;line-height:1}
 .g5pod .p{width:96px;display:flex;flex-direction:column;align-items:center;gap:4px}.g5pod small{color:#fff;font-size:11px;text-align:center}
 .g5pod b{width:100%;display:grid;place-items:center;font-family:var(--display);font-size:20px;color:var(--navy)}
 .g5pod .p0 b{height:84px;background:var(--yellow)}.g5pod .p1 b{height:60px;background:#cbd5e1}.g5pod .p2 b{height:44px;background:#d6a77a}
+/* Người chơi: check-in, trận tiếp */
+.mxkh{background:var(--navy);color:#fff;padding:16px;display:flex;flex-direction:column;gap:4px}.mxkh .cap{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow)}.mxkh b{font-family:var(--display);font-size:20px}.mxkh span{font-size:13px;color:#cfe0ee}
+.mxkst{padding:12px 14px;display:flex;flex-direction:column;gap:3px;border:2px solid}.mxkst .cap{font-family:var(--display);font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase}.mxkst b{font-size:15px}.mxkst span:last-child{font-size:12.5px}
+.mxkst.y{background:#fef3c7;border-color:#f2b705}.mxkst.y .cap{color:#92400e}.mxkst.g{background:#dcfce7;border-color:#16a34a}.mxkst.g .cap{color:#166534}

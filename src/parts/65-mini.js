@@ -208,6 +208,9 @@ function mxWho(D,R){
 function mxLive(D){
   if(REF&&!canWrite)return mxShell(D,vSanToi(D)+dhSheets(D));
   const live=phaseOf(D)==="live";
+  // Hôm nay có giải mình đã đăng ký: check-in bằng quét mã trên máy BTC
+  {const X=ckSched(),mine=X&&X.at&&sameDay(X.at,Date.now())?gdMine(X):null;if(mine&&(!live||!mine.arrived))return mxShell(D,mxCkCard(D,X))}
+  if(live&&isG(D.c)){const GD=gDerive(D);if(GD&&GD.isKO&&GD.locked)return mxShell(D,mxLiveKO(D,GD))}
   if(!live){const nx=schedUp().find(x=>x.st!=="draft");
     return mxShell(D,`<div class="mxcard muted"><b>Chưa có giải đấu đang đánh</b><span>${nx?`Giải đấu tới: ${esc(dowVN(nx.at))} ${esc(dmy(nx.at))} · ${esc(xTime(nx))}`:regOpen()?`Giải đấu tới: ${esc(whenFull(regCfg()))}`:"Khi giải đấu bắt đầu, sân và tỉ số hiện ở đây, cập nhật ngay."}</span></div>`+(nx?xPlayerCards(D,{max:1}):regOpen()?mxSessCard(D,true):""))}
   if(isG(D.c))return mxShell(D,`<div class="mxlivewrap">${vGiaiSan(D)}</div>`);

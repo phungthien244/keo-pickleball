@@ -97,3 +97,19 @@ test("ngày đánh: cặp thiếu người (chờ thêm, thay người); bắt �
   await e.click("kgo"); await e.until(() => e.store.get("clubs/q7/app/config").giai.koGo === true);
   await e.until(() => e.T().includes("Đã tạo nhánh."));
 });
+
+test("người chơi: hôm nay có giải → chỉ một nút quét mã; quét rồi chờ BTC; BTC duyệt thì thấy bảng và đồng đội", async () => {
+  const at = Date.now() + 3600e3;
+  const data = base({ "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1 }, "clubs/q7/members/zalo_9": null,
+    "clubs/q7/sched/s1": { name: "Giải chia bảng", fmt: "giai", ko: true, koN: "2", koQ: "4", pairReg: "pair", at, courts: 2, target: 11, max: 20, st: "open", openAt: 0, deadline: at, kd: { groups: [{ p: ["r1", "r3"] }, { p: ["r5", "r7"] }], seeds: ["r1"] } },
+    "clubs/q7/regs/r1": { ...reg("p1", "r1"), uid: "zalo_9" }, "clubs/q7/links/zalo_9": { pid: "p1", status: "ok" } });
+  delete data["clubs/q7/members/zalo_9"];
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", search: "?clb=q7", user: ZU, data }); globalThis.window.ZMINI = 1; await e.boot();
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('data-act="mxscan"'));
+  expect(e.T()).toContain("Tới sân rồi thì check-in"); expect(e.T()).toContain("Bảng A");
+  await globalThis.window.FB.updateDoc({ path: "clubs/q7/regs/r1" }, { ci: Date.now() });
+  await e.until(() => e.T().includes("Chờ ban tổ chức xác nhận"));
+  await globalThis.window.FB.updateDoc({ path: "clubs/q7/regs/r1" }, { arrived: true, arrivedAt: Date.now() });
+  await e.until(() => e.T().includes("Đang chờ N2"));
+  expect(e.T()).toContain("BẢNG A");
+});
