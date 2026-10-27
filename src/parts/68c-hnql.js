@@ -62,7 +62,8 @@ function hqRefCov(){const s=new Set();for(const r of [...(S.members||[]).filter(
 function hqChecks(D){
   const c=D.c,G=isG(c),X=ckSched(),L=[],n=D.players.filter(p=>p.active!==false).length;
   L.push(["luat",true,`Sân, luật · ${c.courts} sân, chạm ${c.target}${winBy2(c)?" cách 2":""}`]);
-  if(G){const g=c.giai||{},P=g.pairs||[],ok=P.length>=3&&(!isKO(g)||koGroupsOk(g));L.push(["nguoi",ok,`Cặp${isKO(g)?", chia bảng":""} · ${P.length} cặp${isKO(g)?(koGroupsOk(g)?` · ${koNEff(g)} bảng đã bốc`:" · chưa bốc chia bảng"):""}`,ok?"":"Sửa"])}
+  if(G&&X&&typeof kOn==="function"&&kOn(X)){const kd=kdOf(X),ok=!!(kd.groups&&kd.groups.length);L.push(["nguoi",ok,ok?`Chia bảng · ${kd.groups.length} bảng đã chia`:"Chưa chia bảng",ok?"":"Sửa"])}
+  else if(G){const g=c.giai||{},P=g.pairs||[],ok=P.length>=3&&(!isKO(g)||koGroupsOk(g));L.push(["nguoi",ok,`Cặp${isKO(g)?", chia bảng":""} · ${P.length} cặp${isKO(g)?(koGroupsOk(g)?` · ${koNEff(g)} bảng đã bốc`:" · chưa bốc chia bảng"):""}`,ok?"":"Sửa"])}
   const mu=typeof loaMuted==="function"&&loaMuted();L.push(["tt",!mu,mu?"Loa · đang tắt trên máy này":"Loa · bật trên máy này",mu?"Bật":""]);
   if(c.refOn===true){const cov=hqRefCov(),miss=Array.from({length:c.courts},(_,i)=>i+1).filter(k=>!cov.has(k));L.push(["tt",!miss.length,miss.length?`Trọng tài · ${miss.map(k=>"Sân "+cName(k)).join(", ")} chưa có`:"Trọng tài · đủ các sân",miss.length?"Giao":""])}
   if(X&&isAdm()){const st=ckStats(D,X);L.push(["nguoi",!st.pend,`Check-in · ${st.arr}/${st.L.length} đã tới${st.pend?` · ${st.pend} chờ duyệt`:""}`,st.pend?"Duyệt":""]);

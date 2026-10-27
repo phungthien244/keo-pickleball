@@ -32,10 +32,11 @@ function kRegV(D,X){
   if(kd.groups&&kd.groups.length){
     const inG=new Set(kd.groups.flat()),rest=T.filter(t=>!inG.has(t.code)),N=kd.groups.length,games=kd.groups.reduce((a,g)=>a+g.length*(g.length-1)/2,0);
     const t0=X.at||0,mins=Math.ceil(games/Math.max(1,+X.courts||1))*GSLOT;
-    h=gmNextBox({t:`Đã chia ${N} bảng · ${kd.pub?"đã công bố":"công bố vào nhóm"}`,s:`Lịch dự kiến: vòng bảng ${games} trận${t0?`, ${hm(t0)}–${hm(t0+mins*6e4)}`:""}`},false)+kGrid(T,kd.groups,kd.seeds);
+    h=gmNextBox(kd.pub?{t:"Đã công bố · chờ ngày đánh",s:`${t0?`${dowVN(t0)} ${dmy(t0)} ${hm(t0)} · `:""}mở check-in khi tới giờ`}:{t:`Đã chia ${N} bảng · công bố vào nhóm`,s:`Lịch dự kiến: vòng bảng ${games} trận${t0?`, ${hm(t0)}–${hm(t0+mins*6e4)}`:""}`},false)+kGrid(T,kd.groups,kd.seeds);
     if(rest.length)h+=`<span class="gmlb">Chưa xếp bảng · ${rest.length} cặp</span><div class="g2fl">${rest.map(t=>`<button data-act="k10sw" data-v="${esc(t.code)}" aria-pressed="${kSel===t.code}">${t.nm}</button>`).join("")}</div>`;
     h+=`<small class="rule">Đổi chỗ 2 cặp: chạm cặp này rồi chạm cặp kia.</small>`;
-    if(s!=="done"&&s!=="cancel")h+=`<div class="hqcta two"><button class="btn-line" data-act="ksh" data-v="chia">🎲 Bốc lại</button><button class="ball go" data-act="k10pub">📣 Công bố vào nhóm</button></div>`;
+    if(s!=="done"&&s!=="cancel")h+=kd.pub?`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="more" aria-label="Thêm việc">⋯</button><button class="ball go" data-act="gmst" data-v="1">Tiếp: Ngày đánh ›</button></div>`
+      :`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="more" aria-label="Thêm việc">⋯</button><button class="btn-line" data-act="ksh" data-v="chia">🎲 Bốc lại</button><button class="ball go" data-act="k10pub">📣 Công bố vào nhóm</button></div>`;
     return h+withX(X,()=>kSheets(D,X,T)+g2Sheets(D,X,R));
   }
   if(solo.length)h+=gmNextBox({t:`${solo.length} người chưa có cặp`,s:"Ghép bằng bốc thăm, hoặc chạm để ghép tay"},false);
@@ -62,7 +63,7 @@ function kRegV(D,X){
 function kSheets(D,X,T){
   const it=(i,t,s,a,v,red)=>`<button class="gmli" data-act="${a}"${v!=null?` data-v="${esc(v)}"`:""} data-id="${esc(X.id)}"><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b><small>${s}</small></span><span aria-hidden="true">›</span></button>`;
   const sh=(t,b)=>`<div class="mxdim" data-act="kshx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="${esc(t)}"><span class="grab"></span><b class="mxh">${t}</b>${b}</div>`;
-  if(kSh==="more"){const s=xState(X);return sh("Thêm việc",it("＋","Thêm cặp","Ghi tay cặp đăng ký ngoài app","gmxa")+it("👥","Mời từ CLB","Gửi tin cho người chưa đăng ký","xbshare")+it("★","Hạt giống",`${kN(X)} cặp mạnh tách ${kN(X)} bảng`,"kpg","k8")+it("▦","Chia bảng","Bốc thăm, chia đều hoặc tự xếp","ksh","chia")
+  if(kSh==="more"){const s=xState(X);return sh("Thêm việc",it("＋","Thêm cặp","Ghi tay cặp đăng ký ngoài app","gmxa")+it("👥","Mời từ CLB","Gửi tin cho người chưa đăng ký","xbshare")+it("★","Hạt giống",`${kN(X)} cặp mạnh tách ${kN(X)} bảng`,"kpg","k8")+(kdOf(X).groups&&kdOf(X).groups.length&&kdOf(X).pub?it("🎲","Bốc lại","Chia bảng lại từ đầu, cần công bố lại","ksh","chia"):it("▦","Chia bảng","Bốc thăm, chia đều hoặc tự xếp","ksh","chia"))
     +(xOpen(X)?it("🔒",armed("xbclose:"+X.id)?"Bấm lần nữa để đóng":"Đóng đăng ký","Không nhận thêm cặp","xbclose"):"")+it("✎","Sửa giải","Ngày, sân, thể thức, lệ phí","gmxe")+(s!=="cancel"&&s!=="done"&&s!=="live"?it("✕",armed("xcancel:"+X.id)?"Bấm lần nữa để huỷ giải":"Huỷ giải","Báo cho mọi người đã đăng ký","xcancel",null,1):""))}
   if(kSh==="pair"){const n=kSolo(D,X).length;return sh(`Ghép cặp cho ${n} người lẻ`,it("🎲","Bốc thăm ghép","App ghép theo trình độ hoặc nam với nữ","kpg","k7")+it("✋","Tự ghép","Chạm 2 người để thành một cặp","kpg","k7b"))}
   if(kSh==="chia")return sh("Chia bảng thế nào?",it("🎲","Bốc thăm","Chiếu lên cho mọi người xem, hạt giống tách bảng","kpg","k9d")+it("⚖","App chia đều trình độ","Mỗi bảng có mạnh có yếu, xong ngay","k9bal")+it("✋","Tự xếp","BTC chọn cặp nào vào bảng nào","kpg","k9c"));
