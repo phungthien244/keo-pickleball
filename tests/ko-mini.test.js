@@ -113,3 +113,18 @@ test("người chơi: hôm nay có giải → chỉ một nút quét mã; quét 
   await e.until(() => e.T().includes("Đang chờ N2"));
   expect(e.T()).toContain("BẢNG A");
 });
+
+test("trận nhiều set: nhập từng set, đủ 2 set thắng thì lưu kết quả 2–0", async () => {
+  const Pl = n => ({ name: n, rating0: 3, gender: "M", active: true, createdAt: 1 });
+  const e = await boot(base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "live", sname: "Giao lưu", target: 11 },
+    "clubs/q7/players/p1": Pl("An"), "clubs/q7/players/p2": Pl("Bình"), "clubs/q7/players/p3": Pl("Chi"), "clubs/q7/players/p4": Pl("Dũng"),
+    "clubs/q7/matches/m1": { session: 1, seq: 1, court: 1, a: ["p1", "p3"], b: ["p2", "p4"], status: "playing", createdAt: Date.now(), rule: { to: 11, w2: false, cap: 0, sets: 3 } } }));
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('data-act="g4m"'));
+  await e.click("g4m", { id: "m1" }); await e.until(() => e.T().includes("SET 3"));
+  e.input("st-m1-0", "11"); e.input("st-m1-1", "7"); await e.click("kset", { id: "m1" });
+  await e.until(() => (e.store.get("clubs/q7/matches/m1").sets || []).length === 1);
+  await e.until(() => e.T().includes("Lưu set 2"));
+  e.input("st-m1-0", "11"); e.input("st-m1-1", "9"); await e.click("kset", { id: "m1" });
+  await e.until(() => e.store.get("clubs/q7/matches/m1").status === "done");
+  expect(e.store.get("clubs/q7/matches/m1")).toMatchObject({ sa: 2, sb: 0 });
+});
