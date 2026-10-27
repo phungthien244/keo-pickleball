@@ -62,7 +62,9 @@ function ckScreen(D){
     <div class="ckfm"><b class="ckbig">QUÉT ĐỂ CHECK-IN</b><span class="hint">Mở <b>Zalo</b> → <b>Quét mã QR</b> → hướng vào đây</span>
       <span class="box">${ciCode?`<img src="${esc(ckQrImg(ckLink(X.id,ciCode),600))}" alt="Mã check-in">`:`<span class="sk"></span>`}</span>
       <span class="ckbar">${ciCode?bar:""}</span><span class="cd"><span>Mã tự đổi sau <b data-cd="${ciEnd}">${gdMMSS(left)}</b> · chụp lại không dùng được</span><span>☀ luôn sáng</span></span></div>
-    <div class="ckff"><div class="ckcnt"><span><b>${s.arr}<small>/${s.L.length}</small></b><small>ĐÃ TỚI</small></span><span><b class="y">${s.pend}</b><small>CHỜ DUYỆT</small></span><span><b>${fmtK(s.due)}</b><small>CÒN PHẢI THU</small></span></div>
+    <div class="ckff"><div class="ckcnt">${(()=>{if(!(MINI&&(pairRegOn(X)||kOn(X))))return `<span><b>${s.arr}<small>/${s.L.length}</small></b><small>ĐÃ TỚI</small></span>`;
+      const seen=new Set();let f=0,t=0;for(const r of L){if(seen.has(r.id))continue;const m=capMate(r);seen.add(r.id);if(m)seen.add(m.id);t++;if(r.arrived&&(!m||m.arrived))f++}
+      return `<span><b>${f}<small>/${t} cặp</small></b><small>ĐỦ NGƯỜI</small></span>`})()}<span><b class="y">${s.pend}</b><small>CHỜ DUYỆT</small></span><span><b>${fmtK(s.due)}</b><small>CÒN PHẢI THU</small></span></div>
       ${MINI?"":`<button class="ckmore" data-act="cklist">${ckListOpen?"Ẩn danh sách ⌄":"Danh sách · check-in tay ⌃"}</button>`}`;
   if(ckListOpen&&!MINI){h+=`<div class="ckls">`;
     if(notYet.length)h+=`<span class="xsec">Chưa tới · ${notYet.length}</span>${notYet.map(r=>`<div class="ckli">${ckPic(D,r,"ckpic s")}<span class="t"><b>${esc(ckName(D,r))}</b><small>${r.guest?"VĐV ngoài CLB":"Thành viên"} · ${ckPayLb(r)}</small></span><button class="ckbtn line" data-act="ckman" data-id="${esc(r.id)}">Check-in tay</button></div>`).join("")}`;
@@ -99,7 +101,8 @@ function ckPopup(D){
   return `<div class="ckpf" role="dialog" aria-label="Duyệt check-in"><div class="ckimg">${ckPic(D,r,"ckpic fs")}<span class="ckgr"></span>
       <span class="ckt"><span class="live">● VỪA QUÉT · ${r.ci?hm(r.ci):""}</span>${rest.length?`<button class="more" data-act="ckview" data-id="${esc(rest[0].id)}">+${rest.length} đang chờ ›</button>`:""}</span>
       <span class="cknm"><b>${esc(nm)}</b><small>${r.guest?"VĐV ngoài CLB":"Thành viên"}${r.gender?` · ${r.gender==="F"?"Nữ":"Nam"}`:p?` · ${p.gender==="F"?"Nữ":"Nam"}`:""}${lv?` · ${esc(String(lv))}`:""} · Vé #${pos+1}${!paid&&!sent&&!r.guest?" · chọn trả tại sân":""}</small></span></div>
-    ${warn}${band}<div class="ckpa">${acts}</div></div>`;
+    ${warn}${(()=>{const m=capMate(r);if(!m)return "";const kd=kdOf(X),gx=(kd.groups||[]).findIndex(g=>g.includes(r.team));
+      return `<div class="ckcap"><span>Cặp <b>${esc(nm)} &amp; ${esc(ckName(D,m))}</b>${gx>=0?` · Bảng ${KOG[gx]}`:""}</span><b class="${m.arrived?"ok":""}">${m.arrived?"đủ người":`còn chờ ${esc(ckName(D,m))}`}</b></div>`})()}${band}<div class="ckpa">${acts}</div></div>`;
 }
 // Đã tới: điểm danh vào giải đấu (VĐV ngoài CLB được tạo hồ sơ khách)
 async function ckAttend(D,r){

@@ -96,7 +96,7 @@ service cloud.firestore {
         return active()
           && (((isMember() || isPinEditor()) && resource.data.court in refCourts())
               || (qrRef() && get(/databases/$(database)/documents/clubs/$(c)/refs/$(request.auth.uid)).data.court == resource.data.court))
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sa', 'sb', 'status', 'doneAt', 'ref']);
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sa', 'sb', 'status', 'doneAt', 'ref', 'sets']);
       }
       function canRead() { return (active() && clubDoc().public == true) || isMember() || isPinEditor() || isPA() || qrRef(); }
 

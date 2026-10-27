@@ -62,3 +62,38 @@ test("tự ghép cặp và bốc chia bảng từng lượt", async () => {
   await e.click("k9next"); await e.until(() => e.T().includes("Lượt 1/4"));
   await e.click("k9all"); await e.until(() => (e.store.get("clubs/q7/sched/s1").kd || {}).groups);
 });
+
+test("ngày đánh: cặp thiếu người (chờ thêm, thay người); bắt đầu vòng bảng tạo cặp theo bảng; Sân · Bảng · Nhánh; tạo nhánh khi BTC bấm", async () => {
+  const at = Date.now() + 3600e3;
+  const arr = { arrived: true, arrivedAt: 1 };
+  const data = base({
+    "clubs/q7/sched/s1": { name: "Giải chia bảng", fmt: "giai", ko: true, koN: "2", koQ: "4", koThird: "1", pairReg: "pair", dt: "free", at, courts: 2, target: 11, max: 20, st: "open", openAt: 0, deadline: at,
+      kd: { groups: [{ p: ["r1", "r3"] }, { p: ["r5", "r7"] }], seeds: ["r1", "r5"], at: 1, by: "BTC", n: 1 } },
+    "clubs/q7/regs/r1": { ...reg("p1", "r1"), ...arr }, "clubs/q7/regs/r2": { ...reg("p2", "r1"), ...arr },
+    "clubs/q7/regs/r3": { ...reg("p3", "r3"), ...arr }, "clubs/q7/regs/r4": { ...reg("p4", "r3"), ...arr },
+    "clubs/q7/regs/r5": { ...reg("p5", "r5"), ...arr }, "clubs/q7/regs/r6": { ...reg("p6", "r5"), ...arr },
+    "clubs/q7/regs/r7": { ...reg("p7", "r7"), ...arr }, "clubs/q7/regs/r8": reg("p8", "r7")
+  });
+  const e = await boot(data);
+  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.store.get("clubs/q7/app/config").schedId === "s1");
+  await e.until(() => e.V().includes('data-act="k12"'));
+  expect(e.T()).toContain("½ N7");
+  await e.click("k12", { v: "r7" }); await e.until(() => e.T().includes("Thay người"));
+  await e.click("k12late", { v: "r7" }); await e.until(() => (e.store.get("clubs/q7/sched/s1").kd.late || {}).r7);
+  await e.click("ksh", { v: "k13" }); await e.until(() => e.T().includes("Bắt đầu vòng bảng?"));
+  expect(e.T()).toContain("2 trận");
+  await e.click("k13go"); await e.until(() => e.store.get("clubs/q7/app/config").phase === "live");
+  const G = e.store.get("clubs/q7/app/config").giai;
+  expect(G.pairs.map(p => p.id).sort()).toEqual(["t_r1", "t_r3", "t_r5", "t_r7"]);
+  expect(G.ko.groups.map(g => g.p)).toEqual([["t_r1", "t_r3"], ["t_r5", "t_r7"]]);
+  expect(G).toMatchObject({ koGate: true, koGo: false, locked: true }); expect(G.rest.t_r7).toBe(true);
+  await e.until(() => [...e.store.keys()].some(k => k.startsWith("clubs/q7/matches/")));
+  await e.nav("app", { t: "dk", x: "s1" }); await e.click("gmst", { v: "2" }); await e.until(() => e.V().includes('class="kseg"'));
+  expect(e.T()).toContain("Vòng bảng · 0/2 trận");
+  await e.click("kseg", { v: "bang" }); await e.until(() => e.T().includes("BẢNG A"));
+  await e.click("ksh", { v: "m15" }); await e.ok("kforce");
+  await e.until(() => e.store.get("clubs/q7/app/config").giai.koForce === true);
+  await e.until(() => e.T().includes("Vòng bảng xong"));
+  await e.click("kgo"); await e.until(() => e.store.get("clubs/q7/app/config").giai.koGo === true);
+  await e.until(() => e.T().includes("Đã tạo nhánh."));
+});
