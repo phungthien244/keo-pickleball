@@ -70,6 +70,8 @@ const TT_HAND=`<svg class="tthand" width="18" height="18" viewBox="0 0 24 24" ro
 const ttAv=(D,id,cls="md")=>`<button class="ttav" data-act="ttface" data-v="${esc(id)}" aria-label="Xem mặt ${esc(ttPN(D,id))}">${av(D.pmap.get(id),cls,1)}</button>`;
 const ttAvs=(D,ids,cls="sm")=>`<span class="ttavs">${ids.map(id=>av(D.pmap.get(id),cls,1)).join("")}</span>`;
 function ttHead(D,m,title,back="ttx"){
+  if(rfOn()){const t=String(title).replace(/\s*·?\s*Sân [^·]+?(\s*·\s*|$)/,"").trim(),lb=rfLb(D,m),f=m.ref||{};
+    return rfHead(m.court,[t.replace(/ · \d+–\d+$/,""),lb,`Trọng tài ${esc(f.byName||rfName())}`].filter(Boolean).join(" · "),back)}
   return `<div class="tthd"><button class="ttbk" data-act="${back}" aria-label="Quay lại">‹</button><b>${title}</b></div>`;
 }
 // Sơ đồ sân: cột trái là đội bên trái lưới. Đội trái: trên = ô trái, dưới = ô phải. Đội phải: trên = ô phải, dưới = ô trái.
@@ -123,7 +125,7 @@ function ttToss(D,m,X){
 function ttMain(D,m,X){
   const last=[...X.log].reverse().find(l=>l.k==="p"),st=X.st,rt=ttO(st);
   const el=X.t0?Math.max(0,Math.round((Date.now()-X.t0)/6e4)):0,mate=id=>{const L=st==="a"?m.a:m.b;return L[0]===id?L[1]:L[0]};
-  let h=ttHead(D,m,`Sân ${esc(cName(m.court))} · Ván ${X.g+1}${X.R.sets>1?` · ${X.gw.a}–${X.gw.b}`:""}`)+ycMine();
+  let h=ttHead(D,m,`Sân ${esc(cName(m.court))} · Ván ${X.g+1}${X.R.sets>1?` · ${X.gw.a}–${X.gw.b}`:""}`,rfOn()?"":"ttx")+ycMine();
   // bảng điểm nền đậm: ô đội đang giao bật sáng, vạch màu đội
   const tile=t=>{const on=t===st;return `<div class="tttile t${t}${on?" on":""}"><span class="h">${ttAvs(D,t==="a"?m.a:m.b,"xs")}<span class="n">${esc(ttTN(D,m,t))}</span></span><b class="num">${X.s[t]}</b><span class="k">${on?(X.rally?"● ĐANG GIAO":`● ĐANG GIAO · TAY ${X.sn}`):"đang nhận"}</span></div>`};
   h+=`<div class="ttsbd"><div class="tttiles">${tile(X.left)}${tile(ttO(X.left))}</div><span class="meta num">Chạm ${X.R.to}${X.R.w2?" · cách 2":""} · đổi bên ở ${X.half} · ⏱ <b data-ttel="${X.t0||Date.now()}">${el}</b>′</span></div>
@@ -178,7 +180,7 @@ function ttFaceV(D,m){
   const X=ckSched(),r=X?(S.regs||[]).find(x=>x.sid===X.id&&x.pid===id&&!x.cancel):null,lk=!!(D.pmap.get(id)||{}).zuid;
   return `<div class="ttface"><div class="tthd"><button class="ttbk" data-act="ttfacex" aria-label="Đóng">✕</button><b>Đối chiếu VĐV</b></div>
     <div class="big">${p.photo?`<img src="${esc(p.photo)}" alt="">`:`<span>${esc(String(p.name||"?").trim().split(/\s+/).pop().charAt(0).toUpperCase())}</span>`}</div>
-    <b class="nm">${esc(p.name||"?")}</b><small>${esc([p.code,p.gender==="F"?"Nữ":"Nam",`rating ${r2(D.st.get(id)?.rating??3)}`,`đội ${esc(ttShort(D,m,t))}`].filter(Boolean).join(" · "))}</small>
+    <b class="nm">${esc(p.name||"?")}</b><small>${esc([p.code,p.gender==="F"?"Nữ":"Nam",`rating ${r2(D.st.get(id)?.rating??3)}`,`đội ${ttShort(D,m,t)}`].filter(Boolean).join(" · "))}</small>
     ${r?`<span class="chip ${r.arrived?"ok":""}">${r.arrived?`✓ Đã check-in ${r.arrivedAt?hm(r.arrivedAt):""} · ${r.arrBy==="btc"?"tay":"QR"}`:"Chưa check-in"}</span>`:""}${lk?`<span class="chip ok">Zalo đã liên kết</span>`:""}
     <div class="thumbs">${ids.map(x=>`<button data-act="ttface" data-v="${esc(x)}" aria-pressed="${x===id}">${av(D.pmap.get(x),"sm",1)}</button>`).join("")}</div>
     <div class="two"><button class="ln" data-act="ttnotme" data-v="${esc(id)}">Không phải người này</button><button class="go" data-act="ttfacex">✓ Đúng người</button></div></div>`;
@@ -199,9 +201,9 @@ function ttLayer(D){
   if(!m.ref)return "";
   const X=ttRun(D,m),f=m.ref;
   let v=ttV||(f.started?"main":"pre");if(X.done&&v==="main")v="end";if(!f.started&&(v==="main"||v==="end"))v="pre";
-  const body=ttFace?ttFaceV(D,m):v==="toss"?ttToss(D,m,X):v==="pre"?ttPre(D,m,X):v==="hist"?ttHist(D,m,X):v==="end"?ttEnd(D,m,X):ttMain(D,m,X);
+  const body=ttFace?ttFaceV(D,m):rfOn()&&(v==="toss"||v==="pre")?rfPre(D,m,X):v==="toss"?ttToss(D,m,X):v==="pre"?ttPre(D,m,X):v==="hist"?ttHist(D,m,X):v==="end"?ttEnd(D,m,X):ttMain(D,m,X);
   ttTickOn();
-  return `<div class="ttfs${v==="main"&&!ttFace?" main":""}" role="dialog" aria-label="Màn trọng tài · ${ttFace?"mat":v}">${body}${ttFF?ttFFV(D,m,X):""}${dhCB!=null?dhSheets(D):""}</div>`;
+  return `<div class="ttfs${v==="main"&&!ttFace?" main":""}${rfOn()?" rf":""}" role="dialog" aria-label="Màn trọng tài · ${ttFace?"mat":v}">${body}${ttFF?ttFFV(D,m,X):""}${dhCB!=null?dhSheets(D):""}</div>`;
 }
 function ttTickOn(){if(ttTick||typeof setInterval!=="function"||typeof document==="undefined"||!document.querySelectorAll)return;
   ttTick=setInterval(()=>{if(!ttId){clearInterval(ttTick);ttTick=null;return}let re=false;
@@ -214,8 +216,9 @@ function ttTickOn(){if(ttTick||typeof setInterval!=="function"||typeof document=
 async function ttAct(act,b){
   if(!act.startsWith("tt"))return false;
   const id=b.dataset.id;
-  if(act==="tt"){const m=(S.matches||[]).find(x=>x.id===id);if(!m||!canScore(m))return true;ttId=id;ttV=null;ttFace=null;ttFF=null;ttMT=false;ttHG=null;
-    if(!m.ref)await ttWrite(m,{by:authUser?.uid||"",byName:who(),at:Date.now(),pos:{a:[...m.a],b:[...m.b]},first:"a",left:"a",rally:false,ev:[]});else render();
+  if(await rfAct(act,b))return true;
+  if(act==="tt"){rfStep=1;const m=(S.matches||[]).find(x=>x.id===id);if(!m||!canScore(m))return true;ttId=id;ttV=null;ttFace=null;ttFF=null;ttMT=false;ttHG=null;
+    if(!m.ref)await ttWrite(m,{by:authUser?.uid||"",byName:rfOn()?((REFQ&&REFQ.name)||who()):who(),at:Date.now(),pos:{a:[...m.a],b:[...m.b]},first:"a",left:"a",rally:false,ev:[]});else render();
     try{scrollTo({top:0})}catch(e){}return true}
   const m=ttM();if(!m||!canScore(m)){ttId=null;render();return true}
   const D=derive(),f=m.ref||{},X=ttRun(D,m),v=b.dataset.v;

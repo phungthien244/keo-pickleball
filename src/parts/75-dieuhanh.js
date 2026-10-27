@@ -128,9 +128,10 @@ function applyRef(){
 function watchRefQ(){
   if(unsubRefQ){try{unsubRefQ()}catch(e){}unsubRefQ=null}REFQ=null;
   if(legacy||!authUser||!window.FB||!FB.onSnapshot){applyRef();return}
-  try{unsubRefQ=FB.onSnapshot(FB.doc(FB.fs,PFX+"refs/"+authUser.uid),{},s=>{REFQ=s.exists()?s.data():null;applyRef();watchCalls();render()},()=>{})}catch(e){}
+  try{unsubRefQ=FB.onSnapshot(FB.doc(FB.fs,PFX+"refs/"+authUser.uid),{},s=>{const was=REFQ;REFQ=s.exists()?s.data():null;if(MINI&&was&&was.court&&!REFQ&&!canWrite&&!rfGone)rfBye={c:Number(was.court)};rfGone=false;applyRef();watchCalls();render()},()=>{})}catch(e){}
 }
 function dhClaimLayer(D){
+  if(MINI)return rfClaim(D)+rfByeLayer(D);
   const q=dhClaim();if(!q||!q.c||legacy||!authUser)return "";
   return `<div class="ttfs" role="dialog" aria-label="Nhận vai trọng tài"><div class="dhclaim"><span class="s">S${esc(cName(q.c))}</span><span class="cap">${esc(CLUB?.name||"")} · hôm nay</span><b>Bạn sẽ làm trọng tài<br>Sân ${esc(cName(q.c))}</b>
     <span>Bạn nhập điểm cho các trận ở Sân ${esc(cName(q.c))}. Loa do máy BTC phát, bạn chỉ cần bấm nhờ gọi.</span><span class="who">${esc(who())}</span>
@@ -139,6 +140,7 @@ function dhClaimLayer(D){
 
 /* ----- Sân của tôi (trọng tài) ----- */
 function vSanToi(D){
+  if(rfOn())return rfMain(D);
   const cs=[...MYCT].sort((a,b)=>a-b);
   let h=dhPauseBar()+ycMine()+`<div class="dhme"><span class="cap">Sân của tôi</span><b>${cs.length?cs.map(k=>"Sân "+esc(cName(k))).join(", "):"Chưa được giao sân"}</b>${REFQ?`<small>Nhận qua QR lúc ${hm(REFQ.at||Date.now())}</small>`:""}</div>`;
   for(const k of cs){const m=D.playing.find(x=>Number(x.court)===k);
@@ -178,14 +180,14 @@ async function dhAct(act,b){
   // trọng tài và BTC đều dùng
   if(act==="dhclaimx"){try{sessionStorage.removeItem("pb-ttq")}catch(e){}render();return true}
   if(act==="dhclaimok"){const q=dhClaim();if(!q||!authUser)return true;
-    try{await db.collection("refs").doc(authUser.uid).set({court:Number(q.c),code:String(q.k),name:who(),at:Date.now(),sid:D.sid});try{sessionStorage.removeItem("pb-ttq")}catch(e){}toast(`Bạn là trọng tài Sân ${cName(q.c)} hôm nay`);go("app",{tab:"san"})}
+    try{await db.collection("refs").doc(authUser.uid).set({court:Number(q.c),code:String(q.k),name:MINI?rfName():who(),at:Date.now(),sid:D.sid});try{sessionStorage.removeItem("pb-ttq")}catch(e){}rfNameEd=false;toast(`Bạn là trọng tài Sân ${cName(q.c)} hôm nay`);go("app",{tab:"san"})}
     catch(e){toast("Mã QR đã đổi hoặc hết hạn. Nhờ BTC đưa mã mới.")}return true}
   if(act==="dhcb"){dhCB=Number(v)||1;render();return true}
   if(act==="dhcbx"){dhCB=null;render();return true}
   if(act==="dhcbgo"){const w=DH_WHY[+v];const c=dhCB;dhCB=null;if(w&&c&&await dhAddCall({k:"btc",court:c,why:w[0]}))toast("Đã gọi BTC · máy BTC hiện thông báo đỏ");render();return true}
   if(act==="dhgv"){dhGV=true;render();return true}
   if(act==="dhgvx"){dhGV=false;render();return true}
-  if(act==="dhgvok"){if(!armOr("dhgvok:x"))return true;dhGV=false;if(authUser)await write(()=>db.collection("refs").doc(authUser.uid).delete(),"Đã kết thúc ca trọng tài");return true}
+  if(act==="dhgvok"){if(!armOr("dhgvok:x"))return true;dhGV=false;rfGone=true;if(authUser)await write(()=>db.collection("refs").doc(authUser.uid).delete(),"Đã kết thúc ca trọng tài");return true}
   if(!canWrite)return true;
   if(act==="dhct"){const k=Number(v);dhCt=dhCt===k?null:k;render();return true}
   if(act==="dhsc"){dhSC=id;render();return true}

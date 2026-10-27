@@ -482,6 +482,7 @@ function mxMgrView0(D){
 }
 function renderMini(D){
   MXD=null;
+  if(rfOn()&&MYCT.length&&REFQ)return rfShell(D);
   if(mxMode()==="ql"&&!(route==="cmp"||(route==="app"&&(tab==="gt"||tab==="toi"))))return mxShell(D,mxMgrView(D));
   // Quản lý đang ở chế độ Chơi: xem đúng như người chơi (không hiện nút nhập điểm, quản lý giải)
   if(mxMgr()){const cw=canWrite,rf=REF;mxAs={cw,rf};canWrite=false;REF=false;try{return renderMini(D)}finally{canWrite=cw;REF=rf;mxAs=null}}
