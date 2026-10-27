@@ -42,12 +42,24 @@ function mxHead(D,ql,sw,p,nm){
 }
 // Thanh đầu trang nền tảng (Khám phá, Tôi, Tạo CLB)
 const mxHeadP=(t,right="",back="")=>`<header class="mxhd${back?" sub":""}">${back}<b class="tt">${t}</b>${right}</header><div class="mxhsp"></div>`;
+// Màn đi sâu (Quản lý): view gọi mxDr({t,sub,back,go,x,tact}) thay cho dòng tiêu đề trong thân trang
+let MXD=null;
+function mxDr(o){MXD=o;return ""}
+const mxDrOn=()=>MINI&&canWrite&&!legacy&&mxMode()==="ql";
+const MX_TABN={buoi:"Giải",nguoi:"Thành viên",tien:"Quỹ",them:"Thêm",san:"Sân",bxh:"Xếp hạng"};
+function mxHeadQL(D,nm){
+  if(MXD){const o=MXD,bk=o.go?`<a class="mxbk" ${o.go} aria-label="Quay lại">‹</a>`:`<button class="mxbk" data-act="${esc(o.back||"mxback")}"${o.id?` data-id="${esc(o.id)}"`:""}${o.v!=null?` data-v="${esc(o.v)}"`:""} aria-label="${o.x?"Đóng":"Quay lại"}">${o.x?"✕":"‹"}</button>`;
+    const tt=`<b>${esc(o.t)}${o.tact?` <i aria-hidden="true">▾</i>`:""}</b>${o.sub?`<small>${o.sub}</small>`:""}`;
+    return `<header class="mxhd sub mxdr${o.x?" x":""}">${bk}${o.tact?`<button class="mxdt" data-act="${esc(o.tact)}">${tt}</button>`:`<span class="mxdt">${tt}</span>`}</header><div class="mxhsp dr"></div>`}
+  return `<header class="mxhd ql"><button class="mxclub" data-act="mxsheet">${clubAv(CLUB||{id:CID},"",nm)}<span class="t"><b>${esc(nm)} <i aria-hidden="true">▾</i></b><small>${esc(MX_TABN[mxMgrCur()]||"")}</small></span></button></header><div class="mxhsp"></div>`;
+}
 function mxShell(D,body,cta=""){
   const p=mxMe(D),nm=(CLUB&&CLUB.name)||D.c.title;
   const R0=mxAs||{cw:canWrite,rf:REF},ql=mxMode()==="ql",sw=!legacy&&(R0.cw||R0.rf)?`<span class="mxsw" role="group" aria-label="Chế độ"><button data-act="mxmode" data-v="choi" aria-pressed="${!ql}">Chơi</button><button data-act="mxmode" data-v="ql" aria-pressed="${ql}">${R0.cw?"Quản lý":"Trọng tài"}</button></span>`:"";
-  let h=mxHead(D,ql,sw,p,nm)+`<div class="mxbody">${body}</div>`;
+  const nh=ql&&canWrite,dr=nh&&!!MXD;
+  let h=(nh?mxHeadQL(D,nm):mxHead(D,ql,sw,p,nm))+`<div class="mxbody${dr?" dr":""}">${body}</div>`;
   if(cta)h+=`<div class="mxcta">${cta}</div>`;
-  h+=ql?mxMgrNav():mxNav();
+  h+=dr?"":ql?mxMgrNav():mxNav();
   return h+mxSheetHtml()+(ql?ckPopup(D):wkSheet(D));
 }
 function mxNav(){
@@ -466,6 +478,7 @@ function mxMgrView0(D){
   return ({dk:vDk,san,tien:vTien,nguoi:vTV,ls:vLs,bxh}[tab]||vDk)(D);
 }
 function renderMini(D){
+  MXD=null;
   if(mxMode()==="ql"&&!(route==="cmp"||(route==="app"&&(tab==="gt"||tab==="toi"))))return mxShell(D,mxMgrView(D));
   // Quản lý đang ở chế độ Chơi: xem đúng như người chơi (không hiện nút nhập điểm, quản lý giải)
   if(mxMgr()){const cw=canWrite,rf=REF;mxAs={cw,rf};canWrite=false;REF=false;try{return renderMini(D)}finally{canWrite=cw;REF=rf;mxAs=null}}

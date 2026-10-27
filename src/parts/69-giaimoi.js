@@ -49,6 +49,13 @@ function gmLiveBan(D){
   return `<a class="gmlive" ${gmLink(X)}><b>● ĐANG ĐÁNH</b><span>${esc(X?xName(X):(D.c.sname||"Giải đánh nhanh"))} · ${D.playing.length} sân · ${D.done.length} trận xong</span><i>Mở ›</i></a>`;
 }
 
+// Dòng tiêu đề màn đi sâu: Mini App (Quản lý) đưa lên đầu trang, web giữ trong thân trang
+function gmHd(t,back,o={}){
+  if(typeof mxDrOn==="function"&&mxDrOn())return mxDr({t,back,...o});
+  return `<div class="gmhd"><button class="gmbk" data-act="${back}"${o.v!=null?` data-v="${esc(o.v)}"`:""} aria-label="${o.x?"Đóng":"Quay lại"}">${o.x?"✕":"‹"}</button><b>${esc(t)}</b></div>`;
+}
+const gmDot=()=>MINI?`<button class="btn-line gmdot" data-act="gmmore" aria-label="Thêm việc">⋯</button>`:`<button class="btn-line" data-act="gmmore">Thêm việc ⋯</button>`;
+
 /* ----- Trang Giải ----- */
 function gmCard(D,X,big){
   const n=gmNext(D,X),st=gmStageOf(D,X),when=X?[X.at?`${dowVN(X.at)} ${dmy(X.at).slice(0,5)}`:"",X.at?xTime(X):"",X.place].filter(Boolean).join(" · "):"Không cần đăng ký trước";
@@ -95,16 +102,16 @@ function xQuickForm(D){
   const v=k=>pick?"":xv(D,k),bar=`<div class="gmq3" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=xQs?"on":""}"></i>`).join("")}</div>`;
   const q=(n,t,s)=>`<div class="gmq"><span class="cap">Câu ${n}/3</span><b>${t}</b>${s?`<small>${s}</small>`:""}</div>`;
   const chip=(act,k,val2,l,on)=>`<button class="gmchip${on?" on":""}" data-act="${act}" data-k="${k}" data-v="${esc(val2)}" aria-pressed="${!!on}">${l}</button>`;
-  let h=`<div class="gmhd"><button class="gmbk" data-act="xclose" aria-label="Đóng">✕</button><b>Tạo giải</b></div>`+bar;
+  let h=gmHd(`Tạo giải${mxDrOn()?` · ${pick?1:xQs}/3`:""}`,"xclose",{x:true})+bar;
   if(xQs===1||pick){
-    const L=schedAll().filter(x=>x.st!=="cancel").pop(),lk=L?(L.fmt==="giai"?(L.ko?"bang":"giai"):"xoay"):"",cur=pick?"":xNew;
+    const L=schedAll().filter(x=>x.st!=="cancel").pop(),lk=L?(L.fmt==="giai"?(L.ko?"bang":"giai"):"xoay"):"",cur=pick?(lk||"xoay"):xNew;
     h+=q(1,"Lần này đánh kiểu gì?");
     if(L)h+=`<button class="gmsame" data-act="xqsame" data-v="${lk}"><i>↺</i><span><b>Giống lần trước</b><small>${esc(xName(L))} · ${esc(xFmt(L))}${L.courts?` · ${L.courts} sân`:""}${xFee(L)?` · ${fmtK(xFee(L))}`:""}${+L.max?` · ${L.max} người`:""}</small></span><em>Dùng ›</em></button>`;
-    h+=`<button class="gmopt${cur==="xoay"?" on":""}" data-act="xqfmt" data-v="xoay"><i>🔄</i><span><b>Giao lưu xoay cặp</b><small>Ai đến cũng đánh, app tự đổi cặp mỗi trận.</small></span></button>
-      <button class="gmopt${cur==="giai"?" on":""}" data-act="xqfmt" data-v="giai"><i>🏆</i><span><b>Giải có cặp cố định</b><small>Mỗi cặp gặp tất cả các cặp khác. Có nhất, nhì, ba.</small></span></button>
-      <button class="gmopt${cur==="bang"?" on":""}" data-act="xqfmt" data-v="bang"><i>▦</i><span><b>Chia bảng, đánh loại trực tiếp</b><small>Như giải thật: vòng bảng rồi tứ kết, bán kết, chung kết.</small></span></button>
-      <small class="rule">Chưa chắc? Chọn Giao lưu, đổi sau được.</small>`;
-    return h+`<div class="hqcta"><button class="btn-line" data-act="xclose">Huỷ</button></div>`;
+    h+=`<button class="gmopt${cur==="xoay"?" on":""}" data-act="xqsel" data-v="xoay"><i>🔄</i><span><b>Giao lưu xoay cặp</b><small>Ai đến cũng đánh, app tự đổi cặp mỗi trận.</small></span></button>
+      <button class="gmopt${cur==="giai"?" on":""}" data-act="xqsel" data-v="giai"><i>🏆</i><span><b>Giải có cặp cố định</b><small>Mỗi cặp gặp tất cả các cặp khác. Có nhất, nhì, ba.</small></span></button>
+      <button class="gmopt${cur==="bang"?" on":""}" data-act="xqsel" data-v="bang"><i>▦</i><span><b>Chia bảng, đánh loại trực tiếp</b><small>Như giải thật: vòng bảng rồi tứ kết, bán kết, chung kết.</small></span></button>
+`;
+    return h+`<div class="hqcta"><button class="ball go" data-act="xqgo" data-v="2">Tiếp ›</button></div>`;
   }
   if(xQs===2){
     const ds=gmDays(),dv=v("date"),inD=ds.some(t=>isoDay(t)===dv),tv=v("time"),TT=[...new Set(["18:00","19:00","19:30",tv].filter(Boolean))].slice(0,4);
@@ -137,7 +144,7 @@ function gmAutoName(D){
 // Tạo xong: thiệp mời, gửi nhóm một chạm
 function gmMadeView(D,X){
   const fee=xFee(X),link=miniLink(CID,X.id);
-  return `<section class="gmmade"><span class="cap">✓ ${xState(X)==="open"?"Đã mở đăng ký":"Đã lưu nháp"}</span><b>${esc(xName(X))}</b><span>${esc([X.at&&`${dowVN(X.at)} ${dmy(X.at).slice(0,5)}`,xTime(X),X.place].filter(Boolean).join(" · "))}</span><span>${esc([X.courts&&`${X.courts} sân`,+X.max&&`${X.max} chỗ`,fee?`${fmtK(fee)}/người`:"miễn phí"].filter(Boolean).join(" · "))}</span></section>
+  return (mxDrOn()?mxDr({t:"Đã tạo giải",back:"gmmadex",x:true}):"")+`<section class="gmmade"><span class="cap">✓ ${xState(X)==="open"?"Đã mở đăng ký":"Đã lưu nháp"}</span><b>${esc(xName(X))}</b><span>${esc([X.at&&`${dowVN(X.at)} ${dmy(X.at).slice(0,5)}`,xTime(X),X.place].filter(Boolean).join(" · "))}</span><span>${esc([X.courts&&`${X.courts} sân`,+X.max&&`${X.max} chỗ`,fee?`${fmtK(fee)}/người`:"miễn phí"].filter(Boolean).join(" · "))}</span></section>
     <div class="gmbox"><span class="cap">Tin nhắn sẽ gửi vào nhóm</span><p>🏓 ${esc(xName(X))}${X.at?`, ${esc(dowVN(X.at))} ${dmy(X.at).slice(0,5)} ${hm(X.at)}`:""}${X.place?` tại ${esc(X.place)}`:""}.${+X.max?` ${X.max} chỗ`:""}${fee?`, ${fmtK(fee)}/người`:""}. Bấm để đăng ký: ${esc(link)}</p></div>
     <small class="rule" style="text-align:center">Người chơi bấm link là đăng ký được, không cần cài gì.</small>
     <div class="hqcta"><button class="ball wide go" data-act="regshare" data-id="${esc(X.id)}">💬 Gửi vào nhóm Zalo</button><div class="gmrow"><button class="btn-line" data-act="cplink" data-v="${esc(link)}">Copy link</button><button class="btn-line" data-act="gmmadex">Xong</button></div></div>`;
@@ -154,7 +161,10 @@ function vGiaiMgr(D,X){
   let st=gmSt[id];if(st==null||st<0||st>3)st=nat;
   if(gmEdit)return gmEditView(D,X,cur)+dhSheets(D);
   const nm=X?xName(X):(D.c.sname||"Giải đánh nhanh");
-  let h=`<div class="gmhd">${MINI?"":`<a class="gmbk" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk" aria-label="Về danh sách giải">‹</a>`}<button class="gmname" data-act="gmsw"><b>${esc(nm)}</b><i aria-hidden="true">▾</i></button><button class="gmed" data-act="gmedit">✎ Sửa</button></div>`;
+  const when=X?[X.at?`${dowVN(X.at)} ${dmy(X.at).slice(0,5)}`:"",X.at?xTime(X):"",X.place].filter(Boolean).join(" · "):"Không cần đăng ký trước";
+  const nC=Math.max(1,+(X&&X.courts)||+D.c.courts||1),sub=st===2&&cur&&(gmLive(D)||D.SM.length)?`● Đang đánh · ${D.done.length} trận xong`:st===3?`Chốt · ${D.done.length} trận · ${D.players.filter(p=>p.active!==false).length} người`:st===1&&(!X||(X.at&&sameDay(X.at,Date.now())))?`Hôm nay${X&&X.at?" "+hm(X.at):""} · ${nC} sân`:when;
+  let h=mxDrOn()?mxDr({t:nm,tact:"gmsw",sub:esc(sub),go:`href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk"`})
+    :`<div class="gmhd">${MINI?"":`<a class="gmbk" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk" aria-label="Về danh sách giải">‹</a>`}<button class="gmname" data-act="gmsw"><b>${esc(nm)}</b><i aria-hidden="true">▾</i></button><button class="gmed" data-act="gmedit">✎ Sửa</button></div>`;
   h+=`<nav class="gmst" aria-label="Các chặng của giải">${GM_ST.map((t,i)=>`<button data-act="gmst" data-v="${i}" aria-pressed="${i===st}" class="${i<nat||(X&&X.st==="done")?"ok":i===nat?"now":""}">${i<nat||(X&&X.st==="done")?"✓ ":i===nat?"● ":""}${t}</button>`).join("")}</nav>`;
   if(st!==nat&&!(X&&X.st==="done"))h+=`<button class="gmback" data-act="gmst" data-v="${nat}"><span>Đang xem lại <b>${GM_ST[st]}</b> · giải đang ở <b>${GM_ST[nat]}</b></span><b>Về ${GM_ST[nat]} ›</b></button>`;
   h+=[gmS0,gmS1,gmS2,gmS3][st](D,X,cur);
@@ -162,14 +172,14 @@ function vGiaiMgr(D,X){
 }
 // Chặng 1 · Đăng ký
 function gmS0(D,X){
-  if(!X)return `<div class="gmempty"><b>Giải đánh nhanh</b><span>Không có đăng ký trước. Ai có mặt ở sân thì điểm danh ở chặng Ngày đánh.</span></div><div class="hqcta two"><button class="btn-line" data-act="gmmore">Thêm việc ⋯</button><button class="ball" data-act="gmst" data-v="1">Sang Ngày đánh ›</button></div>`;
+  if(!X)return `<div class="gmempty"><b>Giải đánh nhanh</b><span>Không có đăng ký trước. Ai có mặt ở sân thì điểm danh ở chặng Ngày đánh.</span></div><div class="hqcta two">${gmDot()}<button class="ball" data-act="gmst" data-v="1">Sang Ngày đánh ›</button></div>`;
   const s=xState(X),today=X.at&&sameDay(X.at,Date.now());
   let main="";
   if(s==="draft"||s==="plan")main=`<button class="ball go" data-act="xopen" data-id="${esc(X.id)}">Mở đăng ký</button>`;
   else if(s==="open"&&!today)main=`<button class="ball go" data-act="regshare" data-id="${esc(X.id)}">📣 Gửi nhắc vào nhóm</button>`;
   else if(s!=="done"&&s!=="cancel")main=`<button class="ball" data-act="gmst" data-v="1">Sang Ngày đánh ›</button>`;
   const n=gmNext(D,X);
-  return gmNextBox(n,false)+xBtc(D,X,{bare:true})+(s==="done"||s==="cancel"?"":`<div class="hqcta two"><button class="btn-line" data-act="xbmenu">Thêm việc ⋯</button>${main}</div>`);
+  return gmNextBox(n,false)+xBtc(D,X,{bare:true})+(s==="done"||s==="cancel"?"":`<div class="hqcta two">${MINI?`<button class="btn-line gmdot" data-act="xbmenu" aria-label="Thêm việc">⋯</button>`:`<button class="btn-line" data-act="xbmenu">Thêm việc ⋯</button>`}${main}</div>`);
 }
 // Chặng 2 · Ngày đánh: điểm danh rồi bắt đầu
 function gmS1(D,X,cur){
@@ -184,9 +194,9 @@ function gmS1(D,X,cur){
   const T=isAdm()?xToday():[];
   if(T.length>1&&!live)h+=`<span class="gmlb">Hôm nay có ${T.length} giải · đang điểm danh</span><div class="xpick" role="group" aria-label="Chọn giải đấu hôm nay">${T.slice().sort((a,b)=>a.at-b.at).map(x=>`<button data-act="xprep" data-id="${x.id}" aria-pressed="${X&&X.id===x.id}"><b>${hm(x.at)}</b>${esc(xName(x))}</button>`).join("")}</div>`;
   h+=hqNguoi(D);
-  if(live)return h+`<div class="hqcta two"><button class="btn-line" data-act="gmmore">Thêm việc ⋯</button><button class="ball" data-act="gmst" data-v="2">Về Đang đánh ›</button></div>`;
-  if(G)return h+`<div class="gmgbar"><button class="btn-line" data-act="gmmore">Thêm việc ⋯</button>${gStartBar(D,D.c.giai||{pairs:[]})}</div>`;
-  return h+`<div class="hqcta two"><button class="btn-line" data-act="gmmore">Thêm việc ⋯</button><button class="ball go" data-act="start">▶ Bắt đầu đánh · ${n} người</button></div>${n<4?`<small class="rule gmwarn">Cần ít nhất 4 người có mặt.</small>`:""}`;
+  if(live)return h+`<div class="hqcta two">${gmDot()}<button class="ball" data-act="gmst" data-v="2">Về Đang đánh ›</button></div>`;
+  if(G)return h+`<div class="gmgbar">${gmDot()}${gStartBar(D,D.c.giai||{pairs:[]})}</div>`;
+  return h+`<div class="hqcta two">${gmDot()}<button class="ball go" data-act="start">▶ Bắt đầu đánh · ${n} người</button></div>${n<4?`<small class="rule gmwarn">Cần ít nhất 4 người có mặt.</small>`:""}`;
 }
 // Chặng 3 · Đang đánh: sân, tiếp theo, kết quả (dùng lại màn đang đánh, bỏ thanh 2 tab cũ)
 function gmS2(D,X,cur){
@@ -194,7 +204,7 @@ function gmS2(D,X,cur){
   const sv=stepView;stepView=null;let body;
   try{body=(isG(D.c)?vGiaiSan:vSan)(D)}finally{stepView=sv}
   body=body.replace(/<nav class="bsteps b2"[\s\S]*?<\/nav>/,"");
-  return body+`<div class="hqcta two"><button class="btn-line" data-act="gmmore">Thêm việc ⋯</button><button class="ball nv" data-act="gmst" data-v="3">🏁 Hết giờ · sang chốt</button></div>`;
+  return body+`<div class="hqcta two">${gmDot()}<button class="ball nv" data-act="gmst" data-v="3">🏁 Hết giờ · sang chốt</button></div>`;
 }
 // Chặng 4 · Chốt
 function gmS3(D,X,cur){
@@ -210,22 +220,29 @@ function gmSheets(D,X,st,cur){
       <a class="btn-line" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Xem tất cả giải</a><button class="ball" data-act="xnew">＋ Tạo giải mới</button></div>`}
   if(!gmMore)return "";
   const live=gmLive(D)||D.SM.length,ck=ckSched(),R=[];
+  const others=[...(!xCur()&&live&&X?[null]:[]),...schedUp()].filter(x=>(x?x.id:"_q")!==(X?X.id:"_q"));
+  const ED=["✎","Sửa giải",st===1?"Giờ, sân, luật, tiền":"Giờ, sân, luật, tiền, giải thưởng","gmedit",""],SW=["⇄","Đổi sang giải khác",others.length?others.slice(0,2).map(x=>x?xName(x):"Giải đánh nhanh").join(" · "):"Chưa có giải khác","gmsw",""];
   if(st<=1){
+    if(MINI&&st===0)R.push(ED,SW);
     if(cur&&ck){R.push(["⌗","Bàn đón · check-in","Danh sách ai đã tới, duyệt người quét mã","ckall",""],["▣","Mã QR check-in","Mở mã toàn màn hình cho người tới quét","ckopen",ck.id],["＋","Người đến muộn","Thêm người chưa đăng ký vào giải","hnlate",ck.id])}
     R.push(["🎯","Trọng tài","QR nhận sân cho trọng tài","dhqr",""],["📣","Đọc thể thức qua loa","Loa đọc luật, cách tính điểm","speakrules",""]);
     if(cur&&X&&!live)R.push(["↺","Chọn giải khác để đánh","Bỏ chọn giải này ở sân","hnunpick",""]);
+    if(MINI&&st===1)R.push(ED,SW);
+  }else if(MINI){
+    R.push(ED,SW,["🎯","Trọng tài","QR từng sân","dhqr",""],["📣","Thông báo loa","Gõ câu, máy loa đọc","dhan",""],["⏸","Nghỉ giữa giờ","Tạm dừng đưa trận mới","dhps",""],["↗","Chia sẻ trực tiếp","Gửi link xem điểm","lshare",""]);
   }else{
     R.push(["🎯","Trọng tài","QR từng sân, ai đang nhập điểm","dhqr",""],["📣","Thông báo loa","Gõ câu, máy loa đọc ngay","dhan",""],["⏸","Nghỉ giữa giờ","Tạm dừng đưa trận mới vào sân","dhps",""],["↗","Chia sẻ trực tiếp","Gửi link xem điểm vào nhóm","lshare",""]);
     if(ck)R.push(["⌗","Bàn đón","Người đến muộn, check-in","ckall",""]);
   }
-  return `<div class="mxdim" data-act="gmmorex"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="Thêm việc"><span class="grab"></span><b class="mxh">Thêm việc · ${GM_ST[st].toLowerCase()}</b>
-    ${R.map(([i,t,s,a,id])=>`<button class="gmli" data-act="gmdo" data-a="${a}" data-id="${esc(id)}"><i>${i}</i><span class="t"><b>${t}</b><small>${s}</small></span><span aria-hidden="true">›</span></button>`).join("")}
-    <button class="btn-line" data-act="gmmorex">Đóng</button></div>`;
+  const nm=X?xName(X):(D.c.sname||"Giải đánh nhanh");
+  return `<div class="mxdim" data-act="gmmorex"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="Thêm việc"><span class="grab"></span><b class="mxh">${MINI?esc(nm):`Thêm việc · ${GM_ST[st].toLowerCase()}`}</b>
+    ${R.map(([i,t,s,a,id])=>`<button class="gmli" data-act="gmdo" data-a="${a}" data-id="${esc(id)}"><i>${i}</i><span class="t"><b>${t}</b><small>${esc(s)}</small></span><span aria-hidden="true">›</span></button>`).join("")}
+    ${MINI?"":`<button class="btn-line" data-act="gmmorex">Đóng</button>`}</div>`;
 }
 // ✎ Sửa giải: mọi tuỳ chỉnh gom một chỗ
 const GM_ED=[["info","🗓","Thông tin, đăng ký","Tên, ngày giờ, địa điểm, số chỗ, hạn đăng ký, ai được đăng ký, ảnh bìa"],["nguoi","👥","Người chơi","Điểm danh, bàn đón, VĐV ngoài CLB, nội dung đôi, ghép cặp, chia bảng"],["tien","💰","Tiền, giải thưởng","Lệ phí, chia tiền sân, thu trước, giải thưởng"],["luat","🏓","Sân, luật","Số sân, tên sân, chạm mấy điểm, thể thức"],["tt","🎯","Trọng tài, loa","Giao sân, QR trọng tài, giọng đọc, máy phát loa"],["khac","📋","Khác","Lưu làm mẫu, nhân bản, gửi thông báo, huỷ hoặc xoá giải"]];
 function gmEditView(D,X,cur){
-  const hd=(t,a)=>`<div class="gmhd"><button class="gmbk" data-act="${a}" aria-label="Quay lại">‹</button><b>${t}</b></div>`;
+  const hd=(t,a)=>gmHd(t,a);
   if(gmSec&&cur){const f={nguoi:hqNguoi,tien:hqTien,luat:hqLuat,tt:hqTT}[gmSec];if(f)return hd(`Sửa giải · ${GM_ED.find(x=>x[0]===gmSec)[2]}`,"gmsecx")+f(D)}
   return hd("Sửa giải","gmeditx")+`<small class="rule">Sửa lúc nào cũng được, kể cả khi đang đánh.</small>
     <div class="gmlist">${GM_ED.filter(([k])=>X||k!=="khac").map(([k,i,t,s])=>`<button class="gmli" data-act="gmsec" data-v="${k}"><i>${i}</i><span class="t"><b>${t}</b><small>${s}</small></span><span aria-hidden="true">›</span></button>`).join("")}</div>`;
@@ -259,6 +276,8 @@ async function xqAct(act,b){
     // ngày: cùng thứ của tuần tới gần nhất, giờ như lần trước
     const L=schedAll().filter(x=>x.st!=="cancel").pop();if(L&&L.at){const d=new Date(L.at),t=new Date();t.setHours(d.getHours(),d.getMinutes(),0,0);let k=0;while((t.getDay()!==d.getDay()||t.getTime()<Date.now())&&k<8){t.setDate(t.getDate()+1);k++}drafts["xf-date"]=isoDay(t.getTime());drafts["xf-time"]=hm(t.getTime())}
     render();try{scrollTo({top:0})}catch(e){}return true}
+  if(act==="xqsel"){xQ=true;xNew=["giai","bang"].includes(v)?v:"xoay";xClearDraft();render();return true}
+  if(act==="xqgo"&&+v===2&&xNew==="pick"){const L=schedAll().filter(x=>x.st!=="cancel").pop();xNew=L?(L.fmt==="giai"?(L.ko?"bang":"giai"):"xoay"):"xoay";xQ=true;xClearDraft()}
   if(act==="xqgo"){if(+v===3){const d=xv(D,"date"),t=xv(D,"time");if(!/^\d{4}-\d{2}-\d{2}$/.test(String(d))){errs.xf="Chọn ngày đánh.";render();return true}if(!/^\d{1,2}:\d{2}$/.test(String(t))){errs.xf="Chọn giờ bắt đầu.";render();return true}}
     delete errs.xf;xQs=Math.max(1,Math.min(3,+v||1));render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xqfee"){if(v==="0"){drafts["xf-cp"]="0"}else{drafts["xf-cp"]="1";if(v!=="khac"){if(String(xv(D,"thu"))==="phi"||xNew!=="xoay"){drafts["xf-thu"]="phi"}drafts["xf-phi"]=v;drafts["xf-fee"]=v}else{drafts["xf-phi"]="";drafts["xf-fee"]="";if(xNew!=="xoay")drafts["xf-thu"]="phi"}}render();return true}

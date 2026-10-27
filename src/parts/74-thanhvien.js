@@ -78,7 +78,7 @@ function qrSvgText(t,px=96){let q;try{q=qrcode(0,"M");q.addData(t);q.make()}catc
   return `<svg class="vqr" viewBox="0 0 ${N} ${N}" width="${px}" height="${px}" shape-rendering="crispEdges" role="img" aria-label="Mã QR"><rect width="${N}" height="${N}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`}
 function tvAddPage(D){
   const away=D.players.filter(p=>p.active===false),G=D.players.filter(p=>p.guest).sort((a,b)=>(D.all.get(b.id)?.ses.size||0)-(D.all.get(a.id)?.ses.size||0)),link=miniLink(CID);
-  let h=`<div class="gmhd"><button class="gmbk" data-act="${tvAddM?"tvaddm":"tvadd"}" aria-label="Quay lại">‹</button><b>Thêm thành viên</b></div>`;
+  let h=gmHd("Thêm thành viên",tvAddM?"tvaddm":"tvadd");
   if(!tvAddM){h+=`<div class="gmq"><b>Thêm người bằng cách nào?</b></div>
     <button class="gmopt on" data-act="tvaddm" data-v="link"><i>💬</i><span><b>Gửi link mời vào nhóm Zalo</b><small>Mọi người tự bấm, chọn tên mình. Anh chỉ cần duyệt. Nhanh nhất.</small></span><em>NÊN DÙNG</em></button>
     <button class="gmopt" data-act="tvaddm" data-v="tay"><i>✍</i><span><b>Tự gõ tên</b><small>Mỗi dòng một người. Hợp khi người chơi không dùng Zalo.</small></span></button>`;

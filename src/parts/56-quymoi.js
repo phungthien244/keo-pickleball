@@ -6,7 +6,7 @@ function vTien(D){
   if(!canWrite||legacy)return vTienOld(D);
   if(qView!=="main"&&Q_SUB[qView]){
     const body=qView==="so"?vSoQuy(D):qView==="no"?vQuyNo(D):qView==="phi"?vQuyPhi(D):qView==="bc"?vQuyBC(D):qView==="fv"?`<section class="card2"><div class="cb">${fvCard()}</div></section>`:vQuyBuoi(D);
-    return `<div class="gmhd"><button class="gmbk" data-act="qv" data-v="main" aria-label="Về Quỹ">‹</button><b>${Q_SUB[qView]}</b></div>`+body;
+    return gmHd(Q_SUB[qView],"qv",{v:"main"})+body;
   }
   const bal=fundNow(),r=qReport(0),DB=debts(),MF=mfDebts(D),nD=new Set([...DB,...MF].map(x=>x.id)).size,sD=DB.reduce((a,x)=>a+x.k,0)+MF.reduce((a,x)=>a+x.k,0);
   let h=`<section class="qhero"><span class="cap">Quỹ CLB đang có</span><b class="num">${bal<0?"−":""}${fmtK(Math.abs(bal))}</b><small>Tháng ${r.m}: thu ${fmtK(r.tin)} · chi ${fmtK(r.tout)}</small></section>`;
@@ -15,7 +15,7 @@ function vTien(D){
   if(live||D.done.length){const R=recv(D,money(D));h+=`<button class="qcur" data-act="qv" data-v="nay"><span class="t"><b>${esc(X?xName(X):(D.c.sname||"Giải đang đánh"))}</b><small>${R.tot?`Đã thu ${fmtK(R.got)}/${fmtK(R.tot)}${R.left>0?` · còn ${fmtK(R.left)}`:" · đủ"}`:"Tiền tự tính khi lưu tỉ số"}</small></span><span aria-hidden="true">›</span></button>`}
   const E=qEntries().slice(0,4);
   h+=`<section class="qrec"><span class="cap">Gần đây</span>${E.length?E.map(x=>`<div class="qli"><span class="t"><b>${x.t}</b><small>${x.at?dmy(x.at).slice(0,5)+" · ":""}${x.sub}</small></span><b class="num ${x.k>=0?"pos":"neg"}">${x.k>=0?"+":"−"}${fmtK(Math.abs(x.k))}</b></div>`).join(""):`<p class="rule">Chưa có khoản nào. Chốt giải là tự ghi một dòng.</p>`}<button class="lnk" data-act="qv" data-v="so">Xem cả sổ ›</button></section>`;
-  h+=`<div class="hqcta two"><button class="btn-line" data-act="qmore">Thêm việc ⋯</button><button class="ball go" data-act="ledf" data-v="chi">＋ Ghi thu / chi</button></div>`;
+  h+=`<div class="hqcta two">${MINI?`<button class="btn-line gmdot" data-act="qmore" aria-label="Thêm việc">⋯</button>`:`<button class="btn-line" data-act="qmore">Thêm việc ⋯</button>`}<button class="ball go" data-act="ledf" data-v="chi">＋ Ghi thu / chi</button></div>`;
   return h+qSheets(D);
 }
 function qSheets(D){

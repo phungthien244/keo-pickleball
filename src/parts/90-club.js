@@ -128,7 +128,7 @@ function clubAdmin(D){
     return `<div class="cdrow"><div class="cdh"><button class="cdb" data-act="cdo" data-v="${k}">${inner}${sw?"":`<i class="cdch" aria-hidden="true">›</i>`}</button>${sw?sw+`<button class="cdch b" data-act="cdo" data-v="${k}" aria-label="Mở ${t}">›</button>`:""}</div></div>`}).join("")}</div>`;
   const GR=[["clb","🏠","CLB của tôi","Tên, ảnh, giới thiệu cho người mới, ai xem quỹ",["info","intro","fv"]],["nguoi","🤝","Người giúp việc","Mời quản lý, trọng tài, PIN nhập điểm",["team","pin","ref"]],
     ["tien","🏦","Nhận tiền","Ngân hàng, phí thành viên hằng tháng",["bank","mf"]],["loa","🔊","Loa","Giọng đọc gọi vào sân",["voice"]],["ls","📅","Lịch sử, xếp hạng","Các giải đã xong, rating, trang giới thiệu",["ls","bxh","gt","web","del"]],["help","❓","Hướng dẫn, hỏi đáp","Làm sao để… · lỡ bấm nhầm thì sao",[]]];
-  const hd=(t,a)=>`<div class="gmhd"><button class="gmbk" data-act="${a}" aria-label="Quay lại">‹</button><b>${t}</b></div>`;
+  const hd=(t,a)=>gmHd(t,a);
   if(cdGrp==="help")return hd("Hướng dẫn, hỏi đáp","cdgrpx")+cdHelp();
   const g=GR.find(x=>x[0]===cdGrp);
   if(g)return hd(g[2],"cdgrpx")+`<small class="rule">${g[3]}</small>`+rows(ALL.filter(r=>g[4].includes(r[0])));

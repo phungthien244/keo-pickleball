@@ -23,8 +23,8 @@ test("chủ CLB: Lịch giải đấu, tạo giải đấu Xoay cặp và mở �
   const e = setup({ host: "pikeco.app", path: "/q7/dang-ky", user: OWNER, data: base() });
   await e.boot(); await e.until(() => e.V().includes('data-act="xnew"'));
   // Tạo giải 3 câu: kiểu giải → ngày giờ sân → người, tiền
-  await e.click("xnew"); await e.until(() => e.V().includes('data-act="xqfmt" data-v="giai"'));
-  await e.click("xqfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-k="courts"'));
+  await e.click("xnew"); await e.until(() => e.V().includes('data-act="xqsel" data-v="giai"'));
+  await e.click("xqsel", { v: "xoay" }); await e.click("xqgo", { v: "2" }); await e.until(() => e.V().includes('data-k="courts"'));
   e.input("xf-name", "Giải đấu tối thứ 5"); e.input("xf-date", iso(tmr())); e.input("xf-time", "19:00");
   await e.click("xqgo", { v: "3" }); await e.until(() => e.V().includes('data-act="xqfee"'));
   e.input("xf-max", "1"); await e.click("xqfee", { v: "60" });
@@ -325,9 +325,10 @@ test("link mời quản lý mở bằng Zalo: nhận quyền trong Mini App, có
   MINI(e);
   await e.boot(); await e.until(() => e.store.get("clubs/q7/members/zalo_9")?.role === "admin");
   expect(e.store.get("clubs/q7/members/zalo_9")).toMatchObject({ invite: "tk1", via: "zalo" });
-  await e.until(() => e.V().includes('data-act="mxmode" data-v="ql" aria-pressed="true"'));
+  // Quản lý: đầu trang một dòng (không còn dải Chơi/Quản lý); chuyển sang Chơi ở tab Thêm
+  await e.until(() => e.V().includes('data-go="caidat"'));
   expect(e.T()).toContain("Thành viên");
-  expect(e.V()).toContain('data-go="caidat"');
+  expect(e.V()).not.toContain('class="mxstrip"');
   await e.click("mxmode", { v: "choi" });
   await e.until(() => e.T().includes("Trực tiếp"));
   expect(e.V()).toContain('data-act="mxmode" data-v="choi" aria-pressed="true"');
