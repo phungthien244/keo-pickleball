@@ -169,10 +169,12 @@ function vCaiDat(D){
   h+=`</div>`;
   if(REF)return h+`<section class="card2"><h2>Quyền trọng tài</h2><div class="cb"><p class="rule">${MYCT.length?`Bạn được giao sân ${MYCT.join(", ")}. Chỉ nhập được tỉ số ở các sân này.`:"Bạn chưa được giao sân. Báo chủ CLB hoặc quản lý giao sân trong Cài đặt."}</p><a class="cta b" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Vào sân</a></div></section>`;
   if(!canWrite)return h+clubLoginBody();
-  if(!cdPage)h+=acctLinkCard();
+  const mq=MINI&&isAdm()&&!legacy;
+  if(mq)h="";
+  if(!cdPage&&!mq)h+=acctLinkCard();
   if(!cdPage&&!cdGrp&&!legacy&&isAdm()){const T=[["Khai ngân hàng nhận phí","Để người chơi quét QR chuyển tiền",!!CLUB?.bank?.acc,`data-act="cdo" data-v="bank"`],["Thêm thành viên","Gửi link mời vào nhóm Zalo",D.players.length>0,`data-go="app" data-t="nguoi"`],["Mời người cùng quản lý","Quản lý, trọng tài giúp anh",(S.members||[]).length>1,`data-act="cdo" data-v="team"`]],m=T.filter(t=>!t[2]);
     if(m.length)h+=`<button class="gmnext qnext" ${m[0][3]}><span class="cap">👉 Còn ${m.length} việc để CLB chạy trơn tru</span><b>${m[0][0]}</b><small>${m[0][1]}</small></button>`}
-  return h+clubAdmin(D);
+  return h+clubAdmin(D)+(mq&&!cdPage&&!cdGrp?acctLinkCard():"");
 }
 const clubFoot=()=>`<footer class="pfoot"><a href="/">pikeco.app</a> · quản lý CLB pickleball${isPA()?` · <a href="/quan-tri">Quản trị nền tảng</a>`:""}</footer>`;
 function clubLoginBody(){

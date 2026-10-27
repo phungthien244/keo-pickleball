@@ -19,7 +19,7 @@ function mxSubT(D){
   if(route==="cmp")return {t:"So kè"};
   if(route==="buoi")return {t:"Kết quả buổi"};
   if(route==="chot")return {t:"Chốt giải đấu"};
-  if(route==="caidat")return {t:"Cài đặt"};
+  if(route==="caidat")return mxMode()==="ql"?null:{t:"Cài đặt"};
   if(route==="app"&&tab==="gt")return {t:"Giới thiệu",ov:String((CLUB||{}).cover||"").startsWith("data:image/")};
   if(route==="app"&&tab==="nguoi"&&mxMode()!=="ql")return {t:"Thành viên"};
   const X=route==="app"&&tab==="dk"&&routeX?schedById(routeX):null;

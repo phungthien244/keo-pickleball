@@ -68,9 +68,9 @@ function tvSheet(D,I,busy){
     <div class="tvshh">${av(p,"md",1)}<span class="t"><b>${esc(p.name)}</b><small>${p.gender==="F"?"Nữ":"Nam"} · rating ${r2(st.rating||0)} · ${A?A.ses.size:0} giải</small>${phTag(p.zuid)}</span>${tvTag1(p,I)}</div>
     ${tot?`<div class="gmnext"><span class="cap">👉 Việc tiếp theo</span><b>Còn nợ ${fmtK(tot)}</b><small>${[...dts.map(x=>`Giải đấu #${x.sid}`),mf?`Phí ${mfLb(I.cur)}`:""].filter(Boolean).join(" · ")}</small></div>`:""}
     <div class="tvbigs">${big("💬","Nhắn Zalo",MINI&&zid?`data-act="${tot?"tvremind":"zchat"}" data-id="${p.id}" data-v="${esc(zid)}" data-n="${esc(p.name)}"`:tot?`data-act="tvremind" data-id="${p.id}"`:"")}${big("📞","Gọi",ph?`data-act="phcall" data-v="${ph}"`:"")}${big("✓",tot?`Đã nhận ${fmtK(dts.length?dts[0].k:+mfCfg().k||0)}`:"Không nợ",tot?paidB:"")}</div>
-    <button class="btn-line tvmorebtn" data-act="tvmore" aria-expanded="${tvMore}">Thêm việc ⋯ <small>(có mặt hôm nay, giao quyền, tạm nghỉ, ghi chú)</small></button>
+    <button class="tvmorebtn" data-act="tvmore" aria-expanded="${tvMore}"><b>Thêm việc ${tvMore?"▴":"⋯"}</b><small>Có mặt hôm nay, giao quyền, tạm nghỉ, ghi chú</small></button>
     ${tvMore?`${p.hold?"":`<button class="gbopt" data-act="att" data-id="${p.id}" aria-pressed="${on}" ${b?"disabled":""}><span><b>Có mặt hôm nay</b><br><small class="rule">${b?"Đang trên sân":on?"Được xếp trận":"Không xếp trận"}</small></span>${gbSw(on)}</button>`}${tvMgr(D,p)}`:""}
-    <div class="two"><button class="line" data-act="tvselx">Đóng</button><a class="btn-line" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">Hồ sơ đầy đủ ›</a></div></div>`;
+    <div class="gmrow"><button class="btn-line" data-act="tvselx">Đóng</button><a class="btn-line" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">Hồ sơ đầy đủ ›</a></div></div>`;
 }
 // Trang thêm thành viên: link mời Zalo, thêm nhanh nhiều người, chuyển VĐV ngoài CLB thành thành viên
 function qrSvgText(t,px=96){let q;try{q=qrcode(0,"M");q.addData(t);q.make()}catch(e){return ""}
