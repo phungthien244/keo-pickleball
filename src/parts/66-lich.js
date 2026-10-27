@@ -96,7 +96,7 @@ function vLichAdm(D){
   if(legacy)return `<div class="empty"><strong>Chưa dùng được</strong>CLB cần chuyển sang tài khoản CLB trước.</div>`;
   if(!isAdm())return vLichPlayer(D);
   xEnsure(D);
-  if(xNew||xEdit||xSEdit)return xQ&&xNew&&!xEdit&&!xSEdit?xQuickForm(D):xForm(D);
+  if(xNew||xEdit||xSEdit)if(!(mxDrOn()&&gmEdit&&routeX&&!xNew&&!xSEdit))return xQ&&xNew&&!xEdit&&!xSEdit?xQuickForm(D):xForm(D);
   if(routeX){const X=schedById(routeX);if(X)return vGiaiMgr(D,X);if(S.schedReady)return `<div class="empty"><strong>Không thấy giải đấu này</strong>Giải đấu đã bị xoá.</div><a class="line wide" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Về lịch giải đấu</a>`}
   return vGiaiHub(D);
 }
@@ -450,14 +450,14 @@ async function xFinish(D){const X=xCur();if(X)await db.collection("sched").doc(X
 
 /* ----- Bấm ----- */
 async function xAct(act,b,id,D){
-  if(act==="xnew"){xQ=true;xQs=1;gmSw=false;xNew="pick";xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;if(route!=="app"||tab!=="dk"||routeX)go("app",{tab:"dk"});else{render();try{scrollTo({top:0})}catch(e){}}return true}
+  if(act==="xnew"){gsDO=false;gsTO=false;gsPg=null;gsOpt=null;xQ=true;xQs=1;gmSw=false;xNew="pick";xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;if(route!=="app"||tab!=="dk"||routeX)go("app",{tab:"dk"});else{render();try{scrollTo({top:0})}catch(e){}}return true}
   if(act==="xfmt"){xQ=false;xNew=["giai","bang"].includes(b.dataset.v)?b.dataset.v:"xoay";xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
-  if(act==="xclose"){xQ=false;xNew=null;xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;render();return true}
+  if(act==="xclose"){gsPg=null;gsOpt=null;xQ=false;xNew=null;xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;render();return true}
   if(act==="xedit"){xbMenu=false;xbSel=null;xEdit=id;xNew=null;xSEdit=null;xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xsedit"){xSEdit=id;xNew=null;xEdit=null;xClearDraft();render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="xfgo"){const n=Math.max(1,Math.min(4,+b.dataset.v||1));if(xNew==="pick")return true;
     xStep=n;render();try{scrollTo({top:0})}catch(e){}return true}
-  if(act==="xfset"){drafts["xf-"+b.dataset.k]=b.dataset.v;if(XOK.has(b.dataset.k)){if(b.dataset.v==="1")xfOpen.add(b.dataset.k);else xfOpen.delete(b.dataset.k)}render();return true}
+  if(act==="xfset"){if(b.dataset.k==="date")gsDO=false;if(b.dataset.k==="time")gsTO=false;drafts["xf-"+b.dataset.k]=b.dataset.v;if(XOK.has(b.dataset.k)){if(b.dataset.v==="1")xfOpen.add(b.dataset.k);else xfOpen.delete(b.dataset.k)}render();return true}
   if(act==="xpmode"){if(xfPoster){xfPoster.mode=b.dataset.v==="fill"?"fill":"fit";xPosterRedo()}return true}
   if(act==="xppos"){if(xfPoster){xfPoster.pos=Math.max(0,Math.min(1,+b.dataset.v||0));xPosterRedo()}return true}
   if(act==="xpdel"){if(!armOr("xpdel:x"))return true;xfPoster={del:true};render();return true}

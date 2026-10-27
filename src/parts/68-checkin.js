@@ -63,8 +63,8 @@ function ckScreen(D){
       <span class="box">${ciCode?`<img src="${esc(ckQrImg(ckLink(X.id,ciCode),600))}" alt="Mã check-in">`:`<span class="sk"></span>`}</span>
       <span class="ckbar">${ciCode?bar:""}</span><span class="cd"><span>Mã tự đổi sau <b data-cd="${ciEnd}">${gdMMSS(left)}</b> · chụp lại không dùng được</span><span>☀ luôn sáng</span></span></div>
     <div class="ckff"><div class="ckcnt"><span><b>${s.arr}<small>/${s.L.length}</small></b><small>ĐÃ TỚI</small></span><span><b class="y">${s.pend}</b><small>CHỜ DUYỆT</small></span><span><b>${fmtK(s.due)}</b><small>CÒN PHẢI THU</small></span></div>
-      <button class="ckmore" data-act="cklist">${ckListOpen?"Ẩn danh sách ⌄":"Danh sách · check-in tay ⌃"}</button>`;
-  if(ckListOpen){h+=`<div class="ckls">`;
+      ${MINI?"":`<button class="ckmore" data-act="cklist">${ckListOpen?"Ẩn danh sách ⌄":"Danh sách · check-in tay ⌃"}</button>`}`;
+  if(ckListOpen&&!MINI){h+=`<div class="ckls">`;
     if(notYet.length)h+=`<span class="xsec">Chưa tới · ${notYet.length}</span>${notYet.map(r=>`<div class="ckli">${ckPic(D,r,"ckpic s")}<span class="t"><b>${esc(ckName(D,r))}</b><small>${r.guest?"VĐV ngoài CLB":"Thành viên"} · ${ckPayLb(r)}</small></span><button class="ckbtn line" data-act="ckman" data-id="${esc(r.id)}">Check-in tay</button></div>`).join("")}`;
     if(rec.length)h+=`<span class="xsec">Đã tới · ${rec.length}</span>${rec.map(r=>`<div class="ckli">${ckPic(D,r,"ckpic s")}<span class="t"><b>${esc(ckName(D,r))}</b><small>${r.arrivedAt?hm(r.arrivedAt):""} · ${ckPayLb(r)}</small></span><span class="ckby ${r.arrBy==="btc"?"btc":"qr"}">${r.arrBy==="btc"?"✋ TAY":"⌗ QR"}</span><button class="ckbtn line ckun" data-act="ckundo" data-id="${esc(r.id)}">Hoàn tác</button></div>`).join("")}`;
     h+=`<span class="gdnote">Check-in tay chỉ dùng khi cần nhanh: hiện "✋ TAY" để phân biệt với người tự quét.</span></div>`}

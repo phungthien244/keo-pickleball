@@ -278,8 +278,8 @@ async function regAdminAct(act,b,id,D){
   if(act==="regon"){const on=!regOpen();await write(()=>saveCfg({reg:{lockH:2,pay:"off",...regCfg(),on,sid:D.sid}}),on?"Đã mở đăng ký":"Đã đóng đăng ký");return true}
   if(act==="regguest"){await write(()=>saveCfg({reg:{...regCfg(),guests:b.dataset.v==="1"}}));return true}
   if(act==="regpay"){const v=["off","opt","req"].includes(b.dataset.v)?b.dataset.v:"off";await write(()=>saveCfg({reg:{...regCfg(),pay:v}}),v==="off"?"Không thu trước":v==="opt"?"Thu trước tùy chọn":"Bắt buộc thu trước");return true}
-  if(act==="regadd"){regAddOpen=!regAddOpen;render();return true}
-  if(act==="regaddp"){const p=D.pmap.get(id);if(!p)return true;await write(()=>db.collection("regs").doc(regKey(D)+"_p_"+id).set({sid:regKey(D),uid:p.zuid||null,pid:id,name:p.name,at:Date.now(),by:who(),pay:"none"}),`Đã thêm ${p.name}`);return true}
+  if(act==="regadd"){regAddOpen=!regAddOpen;g2Added=0;render();return true}
+  if(act==="regaddp"){const p=D.pmap.get(id);if(!p)return true;g2Added++;await write(()=>db.collection("regs").doc(regKey(D)+"_p_"+id).set({sid:regKey(D),uid:p.zuid||null,pid:id,name:p.name,at:Date.now(),by:who(),pay:"none"}),`Đã thêm ${p.name}`);return true}
   if(act==="regdel"){if(!armOr("regdel:"+id))return true;await write(()=>db.collection("regs").doc(id).delete(),"Đã bỏ khỏi danh sách");return true}
   if(act==="regpayok"){const x=(S.regs||[]).find(z=>z.id===id);if(!x)return true;if(!armOr("regpayok:"+id))return true;
     await write(async()=>{await db.collection("regs").doc(id).update({pay:"ok",okAt:Date.now(),okBy:who()});if(x.pid&&xPaySid(x,D))await savePay(D.sid,nx=>{nx.paid[x.pid]=true})},"Đã xác nhận nhận phí");return true}

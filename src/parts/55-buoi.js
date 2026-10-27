@@ -376,7 +376,7 @@ async function sessionAct(act,id,b,e){
   if(act==="sheetx"){if(b.classList&&b.classList.contains("sheetbg")&&e.target!==b)return true;sheetOpen=false;render();return true}
   if(act==="lseg"){liveSeg=b.dataset.v;render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="prow"){const k=b.dataset.v;if(prepOpen.has(k))prepOpen.delete(k);else prepOpen.add(k);render();return true}
-  if(act==="start"){if(!armOr("start:x"))return true;const D=derive(),ro=regOpen();let n=0;
+  if(act==="start"){if(!armOr("start:x"))return true;gmSt={};const D=derive(),ro=regOpen();let n=0;
     await write(async()=>{n=await regStart(D);await saveCfg(ro?{phase:"live",reg:{...regCfg(),on:false}}:{phase:"live"})},`Đã khai mạc giải đấu #${D.sid}`);if(n)toast(`Đã khai mạc · điểm danh thêm ${n} người đã đăng ký`);
     hqTab=null;stepView=null;
     // Khai mạc: loa đọc thể thức, rồi đưa trận đầu vào sân (xoay cặp)
