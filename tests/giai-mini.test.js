@@ -84,3 +84,17 @@ test("đang đánh: thẻ sân to → Nhập điểm (hai ô to, + −) → Lưu
   await e.click("chotgo", { v: "4" }); await e.until(() => e.T().includes("Dư vào quỹ CLB") || e.T().includes("Quỹ bù"));
   expect(e.T()).toContain("Gửi kết quả vào nhóm Zalo");
 });
+
+test("ngày đánh: ⋯ → BTC check-in giùm, tích chọn là check-in, bỏ tích bấm 2 lần", async () => {
+  const at = Date.now() + 60e3;
+  const e = await boot(base({ "clubs/q7/sched/s1": { name: "Hôm nay", fmt: "xoay", at, courts: 2, target: 11, max: 8, st: "open", openAt: 0, deadline: at }, "clubs/q7/regs/s1_p_p1": { sid: "s1", pid: "p1", name: "An", at: 1, arrived: true }, "clubs/q7/regs/s1_p_p2": { sid: "s1", pid: "p2", name: "Bình", at: 2 } }));
+  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes("MỞ MÃ CHECK-IN"));
+  await e.click("gmmore"); expect(e.V()).toContain('data-a="ckbtc"');
+  await e.click("gmdo", { a: "ckbtc", id: "s1" }); await e.until(() => e.T().includes("BTC check-in giùm"));
+  expect(e.T()).toContain("Đã tới 1/2");
+  await e.click("ckbtct", { id: "s1_p_p2" }); await e.until(() => e.store.get("clubs/q7/regs/s1_p_p2").arrived === true);
+  expect(e.store.get("clubs/q7/regs/s1_p_p2").arrBy).toBe("btc");
+  await e.click("ckbtct", { id: "s1_p_p1" }); expect(e.store.get("clubs/q7/regs/s1_p_p1").arrived).toBe(true);
+  await e.click("ckbtct", { id: "s1_p_p1" }); await e.until(() => e.store.get("clubs/q7/regs/s1_p_p1").arrived === false);
+  await e.click("ckbtcx"); await e.until(() => e.V().includes("MỞ MÃ CHECK-IN"));
+});

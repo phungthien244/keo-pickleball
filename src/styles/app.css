@@ -2745,3 +2745,6 @@ a.mxbk,.mxdr .mxbk{color:#fff;text-decoration:none;font-size:28px;line-height:1}
 .ttfs.rf .ttrule{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #eef1f4}
 .ttfs.rf .ttft .ttln[aria-label="Quay lại"]{flex:0 0 64px;font-size:22px}
 .mxbody.rf .ttft .ttln{flex:1;min-height:52px;font-size:12px;letter-spacing:.12em}.mxbody.rf .ttft .ttln:first-child:not(.wide){flex:.9}
+.g2p.ckbtc{width:100%}.g2p.ckbtc.on{background:#f0fdf4}
+.ckbox{flex:none;width:26px;height:26px;border:2px solid var(--navy);display:grid;place-items:center;font-weight:900;color:#fff}
+.g2p.ckbtc.on .ckbox{background:#16a34a;border-color:#16a34a}
