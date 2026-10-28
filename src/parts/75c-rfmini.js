@@ -118,7 +118,7 @@ function rfMenuV(c){
 }
 // Dải nhắc khi đang xem trang CLB
 function rfAwayBar(D){
-  if(!(rfOn()&&REFQ&&rfAway))return "";const c=Number(REFQ.court),m=D.playing.find(x=>Number(x.court)===c),nw=m&&!(m.ref&&m.ref.started);
+  if(!((rfOn()||(MINI&&mxAs&&mxAs.rf&&!mxAs.cw))&&REFQ&&rfAway))return "";const c=Number(REFQ.court),m=D.playing.find(x=>Number(x.court)===c),nw=m&&!(m.ref&&m.ref.started);
   return `<button class="rfaway${nw?" new":""}" data-act="rfback"><span>${nw?`🔔 Trận mới vào sân ${esc(cName(c))}`:`⚑ Bạn đang làm trọng tài sân ${esc(cName(c))}`}</span><b>Về sân ›</b></button>`;
 }
 // Hết giải (đã chốt) thì quyền trọng tài hết: tự trả sân, hiện cảm ơn
@@ -130,7 +130,7 @@ function rfCheckEnd(D){
 async function rfAct2(act,b){
   if(act==="rfmenu"){rfMenu=true;render();return true}
   if(act==="rfmenux"){rfMenu=false;render();return true}
-  if(act==="rfaway"){rfMenu=false;rfAway=true;go("home");return true}
+  if(act==="rfaway"){rfMenu=false;rfAway=true;if(mxMode()!=="choi")mxSetMode("choi");go("home");return true}
   if(act==="rfback"){rfAway=false;go("app",{tab:"san"});return true}
   if(act==="rfendask"){rfMenu=false;rfEndAsk=true;render();return true}
   if(act==="rfendx"){rfEndAsk=false;render();return true}

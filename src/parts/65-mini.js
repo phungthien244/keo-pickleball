@@ -518,7 +518,7 @@ async function mxAct2(act,b,id){
     delete drafts["mx-inv"];mxInvOpen=false;
     if(MODE==="club"&&c===CID){INVITE=v.tok;await acceptInvite();render();return true}
     try{sessionStorage.setItem("pb-inv-"+c,v.tok)}catch(e){}setPath("/"+c);location.reload();return true}
-  if(act==="mxmode"){const m=b.dataset.v==="choi"?"choi":"ql";if(m===mxMode())return true;mxSetMode(m);mxSheet=null;if(m==="ql")go("app",{tab:canWrite?"dk":"san"});else go("home");return true}
+  if(act==="mxmode"){const m=b.dataset.v==="choi"?"choi":"ql";if(m==="ql")rfAway=false;if(m===mxMode())return true;mxSetMode(m);mxSheet=null;if(m==="ql")go("app",{tab:canWrite?"dk":"san"});else go("home");return true}
   if(act==="mxback"){mxSheet=null;if(mxNavN>0)history.back();else if(mxMode()==="ql")go("app",{tab:canWrite?"dk":"san"});else go("home");return true}
   if(act==="mxsheet"){mxSheet=mxSheet==="club"?null:"club";render();return true}
   if(act==="mxsheetx"){mxSheet=null;render();return true}
