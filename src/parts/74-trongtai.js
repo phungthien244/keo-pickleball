@@ -165,7 +165,7 @@ function ttHist(D,m,X){
 }
 function ttEnd(D,m,X){
   const w=X.win,f=m.ref,sg=f.sign||{},tn=t=>esc(ttTN(D,m,t)),dur=X.t0&&X.tEnd?Math.max(1,Math.round((X.tEnd-X.t0)/6e4)):0;
-  let h=`<div class="ttendhd"><span class="cap">${X.ff?"Thắng do đối thủ bỏ cuộc":X.R.sets>1?`Thắng ${X.gw[w]}–${X.gw[ttO(w)]}`:"Thắng"}</span>${ttAvs(D,w==="a"?m.a:m.b,"md")}<b>${tn(w)}</b>
+  let h=(rfOn()?ttHead(D,m,"Hết trận",""):"")+`<div class="ttendhd"><span class="cap">${X.ff?"Thắng do đối thủ bỏ cuộc":X.R.sets>1?`Thắng ${X.gw[w]}–${X.gw[ttO(w)]}`:"Thắng"}</span>${ttAvs(D,w==="a"?m.a:m.b,"md")}<b>${tn(w)}</b>
     <div class="gs">${X.games.map(g=>`<span class="num">${g.a}–${g.b}</span>`).join("")}${X.ff&&(X.s.a||X.s.b)?`<span class="num ff">${X.s.a}–${X.s.b} · bỏ cuộc</span>`:""}</div><small>${dur?`${dur} phút · `:""}${X.rallies} pha bóng · ${X.sides} lần đổi giao</small></div>`;
   if(!X.ff){
     h+=`<section class="ttbox"><span class="cap">Xác nhận kết quả · không bắt buộc</span>${["a","b"].map(t=>`<div class="ttrow"><span class="grow">${tn(t)}</span>${sg[t]?`<span class="ok">✓ Đã ký ${hm(sg[t])}</span>`:`<button class="ttln" data-act="ttsign" data-v="${t}">Ký trên máy</button>`}</div>`).join("")}<small>Có khiếu nại thì để trống, quản lý xem lại lịch sử từng pha trước khi lưu.</small></section>`;

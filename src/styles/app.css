@@ -2758,3 +2758,9 @@ a.mxbk,.mxdr .mxbk{color:#fff;text-decoration:none;font-size:28px;line-height:1}
 .scprev{display:flex;align-items:center;gap:8px;background:#f3f5f7;padding:6px 8px;font-size:12.5px}.scprev span{flex:1}.scprev .sm{min-height:32px;flex:none}
 .scun{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fef3c7;color:#78350f;padding:10px 12px;margin:0 0 10px;font-weight:700}
 .scun .sm{min-height:36px;flex:none}
+/* Màn trọng tài: đầu trang tràn lên vùng tai thỏ/cột sóng, nội dung không bị che */
+.ttfs{padding-top:0}
+.tthd{min-height:calc(52px + var(--sat,0px));padding-top:calc(4px + var(--sat,0px))}
+.tthd.rf{min-height:calc(56px + var(--sat,0px));padding-top:calc(8px + var(--sat,0px))}
+.ttfs>.ttendhd:first-child{padding-top:calc(22px + var(--sat,0px))}
+.ttfs>.ttface:first-child>.tthd{padding-top:calc(4px + var(--sat,0px))}
