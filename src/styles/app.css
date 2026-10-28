@@ -2764,3 +2764,9 @@ a.mxbk,.mxdr .mxbk{color:#fff;text-decoration:none;font-size:28px;line-height:1}
 .tthd.rf{min-height:calc(56px + var(--sat,0px));padding-top:calc(8px + var(--sat,0px))}
 .ttfs>.ttendhd:first-child{padding-top:calc(22px + var(--sat,0px))}
 .ttfs>.ttface:first-child>.tthd{padding-top:calc(4px + var(--sat,0px))}
+.rfdot{margin-left:auto;flex:none;width:40px;height:36px;min-height:0;padding:0;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-size:18px;line-height:1}
+.tthd.rf{position:sticky}
+.rfaway{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin:0 0 10px;padding:12px;border:0;background:#f2e205;color:var(--navy);font-size:13.5px;font-weight:700;text-align:left}
+.rfaway b{flex:none;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.rfaway.new{background:#dc2626;color:#fff}
+.rfcb>small{font-size:12.5px;color:var(--muted)}

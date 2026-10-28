@@ -85,7 +85,9 @@ function rfMain(D){
 }
 // Nhận sân (R1)
 function rfClaim(D){
-  const q=dhClaim();if(!q||!q.c||legacy||!authUser)return "";const P=rfPlan(D,q.c);
+  const q=dhClaim();if(!q||!q.c||legacy||!authUser)return "";
+  if(REFQ&&Number(REFQ.court)===Number(q.c)&&REFQ.sid===D.sid){try{sessionStorage.removeItem("pb-ttq")}catch(e){}return ""}
+  const P=rfPlan(D,q.c);
   return `<div class="ttfs rfc" role="dialog" aria-label="Nhận vai trọng tài">${rfHead(q.c,"Mã của ban tổ chức")}
     <div class="rfcb"><small>${esc(CLUB?.name||"")} · ${esc(rfGiaiNm(D))}</small><b class="big">SÂN ${esc(cName(q.c))}</b><span>Bạn được mời làm <b>trọng tài</b> sân này.</span>
       <section class="ttbox"><div class="ttrow"><span class="grow">Tên hiện cho BTC</span>${rfNameEd?`<input id="rf-name" data-draft="rf-name" maxlength="40" value="${esc(rfName())}">`:`<b>${esc(rfName())}</b><button class="lnk" data-act="ttname" aria-label="Sửa tên">✎</button>`}</div>${P.length?`<div class="ttrow"><span class="grow">Hôm nay</span><b>${P.length} trận dự kiến</b></div>`:""}</section></div>
@@ -93,15 +95,61 @@ function rfClaim(D){
 }
 // BTC thu hồi sân (R13)
 function rfByeLayer(D){
-  if(!rfBye)return "";
-  return `<div class="ttfs rfc" role="dialog" aria-label="Cảm ơn">${rfHead(rfBye.c,"Đã kết thúc ca trọng tài")}<div class="rfcb"><span class="em">🙏</span><b class="h">Cảm ơn bạn đã làm trọng tài</b><span>BTC đã thu hồi sân ${esc(cName(rfBye.c))} · bạn làm ${D.done.filter(m=>Number(m.court)===Number(rfBye.c)).length} trận hôm nay.</span></div>
+  if(!rfBye)return "";if(rfBye.n==null)rfBye.n=D.done.filter(m=>Number(m.court)===Number(rfBye.c)).length;
+  const c=esc(cName(rfBye.c)),tx=rfBye.why==="chot"?`Giải đã chốt · quyền trọng tài sân ${c} đã hết`:rfBye.why==="self"?`Bạn đã kết thúc ca ở sân ${c}`:`BTC đã thu hồi sân ${c}, hoặc sân đã giao cho trọng tài khác`;
+  return `<div class="ttfs rfc" role="dialog" aria-label="Cảm ơn">${rfHead(rfBye.c,"Đã kết thúc ca trọng tài")}<div class="rfcb"><span class="em">🙏</span><b class="h">Cảm ơn bạn đã làm trọng tài</b><span>${tx} · bạn làm ${rfBye.n} trận.</span><small>Máy này đã về chế độ bình thường.</small></div>
     <div class="ttft"><button class="ttgo" data-act="ttbye">Về trang giải</button></div></div>`;
 }
 
 let rfGone=false;
 // Khung tập trung: trọng tài nhận sân bằng QR chỉ thấy sân của mình, không có thanh tab
 function rfShell(D){const c=[...MYCT].sort((a,b)=>a-b)[0];
-  return `<div class="rfsh">${rfHead(c,`${esc(rfGiaiNm(D))} · Trọng tài ${esc((REFQ&&REFQ.name)||rfName())}`)}<div class="mxbody rf">${rfMain(D)}</div></div>${dhSheets(D)}`}
+  const hd=rfHead(c,`${esc(rfGiaiNm(D))} · Trọng tài ${esc((REFQ&&REFQ.name)||rfName())}`).replace(/<\/div>$/,`<button class="rfdot" data-act="rfmenu" aria-label="Thêm việc">⋯</button></div>`);
+  return `<div class="rfsh">${hd}<div class="mxbody rf">${rfMain(D)}</div></div>${dhSheets(D)}${rfMenuV(c)}`}
+let rfAway=false,rfMenu=false,rfEndAsk=false;
+// ⋯ của trọng tài: xem trang CLB (vẫn giữ sân), kết thúc ca (có xác nhận)
+function rfMenuV(c){
+  if(rfEndAsk)return `<div class="rfdlg"><div class="b"><b class="h">Kết thúc ca trọng tài sân ${esc(cName(c))}?</b><small>Sân trả lại cho BTC. Muốn làm tiếp phải quét mã mới trên máy BTC.</small>
+    <div class="two"><button class="ttln" data-act="rfendx">Huỷ</button><button class="ttgo" data-act="rfend">Kết thúc ca</button></div></div></div>`;
+  if(!rfMenu)return "";
+  return `<div class="mxdim" data-act="rfmenux"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="Trọng tài"><span class="grab"></span><b class="mxh">Trọng tài sân ${esc(cName(c))}</b>
+    <button class="gmli" data-act="rfaway"><i>🏠</i><span class="t"><b>Xem trang CLB</b><small>Vẫn giữ sân · có dải để quay lại</small></span><span aria-hidden="true">›</span></button>
+    <button class="gmli" data-act="rfendask"><i>⏻</i><span class="t"><b class="red">Kết thúc ca trọng tài</b><small>Trả sân cho BTC, máy về chế độ bình thường</small></span><span aria-hidden="true">›</span></button></div>`;
+}
+// Dải nhắc khi đang xem trang CLB
+function rfAwayBar(D){
+  if(!(rfOn()&&REFQ&&rfAway))return "";const c=Number(REFQ.court),m=D.playing.find(x=>Number(x.court)===c),nw=m&&!(m.ref&&m.ref.started);
+  return `<button class="rfaway${nw?" new":""}" data-act="rfback"><span>${nw?`🔔 Trận mới vào sân ${esc(cName(c))}`:`⚑ Bạn đang làm trọng tài sân ${esc(cName(c))}`}</span><b>Về sân ›</b></button>`;
+}
+// Hết giải (đã chốt) thì quyền trọng tài hết: tự trả sân, hiện cảm ơn
+function rfCheckEnd(D){
+  if(!MINI||canWrite||!REFQ||!authUser||rfGone)return;
+  if(REFQ.sid!=null&&D.sid&&REFQ.sid!==D.sid){rfGone=true;rfBye={c:Number(REFQ.court),why:"chot",n:null};rfAway=false;
+    db.collection("refs").doc(authUser.uid).delete().catch(()=>{})}
+}
+async function rfAct2(act,b){
+  if(act==="rfmenu"){rfMenu=true;render();return true}
+  if(act==="rfmenux"){rfMenu=false;render();return true}
+  if(act==="rfaway"){rfMenu=false;rfAway=true;go("home");return true}
+  if(act==="rfback"){rfAway=false;go("app",{tab:"san"});return true}
+  if(act==="rfendask"){rfMenu=false;rfEndAsk=true;render();return true}
+  if(act==="rfendx"){rfEndAsk=false;render();return true}
+  if(act==="rfend"){rfEndAsk=false;if(!authUser||!REFQ)return true;const c=Number(REFQ.court),D=derive();
+    rfGone=true;rfAway=false;rfBye={c,why:"self",n:D.done.filter(m=>Number(m.court)===c).length};
+    await write(()=>db.collection("refs").doc(authUser.uid).delete(),"Đã kết thúc ca trọng tài");render();return true}
+  return false;
+}
+// Máy BTC: mã dùng 1 lần (quét xong tự đổi), mỗi sân 1 trọng tài (người nhận sau thay người trước), bỏ hồ sơ của giải cũ
+let rfGuardOn=false;
+async function rfGuard(){
+  if(!canWrite||legacy||rfGuardOn||!S.refsQ||!S.refqr)return;rfGuardOn=true;
+  try{const sid=(cfg().session||1),Q=S.refqr,by={};
+    for(const r of S.refsQ){if(r.sid!=null&&r.sid!==sid){await db.collection("refs").doc(r.id).delete().catch(()=>{});continue}(by[r.court]=by[r.court]||[]).push(r)}
+    for(const [c,L] of Object.entries(by)){L.sort((a,b)=>(b.at||0)-(a.at||0));
+      for(const r of L.slice(1))await db.collection("refs").doc(r.id).delete().catch(()=>{});
+      const q=Q[c];if(q&&q.code===L[0].code)await db.collection("refqr").doc(String(c)).set({code:ckRand(),at:Date.now(),sid}).catch(()=>{})}}
+  finally{rfGuardOn=false}
+}
 // Thao tác riêng của luồng trọng tài Mini App
 async function rfAct(act,b){
   const v=b.dataset.v;

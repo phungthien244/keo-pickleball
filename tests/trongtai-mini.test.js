@@ -69,3 +69,35 @@ test("BTC thu hồi sân: hiện màn cảm ơn (R13)", async () => {
   await e.until(() => e.T().includes("Cảm ơn bạn đã làm trọng tài"));
   expect(e.T()).toContain("BTC đã thu hồi sân 1");
 });
+
+test("⋯ trọng tài: Xem trang CLB có dải quay lại; Kết thúc ca (xác nhận) → trả sân, cảm ơn", async () => {
+  const e = await boot(base(REFD));
+  await e.until(() => e.V().includes('class="rfsh"'));
+  await e.click("rfmenu"); await e.until(() => e.T().includes("Xem trang CLB"));
+  await e.click("rfaway"); await e.until(() => e.V().includes('class="rfaway'));
+  expect(e.V()).not.toContain('class="rfsh"'); expect(e.T()).toContain("Trận mới vào sân 1");
+  await e.click("rfback"); await e.until(() => e.V().includes('class="rfsh"'));
+  await e.click("rfmenu"); await e.click("rfendask"); await e.until(() => e.T().includes("Kết thúc ca trọng tài sân 1?"));
+  await e.click("rfend"); await e.until(() => !e.store.get("clubs/q7/refs/zalo_5"));
+  await e.until(() => e.T().includes("Bạn đã kết thúc ca ở sân 1"));
+});
+
+test("giải đã chốt (buổi mới) → quyền trọng tài hết: tự trả sân, cảm ơn", async () => {
+  const e = await boot(base(REFD));
+  await e.until(() => e.V().includes('class="rfsh"'));
+  await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/app/config"), { session: 2, phase: "prep" });
+  await e.until(() => e.T().includes("Giải đã chốt"));
+  await e.until(() => !e.store.get("clubs/q7/refs/zalo_5"));
+});
+
+test("máy BTC: mã dùng 1 lần, mỗi sân 1 trọng tài, bỏ hồ sơ giải cũ", async () => {
+  const now = Date.now();
+  const data = base({ "clubs/q7/members/zalo_5": { role: "owner", name: "Chủ" }, "clubs/q7": { name: "Q7", public: true, owner: "zalo_5", createdAt: 1 },
+    "clubs/q7/refqr/1": { code: "K", at: 1, sid: 1 }, "clubs/q7/refqr/2": { code: "M", at: 1, sid: 1 },
+    "clubs/q7/refs/u1": { court: 1, code: "OLD", name: "A", at: now - 6e4, sid: 1 }, "clubs/q7/refs/u2": { court: 1, code: "K", name: "B", at: now, sid: 1 },
+    "clubs/q7/refs/u3": { court: 2, code: "X", name: "C", at: now, sid: 0 } });
+  const e = await boot(data);
+  await e.until(() => e.store.get("clubs/q7/refqr/1").code !== "K");
+  await e.until(() => !e.store.get("clubs/q7/refs/u1") && !e.store.get("clubs/q7/refs/u3"));
+  expect(e.store.get("clubs/q7/refs/u2")).toBeTruthy(); expect(e.store.get("clubs/q7/refqr/2").code).toBe("M");
+});

@@ -145,6 +145,18 @@ describe("nhập tỉ số", () => {
     await assertFails(updateDoc(doc(google("sc"), "clubs/aep/players/p1"), { active: false }));
     await assertFails(setDoc(doc(google("sc"), "clubs/aep/app/config"), { courts: 3 }));
   });
+  test("trọng tài quét QR: mã đúng của giải đang đánh mới nhận sân; chỉ nhập sân mình; hết giải thì hết quyền", async () => {
+    await seed({ "clubs/aep/app/config": { session: 1 }, "clubs/aep/refqr/1": { code: "K1", at: 1, sid: 1 } });
+    const z = google("zq");
+    await assertFails(setDoc(doc(z, "clubs/aep/refs/zq"), { court: 1, code: "SAI", name: "Nam", at: 1, sid: 1 }));
+    await assertFails(setDoc(doc(z, "clubs/aep/refs/zq"), { court: 1, code: "K1", name: "Nam", at: 1, sid: 0 }));
+    await assertSucceeds(setDoc(doc(z, "clubs/aep/refs/zq"), { court: 1, code: "K1", name: "Nam", at: 1, sid: 1 }));
+    await assertSucceeds(updateDoc(doc(z, "clubs/aep/matches/m1"), { sa: 11, sb: 5 }));
+    await assertFails(updateDoc(doc(z, "clubs/aep/matches/m2"), { sa: 11, sb: 5 }));
+    await seed({ "clubs/aep/app/config": { session: 2 } });
+    await assertFails(updateDoc(doc(z, "clubs/aep/matches/m1"), { sa: 11, sb: 6 }));
+    await assertSucceeds(deleteDoc(doc(z, "clubs/aep/refs/zq")));
+  });
   test("PIN đúng thì vào được, nhưng chỉ nhập điểm sân được giao", async () => {
     await assertFails(setDoc(doc(anon("a1"), "clubs/aep/editors/a1"), { pin: "0000", at: 1 }));
     await assertSucceeds(setDoc(doc(anon("a2"), "clubs/aep/editors/a2"), { pin: "2468", at: 1, name: "Hùng" }));

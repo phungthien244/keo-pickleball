@@ -57,7 +57,7 @@ function mxShell(D,body,cta=""){
   const p=mxMe(D),nm=(CLUB&&CLUB.name)||D.c.title;
   const R0=mxAs||{cw:canWrite,rf:REF},ql=mxMode()==="ql",sw=!legacy&&(R0.cw||R0.rf)?`<span class="mxsw" role="group" aria-label="Chế độ"><button data-act="mxmode" data-v="choi" aria-pressed="${!ql}">Chơi</button><button data-act="mxmode" data-v="ql" aria-pressed="${ql}">${R0.cw?"Quản lý":"Trọng tài"}</button></span>`:"";
   const nh=ql&&canWrite,dr=nh&&!!MXD;
-  let h=(nh?mxHeadQL(D,nm):mxHead(D,ql,sw,p,nm))+`<div class="mxbody${dr?" dr":""}">${body}</div>`;
+  let h=(nh?mxHeadQL(D,nm):mxHead(D,ql,sw,p,nm))+`<div class="mxbody${dr?" dr":""}">${rfAwayBar(D)}${body}</div>`;
   if(cta)h+=`<div class="mxcta">${cta}</div>`;
   h+=dr?"":ql?mxMgrNav():mxNav();
   return h+mxSheetHtml()+(ql?ycSheets(D)+ckPopup(D):wkSheet(D));
@@ -482,7 +482,8 @@ function mxMgrView0(D){
 }
 function renderMini(D){
   MXD=null;
-  if(rfOn()&&MYCT.length&&REFQ)return rfShell(D);
+  rfCheckEnd(D);
+  if(rfOn()&&MYCT.length&&REFQ&&!rfAway)return rfShell(D);
   if(mxMode()==="ql"&&!(route==="cmp"||(route==="app"&&(tab==="gt"||tab==="toi"))))return mxShell(D,mxMgrView(D));
   // Quản lý đang ở chế độ Chơi: xem đúng như người chơi (không hiện nút nhập điểm, quản lý giải)
   if(mxMgr()){const cw=canWrite,rf=REF;mxAs={cw,rf};canWrite=false;REF=false;try{return renderMini(D)}finally{canWrite=cw;REF=rf;mxAs=null}}

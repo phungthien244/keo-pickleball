@@ -95,7 +95,8 @@ service cloud.firestore {
       function scoreOk() {
         return active()
           && (((isMember() || isPinEditor()) && resource.data.court in refCourts())
-              || (qrRef() && get(/databases/$(database)/documents/clubs/$(c)/refs/$(request.auth.uid)).data.court == resource.data.court))
+              || (qrRef() && get(/databases/$(database)/documents/clubs/$(c)/refs/$(request.auth.uid)).data.court == resource.data.court
+                  && get(/databases/$(database)/documents/clubs/$(c)/refs/$(request.auth.uid)).data.get('sid', 0) == cfgDoc().get('session', 1)))
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sa', 'sb', 'status', 'doneAt', 'ref', 'sets']);
       }
       function canRead() { return (active() && clubDoc().public == true) || isMember() || isPinEditor() || isPA() || qrRef(); }
@@ -379,6 +380,7 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['court', 'code', 'name', 'at', 'sid'])
           && request.resource.data.court is int
           && request.resource.data.name is string && request.resource.data.name.size() <= 60
+          && request.resource.data.sid == cfgDoc().get('session', 1)
           && exists(/databases/$(database)/documents/clubs/$(c)/refqr/$(string(request.resource.data.court)))
           && get(/databases/$(database)/documents/clubs/$(c)/refqr/$(string(request.resource.data.court))).data.code == request.resource.data.code;
         allow delete: if canEdit() || (signedIn() && request.auth.uid == uid);

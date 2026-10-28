@@ -128,7 +128,7 @@ function applyRef(){
 function watchRefQ(){
   if(unsubRefQ){try{unsubRefQ()}catch(e){}unsubRefQ=null}REFQ=null;
   if(legacy||!authUser||!window.FB||!FB.onSnapshot){applyRef();return}
-  try{unsubRefQ=FB.onSnapshot(FB.doc(FB.fs,PFX+"refs/"+authUser.uid),{},s=>{const was=REFQ;REFQ=s.exists()?s.data():null;if(MINI&&was&&was.court&&!REFQ&&!canWrite&&!rfGone)rfBye={c:Number(was.court)};rfGone=false;applyRef();watchCalls();render()},()=>{})}catch(e){}
+  try{unsubRefQ=FB.onSnapshot(FB.doc(FB.fs,PFX+"refs/"+authUser.uid),{},s=>{const was=REFQ;REFQ=s.exists()?s.data():null;if(MINI&&was&&was.court&&!REFQ&&!canWrite&&!rfGone){rfBye={c:Number(was.court),why:"thu",n:null};rfAway=false}if(!REFQ)rfGone=false;applyRef();watchCalls();render()},()=>{})}catch(e){}
 }
 function dhClaimLayer(D){
   if(MINI)return rfClaim(D)+rfByeLayer(D);
@@ -213,10 +213,10 @@ async function dhAct(act,b){
   if(act==="dhango"){const t=String(val("dh-ann","")).trim();if(!t){toast("Chọn câu mẫu hoặc gõ câu cần đọc.");return true}dhAN=false;delete drafts["dh-ann"];speak("Ban tổ chức xin thông báo. "+t,"","ann");render();return true}
   if(act==="dhqrk"){dhQR=+v||1;render();return true}
   if(act==="dhqr"){dhQR=+v||1;const n=Math.max(1,+D.c.courts||1),Q=S.refqr||{};
-    for(let k=1;k<=n;k++)if(!Q[k])await db.collection("refqr").doc(String(k)).set({code:ckRand(),at:Date.now()}).catch(()=>{});render();return true}
+    for(let k=1;k<=n;k++)if(!Q[k]||(Q[k].sid!=null&&Q[k].sid!==D.sid)||Q[k].sid==null)await db.collection("refqr").doc(String(k)).set({code:ckRand(),at:Date.now(),sid:D.sid}).catch(()=>{});render();return true}
   if(act==="dhqrx"){dhQR=false;render();return true}
   if(act==="dhqrnew"){if(!armOr("dhqrnew:x"))return true;const n=Math.max(1,+D.c.courts||1);
-    await write(async()=>{for(let k=1;k<=n;k++)await db.collection("refqr").doc(String(k)).set({code:ckRand(),at:Date.now()});for(const r of (S.refsQ||[]))await db.collection("refs").doc(r.id).delete()},"Đã đổi mã, thu hồi trọng tài nhận qua QR");return true}
+    await write(async()=>{for(let k=1;k<=n;k++)await db.collection("refqr").doc(String(k)).set({code:ckRand(),at:Date.now(),sid:D.sid});for(const r of (S.refsQ||[]))await db.collection("refs").doc(r.id).delete()},"Đã đổi mã, thu hồi trọng tài nhận qua QR");return true}
   if(act==="dhrefx"){if(!armOr("dhrefx:"+id))return true;await write(()=>db.collection("refs").doc(id).delete(),"Đã thu hồi");return true}
   if(act==="dhloadev"){const on=loaDev()!==DEVID;await write(()=>saveCfg({loaDev:on?DEVID:""}),on?"Máy này là máy loa của giải":"Đã bỏ máy loa · máy nào cũng tự đọc");if(on&&loaMuted())loaSetMute(false);watchCalls();return true}
   if(act==="dhloamode"){await write(()=>saveCfg({loaMode:v==="duyet"?"duyet":"auto"}));return true}
