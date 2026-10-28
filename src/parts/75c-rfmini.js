@@ -80,6 +80,8 @@ function rfMain(D){
   }
   const done=[...D.done].filter(m=>cs.includes(Number(m.court))).reverse(),busy=D.playing.some(m=>cs.includes(Number(m.court)));
   if(done.length&&!busy)h+=`<section class="ttbox"><span class="cap">Đã xong · ${done.length} trận</span>${done.slice(0,8).map(m=>`<div class="ttrow"><span class="grow">${m.a.map(id=>esc(nm(D,id))).join(" &amp; ")} ${m.sa}–${m.sb} ${m.b.map(id=>esc(nm(D,id))).join(" &amp; ")}</span><small>${m.doneAt?hm(m.doneAt):""}</small></div>`).join("")}</section>`;
+  // Lối ra để kín: chỉ hiện khi sân trống, chữ nhỏ cuối trang
+  if(!D.playing.some(m=>cs.includes(Number(m.court)))&&REFQ)h+=`<div class="rflinks"><button data-act="rfaway">Chế độ người chơi</button><span>·</span><button data-act="rfendask">Kết thúc ca</button></div>`;
   if(!D.playing.some(m=>cs.includes(Number(m.court))))h+=`<div class="ttft"><button class="ttln wide" data-act="dhcb" data-v="${cs[0]}">📣 Gọi BTC</button></div>`;
   return h;
 }
@@ -104,7 +106,7 @@ function rfByeLayer(D){
 let rfGone=false;
 // Khung tập trung: trọng tài nhận sân bằng QR chỉ thấy sân của mình, không có thanh tab
 function rfShell(D){const c=[...MYCT].sort((a,b)=>a-b)[0];
-  const hd=rfHead(c,`${esc(rfGiaiNm(D))} · Trọng tài ${esc((REFQ&&REFQ.name)||rfName())}`).replace(/<\/div>$/,`<button class="rfdot" data-act="rfmenu" aria-label="Thêm việc">⋯</button></div>`);
+  const hd=rfHead(c,`${esc(rfGiaiNm(D))} · Trọng tài ${esc((REFQ&&REFQ.name)||rfName())}`);
   return `<div class="rfsh">${hd}<div class="mxbody rf">${rfMain(D)}</div></div>${dhSheets(D)}${rfMenuV(c)}`}
 let rfAway=false,rfMenu=false,rfEndAsk=false;
 // ⋯ của trọng tài: xem trang CLB (vẫn giữ sân), kết thúc ca (có xác nhận)

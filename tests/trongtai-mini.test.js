@@ -70,16 +70,22 @@ test("BTC thu hồi sân: hiện màn cảm ơn (R13)", async () => {
   expect(e.T()).toContain("BTC đã thu hồi sân 1");
 });
 
-test("⋯ trọng tài: Xem trang CLB có dải quay lại; Kết thúc ca (xác nhận) → trả sân, cảm ơn", async () => {
-  const e = await boot(base(REFD));
-  await e.until(() => e.V().includes('class="rfsh"'));
-  await e.click("rfmenu"); await e.until(() => e.T().includes("Xem trang CLB"));
+test("lối ra để kín cuối màn chờ trận: Chế độ người chơi có dải Về sân; Kết thúc ca (xác nhận) → trả sân, cảm ơn", async () => {
+  const e = await boot(base({ ...REFD, "clubs/q7/matches/m1": { session: 1, seq: 1, court: 1, a: ["p1", "p3"], b: ["p2", "p4"], status: "done", sa: 11, sb: 6, doneAt: Date.now() - 3e5 } }));
+  await e.until(() => e.V().includes('class="rflinks"'));
+  expect(e.V()).not.toContain('data-act="rfmenu"');
   await e.click("rfaway"); await e.until(() => e.V().includes('class="rfaway'));
-  expect(e.V()).not.toContain('class="rfsh"'); expect(e.T()).toContain("Trận mới vào sân 1");
+  expect(e.V()).not.toContain('class="rfsh"'); expect(e.T()).toContain("Bạn đang làm trọng tài sân 1");
   await e.click("rfback"); await e.until(() => e.V().includes('class="rfsh"'));
-  await e.click("rfmenu"); await e.click("rfendask"); await e.until(() => e.T().includes("Kết thúc ca trọng tài sân 1?"));
+  await e.click("rfendask"); await e.until(() => e.T().includes("Kết thúc ca trọng tài sân 1?"));
   await e.click("rfend"); await e.until(() => !e.store.get("clubs/q7/refs/zalo_5"));
   await e.until(() => e.T().includes("Bạn đã kết thúc ca ở sân 1"));
+});
+
+test("đang có trận thì không hiện lối ra", async () => {
+  const e = await boot(base(REFD));
+  await e.until(() => e.V().includes('class="rfsh"'));
+  expect(e.V()).not.toContain('class="rflinks"');
 });
 
 test("giải đã chốt (buổi mới) → quyền trọng tài hết: tự trả sân, cảm ơn", async () => {
