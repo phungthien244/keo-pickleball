@@ -105,7 +105,7 @@ function rfShell(D){const c=[...MYCT].sort((a,b)=>a-b)[0];
 // Thao tác riêng của luồng trọng tài Mini App
 async function rfAct(act,b){
   const v=b.dataset.v;
-  if(act==="ttstep"){rfStep=Math.max(1,Math.min(3,+v||1));render();try{scrollTo({top:0})}catch(e){}return true}
+  if(act==="ttstep"){rfStep=Math.max(1,Math.min(3,+v||1));{const m=ttM();if(m&&m.ref&&!m.ref.started&&(m.ref.st||1)!==rfStep)ttWrite(m,{...m.ref,st:rfStep})}render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="ttname"){rfNameEd=true;render();return true}
   if(act==="ttbye"){rfBye=null;go("home");return true}
   if(act==="ttcallx"){rfAsk=null;render();return true}

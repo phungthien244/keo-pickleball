@@ -2748,3 +2748,13 @@ a.mxbk,.mxdr .mxbk{color:#fff;text-decoration:none;font-size:28px;line-height:1}
 .g2p.ckbtc{width:100%}.g2p.ckbtc.on{background:#f0fdf4}
 .ckbox{flex:none;width:26px;height:26px;border:2px solid var(--navy);display:grid;place-items:center;font-weight:900;color:#fff}
 .g2p.ckbtc.on .ckbox{background:#16a34a;border-color:#16a34a}
+/* Thẻ sân theo trạng thái trọng tài (K14) */
+.scst{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+.scst i{font-style:normal;font-size:10.5px;font-weight:800;text-align:center;padding:5px 0;background:#eef1f4;color:#8a99a8}
+.scst i.ok{background:#dcfce7;color:#15803d}.scst i.on{background:var(--navy);color:#fff}
+.scsc{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:700}.scsc b{font-family:var(--display);font-size:26px;font-weight:900}
+.scbt{display:flex;gap:8px}.scbt>*{flex:1;min-height:46px}.scbt>.gmdot{flex:0 0 52px;font-size:20px;padding:0}.scbt .ball{flex:1.3}
+.g4c.sc.end{border:2px solid #16a34a}.scend{color:#15803d;font-size:16px}
+.scprev{display:flex;align-items:center;gap:8px;background:#f3f5f7;padding:6px 8px;font-size:12.5px}.scprev span{flex:1}.scprev .sm{min-height:32px;flex:none}
+.scun{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fef3c7;color:#78350f;padding:10px 12px;margin:0 0 10px;font-weight:700}
+.scun .sm{min-height:36px;flex:none}

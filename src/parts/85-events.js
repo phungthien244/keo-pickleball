@@ -181,6 +181,7 @@ document.addEventListener("click",onAct=async e=>{
   if(canWrite&&/^k(1[123]|courts?|11bang|court)/.test(act)&&await kDayAct(act,b))return;
   if(canWrite&&/^k(seg|go|force|17|15|call|up|cp|swap|reset)/.test(act)&&await kPlayAct(act,b))return;
   if(canWrite&&act==="kset"&&await kSetAct(act,b))return;
+  if(canWrite&&act.startsWith("sc")&&await scAct(act,b))return;
   if(canWrite&&act.startsWith("ckbtc")&&await ckBtcAct(act,b))return;
   if(canWrite&&act.startsWith("gs")&&await gsAct(act,b))return;
   if(canWrite&&act.startsWith("g4")&&await g4Act(act,b))return;
@@ -357,7 +358,7 @@ document.addEventListener("click",onAct=async e=>{
     delete errs[id];
     if(act==="save"&&b.dataset.read&&!loaMuted()){const D=derive();if(m)speak(resultText(D,m,a,bb),"","r:"+id)}
     await write(()=>db.collection("matches").doc(id).update(act==="save"?{sa:a,sb:bb,status:"done",doneAt:Date.now()}:{sa:a,sb:bb}).then(()=>{S.everWrote=true;delete drafts[pre[0]+id];delete drafts[pre[1]+id];editing.delete(id)}),act==="save"?"Đã lưu tỉ số":"Đã sửa tỉ số");
-    if(m.giai&&act==="save"&&!errs[id]&&canWrite){if(m.status!=="done")Object.assign(m,{sa:a,sb:bb,status:"done",doneAt:Date.now()});await new Promise(r=>setTimeout(r,60));await gFill()}}
+    if(m.giai&&act==="save"&&!errs[id]&&canWrite&&autoNext()){if(m.status!=="done")Object.assign(m,{sa:a,sb:bb,status:"done",doneAt:Date.now()});await new Promise(r=>setTimeout(r,60));await gFill()}}
   else if(act==="edit"){editing.add(id);render()}
   else if(act==="edit-x"){editing.delete(id);delete errs[id];render()}
   else if(act==="reset"||act==="chot"){if(!armOr("chot:x"))return;await chotBuoi()}

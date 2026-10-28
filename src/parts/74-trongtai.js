@@ -277,12 +277,12 @@ async function ttAct(act,b){
     ttFF=null;ttId=null;
     await write(async()=>{await db.collection("matches").doc(m.id).update({ref});Object.assign(m,{ref});await trashMatches([m],"cancel");
       if(m.giai&&canWrite){const pid=F.t==="a"?m.pa:m.pb;if(pid)await saveG({out:{...(cfg().giai?.out||{}),[pid]:true}})}},`${ttTN(D,m,F.t)} bỏ cuộc · đã ghi nhận`);
-    if(m.giai&&canWrite){await new Promise(r=>setTimeout(r,60));await gFill()}
+    if(m.giai&&canWrite&&autoNext()){await new Promise(r=>setTimeout(r,60));await gFill()}
     return true}
   if(act==="ttsave"){if(!X.done||X.ff)return true;const r=ttResult(X),msg=vPtsM(m,r.a,r.b);if(msg){toast(msg);return true}
     await write(()=>db.collection("matches").doc(m.id).update({sa:r.a,sb:r.b,status:"done",doneAt:Date.now(),ref:{...f,end:Date.now()}}).then(()=>{S.everWrote=true}),`Đã lưu tỉ số ${r.a}–${r.b}`);
     ttId=null;ttV=null;
-    if(m.giai&&canWrite){if(m.status!=="done")Object.assign(m,{sa:r.a,sb:r.b,status:"done",doneAt:Date.now()});await new Promise(r=>setTimeout(r,60));await gFill()}
+    if(m.giai&&canWrite&&autoNext()){if(m.status!=="done")Object.assign(m,{sa:r.a,sb:r.b,status:"done",doneAt:Date.now()});await new Promise(r=>setTimeout(r,60));await gFill()}
     render();return true}
   return true;
 }

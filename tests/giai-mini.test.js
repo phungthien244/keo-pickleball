@@ -70,7 +70,7 @@ test("đang đánh: thẻ sân to → Nhập điểm (hai ô to, + −) → Lưu
   const e = await boot(base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "live", sname: "Giao lưu sáng" },
     "clubs/q7/players/p1": P("An"), "clubs/q7/players/p2": P("Bình"), "clubs/q7/players/p3": P("Chi"), "clubs/q7/players/p4": P("Dũng"),
     "clubs/q7/matches/m1": { session: 1, seq: 1, court: 1, a: ["p1", "p3"], b: ["p2", "p4"], status: "playing", createdAt: Date.now() - 6e5 } }));
-  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="g4c"'));
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="g4c'));
   expect(e.T()).toContain("SÂN 1"); expect(e.T()).toContain("Sân trống"); expect(e.T()).toContain("Hết giờ · sang chốt");
   await e.click("g4m", { id: "m1" }); await e.until(() => e.T().includes("Sân 1 · nhập điểm"));
   for (let i = 0; i < 11; i++) await e.click("g4d", { k: "sa-m1", d: "1" });

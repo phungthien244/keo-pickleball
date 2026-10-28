@@ -64,11 +64,11 @@ function gPick(D,GD,busy,rest){
     if(!bs||lexLt(s,bs)){bs=s;best=g}});
   return best;
 }
-async function gFill(quiet){
+async function gFill(quiet,only){
   if(pausedNow())return 0;
   await new Promise(r=>setTimeout(r,30));
   const D=derive(),GD=gDerive(D);if(!GD||!GD.locked)return 0;
-  const used=new Set(D.playing.map(m=>m.court)),cp=(cfg().giai||{}).cpause||{},free=[];for(let i=1;i<=D.c.courts;i++)if(!used.has(i)&&!cp[i])free.push(i);
+  const used=new Set(D.playing.map(m=>m.court)),cp=(cfg().giai||{}).cpause||{},free=[];for(let i=1;i<=D.c.courts;i++)if(!used.has(i)&&!cp[i]&&(!only||i===only))free.push(i);
   if(!free.length)return 0;
   const busy=new Set(D.playing.filter(m=>m.giai).flatMap(m=>[m.pa,m.pb]));
   const lastDone=D.done.filter(m=>m.giai).slice(-Math.max(1,D.c.courts-1));

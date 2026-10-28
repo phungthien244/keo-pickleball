@@ -19,11 +19,11 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random
 
 // Trận định sẵn chưa đánh (theo thứ tự đã xếp)
 const presetQueue=D=>D.c.preOn===true?(D.c.presets||[]).filter(p=>!D.SM.some(m=>m.preset===p.id)):[];
-async function generate(){
+async function generate(only){
   if(pausedNow()){toast("Đang nghỉ giữa giờ. Bấm “Đánh tiếp” để đưa trận vào sân.");return}
   const D=derive(),c=D.c;
   const used=new Set(D.playing.map(m=>m.court));
-  const freeCourts=[];for(let i=1;i<=c.courts;i++)if(!used.has(i))freeCourts.push(i);
+  const freeCourts=[];for(let i=1;i<=c.courts;i++)if(!used.has(i)&&(!only||i===only))freeCourts.push(i);
   const busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b]));
   const avail0=D.players.filter(p=>p.active!==false&&!busy.has(p.id)).map(p=>p.id);
   if(!freeCourts.length){errs.gen="Tất cả sân đang có trận. Lưu tỉ số hoặc thêm sân trước.";return render()}

@@ -13,7 +13,7 @@ function watchCalls(){
   if(dhPumpT){clearInterval(dhPumpT);dhPumpT=null}
   if(legacy||!authUser||!(canWrite||REF)||!window.FB||!FB.onSnapshot)return;
   try{unsubCalls=FB.onSnapshot(FB.collection(FB.fs,PFX+"calls"),{},q=>{const t0=Date.now()-12*36e5;S.calls=q.docs.map(d=>({id:d.id,...d.data()})).filter(x=>(x.at||0)>t0);render();dhPump()},()=>{})}catch(e){}
-  if(canWrite&&typeof setInterval==="function")dhPumpT=setInterval(dhPump,3000);
+  if(canWrite&&typeof setInterval==="function")dhPumpT=setInterval(()=>{dhPump();scAuto()},3000);
 }
 async function dhAddCall(o){
   const D=derive();

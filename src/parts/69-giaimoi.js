@@ -245,6 +245,7 @@ function gmSheets(D,X,st,cur){
     if(!MINI&&cur&&X&&!live)R.push(["↺","Chọn giải khác để đánh","Bỏ chọn giải này ở sân","hnunpick",""]);
     if(MINI&&st===1)R.push(ED,SW);
   }else if(MINI){
+    R.push(["⚙","Xếp trận tiếp",autoNext()?"Đang: Tự động · bấm để chuyển BTC bấm":"Đang: BTC bấm · bấm để chuyển Tự động","scauto",""]);
     R.push(ED,SW,["🎯","Trọng tài","QR từng sân","dhqr",""],["📣","Thông báo loa","Gõ câu, máy loa đọc","dhan",""],["⏸","Nghỉ giữa giờ","Tạm dừng đưa trận mới","dhps",""],["↗","Chia sẻ trực tiếp","Gửi link xem điểm","lshare",""]);
   }else{
     R.push(["🎯","Trọng tài","QR từng sân, ai đang nhập điểm","dhqr",""],["📣","Thông báo loa","Gõ câu, máy loa đọc ngay","dhan",""],["⏸","Nghỉ giữa giờ","Tạm dừng đưa trận mới vào sân","dhps",""],["↗","Chia sẻ trực tiếp","Gửi link xem điểm vào nhóm","lshare",""]);

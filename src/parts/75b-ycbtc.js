@@ -62,6 +62,6 @@ async function ycAct(act,b){
   if(act==="ycff"){const m=(S.matches||[]).find(x=>x.id===id),t=b.dataset.v;if(!m)return true;if(!armOr("ycff:"+id+":"+t))return true;
     const tgt=+(mRule(m)||{}).to||+D.c.target||11,sa=t==="a"?0:tgt,sb=t==="a"?tgt:0,x=(S.calls||[]).find(z=>z.id===dhSC);
     await write(async()=>{await db.collection("matches").doc(id).update({sa,sb,status:"done",doneAt:Date.now(),ff:t});if(x)await db.collection("calls").doc(x.id).update({st:"done",doneAt:Date.now(),doneBy:who()})},`Đã xử thua · ${t==="a"?g4Nm(D,m.b):g4Nm(D,m.a)} thắng`);
-    dhSC=null;if(m.giai){await new Promise(r=>setTimeout(r,60));await gFill()}return true}
+    dhSC=null;if(m.giai&&autoNext()){await new Promise(r=>setTimeout(r,60));await gFill()}return true}
   return false;
 }
