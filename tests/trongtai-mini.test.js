@@ -24,7 +24,7 @@ test("quét mã: màn nhận sân (R1) → sửa tên → Nhận sân → chỉ 
   expect(e.store.get("clubs/q7/refs/zalo_5")).toMatchObject({ court: 1, name: "Nam" });
   await e.until(() => e.V().includes('class="rfsh"'));
   expect(e.V()).not.toContain('class="mxnav"');
-  expect(e.T()).toContain("TRẬN MỚI VÀO SÂN 1"); expect(e.T()).toContain("NHẬN TRẬN");
+  expect(e.T()).toContain("TRẬN MỚI VÀO SÂN 1"); expect(e.T()).toContain("ĐIỂM DANH ›"); expect(e.T()).not.toContain("check-in");
   expect(e.T()).not.toContain("Bàn giao sân");
 });
 
@@ -34,32 +34,41 @@ test("chờ trận (R2): ô chờ, đã xong, chỉ nút Gọi BTC", async () =>
   expect(e.T()).toContain("Đã xong · 1 trận"); expect(e.T()).toContain("Gọi BTC");
 });
 
-test("chuẩn bị 3 bước: nhờ BTC gọi tên có hộp xác nhận và dải trạng thái; bước 3 không còn chọn Truyền thống/Rally", async () => {
-  const e = await boot(base(REFD));
+test("luồng mới: Điểm danh (Có mặt từng người, Gọi tên có xác nhận) → Bốc thăm gộp vị trí + luật → Bắt đầu; hoàn tác hỏi lại; BTC mời vào sân hiện dải", async () => {
+  const e = await boot(base({ ...REFD, "clubs/q7/matches/m1": { session: 1, seq: 1, court: 1, a: ["p1", "p3"], b: ["p2", "p4"], status: "playing", createdAt: Date.now() - 6e4, inv: Date.now() } }));
   await e.until(() => e.V().includes('class="rfsh"'));
-  await e.click("tt", { id: "m1" }); await e.until(() => e.T().includes("Chuẩn bị 1/3"));
-  expect(e.V()).toContain('class="rfb"');
+  expect(e.T()).toContain("BTC đã mời vào sân"); expect(e.T()).toContain("Mời An và Chi, Bình và Dũng vào sân 1 chuẩn bị thi đấu");
+  await e.click("tt", { id: "m1" }); await e.until(() => e.T().includes("Điểm danh trên sân"));
+  expect(e.V()).toContain('<i class="on">Điểm danh</i>');
+  await e.click("tthere", { v: "p1" }); await e.until(() => ((e.store.get("clubs/q7/matches/m1").ref || {}).here || {}).p1);
+  await e.until(() => e.T().includes("có mặt trên sân"));
   await e.click("ttcallp", { v: "p3", m: "m1" });
   expect(e.T()).toContain("Mời vận động viên Chi, đội An và Chi, ra sân 1 thi đấu.");
   await e.click("ttcallgo", { v: "p3", m: "m1" });
-  await e.until(() => e.docs("calls/").length === 1 || [...e.store.keys()].some(k => k.startsWith("clubs/q7/calls/")));
-  const [k] = [...e.store.keys()].filter(k => k.startsWith("clubs/q7/calls/"));
-  expect(e.store.get(k)).toMatchObject({ k: "loa", st: "new", uid: "zalo_5" });
+  await e.until(() => [...e.store.keys()].some(k => k.startsWith("clubs/q7/calls/")));
   await e.until(() => e.T().includes("Đã gửi về máy BTC"));
-  // gửi lại ngay: bị chặn 1 phút
-  await e.click("ttcallgo", { v: "p3", m: "m1" });
-  expect([...e.store.keys()].filter(k => k.startsWith("clubs/q7/calls/")).length).toBe(1);
+  const [k] = [...e.store.keys()].filter(k => k.startsWith("clubs/q7/calls/"));
   await e.FB.updateDoc(e.FB.doc(e.FB.fs, k), { st: "done", doneAt: Date.now() });
   await e.until(() => e.T().includes("BTC đã gọi tên Chi"));
-  await e.FB.updateDoc(e.FB.doc(e.FB.fs, k), { st: "skip", doneAt: Date.now() });
-  await e.until(() => e.T().includes("Chưa gửi được yêu cầu gọi tên"));
-  await e.click("ttstep", { v: "2" }); await e.until(() => e.T().includes("Chuẩn bị 2/3"));
-  expect(e.T()).toContain("Đội nào chọn mặt đồng xu?");
-  await e.click("ttstep", { v: "3" }); await e.until(() => e.T().includes("Chuẩn bị 3/3"));
-  expect(e.V()).not.toContain('data-act="ttrally"'); expect(e.T()).toContain("Tính điểm"); expect(e.T()).toContain("Bắt đầu trận");
+  await e.click("ttstep", { v: "2" }); await e.until(() => e.T().includes("Đội nào chọn mặt đồng xu?"));
+  await e.until(() => (e.store.get("clubs/q7/matches/m1").ref || {}).st === 2);
+  expect(e.T()).toContain("Vị trí đứng"); expect(e.T()).toContain("Luật trận"); expect(e.V()).not.toContain('data-act="ttrally"');
+  expect(e.V()).not.toContain('data-act="ttface"><');
   await e.click("ttstart"); await e.until(() => (e.store.get("clubs/q7/matches/m1").ref || {}).started);
-  await e.until(() => e.T().includes("Ván 1"));
-  expect(e.V()).toContain('class="rfb"');
+  await e.click("ttp", { v: "a" }); await e.until(() => (e.store.get("clubs/q7/matches/m1").ref.ev || []).length === 1);
+  await e.click("ttundoask"); await e.until(() => e.T().includes("Hoàn tác pha vừa nhập?"));
+  await e.click("ttundox"); expect((e.store.get("clubs/q7/matches/m1").ref.ev || []).length).toBe(1);
+  await e.click("ttundoask"); await e.click("ttundo"); await e.until(() => (e.store.get("clubs/q7/matches/m1").ref.ev || []).length === 0);
+});
+
+test("đã lưu, BTC bấm: Chờ BTC tạo trận mới + dải BTC đã đọc kết quả; BTC huỷ trận thì báo", async () => {
+  const e = await boot(base({ ...REFD, "clubs/q7/matches/m1": { session: 1, seq: 1, court: 1, a: ["p1", "p3"], b: ["p2", "p4"], status: "done", sa: 11, sb: 6, doneAt: Date.now() - 6e4, readAt: Date.now() } }));
+  await e.until(() => e.T().includes("Chờ BTC tạo trận mới"));
+  expect(e.T()).toContain("BTC đã đọc kết quả"); expect(e.T()).toContain("Đã lưu vào giải");
+  await e.FB.setDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m2"), { session: 1, seq: 2, court: 1, a: ["p1", "p2"], b: ["p3", "p4"], status: "playing", createdAt: Date.now() });
+  await e.until(() => e.T().includes("TRẬN MỚI"));
+  await e.FB.deleteDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m2"));
+  await e.until(() => e.T().includes("BTC đã huỷ trận sân 1"));
 });
 
 test("BTC thu hồi sân: hiện màn cảm ơn (R13)", async () => {

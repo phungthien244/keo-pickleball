@@ -18,7 +18,7 @@ const calls = e => [...e.store.keys()].filter(k => k.startsWith("clubs/q7/calls/
 test("trọng tài đang điểm danh: thanh 4 bước, số người có mặt; Mời vào sân gửi câu loa", async () => {
   const e = await boot(base({ "clubs/q7/matches/m1": { session: 1, seq: 1, court: 1, a: ["p1", "p3"], b: ["p2", "p4"], status: "playing", createdAt: Date.now() - 6e5, ref: { by: "r1", byName: "Nam", at: Date.now(), pos: { a: ["p1", "p3"], b: ["p2", "p4"] }, first: "a", left: "a", ev: [] } } }));
   await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="scst"'));
-  expect(e.T()).toContain("Điểm danh"); expect(e.T()).toContain("TT Nam"); expect(e.T()).toContain("4/4 có mặt");
+  expect(e.T()).toContain("Điểm danh"); expect(e.T()).toContain("TT Nam"); expect(e.T()).toContain("0/4 có mặt");
   await e.click("scinv", { id: "m1" }); await e.until(() => calls(e).length === 1);
   expect(calls(e)[0].txt).toBe("Mời An và Chi, Bình và Dũng vào sân 1 chuẩn bị thi đấu");
   // trọng tài sang bốc thăm rồi bắt đầu

@@ -19,7 +19,7 @@ function scCard(D,m,lb,nA,nB){
   let body;
   if(R)body=`<div class="scsc"><span>${nA}</span><b class="num">${R.s.a}</b></div><div class="scsc"><span>${nB}</span><b class="num">${R.s.b}</b></div><small class="rule">${st===4?"Trọng tài đang xác nhận kết quả":`Ván ${R.g+1} · ${esc(R.call())}`}</small>`;
   else{body=`<span class="t"><b>${nA}</b> <span>gặp</span> <b>${nB}</b></span>`;
-    if(st===1){const ids=[...m.a,...m.b],miss=ids.filter(id=>!rfCk(id).ok);body+=`<small class="${miss.length?"wac":"okc"}">${ids.length-miss.length}/${ids.length} có mặt${miss.length?` · thiếu ${miss.map(id=>esc(ttPN(D,id))).join(", ")}`:""}</small>`}}
+    if(st===1){const ids=[...m.a,...m.b],miss=ids.filter(id=>!rfHere(m,id));body+=`<small class="${miss.length?"wac":"okc"}">${ids.length-miss.length}/${ids.length} có mặt${miss.length?` · thiếu ${miss.map(id=>esc(ttPN(D,id))).join(", ")}`:""}</small>`}}
   const prev=autoNext()?scLast(D,k):null,pv=prev&&prev.doneAt&&Date.now()-prev.doneAt<60e3&&prev.doneAt<(m.createdAt||0)+5e3?prev:null;
   if(pv)setTimeout(render,60e3-(Date.now()-pv.doneAt)+50);
   const btn=st&&st>=3?`<button class="btn-line" data-act="dhhist" data-id="${esc(m.id)}">Lịch sử từng pha</button>`
@@ -71,8 +71,8 @@ async function scAct(act,b){
   const id=b.dataset.id,v=b.dataset.v,D=derive(),m=id?(S.matches||[]).find(x=>x.id===id):null;
   if(act==="scsh"){scSh=Number(v);render();return true}
   if(act==="scshx"){scSh=null;render();return true}
-  if(act==="scinv"){if(!m)return true;scSh=null;speak(scInvTx(D,m),"","inv:"+m.id);render();return true}
-  if(act==="scread"){if(!m)return true;scSh=null;speak(resultText(D,m,m.sa,m.sb),"","r:"+m.id);render();return true}
+  if(act==="scinv"){if(!m)return true;scSh=null;speak(scInvTx(D,m),"","inv:"+m.id);db.collection("matches").doc(m.id).update({inv:Date.now()}).catch(()=>{});render();return true}
+  if(act==="scread"){if(!m)return true;scSh=null;speak(resultText(D,m,m.sa,m.sb),"","r:"+m.id);db.collection("matches").doc(m.id).update({readAt:Date.now()}).catch(()=>{});render();return true}
   if(act==="scfill"){if(isG(D.c)){const n=await gFill(false,Number(v));if(!n)toast("Chưa có trận nào đưa vào được: hết trận hoặc cặp đang bận.")}else await generate(Number(v));return true}
   if(act==="scauto"){gmMore=false;kSh=null;const on=!autoNext();await write(()=>saveCfg({autoNext:on}),on?"Xếp trận tiếp: tự động":"Xếp trận tiếp: BTC bấm");return true}
   if(act==="sccancel"){if(!m||!armOr("sccancel:"+m.id))return true;scSh=null;const c=Number(m.court);

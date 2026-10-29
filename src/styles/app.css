@@ -2772,3 +2772,12 @@ a.mxbk,.mxdr .mxbk{color:#fff;text-decoration:none;font-size:28px;line-height:1}
 .rfcb>small{font-size:12.5px;color:var(--muted)}
 .rflinks{display:flex;justify-content:center;align-items:center;gap:6px;padding:18px 0 4px;color:#8a99a8;font-size:12px}
 .rflinks button{background:none;border:0;padding:6px 4px;min-height:0;color:#8a99a8;font-size:12px;font-weight:400;text-decoration:underline;letter-spacing:0;text-transform:none}
+/* Trọng tài khớp BTC: 4 bước, Có mặt, đã lưu */
+.rfst4{margin:0}
+.rfst.in{margin:0}
+.rfhere{flex:none;min-height:38px;padding:0 12px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.rfhere.on{border:0;background:#16a34a;color:#fff}
+.ttfs.rf .ttrow{gap:8px}
+.rfsaved{background:#dcfce7;border-left:4px solid #16a34a;padding:12px;display:flex;flex-direction:column;gap:2px}
+.rfsaved .cap{color:#166534!important}.rfsaved b{font-size:15px}
+.rfdlg .q{font-weight:400}

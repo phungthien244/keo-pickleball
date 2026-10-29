@@ -80,7 +80,7 @@ function ttCourt(D,m,X,o={}){
   const L=X.left,Rt=ttO(L),cell=(t,id,court)=>{
     const sv=!o.pre&&id===X.sv,rc=!o.pre&&id===X.rcv,first=o.pre&&t===X.st&&id===X.right[t];
     const sub=sv?`đang giao · ô ${court}`:rc?`nhận bóng · ô ${court}`:first?`ô ${court} · giao đầu`:`ô ${court}`;
-    return `<div class="ttc t${t}${sv||first?" sv":""}${rc?" rc":""}"${o.pre?` data-act="ttswap" data-v="${t}" role="button" tabindex="0" aria-label="Đổi ô ${esc(ttTN(D,m,t))}"`:""}>${ttAv(D,id)}<span class="n"><b>${esc(ttPN(D,id))}${sv?TT_HAND:first?` <i>●</i>`:""}</b><small>${sub}</small></span></div>`};
+    return `<div class="ttc t${t}${sv||first?" sv":""}${rc?" rc":""}"${o.pre?` data-act="ttswap" data-v="${t}" role="button" tabindex="0" aria-label="Đổi ô ${esc(ttTN(D,m,t))}"`:""}>${o.noface?av(D.pmap.get(id),"md",1):ttAv(D,id)}<span class="n"><b>${esc(ttPN(D,id))}${sv?TT_HAND:first?` <i>●</i>`:""}</b><small>${sub}</small></span></div>`};
   const rL=X.right[L],lL=mate(L,rL),rR=X.right[Rt],lR=mate(Rt,rR);
   return `<div class="ttcourt">${cell(L,lL,"trái")}<i class="net"></i>${cell(Rt,rR,"phải")}${cell(L,rL,"phải")}${cell(Rt,lR,"trái")}</div>`;
 }
@@ -135,7 +135,7 @@ function ttMain(D,m,X){
   // đáy cố định: Hoàn tác trên; +1 nằm cùng phía đội đang giao, nút còn lại phía kia
   const lose=X.rally?{c:"so",l:"ĐỘI NHẬN GHI ĐIỂM",s:`+1 cho ${esc(ttTN(D,m,rt))} · đổi giao`}:X.sn===1?{c:"t2",l:"TAY 2",s:`${esc(ttPN(D,mate(X.sv)))} giao`}:{c:"so",l:"ĐỔI GIAO",s:`sang ${esc(ttTN(D,m,rt))}`};
   const bP=`<button class="p1 t${st}" data-act="ttp" data-v="${st}"><b>+1 ĐIỂM</b><small>${esc(ttTN(D,m,st))}</small></button>`,bL=`<button class="${lose.c}" data-act="ttp" data-v="${rt}"><b>${lose.l}</b><small>${lose.s}</small></button>`;
-  h+=`<div class="ttbar"><button class="ttun" data-act="ttundo" ${(m.ref.ev||[]).length?"":"disabled"}>↶ Hoàn tác pha vừa nhập</button><div class="two">${st===X.left?bP+bL:bL+bP}</div></div>`;
+  h+=`<div class="ttbar"><button class="ttun" data-act="ttundoask" ${(m.ref.ev||[]).length?"":"disabled"}>↶ Hoàn tác pha vừa nhập</button><div class="two">${st===X.left?bP+bL:bL+bP}</div></div>`;
   // hộp thoại xin timeout: chọn đội rồi mới bắt đầu bấm giờ
   if(ttTOD&&!X.toAct){const sel=ttTOD.t;
     const team=t=>`<button class="tttm t${t}${sel===t?" on":""}" data-act="tttos" data-v="${t}" ${X.to[t]?"":"disabled"} aria-pressed="${sel===t}">${ttAvs(D,t==="a"?m.a:m.b,"xs")}<b>${esc(ttTN(D,m,t))}</b><span class="bars">${[0,1].map(i=>`<i class="${i<X.to[t]?"l":""}"></i>`).join("")}</span><small>${X.to[t]?`còn ${X.to[t]} lần ván này`:"hết timeout ván này"}</small></button>`;
@@ -165,15 +165,15 @@ function ttHist(D,m,X){
 }
 function ttEnd(D,m,X){
   const w=X.win,f=m.ref,sg=f.sign||{},tn=t=>esc(ttTN(D,m,t)),dur=X.t0&&X.tEnd?Math.max(1,Math.round((X.tEnd-X.t0)/6e4)):0;
-  let h=(rfOn()?ttHead(D,m,"Hết trận",""):"")+`<div class="ttendhd"><span class="cap">${X.ff?"Thắng do đối thủ bỏ cuộc":X.R.sets>1?`Thắng ${X.gw[w]}–${X.gw[ttO(w)]}`:"Thắng"}</span>${ttAvs(D,w==="a"?m.a:m.b,"md")}<b>${tn(w)}</b>
-    <div class="gs">${X.games.map(g=>`<span class="num">${g.a}–${g.b}</span>`).join("")}${X.ff&&(X.s.a||X.s.b)?`<span class="num ff">${X.s.a}–${X.s.b} · bỏ cuộc</span>`:""}</div><small>${dur?`${dur} phút · `:""}${X.rallies} pha bóng · ${X.sides} lần đổi giao</small></div>`;
+  let h=(rfOn()?ttHead(D,m,"Hết trận","")+(rfReopen===m.id?`<div class="rfst y"><b>↶ BTC đã mở lại trận</b><small>Kiểm tra tỉ số rồi bấm Lưu lại</small></div>`:""):"")+`<div class="ttendhd"><span class="cap">${X.ff?"Thắng do đối thủ bỏ cuộc":X.R.sets>1?`Thắng ${X.gw[w]}–${X.gw[ttO(w)]}`:"Thắng"}</span>${ttAvs(D,w==="a"?m.a:m.b,"md")}<b>${tn(w)}</b>
+    <div class="gs">${X.games.map(g=>`<span class="num">${g.a}–${g.b}</span>`).join("")}${X.ff&&(X.s.a||X.s.b)?`<span class="num ff">${X.s.a}–${X.s.b} · bỏ cuộc</span>`:""}</div><small>${dur?`${dur} phút · `:""}${X.rallies} pha bóng · ${X.sides} lần đổi giao</small></div>`+(rfOn()?rfSteps(4):"");
   if(!X.ff){
     h+=`<section class="ttbox"><span class="cap">Xác nhận kết quả · không bắt buộc</span>${["a","b"].map(t=>`<div class="ttrow"><span class="grow">${tn(t)}</span>${sg[t]?`<span class="ok">✓ Đã ký ${hm(sg[t])}</span>`:`<button class="ttln" data-act="ttsign" data-v="${t}">Ký trên máy</button>`}</div>`).join("")}<small>Có khiếu nại thì để trống, quản lý xem lại lịch sử từng pha trước khi lưu.</small></section>`;
     const r=ttResult(X);
-    h+=`<section class="ttbox"><span class="cap">Sẽ lưu vào giải</span><b class="num">${tn("a")} ${r.a} – ${r.b} ${tn("b")}</b><small>${X.R.sets>1?"Giải nhiều set lưu số set thắng. ":""}Xếp hạng, rating và tiền tự cập nhật. Sân trống sẽ nhận trận kế.</small></section>`;
+    h+=`<section class="ttbox"><span class="cap">Sẽ lưu vào giải</span><b class="num">${tn("a")} ${r.a} – ${r.b} ${tn("b")}</b><small>${X.R.sets>1?"Giải nhiều set lưu số set thắng. ":""}Xếp hạng, rating và tiền tự cập nhật. ${rfOn()?"Lưu xong BTC thấy “Kết thúc” và tạo trận mới cho sân.":"Sân trống sẽ nhận trận kế."}</small></section>`;
   }
   h+=`<button class="lnk ttc2" data-act="ttv" data-v="hist">Xem lịch sử từng pha ›</button>`;
-  return h+`<div class="ttft two"><button class="ttln" data-act="ttundo">↶ Hoàn tác pha cuối</button>${X.ff?`<button class="ttgo" data-act="ttx">Đóng</button>`:`<button class="ttgo" data-act="ttsave">✓ Lưu tỉ số vào giải</button>`}</div>`;
+  return h+`<div class="ttft two"><button class="ttln" data-act="ttundoask">↶ Hoàn tác pha cuối</button>${X.ff?`<button class="ttgo" data-act="ttx">Đóng</button>`:`<button class="ttgo" data-act="ttsave">✓ Lưu tỉ số vào giải</button>`}</div>`;
 }
 function ttFaceV(D,m){
   const ids=[...m.a,...m.b],id=ids.includes(ttFace)?ttFace:ids[0],p=D.pmap.get(id)||{},t=m.a.includes(id)?"a":"b";
@@ -203,7 +203,7 @@ function ttLayer(D){
   let v=ttV||(f.started?"main":"pre");if(X.done&&v==="main")v="end";if(!f.started&&(v==="main"||v==="end"))v="pre";
   const body=ttFace?ttFaceV(D,m):rfOn()&&(v==="toss"||v==="pre")?rfPre(D,m,X):v==="toss"?ttToss(D,m,X):v==="pre"?ttPre(D,m,X):v==="hist"?ttHist(D,m,X):v==="end"?ttEnd(D,m,X):ttMain(D,m,X);
   ttTickOn();
-  return `<div class="ttfs${v==="main"&&!ttFace?" main":""}${rfOn()?" rf":""}" role="dialog" aria-label="Màn trọng tài · ${ttFace?"mat":v}">${body}${ttFF?ttFFV(D,m,X):""}${dhCB!=null?dhSheets(D):""}</div>`;
+  return `<div class="ttfs${v==="main"&&!ttFace?" main":""}${rfOn()?" rf":""}" role="dialog" aria-label="Màn trọng tài · ${ttFace?"mat":v}">${body}${ttFF?ttFFV(D,m,X):""}${dhCB!=null?dhSheets(D):""}${(v==="main"||v==="end")&&!ttFace?rfUndoDlg(D,m,X):""}</div>`;
 }
 function ttTickOn(){if(ttTick||typeof setInterval!=="function"||typeof document==="undefined"||!document.querySelectorAll)return;
   ttTick=setInterval(()=>{if(!ttId){clearInterval(ttTick);ttTick=null;return}let re=false;
@@ -217,7 +217,7 @@ async function ttAct(act,b){
   if(!act.startsWith("tt"))return false;
   const id=b.dataset.id;
   if(await rfAct(act,b))return true;
-  if(act==="tt"){rfStep=1;const m=(S.matches||[]).find(x=>x.id===id);if(!m||!canScore(m))return true;ttId=id;ttV=null;ttFace=null;ttFF=null;ttMT=false;ttHG=null;
+  if(act==="tt"){const m=(S.matches||[]).find(x=>x.id===id);rfStep=Math.min(2,(m&&m.ref&&m.ref.st)||1);rfUndo=false;if(!m||!canScore(m))return true;ttId=id;ttV=null;ttFace=null;ttFF=null;ttMT=false;ttHG=null;
     if(!m.ref)await ttWrite(m,{by:authUser?.uid||"",byName:rfOn()?((REFQ&&REFQ.name)||who()):who(),at:Date.now(),pos:{a:[...m.a],b:[...m.b]},first:"a",left:"a",rally:false,ev:[]});else render();
     try{scrollTo({top:0})}catch(e){}return true}
   const m=ttM();if(!m||!canScore(m)){ttId=null;render();return true}
@@ -251,7 +251,9 @@ async function ttAct(act,b){
   if(!f.started)return true;
   if(act==="ttp"){if(X.done){ttV="end";render();return true}if(X.needSw){toast("Đổi bên sân trước rồi nhập tiếp.");return true}
     await ttPush(m,{k:"p",w:v==="b"?"b":"a"});const Y=ttRun(D,m);if(Y.done)ttV="end";return true}
-  if(act==="ttundo"){const ev=[...(f.ev||[])];if(!ev.length)return true;const e=ev.pop(),last=[...X.log].reverse().find(l=>l.at===e.at&&l.k!=="un");
+  if(act==="ttundoask"){rfUndo=true;render();return true}
+  if(act==="ttundox"){rfUndo=false;render();return true}
+  if(act==="ttundo"){rfUndo=false;const ev=[...(f.ev||[])];if(!ev.length)return true;const e=ev.pop(),last=[...X.log].reverse().find(l=>l.at===e.at&&l.k!=="un");
     ttV=null;await ttWrite(m,{...f,ev,un:[...(f.un||[]),{at:Date.now(),g:X.g,tx:last?last.tx:e.k==="sw"?"đổi bên":"thao tác trước"}]});return true}
   if(act==="tttoo"){ttTOD={t:null};render();return true}
   if(act==="tttox"){ttTOD=null;render();return true}
@@ -281,7 +283,7 @@ async function ttAct(act,b){
     return true}
   if(act==="ttsave"){if(!X.done||X.ff)return true;const r=ttResult(X),msg=vPtsM(m,r.a,r.b);if(msg){toast(msg);return true}
     await write(()=>db.collection("matches").doc(m.id).update({sa:r.a,sb:r.b,status:"done",doneAt:Date.now(),ref:{...f,end:Date.now()}}).then(()=>{S.everWrote=true}),`Đã lưu tỉ số ${r.a}–${r.b}`);
-    ttId=null;ttV=null;
+    ttId=null;ttV=null;rfReopen=null;rfDone[m.id]=1;
     if(m.giai&&canWrite&&autoNext()){if(m.status!=="done")Object.assign(m,{sa:r.a,sb:r.b,status:"done",doneAt:Date.now()});await new Promise(r=>setTimeout(r,60));await gFill()}
     render();return true}
   return true;
