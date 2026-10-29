@@ -31,7 +31,7 @@ function loaRoute(text){
 // Máy loa: tự đọc lần lượt các yêu cầu (cách nhau ít nhất 3 giây)
 let dhLastSpk=0;
 function dhPump(){
-  if(!canWrite||!loaDev()||loaDev()!==DEVID||(cfg().loaMode||"auto")!=="auto"||loaMuted()||LOA.key!==null||Date.now()-dhLastSpk<3000)return;
+  if(!canWrite||!loaDev()||loaDev()!==DEVID||!loaAutoCalls()||loaMuted()||LOA.key!==null||Date.now()-dhLastSpk<3000)return;
   const x=dhCalls("loa")[0];if(!x)return;
   dhLastSpk=Date.now();db.collection("calls").doc(x.id).update({st:"done",doneAt:Date.now()}).catch(()=>{});
   speak(x.txt,"","call:"+x.id,true);
@@ -59,7 +59,7 @@ function dhBoard(D,o){
 }
 // Hộp "Việc cần xử lý": gấp trước
 function dhInbox(D){
-  const L=[],X=ckSched(),auto=(cfg().loaMode||"auto")==="auto"&&loaDev()===DEVID;
+  const L=[],X=ckSched(),auto=loaAutoCalls()&&loaDev()===DEVID;
   for(const x of dhCalls("btc"))L.push(`<div class="dhin"><span class="tg r">GẤP</span><span class="t"><b>Sân ${esc(cName(x.court))} cần BTC</b><small>${esc(x.why||"")} · ${esc(x.by||"")} ${x.at?hm(x.at):""}</small></span><button class="sm" data-act="dhsc" data-id="${esc(x.id)}">Tới</button></div>`);
   if(!auto)for(const x of dhCalls("loa"))L.push(`<div class="dhin"><span class="tg y">LOA</span><span class="t"><b>${esc(String(x.txt).slice(0,70))}</b><small>${esc(x.by||"")} nhờ · ${x.at?hm(x.at):""}</small></span><span class="bb"><button class="sm" data-act="dhloa" data-id="${esc(x.id)}">Đọc</button><button class="sm ln" data-act="dhloax" data-id="${esc(x.id)}">Bỏ</button></span></div>`);
   if(X&&isAdm())for(const r of ckPending().filter(r=>r.sid===X.id))L.push(`<div class="dhin"><span class="tg b">CHECK-IN</span><span class="t"><b>${esc(ckName(D,r))}${r.walkin?" xin vào":" vừa quét"}</b><small>${esc(ckPayLb(r))}</small></span><button class="sm" data-act="ckview" data-id="${esc(r.id)}">Duyệt</button></div>`);
@@ -164,7 +164,8 @@ function dhAward(D){
   return `<section class="dhpod"><span class="cap">${nx!=null?"Trao giải":"✓ Đã trao xong"}</span><div class="pods">${pod}</div></section>
     <section class="dhbox">${order.map(i=>{const p=pz[i],done=!!aw[i];return `<div class="dhin"><span class="tg ${done?"g":"y"}">${done?"ĐÃ TRAO":"CHƯA"}</span><span class="t"><b>${esc(p.label)} · ${fmtK(p.k)}</b><small>${nmOf(p)}</small></span>${spkBtn("aw:"+i,`<button class="sm${done?" ln":""}" data-act="dhaw" data-v="${i}">📣 ${done?"Đọc lại":"Gọi lên"}</button>`)}</div>`}).join("")}</section>`;
 }
-const dhAwText=(D,p)=>`${p.label}${p.k?`, trị giá ${fmtK(p.k).replace("tr"," triệu").replace("k"," nghìn")}`:""}, xin chúc mừng ${p.ids.map(id=>D.pmap.get(id)?.name||"").filter(Boolean).join(" và ")}. Xin mời lên nhận giải.`;
+const dhAwText=(D,p)=>ltx("award",{"giải":p.label,"đội":p.ids.map(id=>D.pmap.get(id)?.name||"").filter(Boolean).join(" và ")},dhAwText0(D,p));
+const dhAwText0=(D,p)=>`${p.label}${p.k?`, trị giá ${fmtK(p.k).replace("tr"," triệu").replace("k"," nghìn")}`:""}, xin chúc mừng ${p.ids.map(id=>D.pmap.get(id)?.name||"").filter(Boolean).join(" và ")}. Xin mời lên nhận giải.`;
 
 /* ----- Mẫu giải: tạo nhanh giải giống giải đã lưu làm mẫu ----- */
 function dhTplStrip(D){
@@ -204,14 +205,15 @@ async function dhAct(act,b){
   if(act==="dhpsx"){dhPS=false;render();return true}
   if(act==="dhpsgo"){const mn=Number(v)||0,until=mn?Date.now()+mn*6e4:0;dhPS=false;
     await write(()=>saveCfg({pause:{at:Date.now(),until}}),mn?`Nghỉ ${mn} phút`:"Đã tạm dừng đưa trận mới");
-    try{if(!loaMuted())speak(mn?`Ban tổ chức xin thông báo, giải nghỉ giữa giờ ${mn} phút, ${hm(until).replace(":"," giờ ")} đánh tiếp.`:"Ban tổ chức xin thông báo, giải tạm nghỉ giữa giờ. Mời các vận động viên chờ thông báo đánh tiếp.","","pause")}catch(e){}return true}
-  if(act==="dhresume"){await write(()=>saveCfg({pause:null}),"Đánh tiếp");try{if(!loaMuted())speak("Hết giờ nghỉ, mời các vận động viên trở lại sân thi đấu.","","pause")}catch(e){}
-    if(isG(D.c))await gFill(true);return true}
+    try{if(!loaMuted()&&loaOpt("auto"))speak(mn?`Ban tổ chức xin thông báo, giải nghỉ giữa giờ ${mn} phút, ${hm(until).replace(":"," giờ ")} đánh tiếp.`:"Ban tổ chức xin thông báo, giải tạm nghỉ giữa giờ. Mời các vận động viên chờ thông báo đánh tiếp.","","pause")}catch(e){}return true}
+  if(act==="dhresume"){await write(()=>saveCfg({pause:null}),"Đánh tiếp");try{if(!loaMuted()&&loaOpt("auto"))speak("Hết giờ nghỉ, mời các vận động viên trở lại sân thi đấu.","","pause")}catch(e){}
+    if(isG(D.c)&&autoNext())await gFill(true);return true}
   if(act==="dhan"){dhAN=true;render();return true}
   if(act==="dhanx"){dhAN=false;render();return true}
   if(act==="dhanpick"){drafts["dh-ann"]=DH_ANN[+v]||"";render();return true}
   if(act==="dhango"){const t=String(val("dh-ann","")).trim();if(!t){toast("Chọn câu mẫu hoặc gõ câu cần đọc.");return true}dhAN=false;delete drafts["dh-ann"];speak("Ban tổ chức xin thông báo. "+t,"","ann");render();return true}
   if(act==="dhqrk"){dhQR=+v||1;render();return true}
+  if(["dhqr","dhan","dhps","dhcb"].includes(act)){if(typeof kSh!=="undefined")kSh=null;gmMore=false}
   if(act==="dhqr"){dhQR=+v||1;const n=Math.max(1,+D.c.courts||1),Q=S.refqr||{};
     for(let k=1;k<=n;k++)if(!Q[k]||(Q[k].sid!=null&&Q[k].sid!==D.sid)||Q[k].sid==null)await db.collection("refqr").doc(String(k)).set({code:ckRand(),at:Date.now(),sid:D.sid}).catch(()=>{});render();return true}
   if(act==="dhqrx"){dhQR=false;render();return true}
@@ -234,7 +236,7 @@ function dhTTBox(D){
   for(let k=1;k<=n;k++){const R=[...(S.members||[]).filter(m=>m.role==="scorer"&&(m.courts||[]).map(Number).includes(k)).map(m=>m.name||"Trọng tài"),...(S.editors||[]).filter(e=>(e.courts||[]).map(Number).includes(k)).map(e=>e.name||"Máy PIN")],q=Q.filter(r=>Number(r.court)===k);
     h+=`<div class="dhin"><span class="tg ${R.length||q.length?"g":"y"}">SÂN ${esc(cName(k))}</span><span class="t"><b>${esc([...R,...q.map(r=>r.name||"Trọng tài")].join(", ")||"Chưa có · BTC tự nhập")}</b>${q.length?`<small>nhận qua QR ${q.map(r=>hm(r.at||0)).join(", ")}</small>`:""}</span>${q.map(r=>`<button class="sm ln" data-act="dhrefx" data-id="${esc(r.id)}">${armed("dhrefx:"+r.id)?"Chắc?":"Thu hồi"}</button>`).join("")}</div>`}
   h+=`<button class="line" data-act="dhqr">🖨 QR trọng tài từng sân</button></section>`;
-  const me=loaDev()===DEVID,mode=cfg().loaMode||"auto";
+  const me=loaDev()===DEVID,mode=loaAutoCalls()?"auto":"duyet";
   h+=`<section class="hqbox"><div class="dhsw"><span><b>Máy này nối loa</b><small>${loaDev()?(me?"Đang là máy loa của giải":"Máy loa là máy khác · máy này gửi yêu cầu"):"Chưa chọn · máy nào cũng tự đọc"}</small></span><button class="xsw${me?" on":""}" data-act="dhloadev" role="switch" aria-checked="${me}" aria-label="Máy này nối loa"><i></i></button></div>
     ${me?`<span class="cap">Yêu cầu từ trọng tài</span><div class="seg segw"><button data-act="dhloamode" data-v="auto" aria-pressed="${mode==="auto"}">Tự đọc lần lượt</button><button data-act="dhloamode" data-v="duyet" aria-pressed="${mode==="duyet"}">BTC duyệt rồi đọc</button></div><small class="rule">Cùng một câu chỉ nhận lại sau 1 phút. Máy khác bấm loa sẽ gửi về đây.</small>`:""}</section>`;
   return h;

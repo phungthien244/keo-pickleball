@@ -380,8 +380,8 @@ async function sessionAct(act,id,b,e){
     await write(async()=>{n=await regStart(D);await saveCfg(ro?{phase:"live",reg:{...regCfg(),on:false}}:{phase:"live"})},`Đã khai mạc giải đấu #${D.sid}`);if(n)toast(`Đã khai mạc · điểm danh thêm ${n} người đã đăng ký`);
     hqTab=null;stepView=null;
     // Khai mạc: loa đọc thể thức, rồi đưa trận đầu vào sân (xoay cặp)
-    if(!isG(D.c)&&typeof window!=="undefined"&&!window.__PBTEST){try{if(typeof loaMuted==="function"&&!loaMuted())speak(mcText(derive()),"","rules")}catch(e){}
-      const D2=derive();if(D2.players.filter(p=>p.active!==false).length>=4&&!D2.playing.length)await generate()}
+    if(!isG(D.c)&&typeof window!=="undefined"&&!window.__PBTEST){try{if(typeof loaMuted==="function"&&!loaMuted()&&loaOpt("rules"))speak(mcText(derive()),"","rules")}catch(e){}
+      const D2=derive();if(autoNext()&&D2.players.filter(p=>p.active!==false).length>=4&&!D2.playing.length)await generate()}
     return true}
   if(act==="win2"){const on=b.dataset.v==="1";write(()=>saveCfg({win2:on}),on?"Thắng phải cách 2":"Chạm là thắng");return true}
   if(act==="ptmax"){const c=cfg(),on=b.dataset.v==="1";write(()=>saveCfg({ptMax:on?Math.max(c.target+2,+c.ptMax||c.target+4):0}));return true}

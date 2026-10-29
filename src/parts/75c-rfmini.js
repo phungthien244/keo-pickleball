@@ -13,7 +13,7 @@ function rfHead(c,sub,back){return `<div class="tthd rf">${back?`<button class="
 // Trận dự kiến ở sân này (giải cặp): theo lịch dự kiến từng sân
 function rfPlan(D,c){if(!isG(D.c))return [];const GD=gDerive(D);if(!GD||!GD.locked)return [];return (gPlan(D,GD).get(Number(c))||[])}
 // Câu loa khi nhờ gọi tên
-const rfCallTx=(D,m,pid)=>{const t=m.a.includes(pid)?m.a:m.b;return `Mời vận động viên ${ttPN(D,pid)}, đội ${t.map(id=>ttPN(D,id)).join(" và ")}, ra sân ${cName(m.court)} thi đấu.`};
+const rfCallTx=(D,m,pid)=>{const t=m.a.includes(pid)?m.a:m.b;return ltx("call",{"tên":ttPN(D,pid),"đội":t.map(id=>ttPN(D,id)).join(" và "),"sân":cName(m.court)},`Mời vận động viên ${ttPN(D,pid)}, đội ${t.map(id=>ttPN(D,id)).join(" và ")}, ra sân ${cName(m.court)} thi đấu.`)};
 // Trạng thái nhờ gọi tên của một người: "", sent, done, skip, err
 function rfCallSt(D,m,pid){
   if(rfErr[pid])return {s:"err"};const u=authUser&&authUser.uid,tx=rfCallTx(D,m,pid);

@@ -87,15 +87,18 @@ test("ngày đánh: cặp thiếu người (chờ thêm, thay người); bắt �
   expect(G.pairs.map(p => p.id).sort()).toEqual(["t_r1", "t_r3", "t_r5", "t_r7"]);
   expect(G.ko.groups.map(g => g.p)).toEqual([["t_r1", "t_r3"], ["t_r5", "t_r7"]]);
   expect(G).toMatchObject({ koGate: true, koGo: false, locked: true }); expect(G.rest.t_r7).toBe(true);
-  await e.until(() => [...e.store.keys()].some(k => k.startsWith("clubs/q7/matches/")));
+  // BTC bấm mới có trận vào sân (không tự xếp)
+  expect([...e.store.keys()].some(k => k.startsWith("clubs/q7/matches/"))).toBe(false);
   await e.nav("app", { t: "dk", x: "s1" }); await e.click("gmst", { v: "2" }); await e.until(() => e.V().includes('class="kseg"'));
-  expect(e.T()).toContain("Vòng bảng · 0/2 trận");
+  expect(e.T()).toContain("Vòng bảng · 0/2 trận"); expect(e.V()).toContain('data-act="scfillall"');
+  await e.click("scfillall"); await e.until(() => [...e.store.keys()].some(k => k.startsWith("clubs/q7/matches/")));
   await e.click("kseg", { v: "bang" }); await e.until(() => e.T().includes("BẢNG A"));
   await e.click("ksh", { v: "m15" }); await e.ok("kforce");
   await e.until(() => e.store.get("clubs/q7/app/config").giai.koForce === true);
-  await e.until(() => e.T().includes("Vòng bảng xong"));
+  await e.click("kseg", { v: "san" }); await e.until(() => e.T().includes("Xong vòng bảng"));
+  expect(e.T()).toContain("Tạo nhánh knockout");
   await e.click("kgo"); await e.until(() => e.store.get("clubs/q7/app/config").giai.koGo === true);
-  await e.until(() => e.T().includes("Đã tạo nhánh."));
+  await e.until(() => !e.V().includes('data-act="kgo"'));
 });
 
 test("người chơi: hôm nay có giải → chỉ một nút quét mã; quét rồi chờ BTC; BTC duyệt thì thấy bảng và đồng đội", async () => {
@@ -119,7 +122,7 @@ test("trận nhiều set: nhập từng set, đủ 2 set thắng thì lưu kết
   const e = await boot(base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "live", sname: "Giao lưu", target: 11 },
     "clubs/q7/players/p1": Pl("An"), "clubs/q7/players/p2": Pl("Bình"), "clubs/q7/players/p3": Pl("Chi"), "clubs/q7/players/p4": Pl("Dũng"),
     "clubs/q7/matches/m1": { session: 1, seq: 1, court: 1, a: ["p1", "p3"], b: ["p2", "p4"], status: "playing", createdAt: Date.now(), rule: { to: 11, w2: false, cap: 0, sets: 3 } } }));
-  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('data-act="g4m"'));
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct'));
   await e.click("g4m", { id: "m1" }); await e.until(() => e.T().includes("SET 3"));
   e.input("st-m1-0", "11"); e.input("st-m1-1", "7"); await e.click("kset", { id: "m1" });
   await e.until(() => (e.store.get("clubs/q7/matches/m1").sets || []).length === 1);

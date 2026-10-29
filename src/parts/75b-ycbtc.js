@@ -3,7 +3,7 @@
    chạm vào mở bảng xử lý theo lý do; nhiều việc thì mở danh sách. Máy trọng tài thấy dòng "Đã gọi BTC" tới khi BTC xử lý. */
 let ycList=false;
 const ycBtc=()=>dhCalls("btc");
-const ycLoa=()=>(cfg().loaMode||"auto")==="auto"&&loaDev()===DEVID?[]:dhCalls("loa");
+const ycLoa=()=>loaAutoCalls()&&loaDev()===DEVID?[]:dhCalls("loa");
 const ycAll=()=>[...ycBtc(),...ycLoa()];
 // Dải đỏ: 1 sân → "SÂN n CẦN BTC · lý do · Tới ›"; nhiều việc → "n VIỆC CẦN BTC · Xem ›"
 function ycBan(D){

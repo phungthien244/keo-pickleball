@@ -326,7 +326,7 @@ let gDoneSeen=null,gAutoT=null;
 function autoGFill(){
   try{const D=derive();if(!isG(D.c)){gDoneSeen=null;return}
     const n=D.done.filter(m=>m.giai).length;
-    if(canWrite&&gDoneSeen!=null&&n>gDoneSeen){clearTimeout(gAutoT);gAutoT=setTimeout(()=>gFill(true).catch(()=>{}),1500)}
+    if(canWrite&&autoNext()&&gDoneSeen!=null&&n>gDoneSeen){clearTimeout(gAutoT);gAutoT=setTimeout(()=>gFill(true).catch(()=>{}),1500)}
     gDoneSeen=n}catch(e){}
 }
 

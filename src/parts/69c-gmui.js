@@ -263,14 +263,8 @@ function gmPlayV(D,X){
   if(g4V&&g4V.startsWith("m:")){const m=(S.matches||[]).find(x=>x.id===g4V.slice(2));if(m&&(m.status!=="done"||editing.has(m.id)))return g4Score(D,m.id);g4V=g4Back;g4Back=null;if(g4V)return gmPlayV(D,X)}
   const busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
   const fill=G?(!GD.complete&&gPick(D,GD,new Set(D.playing.flatMap(m=>[m.pa,m.pb])),new Set())?"gfill":null):(Math.floor(waiting.length/4)>0?"gen":null);
-  let h="",red="";const calls=ycBtc();
-  for(let k=1;k<=n;k++){const m=D.playing.find(x=>Number(x.court)===k),cx=calls.find(x=>Number(x.court)===k);
-    if(m&&cx){red+=ycCourt(D,m,cx,m.ko&&GD?esc(koMName(GD,m.ko)):"");continue}
-    if(!m){const L=scLast(D,k),lb0=L&&L.ko&&GD?esc(koMName(GD,L.ko)):"";
-      h+=L?scEnd(D,L,lb0,g4Nm(D,L.a),g4Nm(D,L.b),!!fill):`<div class="g4c e"><span class="h"><b>SÂN ${esc(cName(k))}</b><small>trống</small></span><span class="t">Sân trống</span>${fill?`<button class="ball nv" data-act="scfill" data-v="${k}">▶ Đưa trận tiếp vào sân</button>`:`<small class="rule">Hết người chờ hoặc hết trận.</small>`}</div>`;continue}
-    const lb=m.ko&&GD?esc(koMName(GD,m.ko)):"";
-    h+=scCard(D,m,lb,g4Nm(D,m.a),g4Nm(D,m.b))}
-  h=scUndoBar()+red+h;
+  const scop={lb:m=>m.ko&&GD?esc(koMName(GD,m.ko)):"",nm:m=>[g4Nm(D,m.a),g4Nm(D,m.b)],fill:!!fill,cp:G?(GD.G.cpause||{}):{}};
+  let h=scBoard(D,scop);const nf=scFree(D,scop);
   // Lượt sau
   let nx="";
   if(G){const g=gPick(D,GD,new Set(D.playing.flatMap(m=>[m.pa,m.pb])),new Set());if(g){const A=GD.T.get(g.x),B=GD.T.get(g.y);nx=`${A?pairNm(D,A.p):"?"} · ${B?pairNm(D,B.p):"?"}`}}
@@ -278,7 +272,7 @@ function gmPlayV(D,X){
   if(nx)h+=`<div class="g4nx"><span class="cap">Lượt sau</span><span>${nx}</span></div>`;
   h+=`<div class="gmlist"><button class="gmli gsrow" data-act="g4v" data-v="kq"><i>✓</i><span class="t"><b>Kết quả</b></span><em>${D.done.length} trận</em><span aria-hidden="true">›</span></button><button class="gmli gsrow" data-act="g4v" data-v="bxh"><i>🏆</i><span class="t"><b>Xếp hạng hôm nay</b></span><em></em><span aria-hidden="true">›</span></button></div>`;
   if(errs.gen)h+=`<p class="err">${esc(errs.gen)}</p>`;
-  return h+`<div class="hqcta two">${gmDot()}<button class="ball nv" data-act="gmst" data-v="3">🏁 Hết giờ · sang chốt</button></div>`+scSheet(D);
+  return h+`<div class="hqcta two">${gmDot()}${nf?`<button class="ball go" data-act="scfillall">▶ Tạo trận cho ${nf} sân</button>`:`<button class="ball nv" data-act="gmst" data-v="3">🏁 Hết giờ · sang chốt</button>`}</div>`+scSheet(D);
 }
 // D2 · Nhập điểm một sân: hai ô số to
 function g4Score(D,id,edit){

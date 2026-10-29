@@ -160,7 +160,7 @@ function hqAct(act,b){
   if(act==="ckallx"){ckAllOpen=false;render();return true}
   if(act==="ckcallall"){const D=derive(),X=ckSched();if(!X)return true;const N=ckList(D,X).filter(r=>!r.arrived&&!r.ci).map(r=>ckName(D,r));
     if(!N.length)return true;if(typeof loaMuted==="function"&&loaMuted()){toast("Loa đang tắt trên máy này.");return true}
-    speak(`Mời các vận động viên ${N.join(", ")} tới bàn ban tổ chức để check-in.`,"","ckcall");return true}
+    speak(ltx("ck",{"danh sách":N.join(", ")},`Mời các vận động viên ${N.join(", ")} tới bàn ban tổ chức để check-in.`),"","ckcall");return true}
   if(act==="ckallf"){ckAllF=b.dataset.v||"all";render();return true}
   if(act==="hqlock"){toast("Mục này mở khi giải đã bắt đầu.");return true}
   if(act==="hqtab"){const v=b.dataset.v;if(v==="chot"&&phaseOf(derive())!=="live"){toast("Thẻ Chốt mở khi giải đã bắt đầu.");return true}hqTab=v;ckAllOpen=false;render();try{scrollTo({top:0})}catch(e){}return true}

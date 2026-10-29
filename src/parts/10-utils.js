@@ -55,7 +55,7 @@ function sheetStill(v,M){
 }
 function setView(html){
   const v=$("#view");if(!v)return;const ae=document.activeElement,keepM=sheetKeep(v);
-  try{return setView0(v,html,ae)}finally{sheetStill(v,keepM)}
+  try{return setView0(v,sheetX(html),ae)}finally{sheetStill(v,keepM)}
 }
 function setView0(v,html,ae){
   const typing=ae&&ae.id&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")&&ae.dataset&&(ae.dataset.live||LIVEQ.includes(ae.dataset.draft))&&v.contains&&v.contains(ae);

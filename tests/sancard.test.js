@@ -17,13 +17,14 @@ const calls = e => [...e.store.keys()].filter(k => k.startsWith("clubs/q7/calls/
 
 test("trọng tài đang điểm danh: thanh 4 bước, số người có mặt; Mời vào sân gửi câu loa", async () => {
   const e = await boot(base({ "clubs/q7/matches/m1": { session: 1, seq: 1, court: 1, a: ["p1", "p3"], b: ["p2", "p4"], status: "playing", createdAt: Date.now() - 6e5, ref: { by: "r1", byName: "Nam", at: Date.now(), pos: { a: ["p1", "p3"], b: ["p2", "p4"] }, first: "a", left: "a", ev: [] } } }));
-  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="scst"'));
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct c"'));
+  await e.click("scsh", { v: "1" }); await e.until(() => e.V().includes('class="scst"'));
   expect(e.T()).toContain("Điểm danh"); expect(e.T()).toContain("TT Nam"); expect(e.T()).toContain("0/4 có mặt");
   await e.click("scinv", { id: "m1" }); await e.until(() => calls(e).length === 1);
   expect(calls(e)[0].txt).toBe("Mời An và Chi, Bình và Dũng vào sân 1 chuẩn bị thi đấu");
   // trọng tài sang bốc thăm rồi bắt đầu
   await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m1"), { ref: { ...e.store.get("clubs/q7/matches/m1").ref, st: 2 } });
-  await e.until(() => e.V().includes('<i class="on">Bốc thăm</i>'));
+  await e.click("scsh", { v: "1" }); await e.until(() => e.V().includes('<i class="on">Bốc thăm</i>'));
   await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m1"), { ref: { ...e.store.get("clubs/q7/matches/m1").ref, started: Date.now(), ev: [{ k: "p", w: "a", at: Date.now() }] } });
   await e.until(() => e.V().includes('<i class="on">Bắt đầu</i>'));
   expect(e.T()).toContain("Lịch sử từng pha");
@@ -31,22 +32,25 @@ test("trọng tài đang điểm danh: thanh 4 bước, số người có mặt;
 
 test("BTC bấm (mặc định): lưu xong sân hiện Kết thúc + Đọc kết quả + Tạo trận mới; ⋯ mở lại trận", async () => {
   const e = await boot(base({ "clubs/q7/players/p5": P("Én"), "clubs/q7/players/p6": P("Phúc"), "clubs/q7/players/p7": P("Giang"), "clubs/q7/players/p8": P("Hải") }));
-  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('data-act="scinv"'));
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct'));
+  await e.click("scsh", { v: "1" }); await e.until(() => e.V().includes('data-act="scinv"')); await e.click("scshx");
   await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m1"), { sa: 11, sb: 7, status: "done", doneAt: Date.now() });
-  await e.until(() => e.T().includes("✓ Kết thúc"));
+  await e.until(() => e.V().includes('class="sct k"'));
+  await e.click("scsh", { v: "1" }); await e.until(() => e.T().includes("✓ Kết thúc"));
   expect(e.T()).toContain("An & Chi thắng 11–7"); expect(e.V()).toContain('data-act="scread"'); expect(e.V()).toContain('data-act="scfill"');
   await e.click("scsh", { v: "1" }); await e.until(() => e.T().includes("Mở lại trận"));
   await e.click("screopen", { id: "m1" }); await e.click("screopen", { id: "m1" });
   await e.until(() => e.store.get("clubs/q7/matches/m1").status === "playing");
   await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m1"), { sa: 11, sb: 7, status: "done", doneAt: Date.now() });
-  await e.until(() => e.T().includes("✓ Kết thúc"));
+  await e.until(() => e.V().includes('class="sct k"'));
   await e.click("scfill", { v: "1" });
   await e.until(() => e.docs("clubs/q7/matches/", m => m.status === "playing" && m.court === 1).length === 1);
 });
 
 test("huỷ trận ở ⋯ của sân (bấm 2 lần) → dải hoàn tác → khôi phục", async () => {
   const e = await boot(base());
-  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('data-act="scinv"'));
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct'));
+  await e.click("scsh", { v: "1" }); await e.until(() => e.V().includes('data-act="scinv"')); await e.click("scshx");
   await e.click("scsh", { v: "1" }); await e.until(() => e.T().includes("Huỷ trận"));
   await e.click("sccancel", { id: "m1" }); await e.click("sccancel", { id: "m1" });
   await e.until(() => !e.store.get("clubs/q7/matches/m1"));
@@ -57,7 +61,8 @@ test("huỷ trận ở ⋯ của sân (bấm 2 lần) → dải hoàn tác → k
 
 test("cài đặt Xếp trận tiếp ở ⋯ Đang đánh: chuyển Tự động", async () => {
   const e = await boot(base());
-  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('data-act="scinv"'));
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct'));
+  await e.click("scsh", { v: "1" }); await e.until(() => e.V().includes('data-act="scinv"')); await e.click("scshx");
   await e.click("gmmore"); await e.until(() => e.T().includes("Đang: BTC bấm"));
   await e.click("gmdo", { a: "scauto" }); await e.until(() => e.store.get("clubs/q7/app/config").autoNext === true);
 });

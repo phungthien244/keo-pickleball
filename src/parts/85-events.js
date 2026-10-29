@@ -178,11 +178,13 @@ document.addEventListener("click",onAct=async e=>{
   const REF_ACTS=["savechk","savex","save","cancelx"];
   if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
   if(canWrite&&hqAct(act,b))return;
-  if(canWrite&&/^k(sh|pg|7|8|9|10|x)/.test(act)&&await kAct(act,b))return;
+  if(canWrite&&/^kord/.test(act)&&await kOrdAct(act,b))return;
+  if(canWrite&&/^k(sh|pg|7|8|9|10|x|locked)/.test(act)&&await kAct(act,b))return;
   if(canWrite&&/^k(1[123]|courts?|11bang|court)/.test(act)&&await kDayAct(act,b))return;
   if(canWrite&&/^k(seg|go|force|17|15|call|up|cp|swap|reset)/.test(act)&&await kPlayAct(act,b))return;
   if(canWrite&&act==="kset"&&await kSetAct(act,b))return;
   if(canWrite&&act.startsWith("sc")&&await scAct(act,b))return;
+  if(canWrite&&["lpg","lpgx","lsw","led","ledx","lok","lplay","lreset"].includes(act)&&await loaAct(act,b))return;
   if(canWrite&&act.startsWith("ckbtc")&&await ckBtcAct(act,b))return;
   if(canWrite&&act.startsWith("gs")&&await gsAct(act,b))return;
   if(canWrite&&act.startsWith("g4")&&await g4Act(act,b))return;

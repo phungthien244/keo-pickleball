@@ -77,7 +77,8 @@ const pendSave=new Set();
 function resultText(D,m,a,b){
   const team=ids=>ids.map(id=>{const p=D.pmap.get(id);return `${xung(p)} ${p?.name||""}`.trim()}).join(", ");
   const W=a>b?m.a:m.b,L=a>b?m.b:m.a;
-  return `${cSpeak(m.court).replace(/^s/,"S")} kết thúc. Cặp ${team(W)} chiến thắng, tỉ số là ${Math.max(a,b)}, ${Math.min(a,b)}.`;
+  const nm2=ids=>ids.map(id=>D.pmap.get(id)?.name||"").filter(Boolean).join(" và ");
+  return ltx("res",{"sân":cName(m.court),"đội thắng":nm2(W),"đội thua":nm2(L),"điểm":`${Math.max(a,b)}, ${Math.min(a,b)}`},`${cSpeak(m.court).replace(/^s/,"S")} kết thúc. Cặp ${team(W)} chiến thắng, tỉ số là ${Math.max(a,b)}, ${Math.min(a,b)}.`);
 }
 function saveConfirm(D,m){
   if(!pendSave.has(m.id))return "";

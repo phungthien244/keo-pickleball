@@ -163,6 +163,7 @@ function vGiaiMgr(D,X){
   if(mxDrOn()&&X&&kPg&&kOn(X)){const k=kPage(D,X);if(k!=null)return k}
   if(mxDrOn()&&X&&regAddOpen)return gmAddPg(D,X);
   if(mxDrOn()&&X&&ckBtc===X.id)return ckBtcPg(D,X);
+  if(mxDrOn()&&loaPgOn)return loaPg(D,X);
   if(ciOpen)return ckScreen(D);
   if(ckAllOpen&&ckSched())return ckAll(D)+hnLate(D)+dhSheets(D);
   if(X&&gmMade===X.id)return gmMadeView(D,X);
@@ -236,17 +237,17 @@ function gmSheets(D,X,st,cur){
   if(!gmMore)return "";
   const live=gmLive(D)||D.SM.length,ck=ckSched(),R=[];
   const others=[...(!xCur()&&live&&X?[null]:[]),...schedUp()].filter(x=>(x?x.id:"_q")!==(X?X.id:"_q"));
-  const ED=["✎","Sửa giải",st===1?"Giờ, sân, luật, tiền":"Giờ, sân, luật, tiền, giải thưởng","gmedit",""],SW=["⇄","Đổi sang giải khác",others.length?others.slice(0,2).map(x=>x?xName(x):"Giải đánh nhanh").join(" · "):"Chưa có giải khác","gmsw",""];
+  const LO=["🔊","Loa · câu đọc","Tự đọc, sửa câu đọc của giải này","lpg",""],ED=["✎","Sửa giải",st===1?"Giờ, sân, luật, tiền":"Giờ, sân, luật, tiền, giải thưởng","gmedit",""],SW=["⇄","Đổi sang giải khác",others.length?others.slice(0,2).map(x=>x?xName(x):"Giải đánh nhanh").join(" · "):"Chưa có giải khác","gmsw",""];
   if(st<=1){
-    if(MINI&&st===0)R.push(ED,SW);
+    if(MINI&&st===0)R.push(ED,SW,LO);
     if(MINI){if(cur&&ck&&st===1)R.push(["⌗","Mã QR check-in","Người tới quét bằng Zalo, tự điểm danh","ckopen",ck.id]);if(X&&st===1)R.push(["✋","BTC check-in giùm","Tích chọn người đã tới sân","ckbtc",X.id])}
     else if(cur&&ck){R.push(["⌗","Bàn đón · check-in","Danh sách ai đã tới, duyệt người quét mã","ckall",""],["▣","Mã QR check-in","Mở mã toàn màn hình cho người tới quét","ckopen",ck.id],["＋","Người đến muộn","Thêm người chưa đăng ký vào giải","hnlate",ck.id])}
     R.push(["🎯","Trọng tài","QR nhận sân","dhqr",""],["📣","Đọc thể thức qua loa","Loa đọc luật, cách tính điểm","speakrules",""]);
     if(!MINI&&cur&&X&&!live)R.push(["↺","Chọn giải khác để đánh","Bỏ chọn giải này ở sân","hnunpick",""]);
-    if(MINI&&st===1)R.push(ED,SW);
+    if(MINI&&st===1)R.push(ED,SW,LO);
   }else if(MINI){
     R.push(["⚙","Xếp trận tiếp",autoNext()?"Đang: Tự động · bấm để chuyển BTC bấm":"Đang: BTC bấm · bấm để chuyển Tự động","scauto",""]);
-    R.push(ED,SW,["🎯","Trọng tài","QR từng sân","dhqr",""],["📣","Thông báo loa","Gõ câu, máy loa đọc","dhan",""],["⏸","Nghỉ giữa giờ","Tạm dừng đưa trận mới","dhps",""],["↗","Chia sẻ trực tiếp","Gửi link xem điểm","lshare",""]);
+    R.push(ED,SW,LO,["🎯","Trọng tài","QR từng sân","dhqr",""],["📣","Thông báo loa","Gõ câu, máy loa đọc","dhan",""],["⏸","Nghỉ giữa giờ","Tạm dừng đưa trận mới","dhps",""],["↗","Chia sẻ trực tiếp","Gửi link xem điểm","lshare",""]);
   }else{
     R.push(["🎯","Trọng tài","QR từng sân, ai đang nhập điểm","dhqr",""],["📣","Thông báo loa","Gõ câu, máy loa đọc ngay","dhan",""],["⏸","Nghỉ giữa giờ","Tạm dừng đưa trận mới vào sân","dhps",""],["↗","Chia sẻ trực tiếp","Gửi link xem điểm vào nhóm","lshare",""]);
     if(ck)R.push(["⌗","Bàn đón","Người đến muộn, check-in","ckall",""]);

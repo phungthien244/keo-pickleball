@@ -4,6 +4,8 @@
    Bấm "Bắt đầu vòng bảng": tạo cặp trong giải đang chạy với id "t_"+mã đội, chia bảng theo kd, rồi tạo lịch như cũ. */
 let kPg=null,kSh=null,kSel=null,kMode="lv",kAvoid=true,kPrev=null,kDraw=null,kFix=null,kSeg="san";
 const kOn=X=>!!(X&&X.fmt==="giai"&&X.ko);
+// Đã bắt đầu đánh giải này: bảng chốt, không đổi được
+const kLocked=X=>!!(X&&((cfg().schedId===X.id&&(cfg().giai||{}).locked&&cfg().phase==="live")||X.st==="done"));
 const kdOf=X=>{const k=(X&&X.kd)||{};return {...k,groups:Array.isArray(k.groups)?k.groups.map(g=>Array.isArray(g)?g:(g&&g.p)||[]):null}};
 const kdOut=kd=>({...kd,groups:kd.groups?kd.groups.map(p=>({p})):null});
 const saveKd=(X,patch,msg)=>write(()=>db.collection("sched").doc(X.id).update({kd:kdOut({...kdOf(X),...patch})}),msg);
@@ -32,11 +34,11 @@ function kRegV(D,X){
   if(kd.groups&&kd.groups.length){
     const inG=new Set(kd.groups.flat()),rest=T.filter(t=>!inG.has(t.code)),N=kd.groups.length,games=kd.groups.reduce((a,g)=>a+g.length*(g.length-1)/2,0);
     const t0=X.at||0,mins=Math.ceil(games/Math.max(1,+X.courts||1))*GSLOT;
-    h=gmNextBox(kd.pub?{t:"Đã công bố · chờ ngày đánh",s:`${t0?`${dowVN(t0)} ${dmy(t0)} ${hm(t0)} · `:""}mở check-in khi tới giờ`}:{t:`Đã chia ${N} bảng · công bố vào nhóm`,s:`Lịch dự kiến: vòng bảng ${games} trận${t0?`, ${hm(t0)}–${hm(t0+mins*6e4)}`:""}`},false)+kGrid(T,kd.groups,kd.seeds);
-    if(rest.length)h+=`<span class="gmlb">Chưa xếp bảng · ${rest.length} cặp</span><div class="g2fl">${rest.map(t=>`<button data-act="k10sw" data-v="${esc(t.code)}" aria-pressed="${kSel===t.code}">${t.nm}</button>`).join("")}</div>`;
-    h+=`<small class="rule">Đổi chỗ 2 cặp: chạm cặp này rồi chạm cặp kia.</small>`;
-    if(s!=="done"&&s!=="cancel")h+=kd.pub?`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="more" aria-label="Thêm việc">⋯</button><button class="ball go" data-act="gmst" data-v="1">Tiếp: Ngày đánh ›</button></div>`
-      :`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="more" aria-label="Thêm việc">⋯</button><button class="btn-line" data-act="ksh" data-v="chia">🎲 Bốc lại</button><button class="ball go" data-act="k10pub">📣 Công bố vào nhóm</button></div>`;
+    const lk=kLocked(X);
+    h=gmNextBox(lk?{t:"Bảng đã chốt",s:"Đã bắt đầu đánh · không đổi bảng được nữa"}:kd.pub?{t:"Đã công bố · chờ ngày đánh",s:`${t0?`${dowVN(t0)} ${dmy(t0)} ${hm(t0)} · `:""}mở check-in khi tới giờ`}:{t:`Đã chia ${N} bảng`,s:"Bấm ⋯ để công bố vào nhóm hoặc bốc lại"},false)+(lk?`<div class="klock">🔒 <b>Bảng đã chốt</b> lúc bắt đầu vòng bảng${(cfg().giai||{}).startedAt?` ${hm(cfg().giai.startedAt)}`:""} · không đổi được nữa</div>`:"")+kGrid(T,kd.groups,kd.seeds,lk?{act:"klocked"}:{});
+    if(rest.length&&!lk)h+=`<span class="gmlb">Chưa xếp bảng · ${rest.length} cặp</span><div class="g2fl">${rest.map(t=>`<button data-act="k10sw" data-v="${esc(t.code)}" aria-pressed="${kSel===t.code}">${t.nm}</button>`).join("")}</div>`;
+    if(!lk)h+=`<small class="rule">Đổi chỗ 2 cặp: chạm cặp này rồi chạm cặp kia.</small>`;
+    if(s!=="done"&&s!=="cancel")h+=`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="more" aria-label="Thêm việc">⋯</button>${lk?`<button class="ball nv" data-act="gmst" data-v="2">Về Đang đánh ›</button>`:`<button class="ball go" data-act="gmst" data-v="1">Tiếp: Ngày đánh ›</button>`}</div>`;
     return h+withX(X,()=>kSheets(D,X,T)+g2Sheets(D,X,R));
   }
   if(solo.length)h+=gmNextBox({t:`${solo.length} người chưa có cặp`,s:"Ghép bằng bốc thăm, hoặc chạm để ghép tay"},false);
@@ -63,8 +65,8 @@ function kRegV(D,X){
 function kSheets(D,X,T){
   const it=(i,t,s,a,v,red)=>`<button class="gmli" data-act="${a}"${v!=null?` data-v="${esc(v)}"`:""} data-id="${esc(X.id)}"><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b><small>${s}</small></span><span aria-hidden="true">›</span></button>`;
   const sh=(t,b)=>`<div class="mxdim" data-act="kshx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="${esc(t)}"><span class="grab"></span><b class="mxh">${t}</b>${b}</div>`;
-  if(kSh==="more"){const s=xState(X);return sh("Thêm việc",it("＋","Thêm cặp","Ghi tay cặp đăng ký ngoài app","gmxa")+it("👥","Mời từ CLB","Gửi tin cho người chưa đăng ký","xbshare")+it("★","Hạt giống",`${kN(X)} cặp mạnh tách ${kN(X)} bảng`,"kpg","k8")+(kdOf(X).groups&&kdOf(X).groups.length&&kdOf(X).pub?it("🎲","Bốc lại","Chia bảng lại từ đầu, cần công bố lại","ksh","chia"):it("▦","Chia bảng","Bốc thăm, chia đều hoặc tự xếp","ksh","chia"))
-    +(xOpen(X)?it("🔒",armed("xbclose:"+X.id)?"Bấm lần nữa để đóng":"Đóng đăng ký","Không nhận thêm cặp","xbclose"):"")+it("✎","Sửa giải","Ngày, sân, thể thức, lệ phí","gmxe")+(s!=="cancel"&&s!=="done"&&s!=="live"?it("✕",armed("xcancel:"+X.id)?"Bấm lần nữa để huỷ giải":"Huỷ giải","Báo cho mọi người đã đăng ký","xcancel",null,1):""))}
+  if(kSh==="more"){const s=xState(X);return sh("Thêm việc",it("＋","Thêm cặp","Ghi tay cặp đăng ký ngoài app","gmxa")+it("👥","Mời từ CLB","Gửi tin cho người chưa đăng ký","xbshare")+it("★","Hạt giống",`${kN(X)} cặp mạnh tách ${kN(X)} bảng`,"kpg","k8")+(kdOf(X).groups&&kdOf(X).groups.length?it("📣",kdOf(X).pub?"Công bố lại vào nhóm":"Công bố vào nhóm","Gửi danh sách bảng vào nhóm Zalo","k10pub")+(kLocked(X)?"":it("🎲","Bốc lại","Chia bảng lại từ đầu","ksh","chia")+it("⇄","Đổi chỗ 2 cặp","Chạm cặp này rồi chạm cặp kia trong bảng","kshx")):it("▦","Chia bảng","Bốc thăm, chia đều hoặc tự xếp","ksh","chia"))
+    +(xOpen(X)?it("🔒",armed("xbclose:"+X.id)?"Bấm lần nữa để đóng":"Đóng đăng ký","Không nhận thêm cặp","xbclose"):"")+it("✎","Sửa giải","Ngày, sân, thể thức, lệ phí","gmxe")+it("🔊","Loa · câu đọc","Tự đọc, sửa câu đọc của giải này","lpg")+(s!=="cancel"&&s!=="done"&&s!=="live"?it("✕",armed("xcancel:"+X.id)?"Bấm lần nữa để huỷ giải":"Huỷ giải","Báo cho mọi người đã đăng ký","xcancel",null,1):""))}
   if(kSh==="pair"){const n=kSolo(D,X).length;return sh(`Ghép cặp cho ${n} người lẻ`,it("🎲","Bốc thăm ghép","App ghép theo trình độ hoặc nam với nữ","kpg","k7")+it("✋","Tự ghép","Chạm 2 người để thành một cặp","kpg","k7b"))}
   if(kSh==="chia")return sh("Chia bảng thế nào?",it("🎲","Bốc thăm","Chiếu lên cho mọi người xem, hạt giống tách bảng","kpg","k9d")+it("⚖","App chia đều trình độ","Mỗi bảng có mạnh có yếu, xong ngay","k9bal")+it("✋","Tự xếp","BTC chọn cặp nào vào bảng nào","kpg","k9c"));
   return "";
@@ -144,17 +146,18 @@ async function kAct(act,b){
   if(act==="k9bal"){kSh=null;const G=kBal(D,X,T());await saveKd(X,{groups:G,seeds:G.map(g=>g[0]).filter(Boolean),at:Date.now(),by:who(),n:(kdOf(X).n||0)+1,pub:false},`Đã chia ${G.length} bảng đều trình độ`);return true}
   if(act==="k9next"||act==="k9all"){if(!kDraw)return true;const n=kDraw.order.length;
     if(kDraw.k>=n||act==="k9all"){kDraw.k=n;const R=kDraw;await saveKd(X,{groups:R.groups,seeds:R.seeds,at:Date.now(),by:who(),n:(kdOf(X).n||0)+1,pub:false},`Đã chia ${R.groups.length} bảng`);kPg=null;kDraw=null;render();top();return true}
-    const o=kDraw.order[kDraw.k++],t=kTeamOf(T(),o.c);if(t&&!loaMuted())speak(`${t.nm.replace(/&amp;/g,"và")}, vào bảng ${KOG[o.g]}`,"","kd:"+kDraw.k);render();return true}
+    const o=kDraw.order[kDraw.k++],t=kTeamOf(T(),o.c);if(t&&!loaMuted()&&loaOpt("draw"))speak(ltx("draw",{"đội":t.nm.replace(/&amp;/g,"và"),"bảng":KOG[o.g]},`${t.nm.replace(/&amp;/g,"và")}, vào bảng ${KOG[o.g]}`),"","kd:"+kDraw.k);render();return true}
   if(act==="k9cpick"){kSel=kSel===v?null:v;render();return true}
   if(act==="k9cput"){if(!kSel||!kFix)return true;const cap=Math.ceil(T().length/kN(X)),g=kFix[+v];if(!g||g.length>=cap){toast("Bảng này đã đủ.");return true}g.push(kSel);kSel=null;render();return true}
   if(act==="k9cout"){if(!kFix)return true;for(const g of kFix){const i=g.indexOf(v);if(i>=0)g.splice(i,1)}render();return true}
   if(act==="k9cauto"){if(!kFix)return true;const cap=Math.ceil(T().length/kN(X)),inG=new Set(kFix.flat()),R=T().filter(t=>!inG.has(t.code)).sort((a,b)=>b.r-a.r);
     const sum=g=>g.reduce((a,c)=>a+((kTeamOf(T(),c)||{}).r||0),0);for(const t of R){const L=kFix.map((g,i)=>[i,g]).filter(([,g])=>g.length<cap).sort((a,b)=>a[1].length-b[1].length||sum(a[1])-sum(b[1]));if(L.length)L[0][1].push(t.code)}render();return true}
   if(act==="k9cok"){if(!kFix)return true;const G=kFix;await saveKd(X,{groups:G,seeds:G.map(g=>g[0]).filter(Boolean),at:Date.now(),by:who(),n:(kdOf(X).n||0)+1,pub:false},"Đã lưu chia bảng");kPg=null;kFix=null;render();top();return true}
-  if(act==="k10sw"){const kd=kdOf(X);if(!kd.groups)return true;if(!kSel||kSel===v){kSel=kSel===v?null:v;render();return true}
+  if(act==="klocked"){toast("Bảng đã chốt khi bắt đầu đánh, không đổi được nữa.");return true}
+  if(act==="k10sw"){if(kLocked(X)){toast("Bảng đã chốt khi bắt đầu đánh, không đổi được nữa.");return true}const kd=kdOf(X);if(!kd.groups)return true;if(!kSel||kSel===v){kSel=kSel===v?null:v;render();return true}
     const G=kd.groups.map(g=>g.slice()),pos=c=>{for(let i=0;i<G.length;i++){const j=G[i].indexOf(c);if(j>=0)return [i,j]}return null},a=pos(kSel),c=pos(v);
     if(a&&c){G[a[0]][a[1]]=v;G[c[0]][c[1]]=kSel}else if(c&&!a)G[c[0]][c[1]]=kSel;else if(a&&!c)G[a[0]][a[1]]=v;kSel=null;await saveKd(X,{groups:G},"Đã đổi chỗ 2 cặp");return true}
-  if(act==="k10pub"){const kd=kdOf(X);if(!kd.groups)return true;await sendText(kGroupText(D,X,T(),kd.groups));await saveKd(X,{pub:true});return true}
+  if(act==="k10pub"){kSh=null;const kd=kdOf(X);if(!kd.groups)return true;await sendText(kGroupText(D,X,T(),kd.groups));await saveKd(X,{pub:true});return true}
   if(act==="kx")return true;
   return false;
 }
@@ -177,7 +180,7 @@ function kDaySheets(D,X){
     const rule=`${(+X.koGs||1)>1?`${X.koGs} set, `:""}chạm ${X.koGt||X.target||11}${X.koGw==="1"?", cách 2":""}`;
     return sh("Bắt đầu vòng bảng?",`<div class="gmlist">${kLi("Trận vòng bảng",`${n} trận`)}${kLi("Sân",`${c} sân · ${lu} lượt`)}${kLi("Dự kiến xong",hm(t0+lu*GSLOT*6e4))}${kLi("Luật",esc(rule))}</div>
       <small class="rule">Loa đọc thể thức, ${Math.min(c,Math.floor(T.length/2))} trận đầu tự vào sân. Muốn sửa lịch vẫn sửa được.</small>${G.length?"":`<p class="err">Chưa chia bảng: chia bảng ở chặng Đăng ký trước.</p>`}<button class="ball go wide" data-act="k13go" ${G.length?"":"disabled"}>▶ Bắt đầu</button>`)}
-  if(kSh==="k11m")return sh("Thêm việc",it("✋","BTC check-in giùm","Tích chọn người đã tới sân","ckbtc").replace('data-act="ckbtc"',`data-act="ckbtc" data-id="${esc(X.id)}"`)+it("＋","Thêm cặp đến muộn","Vào bảng còn thiếu","gmxa")+it("▦","Sửa bảng","Đổi chỗ 2 cặp trước khi đánh","k11bang")+it("🏟","Số sân",`Đang có ${+cfg().courts||+X.courts||1} sân`,"ksh","courts")+it("🔊","Loa đọc thể thức","Bấm thì mới đọc","speakrules")+it("✎","Sửa giải","Ngày, sân, thể thức, lệ phí","gmxe"));
+  if(kSh==="k11m")return sh("Thêm việc",it("✋","BTC check-in giùm","Tích chọn người đã tới sân","ckbtc").replace('data-act="ckbtc"',`data-act="ckbtc" data-id="${esc(X.id)}"`)+it("＋","Thêm cặp đến muộn","Vào bảng còn thiếu","gmxa")+it("▦","Sửa bảng","Đổi chỗ 2 cặp trước khi đánh","k11bang")+it("🏟","Số sân",`Đang có ${+cfg().courts||+X.courts||1} sân`,"ksh","courts")+it("🔊","Loa đọc thể thức","Bấm thì mới đọc","speakrules")+it("✎","Sửa giải","Ngày, sân, thể thức, lệ phí","gmxe")+it("🔊","Loa · câu đọc","Tự đọc, sửa câu đọc của giải này","lpg"));
   if(kSh==="courts"){const c=+cfg().courts||+X.courts||1;return sh("Số sân",`<div class="gmstp"><span><b>Mấy sân?</b><small>Giải chia bảng nên có 3–4 sân</small></span><span class="stepper big"><button data-act="kcourt" data-v="-1" aria-label="Bớt">−</button><b class="num">${c}</b><button data-act="kcourt" data-v="1" aria-label="Thêm">＋</button></span></div>`)}
   return "";
 }
@@ -195,8 +198,8 @@ async function kStart(D,X){
   const G=cfg().giai||{};
   await write(async()=>{await saveCfg({phase:"live",giai:{...G,pairs,ko:koOut({...koK(G),n:groups.length,groups,seeds:(kd.seeds||[]).map(c=>"t_"+c).filter(id=>ids.has(id)),gat:kd.at||Date.now(),gby:kd.by||who(),gn:kd.n||1}),rest,out,locked:true,startedAt:Date.now(),koGate:true,koGo:false}})},"Đã bắt đầu vòng bảng");
   if(skip.length)toast(`Chưa vào giải (thiếu người): ${skip.join(", ").replace(/&amp;/g,"&")}`);
-  await gFill();
-  if(!loaMuted())setTimeout(()=>onAct({target:{closest:s=>s==="[data-act]"?{dataset:{act:"speakrules"},closest:()=>null}:null}}),300);
+  if(autoNext())await gFill();
+  if(!loaMuted()&&loaOpt("rules"))setTimeout(()=>onAct({target:{closest:s=>s==="[data-act]"?{dataset:{act:"speakrules"},closest:()=>null}:null}}),300);
 }
 async function kDayAct(act,b){
   const D=derive(),v=b.dataset.v,X=routeX?schedById(routeX):xCur();if(!X)return false;
@@ -220,10 +223,11 @@ const kAutoDone=new Set();
 function kAutoRest(D,X,GD){
   if(!X||!kOn(X))return;const kd=kdOf(X),r=GD.G.rest||{},T=kTeams(D,X),back=[];
   for(const t of T){const id="t_"+t.code;if(!r[id]||(kd.late||{})[t.code])continue;const [a,b]=kArr(D,X,t);if(a&&b&&!kAutoDone.has(id)){kAutoDone.add(id);back.push(id)}}
-  if(back.length)setTimeout(async()=>{const R={...(cfg().giai?.rest||{})};back.forEach(id=>delete R[id]);await write(()=>saveG({rest:R}));await gFill(true)},0);
+  if(back.length)setTimeout(async()=>{const R={...(cfg().giai?.rest||{})};back.forEach(id=>delete R[id]);await write(()=>saveG({rest:R}));if(autoNext())await gFill(true)},0);
 }
 function kPlayV(D,X,GD){
   kAutoRest(D,X,GD);
+  if(kOrdPg)return kOrdV(D,X,GD);
   const G=GD.G,seg=["san","bang","nhanh"].includes(kSeg)?kSeg:"san";
   let h=`<div class="kseg">${[["san","Sân"],["bang","Bảng"],["nhanh","Nhánh"]].map(([k,l])=>`<button data-act="kseg" data-v="${k}" aria-pressed="${seg===k}">${l}</button>`).join("")}</div>`;
   const gw=GD.games.filter(g=>!g.ko&&g.st!=="hold"),gd=gw.filter(g=>g.st==="done"||g.st==="wo").length,inKO=GD.gDone&&(!G.koGate||G.koGo);
@@ -235,18 +239,17 @@ function kPlayV(D,X,GD){
     const left=gw.length-gd,lu=Math.ceil(left/Math.max(1,+D.c.courts||1));
     h+=inKO&&curKo?`<div class="kline"><b>${esc(curKo[0].rn)} · ${curKo.filter(g=>g.st==="done"||g.st==="wo").length}/${curKo.length} trận xong</b><span>${esc(ruleTx(curKo[0].rule))}</span></div>`
       :`<div class="kline"><b>Vòng bảng · ${gd}/${gw.length} trận</b><span>${left?`xong ~${hm(Date.now()+lu*GSLOT*6e4)}`:"xong"}</span></div>`;
-    const calls=ycBtc();let red="",nor="";
-    const nC=Math.max(1,+D.c.courts||1);
-    for(let k=1;k<=nC;k++){const m=D.playing.find(x=>Number(x.court)===k);
-      if(!m){const L=scLast(D,k);if(L&&!cp[k])nor+=scEnd(D,L,esc(kGrpOf(GD,L)),kPN(D,GD,L.pa),kPN(D,GD,L.pb),!gate&&kNext(D,GD,1).length);continue}
-      const cx=calls.find(x=>Number(x.court)===k),lb=esc(kGrpOf(GD,m));
-      if(cx){red+=ycCourt(D,m,cx,lb);continue}
-      nor+=scCard(D,m,lb,kPN(D,GD,m.pa),kPN(D,GD,m.pb))}
-    h+=scUndoBar()+red+nor;
+    const scop={lb:m=>esc(kGrpOf(GD,m)),nm:m=>[kPN(D,GD,m.pa),kPN(D,GD,m.pb)],fill:!gate&&!!kNext(D,GD,1).length,cp};
+    if(gate){const R0=GD.ko[0],pos=new Map();GD.gt.forEach((t,gx)=>t.forEach((r,i)=>pos.set(r.p.id,`${KOG[gx]}${i+1}`)));
+      h+=`<div class="kgate"><span class="cap">✓ Xong vòng bảng · ${gd}/${gw.length} trận</span><b>${R0.length*2} cặp vào ${esc(R0[0].rn.toLowerCase())}</b><small>Nhất bảng gặp nhì bảng khác · xem ở tab Nhánh</small></div>
+        <div class="g2list">${R0.map(g=>`<div class="g5s"><span><b>${esc(pos.get(g.x)||"")} ${kPN(D,GD,g.x)}</b></span><span>gặp ${esc(pos.get(g.y)||"")} ${kPN(D,GD,g.y)}</span></div>`).join("")}</div>`}
+    h+=scBoard(D,scop);const nf=scFree(D,scop);
     const N=kNext(D,GD,2);if(N.length)h+=`<div class="g4nx"><span class="cap">Lượt sau</span><span>${N.map(g=>`${g.ko?esc(g.ab):KOG[g.grp]}: ${kPN(D,GD,g.x)} – ${kPN(D,GD,g.y)}`).join(" · ")}</span></div>`;
-    h+=`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="m14" aria-label="Thêm việc">⋯</button>${canFill&&!gate?`<button class="ball nv" data-act="gfill">▶ Đưa trận vào sân ${esc(cName(free[0]))}</button>`:`<button class="ball nv" data-act="gmst" data-v="3">🏁 Hết giờ · sang chốt</button>`}</div>`+scSheet(D);
+    const rn=inKO&&curKo?esc(curKo[0].rn.toLowerCase()):"";
+    h+=`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="m14" aria-label="Thêm việc">⋯</button>${gate?`<button class="ball go" data-act="kgo">Tạo nhánh knockout ›</button>`:nf?`<button class="ball go" data-act="scfillall">▶ ${rn&&!D.playing.length?`Xếp ${Math.min(nf,kNext(D,GD,nf).length)} trận ${rn} vào sân`:`Tạo trận cho ${nf} sân`}</button>`:`<button class="ball nv" data-act="gmst" data-v="3">🏁 Hết giờ · sang chốt</button>`}</div>`+scSheet(D);
   }
   if(seg==="bang"){
+    if(G.locked)h+=`<div class="klock">🔒 <b>Bảng đã chốt</b> lúc bắt đầu vòng bảng${G.startedAt?` ${hm(G.startedAt)}`:""} · không đổi được nữa</div>`;
     const per=Math.max(1,Math.round(GD.size/Math.max(1,GD.groups.length)));
     h+=GD.gt.map((t,gx)=>{const gs=GD.games.filter(g=>g.grp===gx&&g.st!=="hold"),left=gs.filter(g=>g.st!=="done"&&g.st!=="wo").length;
       return `<div class="ktb"><div class="h"><b>BẢNG ${KOG[gx]}</b><small>${left?`● còn ${left} trận`:"xong"}</small></div><div class="r hd"><span>#</span><span>CẶP</span><span>T</span><span>B</span><span>HS</span></div>${t.map((r,i)=>{const d=r.pf-r.pa;return `<div class="r${i<per&&!r.out?" q":""}${r.out?" out":""}"><b>${i+1}</b><span>${pairNm(D,r.p)}</span><span>${r.w}</span><span>${r.l}</span><span>${d>0?"+":d<0?"−":""}${Math.abs(d)}</span></div>`}).join("")}</div>`}).join("");
@@ -263,16 +266,12 @@ function kPlayV(D,X,GD){
     if(!GD.gDone)h+=`<small class="rule">Nhánh điền tên khi đánh xong vòng bảng.</small>`;
     h+=`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="m17" aria-label="Thêm việc">⋯</button><button class="ball go" data-act="k17send">📣 Gửi nhánh vào nhóm</button></div>`;
   }
-  if(gate){const R0=GD.ko[0],ids=R0.flatMap(g=>[g.x,g.y]).filter(Boolean),pos=new Map();GD.gt.forEach((t,gx)=>t.forEach((r,i)=>pos.set(r.p.id,`${POS[i]||"Hạng "+(i+1)} ${KOG[gx]}`)));
-    h+=`<div class="mxdim" data-act="kx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="Vòng bảng xong"><span class="grab"></span><b class="mxh">Vòng bảng xong · ${ids.length} cặp vào ${esc(R0[0].rn.toLowerCase())}</b>
-      <div class="g2list">${ids.map(id=>{const T=GD.T.get(id);return `<div class="g5s"><span><b>${kPN(D,GD,id)}</b><small>${esc(pos.get(id)||"")}</small></span><b>${T?`${T.w}–${T.l}`:""}</b></div>`}).join("")}</div>
-      <small class="rule">Nhất gặp nhì bảng khác. Hai cặp cùng bảng không gặp nhau ở ${esc(R0[0].rn.toLowerCase())}.</small><button class="ball go wide" data-act="kgo">▶ Tạo nhánh ${esc(R0[0].rn.toLowerCase())}</button></div>`}
   return h+kPlaySheets(D,X,GD);
 }
 function kPlaySheets(D,X,GD){
   if(!kSh)return "";const G=GD.G,it=(i,t,s,a,v,red)=>`<button class="gmli" data-act="${a}"${v!=null?` data-v="${esc(v)}"`:""}><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b>${s?`<small>${s}</small>`:""}</span><span aria-hidden="true">›</span></button>`;
   const sh=(t,b)=>`<div class="mxdim" data-act="kshx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="${esc(t)}"><span class="grab"></span><b class="mxh">${t}</b>${b}</div>`;
-  if(kSh==="m14")return sh("Thêm việc",it("⚙","Xếp trận tiếp",autoNext()?"Đang: Tự động · bấm để chuyển BTC bấm":"Đang: BTC bấm · bấm để chuyển Tự động","scauto")+it("🔊","Loa gọi trận kế","Đọc tên 2 cặp và số sân","kcall")+it("▣","Mã trọng tài","Mỗi sân một mã","dhqr")+it("⇅","Đổi thứ tự trận","Đưa trận khác lên trước","ksh","up")+it("⏸","Tạm dừng sân","Sân hỏng, mưa…","ksh","cp")+it("✎","Sửa điểm trận đã xong","","g4v","kq")+it("🏳","Xử thua một cặp","Bỏ cuộc, chấn thương","ksh","ff",1));
+  if(kSh==="m14")return sh("Thêm việc",it("🔊","Loa · câu đọc","Tự đọc, sửa câu đọc của giải này","lpg")+it("⚙","Xếp trận tiếp",autoNext()?"Đang: Tự động · bấm để chuyển BTC bấm":"Đang: BTC bấm · bấm để chuyển Tự động","scauto")+it("🔊","Loa gọi trận kế","Đọc tên 2 cặp và số sân","kcall")+it("▣","Mã trọng tài","Mỗi sân một mã","dhqr")+it("⇅","Đổi thứ tự trận","Kéo thả hoặc theo tiến độ","kord")+it("⏸","Tạm dừng sân","Sân hỏng, mưa…","ksh","cp")+it("✎","Sửa điểm trận đã xong","","g4v","kq")+it("🏳","Xử thua một cặp","Bỏ cuộc, chấn thương","ksh","ff",1));
   if(kSh==="m15")return sh("Thêm việc",it("🔊","Loa đọc bảng xếp hạng","Bấm thì mới đọc","k15read")+it("⚖","Cách xếp khi bằng thắng","Đối đầu → hiệu số → điểm ghi","ksh","tie")+it("🖼","Gửi ảnh các bảng","Vào nhóm Zalo","k15send")+(!GD.gDone?it("▶",armed("kforce:x")?"Bấm lần nữa · trận còn lại không đánh":"Tạo nhánh ngay","Khi còn trận chưa đánh","kforce",null,1):""));
   if(kSh==="m17"){const R0=GD.ko[0][0];return sh("Thêm việc",it("🔊","Loa đọc nhánh đấu","Bấm thì mới đọc","k17read")+it("⇄",G.kswap?"Xong đổi chỗ":"Đổi 2 cặp trong nhánh","Trước khi vòng đó bắt đầu","kswapm")+it("⚙","Luật điểm vòng này",`${R0.rn}: ${ruleTx(R0.rule)}`,"ksh","rule")+it("🖼","Gửi ảnh nhánh","Vào nhóm Zalo","k17send")+it("↺",armed("kreset:x")?"Bấm lần nữa để xếp lại":"Xếp lại nhánh","Xoá kết quả vòng trong đã nhập","kreset",null,1))}
   if(kSh==="tie")return sh("Cách xếp khi bằng thắng",`<small class="rule">Hai cặp bằng số trận thắng: xét trận đối đầu giữa hai cặp; vẫn bằng thì xét hiệu số (điểm ghi trừ điểm thua); vẫn bằng thì xét tổng điểm ghi được.</small>`);
@@ -287,7 +286,7 @@ const kNhanhText=(D,GD,X)=>[`🏆 ${X?xName(X):""} · nhánh đấu`,...GD.ko.fl
 async function kPlayAct(act,b){
   const D=derive(),GD=gDerive(D),v=b.dataset.v,X=xCur();if(!GD||!GD.isKO)return false;const G=GD.G;
   if(act==="kseg"){kSeg=v;kSh=null;render();return true}
-  if(act==="kgo"){await write(()=>saveG({koGo:true}),"Đã tạo nhánh");kSeg="nhanh";await gFill();return true}
+  if(act==="kgo"){await write(()=>saveG({koGo:true}),"Đã tạo nhánh");kSeg="san";if(autoNext())await gFill();return true}
   if(act==="kforce"){if(!armOr("kforce:x"))return true;kSh=null;await write(()=>saveG({koForce:true}),"Vòng bảng dừng ở đây");return true}
   if(act==="k17read"){speak(kNhanhText(D,GD,X).split("\n").slice(1).join(". "),"","kn:"+Date.now(),true);await write(()=>saveG({koRead:true}));kSh=null;return true}
   if(act==="k15read"){speak(kBangText(D,GD,X).split("\n").slice(1).join(". "),"","kb:"+Date.now(),true);kSh=null;render();return true}
@@ -295,7 +294,7 @@ async function kPlayAct(act,b){
   if(act==="k17send"){kSh=null;await sendText(kNhanhText(D,GD,X));return true}
   if(act==="kcall"){kSh=null;const g=kNext(D,GD,1)[0];if(!g){toast("Không còn trận chờ.");return true}speak(`Trận tiếp theo: ${kPN(D,GD,g.x).replace(/&amp;/g,"và")} gặp ${kPN(D,GD,g.y).replace(/&amp;/g,"và")}`,"","kc:"+Date.now(),true);render();return true}
   if(act==="kup"){const [x,y]=String(v).split("|");kSh=null;await write(()=>saveG({preOn:true,presets:[{id:"gp"+Date.now().toString(36),x,y},...(G.presets||[])]}),"Đã đưa trận lên trước");return true}
-  if(act==="kcp"){const cp={...(G.cpause||{})};if(cp[v])delete cp[v];else cp[v]=true;await write(()=>saveG({cpause:cp}),cp[v]?`Đã dừng sân ${cName(+v)}`:`Đã mở lại sân ${cName(+v)}`);if(!cp[v])await gFill();return true}
+  if(act==="kcp"){const cp={...(G.cpause||{})};if(cp[v])delete cp[v];else cp[v]=true;await write(()=>saveG({cpause:cp}),cp[v]?`Đã dừng sân ${cName(+v)}`:`Đã mở lại sân ${cName(+v)}`);if(!cp[v]&&autoNext())await gFill();return true}
   if(act==="kswapm"){kSh=null;kSel=null;await write(()=>saveG({kswap:!G.kswap}));kSeg="nhanh";return true}
   if(act==="kswap"){const R0=GD.ko[0],ids=R0.flatMap(g=>[g.x,g.y]);if(!kSel){kSel="ks:"+v;render();return true}const a=+kSel.slice(3),c=+v;kSel=null;if(a===c){render();return true}
     const L=ids.slice();[L[2*a+1],L[2*c+1]]=[L[2*c+1],L[2*a+1]];await write(()=>saveG({koIds:L}),"Đã đổi 2 cặp trong nhánh");return true}
@@ -360,4 +359,34 @@ function mxLiveKO(D,GD){
   const box=g=>{const w=gWin(g),n2=(id,lb)=>id?(P&&id===P.id?`<b>${nmMe(P)}</b>`:kPN(D,GD,id)):`<em>${esc(lb||"…")}</em>`,sc=(id,v)=>g.st==="done"?`<b>${v}</b>`:"";
     return `<div class="kbm${g.st==="live"?" live":""}"><span class="${w&&w===g.x?"w":""}">${n2(g.x,g.lx)}${sc(g.x,g.sx)}</span><span class="${w&&w===g.y?"w":""}">${n2(g.y,g.ly)}${sc(g.y,g.sy)}</span></div>`};
   return h+`<div class="kbr">${GD.ko.map((L,r)=>`<div class="col" style="gap:${8+r*24}px">${L.map(box).join("")}</div>`).join("")}</div>${GD.gDone?"":`<small class="rule">Nhánh điền tên khi đánh xong vòng bảng.</small>`}`;
+}
+
+/* ----- Đổi thứ tự trận: Theo tiến độ (app tự xếp) hoặc Tự sắp xếp (giữ ≡ kéo thả) ----- */
+let kOrdPg=false,kOrd=null,kOrdMode=null;
+SRT_CB.kord=keys=>{kOrd=keys;render()};
+// Thứ tự dự kiến: lịch từng sân, lần lượt từng lượt
+function kOrdSeq(D,GD){const P=gPlan(D,GD),L=[...P.values()],seq=[],n=Math.max(0,...L.map(x=>x.length));
+  for(let i=0;i<n;i++)for(const x of L)if(x[i])seq.push(x[i]);
+  for(const g of GD.games)if(g.st==="wait"&&g.x&&g.y&&!seq.includes(g))seq.push(g);return seq.filter(g=>g.x&&g.y&&g.key===gk(g.x,g.y))}
+function kOrdV(D,X,GD){
+  const G=GD.G,mode=kOrdMode||(G.preOn===true?"man":"auto"),seq=kOrdSeq(D,GD),by=new Map(seq.map(g=>[g.key,g]));
+  if(!kOrd)kOrd=seq.map(g=>g.key);const L=kOrd.map(k=>by.get(k)).filter(Boolean);for(const g of seq)if(!kOrd.includes(g.key))L.push(g);
+  mxDr({t:"Đổi thứ tự trận",back:"kordx",sub:esc(xName(X))});
+  const row=(g,i)=>`<div class="srt" data-k="${esc(g.key)}">${mode==="man"?`<span class="drh" aria-label="Kéo để đổi chỗ">≡</span>`:""}<b class="n">${i+1}</b><span class="t"><b>${kPN(D,GD,g.x)}</b> gặp <b>${kPN(D,GD,g.y)}</b><small>${g.ko?esc(g.rn):`Bảng ${KOG[g.grp]}`}</small></span></div>`;
+  return `<div class="kseg">${[["auto","Theo tiến độ"],["man","Tự sắp xếp"]].map(([k,l])=>`<button data-act="kordm" data-v="${k}" aria-pressed="${mode===k}">${l}</button>`).join("")}</div>
+    <small class="rule">${mode==="man"?"Giữ ≡ rồi kéo lên/xuống. Trận trên cùng vào sân trước khi bấm Tạo trận.":"App tự xếp theo tiến độ: cặp nghỉ lâu vào trước, không để một cặp đánh liền 2 trận."}</small>
+    <div class="srtl" data-srt="kord">${(mode==="man"?L:seq).map(row).join("")||`<p class="rule">Không còn trận chờ.</p>`}</div>
+    <div class="hqcta two">${mode==="man"?`<button class="btn-line" data-act="kordm" data-v="auto">↺ Về theo tiến độ</button><button class="ball go" data-act="kordok">✓ Lưu thứ tự</button>`:`<button class="btn-line" data-act="kordx">Đóng</button><button class="ball go" data-act="kordok">✓ Dùng theo tiến độ</button>`}</div>`;
+}
+async function kOrdAct(act,b){
+  const D=derive(),GD=gDerive(D);if(!GD)return false;const v=b.dataset.v;
+  if(act==="kord"){kSh=null;kOrdPg=true;kOrd=null;kOrdMode=null;render();try{scrollTo({top:0})}catch(e){}return true}
+  if(act==="kordx"){kOrdPg=false;kOrd=null;kOrdMode=null;render();return true}
+  if(act==="kordm"){kOrdMode=v==="man"?"man":"auto";if(kOrdMode==="auto")kOrd=null;render();return true}
+  if(act==="kordok"){const mode=kOrdMode||(GD.G.preOn===true?"man":"auto");
+    if(mode==="auto")await write(()=>saveG({preOn:false}),"Đã để app xếp theo tiến độ");
+    else{const by=new Map(GD.games.map(g=>[g.key,g])),P=(kOrd||kOrdSeq(D,GD).map(g=>g.key)).map(k=>by.get(k)).filter(g=>g&&g.st==="wait").map((g,i)=>({id:"gp"+Date.now().toString(36)+i,x:g.x,y:g.y}));
+      await write(()=>saveG({preOn:true,presets:P}),"Đã lưu thứ tự trận")}
+    kOrdPg=false;kOrd=null;kOrdMode=null;render();return true}
+  return false;
 }

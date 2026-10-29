@@ -19,8 +19,8 @@ test("một sân gọi: dải đỏ ở tab khác và trong giải, ô sân đ�
   const e = await boot(base({ "clubs/q7/calls/c1": call("Tranh cãi điểm") }));
   await e.nav("app", { t: "nguoi" }); await e.until(() => e.V().includes('class="ycban"'));
   expect(e.T()).toContain("SÂN 1 CẦN BTC"); expect(e.T()).toContain("Tranh cãi điểm");
-  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="g4c red"'));
-  expect(e.T()).toContain("Tới sân 1 · xem");
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct x"'));
+  expect(e.T()).toContain("Tới xử lý");
   await e.click("dhsc", { id: "c1" }); await e.until(() => e.T().includes("Xem lịch sử từng pha"));
   expect(e.T()).toContain("Sửa điểm");
   await e.click("dhscok", { id: "c1" }); await e.until(() => e.store.get("clubs/q7/calls/c1").st === "done");
@@ -28,7 +28,7 @@ test("một sân gọi: dải đỏ ở tab khác và trong giải, ô sân đ�
 
 test("bỏ cuộc: Chờ thêm 5 phút, Xử thua (bấm 2 lần) → trận lưu 0–11, yêu cầu xong", async () => {
   const e = await boot(base({ "clubs/q7/calls/c1": call("Thiếu người, bỏ cuộc") }));
-  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="g4c red"'));
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct x"'));
   await e.click("dhsc", { id: "c1" }); await e.until(() => e.T().includes("Chờ thêm 5 phút"));
   await e.click("ycwait", { id: "c1" }); await e.until(() => (e.store.get("clubs/q7/calls/c1").wait || 0) > Date.now());
   await e.click("dhsc", { id: "c1" }); await e.until(() => e.T().includes("Xử thua"));

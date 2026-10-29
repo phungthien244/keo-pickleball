@@ -10,7 +10,7 @@ const SC_ST=["Điểm danh","Bốc thăm","Bắt đầu","Kết thúc"];
 function scStep(D,m){const f=m.ref;if(!f)return 0;if(m.status==="done")return 4;
   if(f.started)return ttRun(D,m).done?4:3;return (f.st||1)>=2||(f.toss&&f.toss.ch)?2:1}
 const scSpk=(D,ids)=>ids.map(id=>D.pmap.get(id)?.name||"").filter(Boolean).join(" và ");
-const scInvTx=(D,m)=>`Mời ${scSpk(D,m.a)}, ${scSpk(D,m.b)} vào sân ${cName(m.court)} chuẩn bị thi đấu`;
+const scInvTx=(D,m)=>ltx("inv",{"đội 1":scSpk(D,m.a),"đội 2":scSpk(D,m.b),"sân":cName(m.court)},`Mời ${scSpk(D,m.a)}, ${scSpk(D,m.b)} vào sân ${cName(m.court)} chuẩn bị thi đấu`);
 const scBar=st=>st?`<div class="scst">${SC_ST.map((t,i)=>`<i class="${i+1<st||st===4?"ok":i+1===st?"on":""}">${t}</i>`).join("")}</div>`:"";
 const scLast=(D,k)=>[...D.done].filter(m=>Number(m.court)===Number(k)&&m.status==="done").sort((a,b)=>(a.doneAt||0)-(b.doneAt||0)).pop();
 // Thẻ một sân đang có trận
@@ -45,7 +45,8 @@ function scUndoBar(){
 function scSheet(D){
   if(scSh==null)return "";const k=Number(scSh),m=D.playing.find(x=>Number(x.court)===k),last=m?null:scLast(D,k);
   const it=(i,t,s,a,id,v,red)=>`<button class="gmli" data-act="${a}"${id?` data-id="${esc(id)}"`:""}${v!=null?` data-v="${esc(v)}"`:""}><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b>${s?`<small>${s}</small>`:""}</span><span aria-hidden="true">›</span></button>`;
-  let b="";
+  let b="";const o=scO||{lb:()=>"",nm:x=>[g4Nm(D,x.a),g4Nm(D,x.b)],fill:false},strip=h=>h.replace(/<button class="btn-line gmdot" data-act="scsh"[^>]*>⋯<\/button>/,"");
+  if(m)b+=strip(scCard(D,m,o.lb(m),...o.nm(m)));else if(last)b+=strip(scEnd(D,last,o.lb(last),...o.nm(last),o.fill));else if(o.fill)b+=`<div class="g4c e"><span class="t">Sân trống</span><button class="ball go" data-act="scfill" data-v="${k}">▶ Tạo trận</button></div>`;
   if(m){const st=scStep(D,m);
     if(st<3)b+=it("📣","Mời vào sân","Loa đọc tên 2 cặp và số sân","scinv",m.id);
     if(m.ref&&m.ref.started)b+=it("📜","Lịch sử từng pha","Trọng tài nhập từng pha","dhhist",m.id);
@@ -53,7 +54,7 @@ function scSheet(D){
     if(free.length)b+=`<span class="mxsec">⇄ Chuyển sang sân khác</span><div class="dhfree">${free.map(c=>`<button class="line sm" data-act="dhmove" data-id="${esc(m.id)}" data-v="${c}">Sân ${esc(cName(c))}</button>`).join("")}</div>`;
     b+=it("✕",armed("sccancel:"+m.id)?"Bấm lần nữa để huỷ trận":"Huỷ trận","Trận bị xoá, hoàn tác được trong 1 phút","sccancel",m.id,null,1)}
   else if(last)b+=it("🔊","Đọc kết quả","","scread",last.id)+(last.ref&&last.ref.started?it("📜","Lịch sử từng pha","","dhhist",last.id):"")+it("↶",armed("screopen:"+last.id)?"Bấm lần nữa để mở lại":"Mở lại trận","Đưa trận về đang đánh để sửa điểm","screopen",last.id);
-  else{scSh=null;return ""}
+  else if(!b){scSh=null;return ""}
   return `<div class="mxdim" data-act="scshx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="Sân ${esc(cName(k))}"><span class="grab"></span><b class="mxh">Sân ${esc(cName(k))}</b>${b}</div>`;
 }
 // Tự động xếp trận tiếp: máy loa (hoặc máy BTC khi chưa chọn máy loa) đưa trận vào sân vừa xong
@@ -70,10 +71,12 @@ function scAuto(){
 async function scAct(act,b){
   const id=b.dataset.id,v=b.dataset.v,D=derive(),m=id?(S.matches||[]).find(x=>x.id===id):null;
   if(act==="scsh"){scSh=Number(v);render();return true}
+  if(act==="scf"){scF=v||"all";render();return true}
+  if(act==="scfillall"){scSh=null;if(isG(D.c)){const n=await gFill(false);toast(n?`Đã đưa ${n} trận vào sân`:"Chưa có trận nào đưa vào được: hết trận hoặc cặp đang bận.")}else await generate();return true}
   if(act==="scshx"){scSh=null;render();return true}
   if(act==="scinv"){if(!m)return true;scSh=null;speak(scInvTx(D,m),"","inv:"+m.id);db.collection("matches").doc(m.id).update({inv:Date.now()}).catch(()=>{});render();return true}
   if(act==="scread"){if(!m)return true;scSh=null;speak(resultText(D,m,m.sa,m.sb),"","r:"+m.id);db.collection("matches").doc(m.id).update({readAt:Date.now()}).catch(()=>{});render();return true}
-  if(act==="scfill"){if(isG(D.c)){const n=await gFill(false,Number(v));if(!n)toast("Chưa có trận nào đưa vào được: hết trận hoặc cặp đang bận.")}else await generate(Number(v));return true}
+  if(act==="scfill"){scSh=null;if(isG(D.c)){const n=await gFill(false,Number(v));if(!n)toast("Chưa có trận nào đưa vào được: hết trận hoặc cặp đang bận.")}else await generate(Number(v));return true}
   if(act==="scauto"){gmMore=false;kSh=null;const on=!autoNext();await write(()=>saveCfg({autoNext:on}),on?"Xếp trận tiếp: tự động":"Xếp trận tiếp: BTC bấm");return true}
   if(act==="sccancel"){if(!m||!armOr("sccancel:"+m.id))return true;scSh=null;const c=Number(m.court);
     await write(()=>trashMatches([m],"cancel"),`Đã huỷ trận sân ${cName(c)}`);scUndo={id:m.id,c,at:Date.now()};render();return true}
@@ -84,3 +87,35 @@ async function scAct(act,b){
     await write(()=>db.collection("matches").doc(m.id).update(up),`Đã mở lại trận sân ${cName(m.court)}`);return true}
   return false;
 }
+/* ----- Bố cục A: lọc theo trạng thái + lưới 2 cột tô màu (đỏ cần BTC · xanh lá kết thúc · xanh dương đang đánh · vàng chuẩn bị · xám trống) ----- */
+let scF="all",scO=null;
+const SC_LB={x:"CẦN BTC",k:"KẾT THÚC",d:"ĐANG ĐÁNH",c:"CHUẨN BỊ",e:"TRỐNG"},SC_ORD={x:0,k:1,d:2,c:3,e:4};
+// o: {lb:m=>nhãn, nm:m=>[đội A, đội B], fill:bool có trận để đưa vào, cp:{sân tạm dừng}}
+function scTiles(D,o){
+  const n=Math.max(1,+D.c.courts||1),calls=ycBtc(),T=[],cp=o.cp||{};
+  for(let k=1;k<=n;k++){const m=D.playing.find(x=>Number(x.court)===k),cx=m&&calls.find(x=>Number(x.court)===k);
+    if(m&&cx){T.push({k,s:"x",m,cx});continue}
+    if(m){const st=scStep(D,m);T.push({k,s:st===1||st===2?"c":"d",m,st});continue}
+    if(cp[k]){T.push({k,s:"e",p:1});continue}
+    const L=scLast(D,k);T.push(L?{k,s:"k",m:L}:{k,s:"e"})}
+  return T.sort((a,b)=>SC_ORD[a.s]-SC_ORD[b.s]||a.k-b.k);
+}
+function scTile(D,t,o){
+  const k=t.k,m=t.m,[nA,nB]=m?o.nm(m):["",""],lb=m?o.lb(m):"",now=Date.now(),age=m&&typeof m.createdAt==="number"?Math.max(0,Math.round((now-m.createdAt)/6e4)):0;
+  let big="—",sub="",meta="",btn="";
+  if(t.s==="x"){big=esc(t.cx.why||"Cần BTC");sub=`${nA} · ${nB}`;meta=`${esc(t.cx.by||"Trọng tài")} · ${t.cx.at?Math.max(0,Math.round((now-t.cx.at)/6e4)):0}′ trước`;btn=`<button class="ball" data-act="dhsc" data-id="${esc(t.cx.id)}">Tới xử lý</button>`}
+  else if(t.s==="d"){const R=m.ref&&m.ref.started?ttRun(D,m):null;big=R?`${R.s.a}–${R.s.b}`:`${age}′`;sub=`${nA} · ${nB}`;meta=[lb,R?`ván ${R.g+1}`:m.ref?"":"BTC nhập"].filter(Boolean).join(" · ")}
+  else if(t.s==="c"){const ids=[...m.a,...m.b],miss=ids.filter(id=>!rfHere(m,id));big=SC_ST[t.st-1];sub=`${ids.length-miss.length}/${ids.length} có mặt${miss.length&&t.st===1?` · thiếu ${miss.map(id=>esc(ttPN(D,id))).join(", ")}`:""}`;meta=`TT ${esc(m.ref.byName||"")} · ${age}′`}
+  else if(t.s==="k"){const aw=m.sa>m.sb;big=`${m.sa}–${m.sb}`;sub=`${aw?nA:nB} thắng`;meta=lb;if(o.fill)btn=`<button class="ball go" data-act="scfill" data-v="${k}">▶ Tạo trận mới</button>`}
+  else{sub=t.p?"Tạm dừng":"Trống";if(o.fill&&!t.p)btn=`<button class="ball go" data-act="scfill" data-v="${k}">▶ Tạo trận</button>`}
+  return `<div class="sct ${t.s}" data-act="scsh" data-v="${k}" role="button" tabindex="0" aria-label="Sân ${esc(cName(k))} · ${SC_LB[t.s]}"><span class="h"><b>SÂN ${esc(cName(k))}</b><i>${SC_LB[t.s]}</i></span><span class="b"><b>${big}</b><small>${sub}</small>${meta?`<em>${meta}</em>`:""}</span>${btn?`<span class="f">${btn}</span>`:""}</div>`;
+}
+function scBoard(D,o){
+  scO=o;const T=scTiles(D,o),cnt=s=>T.filter(t=>t.s===s).length;
+  if(scF!=="all"&&!cnt(scF))scF="all";
+  const ch=[["all",`Tất cả ${T.length}`],...["x","k","d","c","e"].filter(s=>cnt(s)).map(s=>[s,`${{x:"Cần BTC",k:"Kết thúc",d:"Đang đánh",c:"Chuẩn bị",e:"Trống"}[s]} ${cnt(s)}`])];
+  return scUndoBar()+`<div class="scf" role="group" aria-label="Lọc sân">${ch.map(([s,l])=>`<button data-act="scf" data-v="${s}" aria-pressed="${scF===s}">${s==="all"?"":`<i class="${s}"></i>`}${l}</button>`).join("")}</div>
+    <div class="scg">${T.filter(t=>scF==="all"||t.s===scF).map(t=>scTile(D,t,o)).join("")}</div>`;
+}
+// Số sân có thể đưa trận vào ngay (trống, không tạm dừng)
+const scFree=(D,o)=>o.fill?scTiles(D,o).filter(t=>(t.s==="k"||t.s==="e")&&!t.p).length:0;
