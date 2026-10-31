@@ -2829,3 +2829,22 @@ a.mxbk,.mxdr .mxbk{color:#fff;text-decoration:none;font-size:28px;line-height:1}
 .sct.n .f button{background:#fff;color:#155e75;border:1px solid #0891b2}
 .kblock{background:#fff7ed;border-left:4px solid #f59e0b;padding:12px;display:flex;flex-direction:column;gap:6px;margin:0 0 10px}
 .kblock .cap{color:#92400e}.kblock small{font-size:12.5px;color:#78350f}.kblock .g5s small{display:block;color:var(--muted);font-size:11.5px}
+
+/* Nhập điểm nhanh 1–15 (3 hàng × 5) */
+.g4t .q{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.g4t .q button{min-height:0;height:40px;padding:0;border:0;border-radius:8px;background:rgba(255,255,255,.18);color:#fff;font:800 17px/1 var(--display)}
+.g4t .q button[aria-pressed="true"]{background:#fff;color:#111}
+/* Yêu cầu trọng tài: danh sách có trạng thái */
+.yclist{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto;margin:6px 0}
+.yclist .ycrow{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line,#e5e5e5);border-radius:10px}
+.yclist .ycrow.new{border-color:#e03131;background:rgba(224,49,49,.06)}
+.yclist .ycrow .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.yclist .ycrow .t b{font-size:14px;overflow-wrap:anywhere}
+.yclist .ycrow .b{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.yclist .g2tag{white-space:nowrap}
+.yclist .g2tag.n{background:#e9ecef;color:#555}
+.lonote{margin:0 0 10px}
+/* Bảng trượt: khoá trang phía dưới */
+html.mxlock,html.mxlock body{overflow:hidden!important;overscroll-behavior:none}
+.mxsheet{overscroll-behavior:contain}
+.shbox{z-index:122}#shs .cfmdim{z-index:121}

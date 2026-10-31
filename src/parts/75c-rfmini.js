@@ -25,7 +25,7 @@ function rfCallStrip(D,m){
   const o=L.sort((a,b)=>((b.x&&(b.x.doneAt||b.x.at))||Date.now())-((a.x&&(a.x.doneAt||a.x.at))||Date.now()))[0],n=esc(ttPN(D,o.pid));
   if(o.s==="sent")return `<div class="rfst y"><b>⏳ Đã gửi về máy BTC · ${hm(o.x.at)}</b><small>Chờ BTC đọc tên ${n} qua loa</small></div>`;
   if(o.s==="done"){const t=o.x.doneAt||o.x.at;if(Date.now()-t>10e3)return "";setTimeout(render,10e3-(Date.now()-t)+50);return `<div class="rfst g"><b>🔊 BTC đã gọi tên ${n} · ${hm(t)}</b><small>Chờ ${n} ra sân, hoặc bấm Gọi BTC nếu lâu quá</small></div>`}
-  return `<div class="rfst r"><span><b>⚠ Chưa gửi được yêu cầu gọi tên</b><small>Mất mạng, hoặc BTC đã bỏ qua</small></span><button class="ttln" data-act="ttcallgo" data-v="${esc(o.pid)}" data-m="${esc(m.id)}">Gửi lại</button></div>`;
+  return `<div class="rfst r"><span><b>${o.s==="skip"?`BTC đã bỏ qua yêu cầu gọi tên ${n}`:"⚠ Chưa gửi được yêu cầu gọi tên"}</b><small>${o.s==="skip"?"Cần thì bấm Gửi lại":"Mất mạng, kiểm tra rồi bấm Gửi lại"}</small></span><button class="ttln" data-act="ttcallgo" data-v="${esc(o.pid)}" data-m="${esc(m.id)}">Gửi lại</button></div>`;
 }
 function rfCallBtn(D,m,pid){const s=rfCallSt(D,m,pid).s;
   return s==="sent"?`<span class="rftag y">⏳ Đã nhờ</span>`:s==="done"?`<span class="rftag g">🔊 Đã gọi</span>`:`<button class="ttln" data-act="ttcallp" data-v="${esc(pid)}" data-m="${esc(m.id)}">📣 Nhờ BTC gọi tên</button>`}
@@ -63,7 +63,7 @@ function rfPre(D,m,X){
     h+=`<section class="ttbox"><span class="cap">Vị trí đứng · bấm vào ô của đội nào là 2 người đội đó đổi chỗ</span>${ttCourt(D,m,X,{pre:true,noface:true})}<div class="ttrow"><small class="grow">Người ở ô phải của đội giao trước giao bóng đầu tiên.</small><button class="ttln" data-act="ttside">⇄ Đổi bên sân</button></div></section>
       <section class="ttbox"><span class="cap">Luật trận · BTC đã cài</span><div class="ttrule"><span>Chạm</span><b>${X.R.to}${X.R.w2?" · cách 2":""}${X.R.cap?` · tối đa ${X.R.cap}`:""}</b></div><div class="ttrule"><span>Số ván</span><b>${X.R.sets>1?`Thắng ${X.need}/${X.R.sets}`:"1 ván"}</b></div><div class="ttrule"><span>Tính điểm</span><b>${X.rally?"Rally":"Truyền thống"}</b></div><div class="ttrule"><span>Timeout</span><b>2 lần/ván · 1 phút</b></div></section>`;
     ft=`<button class="ttln" data-act="ttstep" data-v="1" aria-label="Quay lại">‹</button><button class="ttgo" data-act="ttstart" ${T.first!=null?"":"disabled"}>▶ Bắt đầu trận · ${X.rally?"0-0":"0-0-2"}</button>`}
-  return h+`<div class="ttft">${ft}</div>`+rfAskDlg(D);
+  return h+`<div class="ttft">${ft}</div>`;
 }
 // Hộp xác nhận hoàn tác (màn nhập điểm và màn hết trận)
 function rfUndoDlg(D,m,X){
@@ -187,13 +187,13 @@ async function rfAct(act,b){
   if(act==="tthere"){const m=ttM();if(!m||!m.ref)return true;const H={...(m.ref.here||{})};if(H[v])delete H[v];else H[v]=Date.now();await ttWrite(m,{...m.ref,here:H});return true}
   if(act==="ttbye"){rfBye=null;go("home");return true}
   if(act==="ttcallx"){rfAsk=null;render();return true}
-  if(act==="ttcallp"&&rfOn()){rfAsk={p:v,m:b.dataset.m||ttId};render();return true}
+  if(act==="ttcallp"&&MINI&&!canWrite){rfAsk={p:v,m:b.dataset.m||ttId};render();return true}
   if(act==="ttcallgo"){const m=(S.matches||[]).find(x=>x.id===(b.dataset.m||ttId));rfAsk=null;if(!m){render();return true}
     const D=derive(),tx=rfCallTx(D,m,v),u=authUser&&authUser.uid;
     const dup=(S.calls||[]).find(x=>x.k==="loa"&&x.uid===u&&x.txt===tx&&x.st!=="skip"&&Date.now()-(x.at||0)<60e3);
     if(dup){toast("Cùng một tên chỉ gửi lại được sau 1 phút.");render();return true}
     delete rfErr[v];render();
-    const ok=await dhAddCall({k:"loa",txt:tx.slice(0,400)});
-    if(!ok)rfErr[v]=1;render();return true}
+    const ok=await dhAddCall({k:"loa",txt:tx.slice(0,400),court:Number(m.court)});
+    if(!ok)rfErr[v]=1;else toast("Đã gửi về máy BTC · chờ BTC đọc qua loa");render();return true}
   return false;
 }

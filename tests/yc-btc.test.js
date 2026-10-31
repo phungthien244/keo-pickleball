@@ -20,7 +20,7 @@ test("một sân gọi: dải đỏ ở tab khác và trong giải, ô sân đ�
   await e.nav("app", { t: "nguoi" }); await e.until(() => e.V().includes('class="ycban"'));
   expect(e.T()).toContain("SÂN 1 CẦN BTC"); expect(e.T()).toContain("Tranh cãi điểm");
   await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct x"'));
-  expect(e.T()).toContain("Tới xử lý");
+  expect(e.T()).toContain("Tới xử lý"); expect(e.V()).toContain('class="ycban"');
   await e.click("dhsc", { id: "c1" }); await e.until(() => e.T().includes("Xem lịch sử từng pha"));
   expect(e.T()).toContain("Sửa điểm");
   await e.click("dhscok", { id: "c1" }); await e.until(() => e.store.get("clubs/q7/calls/c1").st === "done");
@@ -41,8 +41,21 @@ test("bỏ cuộc: Chờ thêm 5 phút, Xử thua (bấm 2 lần) → trận lư
 test("nhiều việc: dải ghi số việc, mở danh sách GẤP + LOA", async () => {
   const e = await boot(base({ "clubs/q7/calls/c1": call("Tranh cãi điểm"), "clubs/q7/calls/c2": call("Cần bóng, nước, việc khác", { court: 2 }), "clubs/q7/calls/c3": { k: "loa", txt: "Mời Hùng ra sân 1", by: "Trọng tài Nam", uid: "zalo_5", at: Date.now(), sid: 1, st: "new" }, "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "live", loaMode: "duyet", target: 11 } }));
   await e.nav("app", { t: "tien" }); await e.until(() => e.T().includes("3 VIỆC CẦN BTC"));
-  await e.click("yclist"); await e.until(() => e.T().includes("3 việc cần BTC"));
-  expect(e.T()).toContain("GẤP"); expect(e.T()).toContain("LOA"); expect(e.T()).toContain("Mời Hùng ra sân 1");
+  await e.click("yclist"); await e.until(() => e.T().includes("Yêu cầu trọng tài · 3 mới"));
+  expect(e.T()).toContain("Mới"); expect(e.T()).toContain("Mời Hùng ra sân 1");
+  // Đọc → Đã đọc, còn trong danh sách, đọc lại được
+  await e.click("dhloa", { id: "c3" }); await e.until(() => e.store.get("clubs/q7/calls/c3").st === "done");
+  await e.until(() => e.T().includes("Đã đọc")); expect(e.V()).toContain("↻ Đọc lại");
+  // Bỏ qua → Bỏ qua, Xử lý lại → mới
+  await e.click("ycskip", { id: "c2" }); await e.until(() => e.store.get("clubs/q7/calls/c2").st === "skip");
+  await e.until(() => e.T().includes("Bỏ qua")); await e.click("ycredo", { id: "c2" });
+  await e.until(() => e.store.get("clubs/q7/calls/c2").st === "new");
+});
+
+test("trọng tài thấy BTC đã xử lý", async () => {
+  const data = base({ "clubs/q7/members/zalo_9": { role: "scorer", name: "TT" }, "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1 }, "clubs/q7/calls/c1": call("Tranh cãi điểm", { uid: "zalo_9", st: "done", doneAt: Date.now(), doneBy: "Chủ" }) });
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", search: "?clb=q7", user: ZU, data }); globalThis.window.ZMINI = 1; await e.boot();
+  await e.nav("app", { t: "san" }); await e.until(() => e.T().includes("BTC đã xử lý"));
 });
 
 test("máy trọng tài: thấy 'Đã gọi BTC' và huỷ gọi được", async () => {
@@ -51,4 +64,12 @@ test("máy trọng tài: thấy 'Đã gọi BTC' và huỷ gọi được", asyn
   await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="ycmine"'));
   expect(e.T()).toContain("Đã gọi BTC");
   await e.click("yccancel", { id: "c1" }); await e.until(() => e.store.get("clubs/q7/calls/c1").st === "skip");
+});
+
+test("trọng tài nhờ gọi tên: hiện dải trên màn Đang đánh của BTC, ⋯ có Yêu cầu trọng tài", async () => {
+  const e = await boot(base({ "clubs/q7/calls/c3": { k: "loa", txt: "Mời Hùng ra sân 1", by: "Trọng tài Nam", uid: "zalo_5", at: Date.now(), sid: 1, st: "new", court: 1 } }));
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="ycban"'));
+  await e.click("yclist"); await e.until(() => e.T().includes("Mời Hùng ra sân 1"));
+  await e.click("dhloa", { id: "c3" }); await e.until(() => e.store.get("clubs/q7/calls/c3").st === "done");
+  await e.until(() => !e.V().includes('class="ycban"'));
 });

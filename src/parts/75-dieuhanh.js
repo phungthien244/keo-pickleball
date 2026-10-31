@@ -103,7 +103,7 @@ function dhSheets(D){
       <div class="dhqrct" role="group" aria-label="Chọn sân">${Array.from({length:n},(_,i)=>i+1).map(c=>{const has=(S.refsQ||[]).some(r=>Number(r.court)===c);return `<button data-act="dhqrk" data-v="${c}" aria-pressed="${c===k}">Sân ${esc(cName(c))}${has?" ✓":""}</button>`}).join("")}</div>
       <div class="dhqr one"><b>SÂN ${esc(cName(k))}</b>${q?qrSvgText(dhRefLink(k,q.code),230):`<span class="sk"></span>`}<small>${R.length?`Trọng tài: ${R.map(r=>esc(r.name||"?")).join(", ")}`:"Chưa có trọng tài nhận sân này"}</small></div>
       ${R.map(r=>`<div class="srow"><span>${esc(r.name||"Trọng tài")}</span><button class="ghost" data-act="dhrefx" data-id="${esc(r.id)}">${armed("dhrefx:"+r.id)?"Bấm lần nữa":"Thu hồi"}</button></div>`).join("")}
-      ${q?`<button class="line" data-act="cplink" data-v="${esc(dhRefLink(k,q.code))}">Copy link trọng tài Sân ${esc(cName(k))}</button>`:""}
+      ${q?`<div class="two b"><button class="line" data-act="cplink" data-v="${esc(dhRefLink(k,q.code))}">Copy link</button><button class="primary" data-act="dhqrsh" data-v="${k}">↗ Chia sẻ Sân ${esc(cName(k))}</button></div>`:""}
       <div class="two b"><button class="line" data-act="dhqrx">Đóng</button><button class="line red" data-act="dhqrnew">${armed("dhqrnew:x")?"Bấm lần nữa":"Đổi mã · thu hồi tất cả"}</button></div></div>`}
   if(dhCB!=null)h+=dhDim("dhcbx")+`<div class="mxsheet dhsh" role="dialog" aria-label="Gọi BTC"><span class="grab"></span><span class="mxsec">Gọi BTC tới Sân ${esc(cName(dhCB))}</span><b class="mxh">Chuyện gì xảy ra?</b>
     <div class="dhwhy">${DH_WHY.map(([t,s],i)=>`<button class="line" data-act="dhcbgo" data-v="${i}"><b>${t}</b>${s?`<small>${s}</small>`:""}</button>`).join("")}</div><button class="line" data-act="dhcbx">Huỷ</button></div>`;
@@ -198,9 +198,9 @@ async function dhAct(act,b){
   if(act==="dhundo"){const m=(S.matches||[]).find(x=>x.id===id);if(!m||!m.ref)return true;if(!armOr("dhundo:"+id))return true;const ev=[...(m.ref.ev||[])];if(!ev.length)return true;ev.pop();
     await ttWrite(m,{...m.ref,ev,un:[...(m.ref.un||[]),{at:Date.now(),tx:"BTC hoàn tác pha cuối"}]});toast("Đã hoàn tác pha cuối");return true}
   if(act==="dhmove"){const m=(S.matches||[]).find(x=>x.id===id),k=Number(v);if(!m||!k)return true;
-    await write(()=>db.collection("matches").doc(m.id).update({court:k,cn:cName(k)}),`Đã chuyển trận sang Sân ${cName(k)}`);try{if(!loaMuted())speak(`Trận ở sân ${cName(m.court)} chuyển sang sân ${cName(k)}`,"","mv")}catch(e){}dhCt=k;return true}
+    await write(()=>db.collection("matches").doc(m.id).update({court:k,cn:cName(k)}),`Đã chuyển trận sang Sân ${cName(k)}`);dhCt=k;return true}
   if(act==="dhloa"){const x=(S.calls||[]).find(z=>z.id===id);if(!x)return true;await db.collection("calls").doc(id).update({st:"done",doneAt:Date.now()}).catch(()=>{});speak(x.txt,"","call:"+id,true);return true}
-  if(act==="dhloax"){await write(()=>db.collection("calls").doc(id).update({st:"skip",doneAt:Date.now()}));return true}
+  if(act==="dhloax"){await write(()=>db.collection("calls").doc(id).update({st:"skip",doneAt:Date.now(),doneBy:who()}));return true}
   if(act==="dhps"){dhPS=true;render();return true}
   if(act==="dhpsx"){dhPS=false;render();return true}
   if(act==="dhpsgo"){const mn=Number(v)||0,until=mn?Date.now()+mn*6e4:0;dhPS=false;
@@ -214,6 +214,9 @@ async function dhAct(act,b){
   if(act==="dhango"){const t=String(val("dh-ann","")).trim();if(!t){toast("Chọn câu mẫu hoặc gõ câu cần đọc.");return true}dhAN=false;delete drafts["dh-ann"];speak("Ban tổ chức xin thông báo. "+t,"","ann");render();return true}
   if(act==="dhqrk"){dhQR=+v||1;render();return true}
   if(["dhqr","dhan","dhps","dhcb"].includes(act)){if(typeof kSh!=="undefined")kSh=null;gmMore=false}
+  if(act==="dhqrsh"){const k=+v||1,q=(S.refqr||{})[k];if(!q)return true;const X=xCur(),gn=X?xName(X):(D.c.sname||"Giải đấu");
+    await shareOut({title:`Mời làm trọng tài Sân ${cName(k)}`,cardTitle:`🎯 Mời làm trọng tài Sân ${cName(k)}`,cardDesc:`${gn} · ${CLUB?.name||""} · Bấm Mở ngay để nhận sân và nhập điểm`,
+      text:`🎯 Mời bạn làm trọng tài Sân ${cName(k)} · ${gn}\nBấm link, nhận sân và nhập điểm ngay trên Zalo. Mã chỉ dùng cho 1 người.`,path:"/"+CID,q:`&tt=${encodeURIComponent(k)}&ttk=${encodeURIComponent(q.code)}`,miniOnly:true});return true}
   if(act==="dhqr"){dhQR=+v||1;const n=Math.max(1,+D.c.courts||1),Q=S.refqr||{};
     for(let k=1;k<=n;k++)if(!Q[k]||(Q[k].sid!=null&&Q[k].sid!==D.sid)||Q[k].sid==null)await db.collection("refqr").doc(String(k)).set({code:ckRand(),at:Date.now(),sid:D.sid}).catch(()=>{});render();return true}
   if(act==="dhqrx"){dhQR=false;render();return true}
@@ -236,8 +239,8 @@ function dhTTBox(D){
   for(let k=1;k<=n;k++){const R=[...(S.members||[]).filter(m=>m.role==="scorer"&&(m.courts||[]).map(Number).includes(k)).map(m=>m.name||"Trọng tài"),...(S.editors||[]).filter(e=>(e.courts||[]).map(Number).includes(k)).map(e=>e.name||"Máy PIN")],q=Q.filter(r=>Number(r.court)===k);
     h+=`<div class="dhin"><span class="tg ${R.length||q.length?"g":"y"}">SÂN ${esc(cName(k))}</span><span class="t"><b>${esc([...R,...q.map(r=>r.name||"Trọng tài")].join(", ")||"Chưa có · BTC tự nhập")}</b>${q.length?`<small>nhận qua QR ${q.map(r=>hm(r.at||0)).join(", ")}</small>`:""}</span>${q.map(r=>`<button class="sm ln" data-act="dhrefx" data-id="${esc(r.id)}">${armed("dhrefx:"+r.id)?"Chắc?":"Thu hồi"}</button>`).join("")}</div>`}
   h+=`<button class="line" data-act="dhqr">🖨 QR trọng tài từng sân</button></section>`;
-  const me=loaDev()===DEVID,mode=loaAutoCalls()?"auto":"duyet";
+  const me=loaDev()===DEVID;
   h+=`<section class="hqbox"><div class="dhsw"><span><b>Máy này nối loa</b><small>${loaDev()?(me?"Đang là máy loa của giải":"Máy loa là máy khác · máy này gửi yêu cầu"):"Chưa chọn · máy nào cũng tự đọc"}</small></span><button class="xsw${me?" on":""}" data-act="dhloadev" role="switch" aria-checked="${me}" aria-label="Máy này nối loa"><i></i></button></div>
-    ${me?`<span class="cap">Yêu cầu từ trọng tài</span><div class="seg segw"><button data-act="dhloamode" data-v="auto" aria-pressed="${mode==="auto"}">Tự đọc lần lượt</button><button data-act="dhloamode" data-v="duyet" aria-pressed="${mode==="duyet"}">BTC duyệt rồi đọc</button></div><small class="rule">Cùng một câu chỉ nhận lại sau 1 phút. Máy khác bấm loa sẽ gửi về đây.</small>`:""}</section>`;
+    ${me?`<small class="rule">Yêu cầu từ trọng tài và máy khác gửi về đây, BTC bấm Đọc mới đọc. Cùng một câu chỉ nhận lại sau 1 phút.</small>`:""}</section>`;
   return h;
 }

@@ -179,6 +179,7 @@ document.addEventListener("click",onAct=async e=>{
   if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
   if(canWrite&&hqAct(act,b))return;
   if(canWrite&&/^kord/.test(act)&&await kOrdAct(act,b))return;
+  if(canWrite&&/^(k|gmxa$)/.test(act)&&kLockHit(act,b))return;
   if(canWrite&&/^k(sh|pg|7|8|9|10|x|locked)/.test(act)&&await kAct(act,b))return;
   if(canWrite&&/^k(1[123]|courts?|11bang|court)/.test(act)&&await kDayAct(act,b))return;
   if(canWrite&&/^k(seg|go|force|17|15|call|up|cp|swap|reset)/.test(act)&&await kPlayAct(act,b))return;

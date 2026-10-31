@@ -178,7 +178,7 @@ function vGiaiMgr(D,X){
   let h=mxDrOn()?mxDr({t:nm,tact:"gmsw",sub:esc(sub),go:`href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk"`})
     :`<div class="gmhd">${MINI?"":`<a class="gmbk" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk" aria-label="Về danh sách giải">‹</a>`}<button class="gmname" data-act="gmsw"><b>${esc(nm)}</b><i aria-hidden="true">▾</i></button><button class="gmed" data-act="gmedit">✎ Sửa</button></div>`;
   h+=`<nav class="gmst" aria-label="Các chặng của giải">${GM_ST.map((t,i)=>`<button data-act="gmst" data-v="${i}" aria-pressed="${i===st}" class="${i<nat||(X&&X.st==="done")?"ok":i===nat?"now":""}">${i<nat||(X&&X.st==="done")?"✓ ":i===nat?"● ":""}${t}</button>`).join("")}</nav>`;
-  h+=ycBan(D);
+  if(!(st===2&&mxDrOn()&&cur&&(gmLive(D)||D.SM.length)))h+=ycBan(D);
   if(st!==nat&&!(X&&X.st==="done"))h+=`<button class="gmback" data-act="gmst" data-v="${nat}"><span>Đang xem lại <b>${GM_ST[st]}</b> · giải đang ở <b>${GM_ST[nat]}</b></span><b>Về ${GM_ST[nat]} ›</b></button>`;
   h+=[gmS0,gmS1,gmS2,gmS3][st](D,X,cur);
   return h+gmSheets(D,X,st,cur)+hnLate(D)+dhSheets(D);
@@ -237,7 +237,7 @@ function gmSheets(D,X,st,cur){
   if(!gmMore)return "";
   const live=gmLive(D)||D.SM.length,ck=ckSched(),R=[];
   const others=[...(!xCur()&&live&&X?[null]:[]),...schedUp()].filter(x=>(x?x.id:"_q")!==(X?X.id:"_q"));
-  const LO=["🔊","Loa · câu đọc","Tự đọc, sửa câu đọc của giải này","lpg",""],ED=["✎","Sửa giải",st===1?"Giờ, sân, luật, tiền":"Giờ, sân, luật, tiền, giải thưởng","gmedit",""],SW=["⇄","Đổi sang giải khác",others.length?others.slice(0,2).map(x=>x?xName(x):"Giải đánh nhanh").join(" · "):"Chưa có giải khác","gmsw",""];
+  const LO=["🔊","Loa · câu đọc","Sửa câu đọc của giải này","lpg",""],ED=["✎","Sửa giải",st===1?"Giờ, sân, luật, tiền":"Giờ, sân, luật, tiền, giải thưởng","gmedit",""],SW=["⇄","Đổi sang giải khác",others.length?others.slice(0,2).map(x=>x?xName(x):"Giải đánh nhanh").join(" · "):"Chưa có giải khác","gmsw",""];
   if(st<=1){
     if(MINI&&st===0)R.push(ED,SW,LO);
     if(MINI){if(cur&&ck&&st===1)R.push(["⌗","Mã QR check-in","Người tới quét bằng Zalo, tự điểm danh","ckopen",ck.id]);if(X&&st===1)R.push(["✋","BTC check-in giùm","Tích chọn người đã tới sân","ckbtc",X.id])}
@@ -247,7 +247,7 @@ function gmSheets(D,X,st,cur){
     if(MINI&&st===1)R.push(ED,SW,LO);
   }else if(MINI){
     R.push(["⚙","Xếp trận tiếp",autoNext()?"Đang: Tự động · bấm để chuyển BTC bấm":"Đang: BTC bấm · bấm để chuyển Tự động","scauto",""]);
-    R.push(ED,SW,LO,["🎯","Trọng tài","QR từng sân","dhqr",""],["📣","Thông báo loa","Gõ câu, máy loa đọc","dhan",""],["⏸","Nghỉ giữa giờ","Tạm dừng đưa trận mới","dhps",""],["↗","Chia sẻ trực tiếp","Gửi link xem điểm","lshare",""]);
+    R.push(["📣","Yêu cầu trọng tài",ycN(D),"yclist",""],ED,SW,LO,["🎯","Trọng tài","QR từng sân","dhqr",""],["📣","Thông báo loa","Gõ câu, máy loa đọc","dhan",""],["⏸","Nghỉ giữa giờ","Tạm dừng đưa trận mới","dhps",""],["↗","Chia sẻ trực tiếp","Gửi link xem điểm","lshare",""]);
   }else{
     R.push(["🎯","Trọng tài","QR từng sân, ai đang nhập điểm","dhqr",""],["📣","Thông báo loa","Gõ câu, máy loa đọc ngay","dhan",""],["⏸","Nghỉ giữa giờ","Tạm dừng đưa trận mới vào sân","dhps",""],["↗","Chia sẻ trực tiếp","Gửi link xem điểm vào nhóm","lshare",""]);
     if(ck)R.push(["⌗","Bàn đón","Người đến muộn, check-in","ckall",""]);

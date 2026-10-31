@@ -89,6 +89,11 @@ test("ngày đánh: cặp thiếu người (chờ thêm, thay người); bắt �
   expect(G).toMatchObject({ koGate: true, koGo: false, locked: true }); expect(G.rest.t_r7).toBe(true);
   // BTC bấm mới có trận vào sân (không tự xếp)
   expect([...e.store.keys()].some(k => k.startsWith("clubs/q7/matches/"))).toBe(false);
+  // Đã bắt đầu: khoá ghép cặp, chia bảng, thêm cặp, thay người
+  const kd0 = JSON.stringify(e.store.get("clubs/q7/sched/s1").kd);
+  await e.click("ksh", { v: "chia" }); expect(e.V()).not.toContain("Chia bảng thế nào?");
+  await e.click("k12late", { v: "r1" }); await e.click("gmxa");
+  expect(JSON.stringify(e.store.get("clubs/q7/sched/s1").kd)).toBe(kd0); expect(e.T()).not.toContain("Thêm người vào giải");
   await e.nav("app", { t: "dk", x: "s1" }); await e.click("gmst", { v: "2" }); await e.until(() => e.V().includes('class="kseg"'));
   expect(e.T()).toContain("Vòng bảng · 0/2 trận"); expect(e.V()).toContain('data-act="scfillall"');
   await e.click("scfillall"); await e.until(() => [...e.store.keys()].some(k => k.startsWith("clubs/q7/matches/")));

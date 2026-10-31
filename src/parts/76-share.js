@@ -10,7 +10,7 @@ const SH_THUMB="https://pikeco.app/og.png";
 // Thẻ chia sẻ: tiêu đề = dòng đầu, mô tả = các dòng sau (bỏ dòng "👉 Bấm link…")
 function shCard(o){
   const L=String(o.text||"").split("\n").map(x=>x.trim()).filter(x=>x&&!/^👉/.test(x)&&!/^https?:\/\//.test(x));
-  return {title:String((o._th&&o._th.title)||o.cardTitle||L[0]||o.title||"Pikeco").slice(0,100),description:String(o.cardDesc||L.slice(1).join(" · ")||(CLUB&&CLUB.name)||"").slice(0,400),thumbnail:o.thumb||SH_THUMB,path:miniRel(o.path)+(o.q||"")};
+  return {title:String(o.cardTitle||(o._th&&o._th.title)||L[0]||o.title||"Pikeco").slice(0,100),description:String(o.cardDesc||L.slice(1).join(" · ")||(CLUB&&CLUB.name)||"").slice(0,400),thumbnail:o.thumb||SH_THUMB,path:miniRel(o.path)+(o.q||"")};
 }
 let zKind=lsGet("pb-zshare")==="text"?"text":"card";
 const webPathOf=path=>"https://pikeco.app"+(String(path||"/").startsWith("/")?path:"/"+path);

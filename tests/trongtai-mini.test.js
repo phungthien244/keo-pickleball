@@ -116,3 +116,11 @@ test("máy BTC: mã dùng 1 lần, mỗi sân 1 trọng tài, bỏ hồ sơ gi�
   await e.until(() => !e.store.get("clubs/q7/refs/u1") && !e.store.get("clubs/q7/refs/u3"));
   expect(e.store.get("clubs/q7/refs/u2")).toBeTruthy(); expect(e.store.get("clubs/q7/refqr/2").code).toBe("M");
 });
+
+test("QR trọng tài có nút Chia sẻ: thẻ Mini App mang mã sân", async () => {
+  const data = base({ "clubs/q7/members/zalo_5": { role: "owner", name: "Chủ" }, "clubs/q7": { name: "Q7", public: true, owner: "zalo_5", createdAt: 1 }, "clubs/q7/refqr/1": { code: "K", at: 1, sid: 1 } });
+  const e = await boot(data);
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct'));
+  await e.click("dhqr", { v: "1" }); await e.until(() => e.V().includes('data-act="dhqrsh"'));
+  await e.click("dhqrsh", { v: "1" }); await e.until(() => (globalThis.document.querySelector("#shs") || { innerHTML: "" }).innerHTML.includes("Mời làm trọng tài Sân 1"));
+});

@@ -47,8 +47,7 @@ function scSheet(D){
   const it=(i,t,s,a,id,v,red)=>`<button class="gmli" data-act="${a}"${id?` data-id="${esc(id)}"`:""}${v!=null?` data-v="${esc(v)}"`:""}><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b>${s?`<small>${s}</small>`:""}</span><span aria-hidden="true">›</span></button>`;
   let b="";const o=scO||{lb:()=>"",nm:x=>[g4Nm(D,x.a),g4Nm(D,x.b)],fill:false},strip=h=>h.replace(/<button class="btn-line gmdot" data-act="scsh"[^>]*>⋯<\/button>/,"");
   if(m)b+=strip(scCard(D,m,o.lb(m),...o.nm(m)));else if(last)b+=strip(scEnd(D,last,o.lb(last),...o.nm(last),o.fill));else if(o.fill)b+=`<div class="g4c e"><span class="t">Sân trống</span><button class="ball go" data-act="scfill" data-v="${k}">▶ Tạo trận</button></div>`;
-  if(m){const st=scStep(D,m);
-    if(st<3)b+=it("📣","Mời vào sân","Loa đọc tên 2 cặp và số sân","scinv",m.id);
+  if(m){
     if(m.ref&&m.ref.started)b+=it("📜","Lịch sử từng pha","Trọng tài nhập từng pha","dhhist",m.id);
     const used=new Set(D.playing.map(x=>Number(x.court))),free=Array.from({length:Math.max(1,+D.c.courts||1)},(_,i)=>i+1).filter(c=>!used.has(c));
     if(free.length)b+=`<span class="mxsec">⇄ Chuyển sang sân khác</span><div class="dhfree">${free.map(c=>`<button class="line sm" data-act="dhmove" data-id="${esc(m.id)}" data-v="${c}">Sân ${esc(cName(c))}</button>`).join("")}</div>`;

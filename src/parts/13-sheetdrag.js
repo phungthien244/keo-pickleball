@@ -9,6 +9,14 @@ const SRT_CB={};
   let S0=null,D0=null;
   document.addEventListener("touchstart",e=>{const t=e.target,sh=t&&t.closest&&t.closest(".mxsheet");if(!sh||(t.closest&&t.closest(".drh")))return;
     const r=sh.getBoundingClientRect(),y=e.touches[0].clientY;if(!(t.closest(".grab")||(y-r.top<56&&sh.scrollTop<=0)))return;S0={sh,y0:y,dy:0}},{passive:true});
+  // Khoá trang phía dưới: kéo trên lớp mờ, kéo bảng xuống, hoặc cuộn tới mép bảng thì không cuộn trang
+  let Y=0;document.addEventListener("touchstart",e=>{Y=e.touches[0].clientY},{passive:true});
+  document.addEventListener("touchmove",e=>{if(!e.cancelable)return;const t=e.target,y=e.touches[0].clientY,dy=y-Y;Y=y;
+    if(S0||(t.closest&&t.closest(".mxdim"))){e.preventDefault();return}
+    const sh=t.closest&&t.closest(".mxsheet");if(!sh||D0)return;
+    let el=t;while(el&&el!==sh.parentNode){if(el.scrollHeight>el.clientHeight+1){const cs=getComputedStyle(el).overflowY;if(cs==="auto"||cs==="scroll")break}el=el.parentNode}
+    if(!el||el===sh.parentNode){e.preventDefault();return}
+    if((dy>0&&el.scrollTop<=0)||(dy<0&&el.scrollTop+el.clientHeight>=el.scrollHeight-1))e.preventDefault()},{passive:false});
   document.addEventListener("touchmove",e=>{if(!S0)return;S0.dy=Math.max(0,e.touches[0].clientY-S0.y0);S0.sh.style.transition="none";S0.sh.style.transform=`translateY(${S0.dy}px)`},{passive:true});
   document.addEventListener("touchend",()=>{if(!S0)return;const {sh,dy}=S0;S0=null;sh.style.transition="transform .18s ease-out";
     if(dy>80){sh.style.transform="translateY(110%)";const d=sh.previousElementSibling;setTimeout(()=>{if(d&&d.classList&&d.classList.contains("mxdim"))d.click();else sh.style.transform=""},160)}else sh.style.transform=""});

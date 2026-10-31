@@ -73,8 +73,9 @@ test("đang đánh: thẻ sân to → Nhập điểm (hai ô to, + −) → Lưu
   await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct'));
   expect(e.T()).toContain("SÂN 1"); expect(e.T()).toContain("TRỐNG"); expect(e.T()).toContain("Hết giờ · sang chốt");
   await e.click("g4m", { id: "m1" }); await e.until(() => e.T().includes("Sân 1 · nhập điểm"));
-  for (let i = 0; i < 11; i++) await e.click("g4d", { k: "sa-m1", d: "1" });
-  await e.click("g4d", { k: "sb-m1", d: "1" }); await e.click("g4d", { k: "sb-m1", d: "1" });
+  expect(e.V()).toContain('data-act="g4n" data-k="sa-m1" data-v="15"'); expect(e.V()).not.toContain('data-act="g4n" data-k="sa-m1" data-v="0"');
+  await e.click("g4n", { k: "sa-m1", v: "9" }); await e.click("g4d", { k: "sa-m1", d: "1" }); await e.click("g4d", { k: "sa-m1", d: "1" });
+  await e.click("g4n", { k: "sb-m1", v: "2" });
   expect(e.T()).toContain("An & Chi thắng");
   await e.click("save", { id: "m1" }); await e.until(() => e.store.get("clubs/q7/matches/m1").status === "done");
   expect(e.store.get("clubs/q7/matches/m1")).toMatchObject({ sa: 11, sb: 2 });

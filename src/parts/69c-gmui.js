@@ -264,7 +264,7 @@ function gmPlayV(D,X){
   const busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
   const fill=G?(!GD.complete&&gPick(D,GD,new Set(D.playing.flatMap(m=>[m.pa,m.pb])),new Set())?"gfill":null):(Math.floor(waiting.length/4)>0?"gen":null);
   const scop={lb:m=>m.ko&&GD?esc(koMName(GD,m.ko)):"",nm:m=>[g4Nm(D,m.a),g4Nm(D,m.b)],fill:!!fill,cp:G?(GD.G.cpause||{}):{}};
-  let h=scBoard(D,scop);const nf=scFree(D,scop);
+  let h=ycBan(D)+scBoard(D,scop);const nf=scFree(D,scop);
   if(G&&!nf)h+=scBlocked(D,GD,scFree(D,{...scop,fill:true}));
   // Lượt sau
   let nx="";
@@ -281,7 +281,7 @@ function g4Score(D,id,edit){
   if(!editing.has(id)&&((mRule(m)||{}).sets||1)>1)return kSetsV(D,m);
   const ed=edit||editing.has(id),pa=ed?"ea-":"sa-",ka=pa+id,kb=(ed?"eb-":"sb-")+id,va=val(ka,ed?String(m.sa):""),vb=val(kb,ed?String(m.sb):"");
   mxDr({t:ed?"Sửa tỉ số":`Sân ${cName(m.court)} · nhập điểm`,back:"g4x",sub:esc(xCur()?xName(xCur()):(D.c.sname||""))});
-  const tile=(ids,k,v,c)=>`<div class="g4t" style="background:${c}"><b class="n">${g4Nm(D,ids)}</b><span class="r"><button data-act="g4d" data-k="${k}" data-d="-1" aria-label="Bớt">−</button><b class="num">${v===""?0:esc(v)}</b><button data-act="g4d" data-k="${k}" data-d="1" aria-label="Thêm">＋</button></span></div>`;
+  const tile=(ids,k,v,c)=>`<div class="g4t" style="background:${c}"><b class="n">${g4Nm(D,ids)}</b><span class="q">${Array.from({length:15},(_,i)=>i+1).map(n=>`<button data-act="g4n" data-k="${k}" data-v="${n}" aria-pressed="${String(n)===String(v)}">${n}</button>`).join("")}</span><span class="r"><button data-act="g4d" data-k="${k}" data-d="-1" aria-label="Bớt">−</button><b class="num">${v===""?0:esc(v)}</b><button data-act="g4d" data-k="${k}" data-d="1" aria-label="Thêm">＋</button></span></div>`;
   const a=+va||0,b=+vb||0,win=a===b?"":a>b?g4Nm(D,m.a):g4Nm(D,m.b);
   return tile(m.a,ka,va,"#1f6fd1")+tile(m.b,kb,vb,"#b0337a")+(ed?"":`<small class="rule">Muốn nhập từng pha, giao bóng, timeout: dùng màn trọng tài.</small><button class="lnk g4tt" data-act="tt" data-id="${esc(id)}">Mở màn trọng tài ›</button>`)
     +(errs[id]?`<p class="err">${esc(errs[id])}</p>`:"")
@@ -306,6 +306,7 @@ async function g4Act(act,b){
   if(act==="g4sel"){g4Sel=id;render();return true}
   if(act==="g4selx"){g4Sel=null;render();return true}
   if(act==="g4ed"){g4Sel=null;g4Back="kq";g4V="m:"+id;{const m=(S.matches||[]).find(x=>x.id===id);if(m){drafts["ea-"+id]=String(m.sa);drafts["eb-"+id]=String(m.sb)}}editing.add(id);render();try{scrollTo({top:0})}catch(e){}return true}
+  if(act==="g4n"){drafts[b.dataset.k]=String(Math.max(0,Math.min(99,+b.dataset.v||0)));render();return true}
   if(act==="g4d"){const k=b.dataset.k,m=(S.matches||[]).find(x=>x.id===k.slice(3)),dflt=m&&m.status==="done"?(k.startsWith("ea")?m.sa:m.sb):0;drafts[k]=String(Math.max(0,Math.min(99,(+val(k,String(dflt))||0)+Number(b.dataset.d))));render();return true}
   return false;
 }

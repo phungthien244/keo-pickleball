@@ -203,7 +203,7 @@ function ttLayer(D){
   let v=ttV||(f.started?"main":"pre");if(X.done&&v==="main")v="end";if(!f.started&&(v==="main"||v==="end"))v="pre";
   const body=ttFace?ttFaceV(D,m):rfOn()&&(v==="toss"||v==="pre")?rfPre(D,m,X):v==="toss"?ttToss(D,m,X):v==="pre"?ttPre(D,m,X):v==="hist"?ttHist(D,m,X):v==="end"?ttEnd(D,m,X):ttMain(D,m,X);
   ttTickOn();
-  return `<div class="ttfs${v==="main"&&!ttFace?" main":""}${rfOn()?" rf":""}" role="dialog" aria-label="Màn trọng tài · ${ttFace?"mat":v}">${body}${ttFF?ttFFV(D,m,X):""}${dhCB!=null?dhSheets(D):""}${(v==="main"||v==="end")&&!ttFace?rfUndoDlg(D,m,X):""}</div>`;
+  return `<div class="ttfs${v==="main"&&!ttFace?" main":""}${rfOn()?" rf":""}" role="dialog" aria-label="Màn trọng tài · ${ttFace?"mat":v}">${body}${ttFF?ttFFV(D,m,X):""}${dhCB!=null?dhSheets(D):""}${(v==="main"||v==="end")&&!ttFace?rfUndoDlg(D,m,X):""}${rfAskDlg(D)}</div>`;
 }
 function ttTickOn(){if(ttTick||typeof setInterval!=="function"||typeof document==="undefined"||!document.querySelectorAll)return;
   ttTick=setInterval(()=>{if(!ttId){clearInterval(ttTick);ttTick=null;return}let re=false;
