@@ -15,7 +15,7 @@ function makeDb(pfx){
       t.set(r,{holder,expires:now+(ttlMs||5000)});return{acquired:true}})}catch(e){return{acquired:false}}}
   }};
   return{doc:ref,collection:path=>{const c=FB.collection(FB.fs,pfx+path);return{
-    path,doc:id=>ref(path+"/"+(id||FB.doc(c).id)),
+    path,doc:id=>ref(path+"/"+(id?(path==="sched"?String(id).split("~")[0]:id):FB.doc(c).id)),
     onSnapshot:(n,e)=>FB.onSnapshot(c,{includeMetadataChanges:true},n,e),
     get:()=>FB.getDocs(c),
     where:(f,v)=>{const q=FB.query(c,FB.where(f,"==",v));return{onSnapshot:(n,e)=>FB.onSnapshot(q,{includeMetadataChanges:true},n,e),get:()=>FB.getDocs(q)}}}}};
@@ -60,7 +60,10 @@ const clubBank=()=>CLUB&&CLUB.bank&&CLUB.bank.acc?CLUB.bank:(CID==="aep"?DEF_BAN
   let regKeyNow="";
   const subRegsIds=ids=>{const k=JSON.stringify(ids);if(k===regKeyNow||!ids.length)return;regKeyNow=k;if(unsubR)unsubR();lsSet("pb-regk-"+CID,k);
     unsubR=FB.onSnapshot(FB.query(FB.collection(FB.fs,PFX+"regs"),FB.where("sid","in",ids)),{},q=>{S.regs=q.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{})};
-  const subRegs=()=>{if(legacy||!S.schedReady||!S.cfg)return;subRegsIds([subSid,...schedUp().map(x=>x.id),cfg().schedId].filter((x,i,a)=>x!=null&&a.indexOf(x)===i).map(String).sort().slice(0,30).map(x=>/^\d+$/.test(x)?+x:x))};
+  const subRegs=()=>{if(legacy||!S.schedReady||!S.cfg)return;const b=[subSid,...schedUp().map(x=>x.id),cfg().schedId].filter((x,i,a)=>x!=null&&a.indexOf(x)===i).map(String);
+    // Giải nhiều nội dung: mỗi nội dung một danh sách "<giải>~<nội dung>"
+    const nd=b.flatMap(id=>{const X=(S.sched||[]).find(x=>x.id===id);return ndL(X).map(n=>id+"~"+n.k)});
+    subRegsIds([...b,...nd].sort().slice(0,30).map(x=>/^\d+$/.test(x)?+x:x))};
   // Mở lại CLB: đăng ký sẵn theo lần trước (giải đấu, danh sách đăng ký) để không phải chờ nối đuôi
   {const ses=+lsGet("pb-ses-"+CID);if(ses>0)subSession(ses);
     if(!legacy)try{const k=JSON.parse(lsGet("pb-regk-"+CID)||"null");if(Array.isArray(k)&&k.length)subRegsIds(k)}catch(e){}}

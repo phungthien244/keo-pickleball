@@ -64,7 +64,7 @@ test("tự ghép cặp và bốc chia bảng từng lượt", async () => {
 });
 
 test("ngày đánh: cặp thiếu người (chờ thêm, thay người); bắt đầu vòng bảng tạo cặp theo bảng; Sân · Bảng · Nhánh; tạo nhánh khi BTC bấm", async () => {
-  const at = Date.now() + 3600e3;
+  const at = Math.min(Date.now() + 3600e3, new Date().setHours(23, 59, 30, 0));
   const arr = { arrived: true, arrivedAt: 1 };
   const data = base({
     "clubs/q7/sched/s1": { name: "Giải chia bảng", fmt: "giai", ko: true, koN: "2", koQ: "4", koThird: "1", pairReg: "pair", dt: "free", at, courts: 2, target: 11, max: 20, st: "open", openAt: 0, deadline: at,
@@ -107,7 +107,7 @@ test("ngày đánh: cặp thiếu người (chờ thêm, thay người); bắt �
 });
 
 test("người chơi: hôm nay có giải → chỉ một nút quét mã; quét rồi chờ BTC; BTC duyệt thì thấy bảng và đồng đội", async () => {
-  const at = Date.now() + 3600e3;
+  const at = Math.min(Date.now() + 3600e3, new Date().setHours(23, 59, 30, 0));
   const data = base({ "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1 }, "clubs/q7/members/zalo_9": null,
     "clubs/q7/sched/s1": { name: "Giải chia bảng", fmt: "giai", ko: true, koN: "2", koQ: "4", pairReg: "pair", at, courts: 2, target: 11, max: 20, st: "open", openAt: 0, deadline: at, kd: { groups: [{ p: ["r1", "r3"] }, { p: ["r5", "r7"] }], seeds: ["r1"] } },
     "clubs/q7/regs/r1": { ...reg("p1", "r1"), uid: "zalo_9" }, "clubs/q7/links/zalo_9": { pid: "p1", status: "ok" } });

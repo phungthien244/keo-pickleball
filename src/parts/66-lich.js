@@ -17,7 +17,7 @@ const payNoteX=(X,name)=>`${noAcc(CID)} N${new Date(X.at||Date.now()).getDate()}
 /* ----- Trạng thái ----- */
 function xState(x){
   if(!x)return "none";
-  if(cfg().schedId===x.id&&MODE==="club"&&x.st!=="done"&&x.st!=="cancel"&&(cfg().phase==="live"||(S.matches||[]).length))return "live";
+  if(cfg().schedId===(x._base||x.id)&&MODE==="club"&&x.st!=="done"&&x.st!=="cancel"&&(cfg().phase==="live"||(S.matches||[]).length))return "live";
   if(x.st==="plan")return x.openAt&&Date.now()>=x.openAt?"open":"plan";
   return x.st||"draft";
 }
@@ -25,18 +25,18 @@ const xOpen=x=>x.reg!==false&&xState(x)==="open"&&!(x.deadline&&Date.now()>x.dea
 const xShown=x=>x&&x.st!=="done"&&x.st!=="cancel"&&((x.at||0)>Date.now()-10*3600e3||cfg().schedId===x.id);
 const schedAll=()=>(S.sched||[]).slice().sort((a,b)=>(a.at||0)-(b.at||0));
 const schedUp=()=>schedAll().filter(xShown);
-const schedById=id=>(S.sched||[]).find(x=>x.id===id)||null;
+const schedById=id=>{const s=String(id||"");if(s.includes("~")){const [b,k]=s.split("~"),X=(S.sched||[]).find(x=>x.id===b);return X?ndX(X,k):null}return (S.sched||[]).find(x=>x.id===id)||null};
 const xCur=()=>{const id=cfg().schedId;return id?schedById(id):null};
 const xIsKo=()=>xEdit?!!schedById(xEdit)?.ko:xSEdit?!!((S.series||[]).find(z=>z.id===xSEdit)?.tpl?.ko):xNew==="bang";
 const xName=x=>x.name||(x.fmt==="giai"?(x.ko?"Giải vòng bảng":"Giải cặp cố định"):"Giải đấu");
 const xFmt=x=>x.fmt==="giai"?(x.ko?"Vòng bảng → Knockout":"Cặp cố định")+(x.dt&&x.dt!=="free"?` · ${{MM:"Đôi nam",FF:"Đôi nữ",mix:"Đôi nam nữ"}[x.dt]}`:""):"Xoay cặp";
 const xTime=x=>x.at?`${hm(x.at)}${x.end?`–${x.end}`:""}`:"Chưa đặt giờ";
 const xFee=x=>Math.max(0,(x.thu||"keo")==="phi"?+x.phi||0:+x.fee||0);
-const xRegN=x=>(S.regs||[]).filter(r=>r.sid===x.id&&!r.cancel).length;
+const xRegN=x=>(S.regs||[]).filter(r=>inX(r,x)&&!r.cancel).length;
 // Buổi cho người chơi: buổi trên đường dẫn, không thì buổi gần nhất đang nhận đăng ký
 function xPick(){if(routeX)return schedById(routeX);const U=schedUp().filter(x=>x.st!=="draft");return U.find(xOpen)||null}
 // Buổi đang xem khi bấm nút (đăng ký, hủy, xác nhận tiền…)
-const xCtx=()=>route==="app"&&tab==="dk"?(routeX?schedById(routeX):(isAdm()&&!(MINI&&mxMode()==="choi")?null:xPick())):null;
+const xCtx=()=>route==="app"&&tab==="dk"?(routeX?kXL(schedById(routeX)):(isAdm()&&!(MINI&&mxMode()==="choi")?null:xPick())):null;
 const xPaySid=(x,D)=>typeof x.sid==="number"||cfg().schedId===x.sid;
 function xChip(x){
   const s=xState(x),t=Date.now();

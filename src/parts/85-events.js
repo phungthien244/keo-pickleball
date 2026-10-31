@@ -175,6 +175,7 @@ document.addEventListener("click",onAct=async e=>{
   if(act.startsWith("dh")&&await dhAct(act,b))return;
   if(act.startsWith("yc")&&await ycAct(act,b))return;
   if(act.startsWith("vl")&&vlAct(act,b))return;
+  if(/^nd/.test(act)&&await ndAct(act,b))return;
   const REF_ACTS=["savechk","savex","save","cancelx"];
   if(!canWrite&&!(REF&&REF_ACTS.includes(act)&&canScore(S.matches.find(x=>x.id===id))))return;
   if(canWrite&&hqAct(act,b))return;

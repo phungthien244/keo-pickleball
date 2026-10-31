@@ -5,7 +5,7 @@
 let rfLastM={},rfStep=1,rfAsk=null,rfErr={},rfSeen={},rfBye=null,rfNameEd=false;
 const rfName=()=>String(val("rf-name","")||who()).trim().slice(0,40)||who();
 const rfOn=()=>MINI&&REF&&!canWrite;
-const rfLb=(D,m)=>{if(!m.giai)return "";const GD=gDerive(D);if(!GD)return "";if(m.ko)return koMName(GD,m.ko)||"";const g=(GD.games||[]).find(q=>q.m&&q.m.id===m.id);return g&&g.grp!=null?`Bảng ${KOG[g.grp]}`:""};
+const rfLb=(D,m)=>{if(!m.giai)return "";const GD=m.nd?gDeriveK(D,m.nd):gDerive(D);if(!GD)return "";if(m.ko)return koMName(GD,m.ko)||"";const g=(GD.games||[]).find(q=>q.m&&q.m.id===m.id);return g&&g.grp!=null?`Bảng ${KOG[g.grp]}`:""};
 const rfBadge=c=>`<span class="rfb">SÂN ${esc(cName(c))}</span>`;
 const rfGiaiNm=D=>{const X=xCur();return X?xName(X):(D.c.sname||"Giải đấu")};
 // Đầu trang trọng tài: ô vàng SÂN n · Trọng tài · dòng phụ

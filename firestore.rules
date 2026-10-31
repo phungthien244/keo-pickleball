@@ -275,7 +275,7 @@ service cloud.firestore {
       // sid là số: buổi hiện tại (cách cũ, app/config.reg). sid là chuỗi: một buổi trong lịch (sched/{sid}).
       function cfgDoc() { return get(/databases/$(database)/documents/clubs/$(c)/app/config).data; }
       function myLink() { return get(/databases/$(database)/documents/clubs/$(c)/links/$(request.auth.uid)).data; }
-      function sx(s) { return get(/databases/$(database)/documents/clubs/$(c)/sched/$(s)).data; }
+      function sx(s) { return get(/databases/$(database)/documents/clubs/$(c)/sched/$(string(s).split('~')[0])).data; }
       // Buổi đang nhận đăng ký: mở tay, hoặc tự mở khi tới giờ
       function sxOpen(s) {
         let d = sx(s);
@@ -306,7 +306,7 @@ service cloud.firestore {
               && (cfgDoc().get('reg', {}).get('deadline', 0) == 0
                   || request.time.toMillis() < cfgDoc().get('reg', {}).get('deadline', 0)))
             || (request.resource.data.sid is string
-              && exists(/databases/$(database)/documents/clubs/$(c)/sched/$(request.resource.data.sid))
+              && exists(/databases/$(database)/documents/clubs/$(c)/sched/$(request.resource.data.sid.split('~')[0]))
               && sxOpen(request.resource.data.sid))
           )
           && (
@@ -328,7 +328,7 @@ service cloud.firestore {
           && request.resource.data.walkin == true
           && request.resource.data.get('pay', 'none') == 'none'
           && request.resource.data.get('zid', '') is string && request.resource.data.get('zid', '').size() <= 64
-          && exists(/databases/$(database)/documents/clubs/$(c)/sched/$(request.resource.data.sid))
+          && exists(/databases/$(database)/documents/clubs/$(c)/sched/$(request.resource.data.sid.split('~')[0]))
           && sx(request.resource.data.sid).get('walkin', true) != false
           && request.resource.data.ci is int
           && request.resource.data.ciCode is string && request.resource.data.ciCode.size() > 0

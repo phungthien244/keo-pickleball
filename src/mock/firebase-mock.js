@@ -32,6 +32,13 @@ store.set("clubs/aep/series/w1",{days:[2,4],time:"19:00",end:"21:30",tpl,auto:tr
 store.set("clubs/aep/sched/s-mai",{...tpl,at,deadline:at,lockAt:at-2*3600e3,st:"open",openAt:0,series:"w1",createdAt:Date.now()});
 ["d0","d2","d4","d6","d8"].forEach((pid,i)=>store.set("clubs/aep/regs/s-mai_p_"+pid,{sid:"s-mai",pid,name:store.get("clubs/aep/players/"+pid)?.name||"",at:Date.now()-(9-i)*36e5,pay:i<2?"ok":i===2?"sent":"none",by:"Bạn (demo)"}));
 const G=new Date();G.setDate(G.getDate()+4);G.setHours(8,0,0,0);
+{const O=new Date();O.setDate(O.getDate()+2);O.setHours(7,0,0,0);const at=O.getTime();
+store.set("clubs/aep/sched/s-open",{name:"AEP Open",fmt:"giai",ko:true,koN:"2",koQ:"4",koThird:"1",pairReg:"pair",dt:"free",end:"12:00",place:"Sân AEP, Q7",courts:4,target:11,max:40,guests:false,thu:"phi",phi:100,pay:"opt",lockH:12,dlH:12,at,deadline:at-12*36e5,lockAt:at-12*36e5,st:"open",openAt:0,createdAt:Date.now(),ndMax:2,
+  nds:[{k:"o",name:"Đôi open",dt:"free",cap:0,max:8,koN:2,fee:150,courts:[1,2]},{k:"f",name:"Đôi nữ 6.0",dt:"FF",cap:6,max:4,koN:1,fee:100,courts:[3]},{k:"m",name:"Đôi nam 6.5",dt:"MM",cap:6.5,max:8,koN:2,fee:100,courts:[4]}]});
+const R=(k,pid,team,i)=>store.set(`clubs/aep/regs/s-open~${k}_p_${pid}`,{sid:"s-open~"+k,pid,name:store.get("players/"+pid)?.name||"",at:Date.now()-(20-i)*36e5,pay:i%3?"ok":"none",team:`s-open~${k}_p_${team}`,by:"Bạn (demo)"});
+[["d0","d0"],["d1","d0"],["d2","d2"],["d3","d2"],["d4","d4"],["d6","d4"],["d7","d7"],["d9","d7"]].forEach(([p,t],i)=>R("o",p,t,i));
+[["d1","d1"],["d10","d1"],["d12","d12"],["d14","d12"]].forEach(([p,t],i)=>R("f",p,t,i));
+[["d5","d5"],["d8","d5"],["d11","d11"],["d13","d11"],["d15","d15"],["d17","d15"]].forEach(([p,t],i)=>R("m",p,t,i));}
 store.set("clubs/aep/sched/s-giai",{name:"Giải cặp tháng này",fmt:"giai",end:"11:30",place:"Sân AEP, Q7",courts:3,target:11,max:16,guests:false,thu:"phi",phi:100,pay:"req",lockH:12,dlH:24,at:G.getTime(),deadline:G.getTime()-864e5,lockAt:G.getTime()-12*3600e3,hang:[300,150,50],st:"draft",openAt:0,createdAt:Date.now()});}})();
 window.PA_OVERRIDE="ban@demo.vn";
 store.set("users/demo",{club:"aep",at:Date.now()});

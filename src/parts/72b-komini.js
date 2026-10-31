@@ -7,15 +7,18 @@ const kOn=X=>!!(X&&X.fmt==="giai"&&X.ko);
 // Đã bắt đầu đánh giải này: bảng chốt, không đổi được
 // Giải đã bắt đầu: khoá các việc làm đổi cặp/bảng (vẫn xem, check-in, thu tiền, công bố được)
 function kLockHit(act,b){
-  const X=routeX?schedById(routeX):xCur();if(!X||!kOn(X)||!kLocked(X))return false;const v=b.dataset.v||"";
+  const X=kXR();if(!X||!kOn(X)||!kLocked(X))return false;const v=b.dataset.v||"";
   const hit=["gmxa","k9bal","k10sw","k11bang","k13go","k12","k12sub","k12pick","k12late","k12drop"].includes(act)||/^k(7|8|9)/.test(act)
     ||(act==="kpg"&&/^k(7|8|9)/.test(v))||(act==="ksh"&&["chia","pair","k13"].includes(v));
   if(hit)toast("Giải đã bắt đầu · không đổi cặp, bảng được nữa");return hit;
 }
-const kLocked=X=>!!(X&&((cfg().schedId===X.id&&(cfg().giai||{}).locked&&cfg().phase==="live")||X.st==="done"));
+const kLocked=X=>!!(X&&((cfg().schedId===(X._base||X.id)&&(cfg().giai||{}).locked&&cfg().phase==="live")||X.st==="done"));
 const kdOf=X=>{const k=(X&&X.kd)||{};return {...k,groups:Array.isArray(k.groups)?k.groups.map(g=>Array.isArray(g)?g:(g&&g.p)||[]):null}};
 const kdOut=kd=>({...kd,groups:kd.groups?kd.groups.map(p=>({p})):null});
-const saveKd=(X,patch,msg)=>write(()=>db.collection("sched").doc(X.id).update({kd:kdOut({...kdOf(X),...patch})}),msg);
+const saveKd=(X,patch,msg)=>X&&X._nd?write(()=>{const B=schedById(X._base)||X._X;return db.collection("sched").doc(X._base).update({kdn:{...(B.kdn||{}),[X._nd]:kdOut({...kdOf(X),...patch})}})},msg):write(()=>db.collection("sched").doc(X.id).update({kd:kdOut({...kdOf(X),...patch})}),msg);
+// Giải nhiều nội dung: BTC đang xem nội dung nào thì dùng "giải con" của nội dung đó
+const kXL=X=>X&&ndOn(X)&&ndRegF[X.id]&&ndOf(X,ndRegF[X.id])?ndX(X,ndRegF[X.id]):X;
+const kXR=()=>kXL(routeX?schedById(routeX):xCur());
 // Đội đã đủ 2 người (theo đăng ký)
 function kTeams(D,X){
   return withX(X,()=>{const R=regList(D),seen=new Set(),T=[];
@@ -73,7 +76,7 @@ function kSheets(D,X,T){
   const it=(i,t,s,a,v,red)=>`<button class="gmli" data-act="${a}"${v!=null?` data-v="${esc(v)}"`:""} data-id="${esc(X.id)}"><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b><small>${s}</small></span><span aria-hidden="true">›</span></button>`;
   const sh=(t,b)=>`<div class="mxdim" data-act="kshx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="${esc(t)}"><span class="grab"></span><b class="mxh">${t}</b>${b}</div>`;
   if(kSh==="more"){const s=xState(X);return sh("Thêm việc",(kLocked(X)?"":it("＋","Thêm cặp","Ghi tay cặp đăng ký ngoài app","gmxa"))+it("👥","Mời từ CLB","Gửi tin cho người chưa đăng ký","xbshare")+(kLocked(X)?"":it("★","Hạt giống",`${kN(X)} cặp mạnh tách ${kN(X)} bảng`,"kpg","k8"))+(kdOf(X).groups&&kdOf(X).groups.length?it("📣",kdOf(X).pub?"Công bố lại vào nhóm":"Công bố vào nhóm","Gửi danh sách bảng vào nhóm Zalo","k10pub")+(kLocked(X)?"":it("🎲","Bốc lại","Chia bảng lại từ đầu","ksh","chia")+it("⇄","Đổi chỗ 2 cặp","Chạm cặp này rồi chạm cặp kia trong bảng","kshx")):it("▦","Chia bảng","Bốc thăm, chia đều hoặc tự xếp","ksh","chia"))
-    +(xOpen(X)?it("🔒",armed("xbclose:"+X.id)?"Bấm lần nữa để đóng":"Đóng đăng ký","Không nhận thêm cặp","xbclose"):"")+it("✎","Sửa giải","Ngày, sân, thể thức, lệ phí","gmxe")+it("🔊","Loa · câu đọc","Sửa câu đọc của giải này","lpg")+(s!=="cancel"&&s!=="done"&&s!=="live"?it("✕",armed("xcancel:"+X.id)?"Bấm lần nữa để huỷ giải":"Huỷ giải","Báo cho mọi người đã đăng ký","xcancel",null,1):""))}
+    +(xOpen(X)?it("🔒",armed("xbclose:"+X.id)?"Bấm lần nữa để đóng":"Đóng đăng ký","Không nhận thêm cặp","xbclose"):"")+it("✎","Sửa giải","Ngày, sân, thể thức, lệ phí","gmxe")+(X._nd?"":it("🏷","Nội dung thi đấu",ndL(X).length?`${ndL(X).length} nội dung chạy song song`:"Thêm nội dung: open, nữ 4.2, nam 5.5…","ndpg"))+it("🔊","Loa · câu đọc","Sửa câu đọc của giải này","lpg")+(s!=="cancel"&&s!=="done"&&s!=="live"?it("✕",armed("xcancel:"+X.id)?"Bấm lần nữa để huỷ giải":"Huỷ giải","Báo cho mọi người đã đăng ký","xcancel",null,1):""))}
   if(kSh==="pair"){const n=kSolo(D,X).length;return sh(`Ghép cặp cho ${n} người lẻ`,it("🎲","Bốc thăm ghép","App ghép theo trình độ hoặc nam với nữ","kpg","k7")+it("✋","Tự ghép","Chạm 2 người để thành một cặp","kpg","k7b"))}
   if(kSh==="chia")return sh("Chia bảng thế nào?",it("🎲","Bốc thăm","Chiếu lên cho mọi người xem, hạt giống tách bảng","kpg","k9d")+it("⚖","App chia đều trình độ","Mỗi bảng có mạnh có yếu, xong ngay","k9bal")+it("✋","Tự xếp","BTC chọn cặp nào vào bảng nào","kpg","k9c"));
   return "";
@@ -132,7 +135,7 @@ function kDrawMake(D,X,T){
 function kBal(D,X,T){const N=kN(X),L=T.slice().sort((a,b)=>b.r-a.r),G=Array.from({length:N},()=>[]);L.forEach((t,i)=>{const r=Math.floor(i/N),k=i%N;G[r%2?N-1-k:k].push(t.code)});return G}
 const kGroupText=(D,X,T,groups)=>[`🏆 ${xName(X)} · chia bảng`,...groups.map((g,gx)=>`BẢNG ${KOG[gx]}: ${g.map(c=>{const t=kTeamOf(T,c);return t?t.nm.replace(/&amp;/g,"&"):""}).filter(Boolean).join(" · ")}`),`Xem lịch từng trận trong Mini App: ${miniLink(CID,X.id)}`].join("\n");
 async function kAct(act,b){
-  const D=derive(),v=b.dataset.v,id=b.dataset.id,X=routeX?schedById(routeX):xCur();if(!X)return false;
+  const D=derive(),v=b.dataset.v,id=b.dataset.id,X=kXR();if(!X)return false;
   const T=()=>kTeams(D,X),top=()=>{try{scrollTo({top:0})}catch(e){}};
   if(act==="ksh"){kSh=v;render();return true}
   if(act==="kshx"){kSh=null;render();return true}
@@ -171,7 +174,7 @@ async function kAct(act,b){
 
 const kLi=(l,r)=>`<div class="g5s"><span><b>${l}</b></span><b>${r}</b></div>`;
 /* ----- Ngày đánh (K11–K13): check-in theo cặp, cặp thiếu người, bắt đầu vòng bảng ----- */
-function kArr(D,X,t){return [t.A,t.B].map(r=>!!r.arrived)}
+function kArr(D,X,t){return [t.A,t.B].map(r=>ndArrived(X,r))}
 function kDaySheets(D,X){
   const T=kTeams(D,X),kd=kdOf(X),it=(i,t,s,a,v,red)=>`<button class="gmli" data-act="${a}"${v!=null?` data-v="${esc(v)}"`:""}><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b><small>${s}</small></span><span aria-hidden="true">›</span></button>`;
   const sh=(t,b)=>`<div class="mxdim" data-act="kshx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="${esc(t)}"><span class="grab"></span><b class="mxh">${t}</b>${b}</div>`;
@@ -209,7 +212,7 @@ async function kStart(D,X){
   if(!loaMuted()&&loaOpt("rules"))setTimeout(()=>onAct({target:{closest:s=>s==="[data-act]"?{dataset:{act:"speakrules"},closest:()=>null}:null}}),300);
 }
 async function kDayAct(act,b){
-  const D=derive(),v=b.dataset.v,X=routeX?schedById(routeX):xCur();if(!X)return false;
+  const D=derive(),v=b.dataset.v,X=kXR();if(!X)return false;
   if(act==="k12"){kSh="k12:"+v;kSel=null;render();return true}
   if(act==="k12sub"){kSel=kSel==="sub:"+v?null:"sub:"+v;render();return true}
   if(act==="k12pick"){const t=kTeamOf(kTeams(D,X),v);if(!t)return true;const [a]=kArr(D,X,t),from=a?t.B.id:t.A.id;await saveKd(X,{sub:{...(kdOf(X).sub||{}),[v]:{from,pid:b.dataset.id}}},"Đã thay người");kSh=null;kSel=null;render();return true}
@@ -292,6 +295,7 @@ function kPlaySheets(D,X,GD){
 const kBangText=(D,GD,X)=>[`🏆 ${X?xName(X):""} · bảng xếp hạng`,...GD.gt.map((t,gx)=>`BẢNG ${KOG[gx]}: ${t.map((r,i)=>`${i+1}. ${pairNm(D,r.p).replace(/&amp;/g,"&")} (${r.w}-${r.l})`).join(" · ")}`)].join("\n");
 const kNhanhText=(D,GD,X)=>[`🏆 ${X?xName(X):""} · nhánh đấu`,...GD.ko.flatMap(L=>L.map(g=>`${g.ab}: ${g.x?kPN(D,GD,g.x).replace(/&amp;/g,"&"):g.lx} – ${g.y?kPN(D,GD,g.y).replace(/&amp;/g,"&"):g.ly}${g.st==="done"?` (${g.sx}–${g.sy})`:""}`))].join("\n");
 async function kPlayAct(act,b){
+  if(act==="kgo"&&b.dataset.v&&gMulti())gNdF=b.dataset.v;
   const D=derive(),GD=gDerive(D),v=b.dataset.v,X=xCur();if(!GD||!GD.isKO)return false;const G=GD.G;
   if(act==="kseg"){kSeg=v;kSh=null;render();return true}
   if(act==="kgo"){await write(()=>saveG({koGo:true}),"Đã tạo nhánh");kSeg="san";if(autoNext())await gFill();return true}

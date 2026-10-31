@@ -5,7 +5,7 @@
    Dữ liệu: giải trong lịch (sched). Giải đang chạy ở sân (config, trận) là cfg().schedId; không có lịch thì là giải đánh nhanh. */
 let gmSt={},gmMore=false,gmSw=false,gmEdit=false,gmSec=null,gmMade=null,xQ=false,xQs=1;
 const GM_ST=["Đăng ký","Ngày đánh","Đang đánh","Chốt"];
-const gmCur=X=>X?cfg().schedId===X.id:true;
+const gmCur=X=>X?cfg().schedId===(X._base||X.id):true;
 const gmLive=D=>phaseOf(D)==="live";
 // Chặng tự nhiên của giải lúc này
 function gmStageOf(D,X){
@@ -160,8 +160,9 @@ function vGiaiMgr(D,X){
   if(mxDrOn()&&gmEdit&&X&&!xNew&&!xSEdit)return gsEdit(D,X,gmCur(X))+dhSheets(D);
   if(xNew||xEdit||xSEdit)return xQ&&xNew&&!xEdit&&!xSEdit?xQuickForm(D):xForm(D);
   if(mxDrOn()&&X&&xbBulk)return gmBulkPg(D,X);
-  if(mxDrOn()&&X&&kPg&&kOn(X)){const k=kPage(D,X);if(k!=null)return k}
-  if(mxDrOn()&&X&&regAddOpen)return gmAddPg(D,X);
+  if(mxDrOn()&&X&&ndPgId===X.id)return ndPage(D,X);
+  if(mxDrOn()&&X&&kPg&&kOn(X)){const k=kPage(D,kXL(X));if(k!=null)return k}
+  if(mxDrOn()&&X&&regAddOpen)return gmAddPg(D,kXL(X));
   if(mxDrOn()&&X&&ckBtc===X.id)return ckBtcPg(D,X);
   if(mxDrOn()&&loaPgOn)return loaPg(D,X);
   if(ciOpen)return ckScreen(D);

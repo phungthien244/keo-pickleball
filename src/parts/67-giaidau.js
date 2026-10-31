@@ -230,6 +230,7 @@ function gdTicket(D,mine){
 /* ----- Điều hướng trong trang giải đấu (Mini App) ----- */
 let gdInfo=false;
 function gdPage(D){
+  if(ndOn(RX))return ndGdPage(D,RX);
   const mine=gdMine(RX);
   if(mine){
     if(gdInfo)return gdDetail(D,{mine:true});

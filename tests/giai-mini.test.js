@@ -57,7 +57,7 @@ test("sửa giải: 6 nhóm có giá trị; Tiền › Lệ phí thành viên �
 });
 
 test("ngày đánh (Mini App): chỉ check-in bằng mã, không còn bàn đón, check-in tay hay người đến muộn", async () => {
-  const at = Date.now() + 3600e3;
+  const at = Math.min(Date.now() + 3600e3, new Date().setHours(23, 59, 30, 0));
   const e = await boot(base({ "clubs/q7/sched/s1": { name: "Hôm nay", fmt: "xoay", at, courts: 2, target: 11, max: 8, st: "open", openAt: 0, deadline: at }, "clubs/q7/regs/s1_p_p1": { sid: "s1", pid: "p1", name: "An", at: 1, arrived: true } }));
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes("MỞ MÃ CHECK-IN"));
   expect(e.V()).toContain('data-act="ckopen"'); expect(e.T()).toContain("✓ An");

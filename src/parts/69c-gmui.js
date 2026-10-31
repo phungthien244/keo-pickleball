@@ -129,7 +129,7 @@ function g2Row(D,X,x,wait){
   return `<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>${esc(sub)}</small></span>${wait?g2Tag("CHỜ CHỖ","y"):g2PayTag(x,feeOf(x),payOn())}</button>`;
 }
 function gmRegV(D,X){
-  if(kOn(X))return kRegV(D,X);
+  if(kOn(X))return ndOn(X)?ndRegV(D,X):kRegV(D,X);
   return withX(X,()=>{
     const R=regList(D),po=payOn(),s=xState(X),cap=pairRegOn(X),cancel=(S.regs||[]).filter(r=>r.sid===X.id&&r.cancel);
     const paid=R.all.filter(x=>x.pay==="ok").length,unpaid=R.all.filter(x=>po&&feeOf(x)>0&&x.pay!=="ok");
@@ -247,6 +247,7 @@ function gmDayV(D,X){
   h+=cells.length?`<div class="g3grid${cap?" c2":""}">${cells.map(([n,k,code])=>KB&&code&&!live?`<button class="k${k}" data-act="k12" data-v="${esc(code)}">${k===2?"✓ ":k===1?"½ ":""}${n}</button>`:`<span class="k${k}">${k===2?"✓ ":k===1?"½ ":""}${n}</span>`).join("")}</div>`:`<p class="rule">Chưa có ai đăng ký.</p>`;
   const n=D.players.filter(p=>p.active!==false).length;
   if(live)return h+`<div class="hqcta two">${gmDot()}<button class="ball" data-act="gmst" data-v="2">Về Đang đánh ›</button></div>`;
+  if(KB&&ndOn(X))return ndDayV(D,X);
   if(KB)return h+`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="k11m" aria-label="Thêm việc">⋯</button><button class="ball go" data-act="ksh" data-v="k13">▶ Bắt đầu vòng bảng</button></div>`+kDaySheets(D,X);
   if(G)return h+`<div class="gmgbar">${gmDot()}${gStartBar(D,D.c.giai||{pairs:[]})}</div>`;
   return h+`<div class="hqcta two">${gmDot()}<button class="ball go" data-act="start">▶ Bắt đầu đánh · ${n} người</button></div>${n<4?`<small class="rule gmwarn">Cần ít nhất 4 người có mặt.</small>`:""}`;
@@ -259,6 +260,7 @@ function gmPlayV(D,X){
   const G=isG(D.c),GD=G?gDerive(D):null,n=Math.max(1,+D.c.courts||1),now=Date.now();
   if(g4V==="kq")return g4Kq(D);
   if(g4V==="bxh"){mxDr({t:"Xếp hạng hôm nay",back:"g4x",sub:esc(X?xName(X):(D.c.sname||"Giải đánh nhanh"))});return G?vGiaiBxh(D,GD):vBxh(D)}
+  if(G&&gMulti()&&X&&ndOn(X)&&!g4V)return ndPlayV(D,X);
   if(G&&GD&&GD.isKO&&!g4V)return kPlayV(D,X,GD);
   if(g4V&&g4V.startsWith("m:")){const m=(S.matches||[]).find(x=>x.id===g4V.slice(2));if(m&&(m.status!=="done"||editing.has(m.id)))return g4Score(D,m.id);g4V=g4Back;g4Back=null;if(g4V)return gmPlayV(D,X)}
   const busy=new Set(D.playing.flatMap(m=>[...m.a,...m.b])),waiting=D.players.filter(p=>p.active!==false&&!busy.has(p.id));
@@ -319,7 +321,8 @@ function gmChotV(D,X){
   let h=`<div class="g5bar"><span class="cap">Bước ${st}/4 · ${CHOT_ST[st-1]}</span><span class="b">${[1,2,3,4].map(i=>`<i class="${i<st?"ok":i===st?"on":""}"></i>`).join("")}</span></div>`;
   if(D.playing.length)h+=`<div class="warnbox"><b>Còn ${D.playing.length} trận đang đánh.</b>Lưu tỉ số hoặc huỷ trận ở Đang đánh rồi quay lại chốt.</div>`;
   const nmOf=ids=>ids.map(id=>esc(D.pmap.get(id)?.name||"?")).join(" &amp; ");
-  if(st===1){const aw=cfg().award||{},order=pz.map((p,i)=>i).reverse(),KO=G&&isKO(c.giai),lbl=(p,i)=>KO&&i===0?"Vô địch":p.label;
+  if(st===1&&gMulti()&&X&&ndOn(X))h+=ndPodium(D,X);
+  else if(st===1){const aw=cfg().award||{},order=pz.map((p,i)=>i).reverse(),KO=G&&isKO(c.giai),lbl=(p,i)=>KO&&i===0?"Vô địch":p.label;
     if(KO&&pz.length)h+=`<div class="g5pod">${[1,0,2].filter(i=>pz[i]).map(i=>`<div class="p p${i}"><small>${nmOf(pz[i].ids)}</small><b>${i+1}</b></div>`).join("")}</div>`;
     h+=pz.length?`<div class="g2list">${order.map(i=>{const p=pz[i],done=!!aw[i];return `<div class="g5r"><i class="${done?"ok":"w"}">${done?"✓":"!"}</i><span class="t">${esc(lbl(p,i))} · ${nmOf(p.ids)} · ${fmtK(p.k)}</span>${done?"":spkBtn("aw:"+i,`<button class="btn-line sm" data-act="dhaw" data-v="${i}">📣 Gọi</button>`)}</div>`}).join("")}</div>`
       :`<div class="gmempty"><b>Giải này không có giải thưởng</b><span>Bấm Tiếp để thu nốt tiền.</span></div>`}

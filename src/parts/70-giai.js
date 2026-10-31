@@ -39,6 +39,7 @@ function gRankL(D,rows,games){
 }
 function gDerive(D){
   const c=D.c,G=c.giai;if(!isG(c)||!G)return null;
+  if(G.nd){if(D._nd)return null;const k=gNdCur();return k?gDerive(ndD(D,k)):null}
   const pairs=G.pairs||[],pm=new Map(pairs.map(p=>[p.id,p])),out=G.out||{};
   if(isKO(G)&&koGroupsOk(G))return koDerive(D,G,pairs,pm,out);
   const rounds=rrSchedule(pairs.map(p=>p.id));
@@ -67,6 +68,7 @@ function gPick(D,GD,busy,rest){
 async function gFill(quiet,only){
   if(pausedNow())return 0;
   await new Promise(r=>setTimeout(r,30));
+  if((cfg().giai||{}).nd)return gFillN(quiet,only);
   const D=derive(),GD=gDerive(D);if(!GD||!GD.locked)return 0;
   const used=new Set(D.playing.map(m=>m.court)),cp=(cfg().giai||{}).cpause||{},free=[];for(let i=1;i<=D.c.courts;i++)if(!used.has(i)&&!cp[i]&&(!only||i===only))free.push(i);
   if(!free.length)return 0;
@@ -89,7 +91,8 @@ function validG(a,b){
   if(!Number.isInteger(a)||!Number.isInteger(b)||a<0||b<0||a===b)return "Nhập điểm hai đội, không được hòa.";
   return Math.max(a,b)===11&&Math.min(a,b)<=10?null:"Đội thắng đúng 11 điểm, đội thua từ 0 đến 10.";
 }
-const saveG=patch=>saveCfg({giai:{...(cfg().giai||{}),...patch}});
+const saveG=patch=>{const G=cfg().giai||{};if(G.nd){const k=gNdCur(),top={},sub={};for(const [a,v] of Object.entries(patch))(ND_TOP.has(a)?top:sub)[a]=v;
+  return saveCfg({giai:{...G,...top,nd:{...G.nd,...(k?{[k]:{...(G.nd[k]||{}),...sub}}:{})}}})}return saveCfg({giai:{...G,...patch}})};
 const courtStep=c=>`<span class="lbl">Số sân</span><span class="stepper"><button data-act="courts" data-d="-1" aria-label="Bớt sân" ${canWrite?"":"disabled"}>−</button><span class="num">${c.courts}</span><button data-act="courts" data-d="1" aria-label="Thêm sân" ${canWrite?"":"disabled"}>+</button></span>`;
 function vGiaiSan(D){
   if(REF&&!canWrite)return vSanToi(D);
@@ -274,7 +277,8 @@ async function endGiai(){
       giai:{prizes:prizes(D,M).map(x=>x.k),complete:GD.complete,
         table:GD.table.map(t=>({id:t.p.id,a:t.p.a,b:t.p.b,na:nmOf(t.p.a),nb:nmOf(t.p.b),gp:t.gp,w:t.w,l:t.l,pf:t.pf,pa:t.pa,wo:t.wo,out:t.out})),
         ko:GD.isKO?{n:GD.groups.length,q:GD.size,groups:GD.groups.map(p=>({p}))}:null,
-        games:GD.games.filter(g=>g.st==="done"||(g.st==="wo"&&g.wo)).map(g=>({r:g.r,x:g.x,y:g.y,...(g.ko?{k:g.rn}:{}),sx:g.sx,sy:g.sy,wo:g.wo||null,court:g.m?.court||null,seq:g.m?.seq||null,at:g.m?.doneAt||null}))}});
+        games:GD.games.filter(g=>g.st==="done"||(g.st==="wo"&&g.wo)).map(g=>({r:g.r,x:g.x,y:g.y,...(g.ko?{k:g.rn}:{}),sx:g.sx,sy:g.sy,wo:g.wo||null,court:g.m?.court||null,seq:g.m?.seq||null,at:g.m?.doneAt||null})),
+        ...(gMulti()?{nd:gNdKeys().map(k=>{const G2=gDeriveK(D,k),n=ndOf(xCur(),k);return {k,name:n?n.name:k,table:G2?G2.table.map(t=>({id:t.p.id,a:t.p.a,b:t.p.b,na:nmOf(t.p.a),nb:nmOf(t.p.b),w:t.w,l:t.l,pf:t.pf,pa:t.pa,out:t.out})):[]}})}:{})}});
     for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
     await xFinish(D);
     await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},fmt:"xoay",giai:null,phase:"prep",sname:"",schedId:null});

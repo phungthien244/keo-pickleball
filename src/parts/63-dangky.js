@@ -15,7 +15,7 @@ const payOn=()=>regPayMode()!=="off"&&(feeMem()>0||feeGuest()>0);
 const isHeldOut=x=>(regPayMode()==="req"||x.hold===true)&&(x.pay||"none")==="none"&&!x.arrived&&Date.now()-(x.at||0)>HOLD_MS;
 function regList(D){
   const max=Math.max(1,+regCfg().max||999);
-  const K=regKey(D),mine=S.regs||[],L=mine.filter(r=>r.sid===K&&!r.cancel&&!isHeldOut(r)).sort((a,b)=>(a.at||0)-(b.at||0));
+  const K=regKey(D),fam=RX&&ndOn(RX),mine=S.regs||[],L=mine.filter(r=>(fam?inX(r,RX):r.sid===K)&&!r.cancel&&!isHeldOut(r)).sort((a,b)=>(a.at||0)-(b.at||0));
   return {all:L,conf:L.slice(0,max),wait:L.slice(max),max,
     refund:mine.filter(r=>r.sid===K&&r.cancel&&(r.pay==="sent"||r.pay==="ok")),
     expired:mine.filter(r=>r.sid===K&&!r.cancel&&isHeldOut(r))};
@@ -240,6 +240,7 @@ async function regAct(act,b,id){
     if(guest&&!regCfg().guests)return true;
     if((S.regs||[]).some(x=>x.sid===regKey(D)&&x.uid===u.uid&&!x.cancel&&!isHeldOut(x))){toast("Bạn đã có trong danh sách.");return true}
     if(regClosed()){toast("Đã hết hạn đăng ký giải đấu này.");return true}
+    {const mate=gdJoin?((S.regs||[]).find(r=>r.id===gdJoin)||{}).pid:(gdOpt.want||null),e=RX&&RX._nd?ndRegCheck(D,RX,guest?null:(L&&L.pid),mate):null;if(e){toast(e);return true}}
     const step=mxDk==="reg1";
     if(b.dataset.v==="sent"&&!armOr("regsent:x"))return true;
     if(step&&val("gd-ok","")!=="1"){errs.gdok="Đánh dấu đã đọc chính sách hủy để tiếp tục.";render();return true}
