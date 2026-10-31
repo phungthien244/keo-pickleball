@@ -131,3 +131,29 @@ test("trận nhiều set: nhập từng set, đủ 2 set thắng thì lưu kết
   await e.until(() => e.store.get("clubs/q7/matches/m1").status === "done");
   expect(e.store.get("clubs/q7/matches/m1")).toMatchObject({ sa: 2, sb: 0 });
 });
+
+test("Đang đánh: vừa xếp là ĐÃ XẾP (khác ĐANG ĐÁNH khi trọng tài bắt đầu); cặp đang nghỉ chặn xếp trận thì báo rõ, Cho vào lại", async () => {
+  const at = Date.now() + 600e3, arr = { arrived: true, arrivedAt: 1 };
+  const R = (pid, team, a = true) => ({ sid: "s1", pid, name: pid, at: 1, pay: "ok", team, ...(a ? arr : {}) });
+  const data = { "clubs/q7": { name: "Q7", public: true, owner: "zalo_9", createdAt: 1 }, "clubs/q7/members/zalo_9": { role: "owner", name: "Chủ" },
+    "clubs/q7/app/config": { title: "Q7", courts: 3, session: 1, phase: "prep" },
+    "clubs/q7/sched/s1": { name: "G", fmt: "giai", ko: true, koN: "2", koQ: "4", pairReg: "pair", dt: "free", at, courts: 3, target: 11, max: 20, st: "open", openAt: 0, deadline: at,
+      kd: { groups: [{ p: ["r1", "r3", "r5"] }, { p: ["r7", "r9", "r11"] }], seeds: ["r1", "r7"], at: 1, by: "BTC", n: 1 } } };
+  for (let i = 1; i <= 12; i++) { data["clubs/q7/players/p" + i] = P("N" + i); data["clubs/q7/regs/r" + i] = R("p" + i, "r" + (i % 2 ? i : i - 1), i < 9); }
+  const e = await boot(data);
+  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.store.get("clubs/q7/app/config").schedId === "s1");
+  await e.click("ksh", { v: "k13" }); await e.click("k13go"); await e.until(() => e.store.get("clubs/q7/app/config").phase === "live");
+  await e.nav("app", { t: "dk", x: "s1" }); await e.click("gmst", { v: "2" }); await e.until(() => e.V().includes('data-act="scfillall"'));
+  await e.click("scfillall"); await e.until(() => e.V().includes('class="sct n"'));
+  expect(e.T()).toContain("ĐÃ XẾP"); expect(e.T()).not.toContain("ĐANG ĐÁNH");
+  // Bảng B chỉ còn trận có cặp đang nghỉ (chưa đủ người): báo rõ, cho vào lại
+  await e.until(() => e.V().includes('class="kblock"'));
+  expect(e.T()).toContain("chưa xếp được"); expect(e.T()).toContain("Cho vào lại");
+  const [rid] = Object.keys(e.store.get("clubs/q7/app/config").giai.rest || {});
+  await e.click("grest", { id: rid }); await e.until(() => !(e.store.get("clubs/q7/app/config").giai.rest || {})[rid]);
+  await e.until(() => e.V().includes('data-act="scfillall"'));
+  // trọng tài bắt đầu → ĐANG ĐÁNH
+  const [mid, m] = e.docs("clubs/q7/matches/", x => x.status === "playing")[0];
+  await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/" + mid), { ref: { by: "r", byName: "Nam", at: Date.now(), pos: { a: m.a, b: m.b }, first: "a", left: "a", started: Date.now(), ev: [] } });
+  await e.until(() => e.T().includes("ĐANG ĐÁNH"));
+});

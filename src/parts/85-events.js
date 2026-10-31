@@ -266,11 +266,11 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="gpredel"){if(!armOr("gpredel:"+id))return;write(()=>saveG({presets:(G0().presets||[]).filter(p=>p.id!==id)}),"Đã bỏ trận định sẵn");return}
   if(act==="gdel"){if(!armOr("gdel:"+id))return;write(()=>saveG({pairs:(cfg().giai?.pairs||[]).filter(p=>p.id!==id)}),"Đã bỏ cặp");return}
   if(act==="gstart"){const P=cfg().giai?.pairs||[];if(P.length<3){errs.giai="Cần ít nhất 3 cặp.";render();return}if(isKO(cfg().giai)&&!koGroupsOk(cfg().giai)){errs.giai="Bốc chia bảng trước khi tạo lịch.";render();return}delete errs.giai;if(!armOr("gstart:x"))return;
-    await write(()=>saveCfg({phase:"live",giai:{...(cfg().giai||{}),locked:true,startedAt:Date.now(),out:{}}}),"Đã tạo lịch thi đấu");await gFill();return}
+    await write(()=>saveCfg({phase:"live",giai:{...(cfg().giai||{}),locked:true,startedAt:Date.now(),out:{}}}),"Đã tạo lịch thi đấu");if(autoNext())await gFill();return}
   if(act==="gfill"){const n=await gFill();toast(n?`Đã đưa ${n} trận vào sân`:"Chưa đưa được trận nào: sân đã đầy hoặc các cặp còn lại đang đánh.");return}
   if(act==="gout"){if(derive().playing.some(m=>m.giai&&(m.pa===id||m.pb===id))){toast("Cặp này đang trên sân, lưu tỉ số hoặc hủy trận trước.");return}
-    if(!armOr("gout:"+id))return;await write(()=>saveG({out:{...(cfg().giai?.out||{}),[id]:true}}),"Đã ghi nhận cặp bỏ giải");await gFill();return}
-  if(act==="grest"){const r={...(cfg().giai?.rest||{})};const on=!r[id];if(on)r[id]=true;else delete r[id];await write(()=>saveG({rest:r}),on?"Đã cho cặp này nghỉ":"Cặp đã vào lại");if(!on)await gFill();return}
+    if(!armOr("gout:"+id))return;await write(()=>saveG({out:{...(cfg().giai?.out||{}),[id]:true}}),"Đã ghi nhận cặp bỏ giải");if(autoNext())await gFill();return}
+  if(act==="grest"){const r={...(cfg().giai?.rest||{})};const on=!r[id];if(on)r[id]=true;else delete r[id];await write(()=>saveG({rest:r}),on?"Đã cho cặp này nghỉ":"Cặp đã vào lại");if(!on&&autoNext())await gFill();return}
   if(act==="gin"){const o={...(cfg().giai?.out||{})};delete o[id];write(()=>saveG({out:o}),"Cặp đã quay lại giải");return}
   if(act==="gcancel"){const D=derive();if(D.done.some(m=>m.giai)){toast("Đã có trận xong, không hủy lịch được.");return}
     if(!armOr("gcancel:x"))return;

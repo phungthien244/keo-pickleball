@@ -265,6 +265,7 @@ function gmPlayV(D,X){
   const fill=G?(!GD.complete&&gPick(D,GD,new Set(D.playing.flatMap(m=>[m.pa,m.pb])),new Set())?"gfill":null):(Math.floor(waiting.length/4)>0?"gen":null);
   const scop={lb:m=>m.ko&&GD?esc(koMName(GD,m.ko)):"",nm:m=>[g4Nm(D,m.a),g4Nm(D,m.b)],fill:!!fill,cp:G?(GD.G.cpause||{}):{}};
   let h=scBoard(D,scop);const nf=scFree(D,scop);
+  if(G&&!nf)h+=scBlocked(D,GD,scFree(D,{...scop,fill:true}));
   // Lượt sau
   let nx="";
   if(G){const g=gPick(D,GD,new Set(D.playing.flatMap(m=>[m.pa,m.pb])),new Set());if(g){const A=GD.T.get(g.x),B=GD.T.get(g.y);nx=`${A?pairNm(D,A.p):"?"} · ${B?pairNm(D,B.p):"?"}`}}

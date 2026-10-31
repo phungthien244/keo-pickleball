@@ -244,6 +244,7 @@ function kPlayV(D,X,GD){
       h+=`<div class="kgate"><span class="cap">✓ Xong vòng bảng · ${gd}/${gw.length} trận</span><b>${R0.length*2} cặp vào ${esc(R0[0].rn.toLowerCase())}</b><small>Nhất bảng gặp nhì bảng khác · xem ở tab Nhánh</small></div>
         <div class="g2list">${R0.map(g=>`<div class="g5s"><span><b>${esc(pos.get(g.x)||"")} ${kPN(D,GD,g.x)}</b></span><span>gặp ${esc(pos.get(g.y)||"")} ${kPN(D,GD,g.y)}</span></div>`).join("")}</div>`}
     h+=scBoard(D,scop);const nf=scFree(D,scop);
+    if(!nf&&!gate)h+=scBlocked(D,GD,scFree(D,{...scop,fill:true}));
     const N=kNext(D,GD,2);if(N.length)h+=`<div class="g4nx"><span class="cap">Lượt sau</span><span>${N.map(g=>`${g.ko?esc(g.ab):KOG[g.grp]}: ${kPN(D,GD,g.x)} – ${kPN(D,GD,g.y)}`).join(" · ")}</span></div>`;
     const rn=inKO&&curKo?esc(curKo[0].rn.toLowerCase()):"";
     h+=`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="m14" aria-label="Thêm việc">⋯</button>${gate?`<button class="ball go" data-act="kgo">Tạo nhánh knockout ›</button>`:nf?`<button class="ball go" data-act="scfillall">▶ ${rn&&!D.playing.length?`Xếp ${Math.min(nf,kNext(D,GD,nf).length)} trận ${rn} vào sân`:`Tạo trận cho ${nf} sân`}</button>`:`<button class="ball nv" data-act="gmst" data-v="3">🏁 Hết giờ · sang chốt</button>`}</div>`+scSheet(D);
