@@ -81,6 +81,7 @@ function cfmInfo(key){
     mfper:["Đổi chu kỳ thu phí?","Kỳ đang theo dõi sẽ tính theo chu kỳ mới. Các khoản đã thu vẫn giữ trong quỹ.","Đổi chu kỳ","p"],
     kodraw:["Bốc chia bảng lại?","Các bảng hiện tại bị bỏ, bốc lại từ đầu. Lần bốc mới được ghi \"bốc lại\" để mọi người thấy.","Bốc lại","d"],
     gbredo:["Bốc lại các cặp?","Các cặp bốc thăm hiện tại bị bỏ, bốc lại từ đầu. Lần bốc mới được ghi \"bốc lại\" để mọi người thấy.","Bốc lại","d"],
+    tnlate:["Tạo giải dù không kịp giờ?",tn&&tnEst(tn)?`Dự kiến xong ${hm(tnEst(tn).end)}, trễ hơn ${tn.endBy}.`:"","Vẫn tạo giải"],
     gdel:[`Bỏ cặp ${n||"này"}?`,"Cặp bị xoá khỏi danh sách giải.","Bỏ cặp","d"],
     gend:["Kết thúc giải?","Trận chưa đánh không tính, xếp hạng theo kết quả hiện có rồi lưu giải.","Kết thúc","d"],
     gcancel:["Hủy lịch thi đấu?","Lịch trận bị xoá, quay lại bước ghép cặp. Các cặp vẫn giữ.","Hủy lịch","d"],

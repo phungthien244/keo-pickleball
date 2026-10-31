@@ -1,6 +1,6 @@
 /* ---------- events ---------- */
 document.addEventListener("compositionend",e=>{const t=e.target,k=t&&t.dataset&&t.dataset.draft;if(k&&(t.dataset.live||LIVEQ.includes(k))){drafts[k]=t.value;render()}});
-document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q"||k==="hq"||k==="cq"||e.target.dataset.live)render()}});
+document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.draft;if(k){drafts[k]=e.target.value;if(errs[k.slice(3)])delete errs[k.slice(3)];if(k==="q"||k==="hq"||k==="cq"||k==="tn-txt"||e.target.dataset.live)render()}});
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.dataset&&t.dataset.me){setMe(t.value);return}
@@ -158,6 +158,7 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="copysess"){const D=derive(),x=sessList(D).find(z=>String(z.sid)===String(id));if(!x)return;
     const txt=(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x))+"\n"+shLink(pathOf("buoi",{sid:x.sid}));try{await navigator.clipboard.writeText(txt);toast("Đã copy tin nhắn, dán vào nhóm Zalo nhé.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
   if(await platformAct(act,id,b))return;
+  if((act==="xnew"||act.startsWith("tn"))&&await tnAct(act,b))return;
   if(await zaloAct(act,b,id))return;
   if(!legacy&&MODE==="club"&&await hnAct(act,b,id))return;
   if(act==="pinset"){if(!isAdm()){toast("Chỉ chủ CLB và quản lý đăng nhập Google mới đặt được PIN.");return}

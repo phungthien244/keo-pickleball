@@ -2866,3 +2866,38 @@ html.mxlock,html.mxlock body{overflow:hidden!important;overscroll-behavior:none}
 .kgate .ndtag{margin-right:6px}
 .ndbox,.ndbox *,.ndchips button,.ndadd,.ndok{text-transform:none!important;letter-spacing:normal!important}
 .ndbox small{font-weight:400}.ndbox .h b{font-weight:800}
+/* Tạo giải nhanh */
+.tnbig{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e3e8ee;padding:14px;width:100%;text-align:left;min-height:0;color:inherit;font:inherit;text-transform:none;letter-spacing:normal;margin:0 0 8px}
+.tnbig.on{border:2px solid #0c2b44}.tnbig i{font-style:normal;font-size:26px;width:34px;text-align:center}
+.tnbig .t{flex:1;display:flex;flex-direction:column;gap:2px}.tnbig b{font-size:16px}.tnbig small{font-size:12.5px;color:#5f6f7f;line-height:1.4}
+.tnprev{background:#fff;border:1px solid #e3e8ee;padding:10px 12px;margin:0 0 8px;display:flex;flex-direction:column}
+.tnprev>button{display:flex;align-items:center;gap:10px;padding:10px 0;border:0;border-top:1px solid #eef1f4;background:none;text-align:left;min-height:0;font:inherit;color:inherit;text-transform:none;letter-spacing:normal}
+.tnprev .t{flex:1;display:flex;flex-direction:column}.tnprev .t small{font-size:12px;color:#5f6f7f}.tnprev .go{font-weight:700;font-size:13px;color:#1f6fd1}
+.tntxt textarea{width:100%;min-height:118px;border:2px solid #1f6fd1;padding:12px;font-size:15px;line-height:1.5;box-sizing:border-box}
+.tnseen,.tnmau,.tnask{background:#fff;border:1px solid #e3e8ee;padding:12px;display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.tnseen>div{display:flex;flex-wrap:wrap;gap:5px}.tnseen small{font-size:12px;color:#5f6f7f}
+.tnk{font-size:12px;font-weight:700;padding:5px 8px;background:#dcfce7;color:#166534}.tnk.g{background:#fef3c7;color:#92400e}
+.tnmau>button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 0;border:0;border-top:1px solid #eef1f4;background:none;text-align:left;min-height:0;font:inherit;color:inherit;text-transform:none;letter-spacing:normal}
+.tnmau>button small{font-size:12px;color:#5f6f7f}
+.tnchips{display:flex;flex-wrap:wrap;gap:6px}
+.tnchip{min-height:0;padding:9px 11px;font-size:13.5px;font-weight:700;border:1px solid #cdd5dd;background:#fff;color:#0c2b44;text-transform:none;letter-spacing:normal}
+.tnchip[aria-pressed="true"]{background:#0c2b44;color:#fff;border-color:#0c2b44}
+.tnq{font-size:16px}
+.tnprog{display:flex;gap:3px}.tnprog i{flex:1;height:5px;background:#d5dce3}.tnprog i.ok{background:#16a34a}.tnprog i.on{background:#1f6fd1}
+.tnleft{font-size:13px;margin:6px 0 0;display:block}
+.tncard{background:#fff;border:1px solid #e3e8ee;padding:12px;display:flex;flex-direction:column}
+.tnname{display:flex;flex-direction:column;align-items:flex-start;border:0;background:none;padding:0 0 8px;text-align:left;min-height:0;font:inherit;color:inherit;text-transform:none;letter-spacing:normal}
+.tnname b{font-size:19px;font-weight:900}.tnname small{font-size:12px;color:#5f6f7f}
+.tnrow{display:flex;align-items:center;gap:10px;padding:10px 0;border:0;border-top:1px solid #eef1f4;background:none;width:100%;text-align:left;min-height:0;font:inherit;color:inherit;text-transform:none;letter-spacing:normal}
+.tnrow .l{width:84px;font-size:12.5px;color:#5f6f7f;flex:none}.tnrow b{flex:1;font-size:14px}
+.tnrow em{font-style:normal;font-size:10.5px;font-weight:800;background:#fef3c7;color:#92400e;padding:2px 6px}
+.tnrow.red b{color:#b91c1c}.tnrow.chg{background:#fef9c3;margin:0 -12px;padding:10px 12px;width:auto}
+.tnnd{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #eef1f4;flex-wrap:wrap}.tnnd b{font-size:14px}.tnnd small{flex:1;font-size:12px;color:#5f6f7f}
+.tnok,.tnbad{padding:10px 12px;display:flex;flex-direction:column;gap:2px;margin:8px 0}
+.tnok{background:#dcfce7;border-left:4px solid #16a34a}.tnok b{color:#166534;font-size:14px}.tnok small{color:#14532d;font-size:12.5px}
+.tnbad{background:#fee2e2;border-left:4px solid #dc2626}.tnbad b{color:#991b1b;font-size:14px}.tnbad small{color:#7f1d1d;font-size:12.5px}
+.tnfix{background:#fff;border:1px solid #e3e8ee;padding:10px 12px;display:flex;flex-direction:column}
+.tnfix>button{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border:0;border-top:1px solid #eef1f4;background:none;min-height:0;font:inherit;color:inherit;text-transform:none;letter-spacing:normal;text-align:left}
+.tnfix>button span{font-size:13px;color:#5f6f7f}
+.tnfrom{background:#eef4fa;border-left:4px solid #1f6fd1;padding:10px 12px;font-size:13px;margin:0 0 8px}
+.tnhint{background:#fef3c7;padding:9px 11px;font-size:12.5px;color:#78350f}

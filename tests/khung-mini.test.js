@@ -40,7 +40,7 @@ test("vào một giải: đầu trang ‹ tên ▾ + dòng phụ, ẩn tab dư�
 test("tạo giải: màn riêng ✕ Tạo giải · 1/3, chọn kiểu rồi Tiếp ›, không tab dưới", async () => {
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", search: "?clb=q7", user: ZU, data: data() }); globalThis.window.ZMINI = 1;
   await e.boot(); await e.until(() => e.V().includes('data-act="xnew"'));
-  await e.click("xnew"); await e.until(() => e.T().includes("Tạo giải · 1/3"));
+  await e.click("xnew"); if (e.V().includes(`data-act="tnfull"`)) await e.click("tnfull"); await e.until(() => e.T().includes("Tạo giải · 1/3"));
   expect(e.V()).not.toContain('class="mxnav');
   await e.click("xqsel", { v: "giai" }); expect(e.V()).toMatch(/gmopt on" data-act="xqsel" data-v="giai"/);
   await e.click("xqgo", { v: "2" }); await e.until(() => e.T().includes("Tạo giải · 2/3"));

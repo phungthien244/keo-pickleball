@@ -96,6 +96,7 @@ function vLichAdm(D){
   if(legacy)return `<div class="empty"><strong>Chưa dùng được</strong>CLB cần chuyển sang tài khoản CLB trước.</div>`;
   if(!isAdm())return vLichPlayer(D);
   xEnsure(D);
+  if(mxDrOn()&&tnPg&&!routeX){const t=tnPage(D);if(tnPg)return t}
   if(xNew||xEdit||xSEdit)if(!(mxDrOn()&&gmEdit&&routeX&&!xNew&&!xSEdit))return xQ&&xNew&&!xEdit&&!xSEdit?xQuickForm(D):xForm(D);
   if(routeX){const X=schedById(routeX);if(X)return vGiaiMgr(D,X);if(S.schedReady)return `<div class="empty"><strong>Không thấy giải đấu này</strong>Giải đấu đã bị xoá.</div><a class="line wide" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Về lịch giải đấu</a>`}
   return vGiaiHub(D);
@@ -327,6 +328,7 @@ function xRead(D){
     ...(fmt==="giai"&&xIsKo()?(()=>{const o={koN:String(Math.max(1,Math.min(16,Math.round(n("koN",4))))),koQ:["2","4","8","16","32","64"].includes(v("koQ"))?v("koQ"):"8",koThird:v("koThird")==="0"?"0":"1"};
       for(const X of ["G","K","F"]){o["ko"+X+"t"]=String(Math.max(5,Math.min(31,Math.round(n("ko"+X+"t",11)))));o["ko"+X+"w"]=v("ko"+X+"w")==="1"?"1":"0";o["ko"+X+"c"]=String(Math.max(0,Math.min(51,Math.round(n("ko"+X+"c",0)))));o["ko"+X+"s"]=["1","3","5"].includes(v("ko"+X+"s"))?v("ko"+X+"s"):"1"}
       return o})():{}),
+    end:v("end").slice(0,5),place:v("place").slice(0,60),map:/^https?:\/\//.test(v("map"))?v("map").slice(0,300):"",note:b("noteOn")?v("note").slice(0,300):"",
     courts:Math.max(1,Math.round(n("courts",2))),target:Math.max(5,Math.round(n("target",11))),max:Math.max(0,Math.round(n("max",0))),lvMin:v("lvMin"),lvMax:v("lvMax"),guests:v("guests")==="1",
     thu:["phi","deu","keo"].includes(v("thu"))?v("thu"):"keo",fee:Math.max(0,n("fee",0)),phi:Math.max(0,n("phi",0)),feeG:v("feeG")===""?"":Math.max(0,n("feeG",0)),pay:["off","opt","req"].includes(v("pay"))?v("pay"):"off",
     dlH:Math.max(0,n("dlH",0)),lockH:Math.max(0,n("lockH",2)),
