@@ -106,3 +106,13 @@ export async function onRequestPost(ctx) {
   if (!t || typeof t !== "object" || Array.isArray(t)) return out(req, { ok: false, e: "ai failed", d: dbg }, 502);
   return out(req, { ok: true, t, by });
 }
+// Xem các model đang dùng được (chỉ từ trang pikeco): GET /api/tao-giai?models=1
+export async function onRequestGet(ctx) {
+  const req = ctx.request, ref = req.headers.get("referer") || "";let refOk = false; try { refOk = OK_HOST.test(new URL(ref).hostname) } catch (e) { }
+  if (!refOk || !new URL(req.url).searchParams.has("models")) return out(req, { ok: false }, 403);
+  const o = { colo: req.cf && req.cf.colo, country: req.cf && req.cf.country };
+  try { const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": ctx.env.GEMINI_API_KEY || "" } }); const j = await r.json();
+    o.gemini = (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes("generateContent")).map(m => m.name.replace("models/", "")); if (!r.ok) o.geminiErr = JSON.stringify(j).slice(0, 200) } catch (e) { o.geminiErr = String(e) }
+  try { const r = await fetch("https://api.groq.com/openai/v1/models", { headers: { authorization: "Bearer " + (ctx.env.GROQ_API_KEY || "") } }); const j = await r.json(); o.groq = (j.data || []).map(m => m.id); if (!r.ok) o.groqErr = JSON.stringify(j).slice(0, 200) } catch (e) { o.groqErr = String(e) }
+  return out(req, o);
+}
