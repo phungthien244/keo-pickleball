@@ -54,29 +54,30 @@ JSON:`;
 }
 
 const parseJ = s => { try { const m = String(s || "").match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null } catch (e) { return null } };
-async function gemini(key, p) {
+async function gemini(key, p, dbg) {
   for (const model of GM) {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: "POST", headers: { "x-goog-api-key": key, "content-type": "application/json" },
         body: JSON.stringify({ contents: [{ parts: [{ text: p }] }], generationConfig: { temperature: 0, responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } } })
       });
-      if (!r.ok) continue;
+      if (!r.ok) { dbg.push(`${model}: ${r.status} ${(await r.text()).slice(0, 160)}`); continue; }
       const j = await r.json(), t = j?.candidates?.[0]?.content?.parts?.map(x => x.text || "").join("");
       const o = parseJ(t); if (o) return o;
-    } catch (e) { }
+      dbg.push(`${model}: không đọc được JSON ${String(t || "").slice(0, 80)}`);
+    } catch (e) { dbg.push(`${model}: ${String(e).slice(0, 80)}`) }
   }
   return null;
 }
-async function groq(key, p) {
+async function groq(key, p, dbg) {
   try {
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST", headers: { authorization: "Bearer " + key, "content-type": "application/json" },
       body: JSON.stringify({ model: GROQ, temperature: 0, response_format: { type: "json_object" }, messages: [{ role: "user", content: p }] })
     });
-    if (!r.ok) return null;
+    if (!r.ok) { dbg.push(`groq: ${r.status} ${(await r.text()).slice(0, 160)}`); return null; }
     const j = await r.json(); return parseJ(j?.choices?.[0]?.message?.content);
-  } catch (e) { return null }
+  } catch (e) { dbg.push(`groq: ${String(e).slice(0, 80)}`); return null }
 }
 const cors = req => { const o = req.headers.get("origin") || ""; let ok = false; try { ok = OK_HOST.test(new URL(o).hostname) } catch (e) { }
   return ok ? { "access-control-allow-origin": o, "access-control-allow-methods": "POST", "access-control-allow-headers": "content-type", vary: "origin" } : {}; };
@@ -99,8 +100,9 @@ export async function onRequestPost(ctx) {
   if (n >= LIMIT) return out(req, { ok: false, e: "limit" }, 429);
   ctx.waitUntil(cache.put(ck, new Response(String(n + 1), { headers: { "cache-control": "max-age=90000" } })));
   const p = prompt({ txt, cur: b.cur && typeof b.cur === "object" ? b.cur : null, ctx: b.ctx && typeof b.ctx === "object" ? b.ctx : {} });
-  let t = gk ? await gemini(gk, p) : null, by = "gemini";
-  if (!t && qk) { t = await groq(qk, p); by = "groq"; }
-  if (!t || typeof t !== "object" || Array.isArray(t)) return out(req, { ok: false, e: "ai failed" }, 502);
+  const dbg = [];
+  let t = gk ? await gemini(gk, p, dbg) : null, by = "gemini";
+  if (!t && qk) { t = await groq(qk, p, dbg); by = "groq"; }
+  if (!t || typeof t !== "object" || Array.isArray(t)) return out(req, { ok: false, e: "ai failed", d: dbg }, 502);
   return out(req, { ok: true, t, by });
 }
