@@ -30,7 +30,7 @@ function tnParse(txt){
     if(/khong (co )?giai|khong (co )?thuong|khong trao giai/.test(s)){o.gton=false}}
   // Cách thu, chuyển khoản
   if(/chia deu/.test(s))o.thu="deu";else if(/(ai )?thua (gop|tra|chiu)/.test(s))o.thu="keo";
-  if(/chuyen khoan truoc|ck truoc|bat buoc (chuyen khoan|ck)|tra truoc|dong truoc/.test(s))o.pay="req";else if(/tra tai san|thu tai san|dong tai san|tien mat/.test(s))o.pay="off";else if(/chuyen khoan|\bck\b/.test(s))o.pay="opt";
+  if(/chuyen khoan truoc|ck truoc|bat buoc (chuyen khoan|ck)|tra truoc|dong truoc/.test(s))o.pay="req";else if(/tra (tien )?tai san|thu (tien )?tai san|dong (tien )?tai san|tien mat/.test(s))o.pay="off";else if(/chuyen khoan|\bck\b/.test(s))o.pay="opt";
   if(/theo cap|dang ky cap|di cap/.test(s))o.pairReg="pair";else if(/ghep cap|btc ghep|tu ghep|boc tham ghep/.test(s))o.pairReg="solo";
   if(/nhat nhi (moi bang |cac bang |bang )?(vao|di tiep|len)/.test(s))o.lay=2;else if(/(chi )?nhat (moi )?bang (vao|di tiep|len)/.test(s))o.lay=1;
   if(/khong (danh )?tranh (hang )?(ba|3)|khong tranh hang ba|khong tranh hang 3|dong hang ba/.test(s))o.third=false;else if(/tranh hang ba|tranh hang 3/.test(s))o.third=true;

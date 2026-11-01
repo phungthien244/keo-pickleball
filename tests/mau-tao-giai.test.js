@@ -9,6 +9,6 @@ test("đọc bằng luật: bộ câu mẫu", async () => {
   globalThis.window.ZMINI = 1; await e.boot();
   const parse = globalThis.window.__tnParse;
   const bad = [];
-  for (const m of MAU) { const o = parse(m.txt); for (const [k, v] of Object.entries(m.ok)) if (o[k] !== v) bad.push(`${m.txt} · ${k}: ${o[k]} ≠ ${v}`); }
+  for (const m of MAU.filter(m => !m.ai)) { const o = parse(m.txt); for (const [k, v] of Object.entries(m.ok)) if (o[k] !== v) bad.push(`${m.txt} · ${k}: ${o[k]} ≠ ${v}`); }
   expect(bad).toEqual([]);
 });

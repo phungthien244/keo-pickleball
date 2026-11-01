@@ -1,17 +1,214 @@
 [
-  {"txt":"Chủ nhật 7h, 16 cặp chia 4 bảng lấy 2, 200k, nhất 1 triệu nhì 500, chuyển khoản trước","ok":{"fmt":"bang","time":"07:00","pairs":16,"koN":4,"lay":2,"fee":200,"h1":1000,"h2":500,"pay":"req"}},
-  {"txt":"tối thứ 7 lúc 19h giao lưu xoay cặp 24 người, ai thua góp, không có giải","ok":{"fmt":"xoay","time":"19:00","people":24,"thu":"keo","gton":false}},
-  {"txt":"8 cặp đánh vòng tròn, 100k, trích 20% làm giải","ok":{"fmt":"giai","pairs":8,"fee":100,"gt":"trich","gtv":20}},
-  {"txt":"giải 12 cặp vòng tròn, 3 sân, 150 cành, trả tại sân","ok":{"fmt":"giai","pairs":12,"courts":3,"fee":150,"pay":"off"}},
-  {"txt":"xoay cặp 20 người, 2 lít một người, chuyển khoản tuỳ chọn","ok":{"fmt":"xoay","people":20,"fee":200,"pay":"opt"}},
-  {"txt":"chia 2 bảng 8 cặp đánh loại, không tranh hạng ba, miễn phí","ok":{"fmt":"bang","koN":2,"pairs":8,"third":false,"fee":0}},
-  {"txt":"16 cặp chia bảng, phải xong trước 11h, 4 sân","ok":{"fmt":"bang","pairs":16,"endBy":"11:00","courts":4}},
-  {"txt":"7h đến 11h30 chủ nhật, 16 cặp đánh loại trực tiếp","ok":{"time":"07:00","end":"11:30","fmt":"bang","pairs":16}},
-  {"txt":"giao lưu 16 người chia đều tiền sân, nhất 300k","ok":{"fmt":"xoay","people":16,"thu":"deu","h1":300}},
-  {"txt":"8 cặp vòng tròn 100k, khách ngoài clb 150k","ok":{"fmt":"giai","pairs":8,"fee":100,"feeG":150,"guests":true}},
-  {"txt":"16 cặp đôi nam nữ chia 4 bảng, đăng ký theo cặp","ok":{"fmt":"bang","pairs":16,"dt":"mix","pairReg":"pair"}},
-  {"txt":"Chủ nhật 7h, 6 sân, đôi open 16 cặp 300k, đôi nữ 4.2 8 cặp 200k, đôi nam 5.5 16 cặp 200k","ok":{"fmt":"bang","time":"07:00","courts":6}},
-  {"txt":"chạm 15, 8 cặp vòng tròn","ok":{"target":15,"fmt":"giai","pairs":8}},
-  {"txt":"giải nhất 2tr, nhì 1tr, ba 500k, 32 cặp chia 8 bảng","ok":{"h1":2000,"h2":1000,"h3":500,"pairs":32,"koN":8,"fmt":"bang"}},
-  {"txt":"tối nay 18h30 xoay cặp 12 người 50k","ok":{"time":"18:30","fmt":"xoay","people":12,"fee":50}}
+ {
+  "txt": "Chủ nhật 7h, 16 cặp chia 4 bảng lấy 2, 200k, nhất 1 triệu nhì 500, chuyển khoản trước",
+  "ok": {
+   "fmt": "bang",
+   "time": "07:00",
+   "pairs": 16,
+   "koN": 4,
+   "lay": 2,
+   "fee": 200,
+   "h1": 1000,
+   "h2": 500,
+   "pay": "req"
+  }
+ },
+ {
+  "txt": "tối thứ 7 lúc 19h giao lưu xoay cặp 24 người, ai thua góp, không có giải",
+  "ok": {
+   "fmt": "xoay",
+   "time": "19:00",
+   "people": 24,
+   "thu": "keo",
+   "gton": false
+  }
+ },
+ {
+  "txt": "8 cặp đánh vòng tròn, 100k, trích 20% làm giải",
+  "ok": {
+   "fmt": "giai",
+   "pairs": 8,
+   "fee": 100,
+   "gt": "trich",
+   "gtv": 20
+  }
+ },
+ {
+  "txt": "giải 12 cặp vòng tròn, 3 sân, 150 cành, trả tại sân",
+  "ok": {
+   "fmt": "giai",
+   "pairs": 12,
+   "courts": 3,
+   "fee": 150,
+   "pay": "off"
+  }
+ },
+ {
+  "txt": "xoay cặp 20 người, 2 lít một người, chuyển khoản tuỳ chọn",
+  "ok": {
+   "fmt": "xoay",
+   "people": 20,
+   "fee": 200,
+   "pay": "opt"
+  }
+ },
+ {
+  "txt": "chia 2 bảng 8 cặp đánh loại, không tranh hạng ba, miễn phí",
+  "ok": {
+   "fmt": "bang",
+   "koN": 2,
+   "pairs": 8,
+   "third": false,
+   "fee": 0
+  }
+ },
+ {
+  "txt": "16 cặp chia bảng, phải xong trước 11h, 4 sân",
+  "ok": {
+   "fmt": "bang",
+   "pairs": 16,
+   "endBy": "11:00",
+   "courts": 4
+  }
+ },
+ {
+  "txt": "7h đến 11h30 chủ nhật, 16 cặp đánh loại trực tiếp",
+  "ok": {
+   "time": "07:00",
+   "end": "11:30",
+   "fmt": "bang",
+   "pairs": 16
+  }
+ },
+ {
+  "txt": "giao lưu 16 người chia đều tiền sân, nhất 300k",
+  "ok": {
+   "fmt": "xoay",
+   "people": 16,
+   "thu": "deu",
+   "h1": 300
+  }
+ },
+ {
+  "txt": "8 cặp vòng tròn 100k, khách ngoài clb 150k",
+  "ok": {
+   "fmt": "giai",
+   "pairs": 8,
+   "fee": 100,
+   "feeG": 150,
+   "guests": true
+  }
+ },
+ {
+  "txt": "16 cặp đôi nam nữ chia 4 bảng, đăng ký theo cặp",
+  "ok": {
+   "fmt": "bang",
+   "pairs": 16,
+   "dt": "mix",
+   "pairReg": "pair"
+  }
+ },
+ {
+  "txt": "Chủ nhật 7h, 6 sân, đôi open 16 cặp 300k, đôi nữ 4.2 8 cặp 200k, đôi nam 5.5 16 cặp 200k",
+  "ok": {
+   "fmt": "bang",
+   "time": "07:00",
+   "courts": 6
+  }
+ },
+ {
+  "txt": "chạm 15, 8 cặp vòng tròn",
+  "ok": {
+   "target": 15,
+   "fmt": "giai",
+   "pairs": 8
+  }
+ },
+ {
+  "txt": "giải nhất 2tr, nhì 1tr, ba 500k, 32 cặp chia 8 bảng",
+  "ok": {
+   "h1": 2000,
+   "h2": 1000,
+   "h3": 500,
+   "pairs": 32,
+   "koN": 8,
+   "fmt": "bang"
+  }
+ },
+ {
+  "txt": "tối nay 18h30 xoay cặp 12 người 50k",
+  "ok": {
+   "time": "18:30",
+   "fmt": "xoay",
+   "people": 12,
+   "fee": 50
+  }
+ },
+ {
+  "txt": "tối mai 6 rưỡi 8 đôi nam đánh vòng tròn, 150 cành, nhất 8 lít nhì 4 lít, trả tiền tại sân",
+  "ok": {
+   "fmt": "giai",
+   "time": "18:30",
+   "pairs": 8,
+   "dt": "MM",
+   "fee": 150,
+   "h1": 800,
+   "h2": 400,
+   "pay": "off"
+  },
+  "ai": true
+ },
+ {
+  "txt": "CN tuần sau sáng 6h giải đôi nữ tổng trình 4.2, 12 cặp, 3 bảng, mỗi người 1 xị, ck trước mới giữ chỗ",
+  "ok": {
+   "time": "06:00",
+   "dt": "FF",
+   "cap": 4.2,
+   "pairs": 12,
+   "koN": 3,
+   "fee": 100,
+   "pay": "req",
+   "fmt": "bang"
+  },
+  "ai": true
+ },
+ {
+  "txt": "giao lưu tối thứ 5 từ 7 giờ tới 9 rưỡi, tối đa 28 người, ai thua thì góp tiền sân, vô địch được 1 thùng bia",
+  "ok": {
+   "fmt": "xoay",
+   "time": "19:00",
+   "end": "21:30",
+   "people": 28,
+   "thu": "keo"
+  },
+  "ai": true
+ },
+ {
+  "txt": "giải nội bộ 10 cặp đánh vòng tròn chạm 11, lệ phí 120k, CLB tài trợ 1 triệu làm giải",
+  "ok": {
+   "fmt": "giai",
+   "pairs": 10,
+   "target": 11,
+   "fee": 120,
+   "gton": true,
+   "gt": "codinh",
+   "gtv": 1000
+  },
+  "ai": true
+ },
+ {
+  "txt": "đôi nam 5.5 24 cặp chia 6 bảng nhất nhì vào tứ kết, không đánh tranh 3, 250k, nhận vđv ngoài",
+  "ok": {
+   "fmt": "bang",
+   "dt": "MM",
+   "cap": 5.5,
+   "pairs": 24,
+   "koN": 6,
+   "lay": 2,
+   "third": false,
+   "fee": 250,
+   "guests": true
+  },
+  "ai": true
+ }
 ]
