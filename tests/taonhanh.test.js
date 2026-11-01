@@ -51,7 +51,7 @@ test("AI đọc câu và sửa bằng lời trên thẻ", async () => {
   globalThis.window.__PBAI = 1;
   const calls = [];
   globalThis.fetch = async (u, o) => { const b = JSON.parse(o.body); calls.push(b);
-    const t = b.cur ? { courts: 6, h3: 300 } : { fmt: "giai", pairs: 8, date: new Date(day0() + 864e5).toISOString().slice(0, 10), time: "18:30", courts: 4, fee: 150, pay: "off", gton: true, gt: "hang", h1: 800, h2: 400, dt: "MM", guests: false };
+    const t = b.cur ? { courts: 6, h3: 300 } : { fmt: "giai", pairs: 8, date: (d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`)(new Date(day0() + 864e5)), time: "18:30", courts: 4, fee: 150, pay: "off", gton: true, gt: "hang", h1: 800, h2: 400, dt: "MM", guests: false };
     return { ok: true, json: async () => ({ ok: true, t }) }; };
   try {
     await open(e);

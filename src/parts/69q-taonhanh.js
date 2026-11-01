@@ -22,8 +22,8 @@ function tnParse(txt){
   // Giờ kết thúc (7h đến 11h30)
   {const m=s.match(/(?:\bden\b|-|–)\s*(\d{1,2})\s*(?:h|gio|:)\s*(\d{2})?/);if(m&&+m[1]<24){let h=+m[1];if(h<12&&/chieu|toi/.test(s))h+=12;o.end=`${String(h).padStart(2,"0")}:${String(+(m[2]||0)).padStart(2,"0")}`;s=s.replace(m[0]," ")}}
   // Giải thưởng: nhất 1 triệu, nhì 500, ba 200k · trích 20% · mỗi người góp 50k · không có giải
-  {const amt=(v,u)=>{const x=+String(v).replace(",",".");return /trieu|tr|cu|m\b/.test(u||"")||(!u&&x<=20)?Math.round(x*1000):Math.round(x)};
-    const P=[["h1",/(?<!chu )\b(?:giai nhat|nhat|vo dich)\s*:?\s*(\d+(?:[.,]\d+)?)\s*(trieu|tr|cu|m|k|nghin|ngan)?/],["h2",/(?:giai nhi|nhi|a quan)\s*:?\s*(\d+(?:[.,]\d+)?)\s*(trieu|tr|cu|m|k|nghin|ngan)?/],["h3",/(?:giai ba|hang ba|\bba)\s*:?\s*(\d+(?:[.,]\d+)?)\s*(trieu|tr|cu|m|k|nghin|ngan)?/]];
+  {const amt=(v,u)=>{const x=+String(v).replace(",",".");if(/lit|xi/.test(u||""))return Math.round(x*100);return /trieu|tr|cu|m\b/.test(u||"")||(!u&&x<=20)?Math.round(x*1000):Math.round(x)};
+    const P=[["h1",/(?<!chu )\b(?:giai nhat|nhat|vo dich)\s*:?\s*(\d+(?:[.,]\d+)?)\s*(trieu|tr|cu|lit|xi|m|k|nghin|ngan)?/],["h2",/(?:giai nhi|nhi|a quan)\s*:?\s*(\d+(?:[.,]\d+)?)\s*(trieu|tr|cu|lit|xi|m|k|nghin|ngan)?/],["h3",/(?:giai ba|hang ba|\bba)\s*:?\s*(\d+(?:[.,]\d+)?)\s*(trieu|tr|cu|lit|xi|m|k|nghin|ngan)?/]];
     for(const [k,re] of P){const m=s.match(re);if(m){o[k]=amt(m[1],m[2]);o.gton=true;o.gt="hang";s=s.replace(m[0]," ")}}
     const tr=s.match(/trich\s*(\d+)\s*%?/);if(tr){o.gton=true;o.gt="trich";o.gtv=+tr[1];s=s.replace(tr[0]," ")}
     const gp=s.match(/(?:moi nguoi )?gop (?:them )?(\d+)\s*(k|nghin|ngan)?\s*(?:lam|vao)? ?(?:giai|thuong|quy thuong)/);if(gp){o.gton=true;o.gt="gop";o.gtv=+gp[1];s=s.replace(gp[0]," ")}
