@@ -32,7 +32,8 @@ function tnParse(txt){
   if(/chia deu/.test(s))o.thu="deu";else if(/(ai )?thua (gop|tra|chiu)/.test(s))o.thu="keo";
   if(/chuyen khoan truoc|ck truoc|bat buoc (chuyen khoan|ck)|tra truoc|dong truoc/.test(s))o.pay="req";else if(/tra tai san|thu tai san|dong tai san|tien mat/.test(s))o.pay="off";else if(/chuyen khoan|\bck\b/.test(s))o.pay="opt";
   if(/theo cap|dang ky cap|di cap/.test(s))o.pairReg="pair";else if(/ghep cap|btc ghep|tu ghep|boc tham ghep/.test(s))o.pairReg="solo";
-  if(/khong tranh hang ba|khong tranh hang 3|dong hang ba/.test(s))o.third=false;else if(/tranh hang ba|tranh hang 3/.test(s))o.third=true;
+  if(/nhat nhi (moi bang |cac bang |bang )?(vao|di tiep|len)/.test(s))o.lay=2;else if(/(chi )?nhat (moi )?bang (vao|di tiep|len)/.test(s))o.lay=1;
+  if(/khong (danh )?tranh (hang )?(ba|3)|khong tranh hang ba|khong tranh hang 3|dong hang ba/.test(s))o.third=false;else if(/tranh hang ba|tranh hang 3/.test(s))o.third=true;
   if(/chia (\d+ )?bang|vong bang|\d+\s*bang\b|knock|loai truc tiep|danh loai|tu ket|ban ket|chung ket/.test(s))o.fmt="bang";else if(/vong tron/.test(s))o.fmt="giai";else if(/xoay|giao luu/.test(s))o.fmt="xoay";
   // Nhiều nội dung: mỗi đoạn có "đôi …"
   const seg=s.split(/[;,]|\s+va\s+/).map(x=>x.trim()).filter(x=>/\bdoi (open|nam nu|nam|nu)\b|\bnam nu\b/.test(x));
@@ -314,8 +315,8 @@ async function tnAct(act,b){
   if(act==="tngo"){const txt=String(val("tn-txt","")).trim();if(!txt){toast("Tả giải bằng một câu, ví dụ: Chủ nhật 7h, 16 cặp chia bảng, 200k.");return true}
     tnBusy=true;render();const ai=await tnAI(txt,null);tnBusy=false;
     // Số đọc bằng luật (mẫu chặt) giữ nguyên; AI bổ sung phần còn lại và các lựa chọn
-    const base=tnParse(txt),NUM=["fee","h1","h2","h3","pairs","people","koN","courts","time","end","endBy","target","feeG","gtv"],keep={};for(const k of NUM)if(base[k]!=null)keep[k]=base[k];
-    tn={...base,...(ai||{}),...keep,guess:new Set(),ok:new Set()};if(ai&&ai.nds)tn.nds=ai.nds;
+    // Mục đọc được bằng luật (mẫu chặt) giữ nguyên; AI điền phần còn lại
+    const base=tnParse(txt);tn={...(ai||{}),...base,guess:new Set(),ok:new Set()};if(ai&&ai.nds&&!base.nds)tn.nds=ai.nds;
     if(base.wd&&tn.date===base.date&&tn.time&&tnAt(tn)<Date.now())tn.date+=7*864e5;delete tn.wd;
     tn=tnFill(tn);tnG=tnNextG(tn);tnGEdit=false;tnPg=tnG?"grp":"card";render();top();return true}
   if(act==="tnprev"){const X=schedById(b.dataset.id);if(!X)return true;tnFromPrev(X);tn=tnFill(tn);tnPg="card";render();top();return true}
