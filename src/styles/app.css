@@ -2913,3 +2913,20 @@ html.mxlock,html.mxlock body{overflow:hidden!important;overscroll-behavior:none}
 .tnr span{width:92px;flex:none;font-size:12.5px;color:#5f6f7f}.tnr b{flex:1}
 .tnr em{font-style:normal;font-size:10.5px;font-weight:800;background:#fef3c7;color:#92400e;padding:2px 6px}
 .tnsay{display:flex;gap:8px;margin:10px 0 0}.tnsay input{flex:1;min-width:0}.tnsay button{flex:none;min-height:0;padding:0 16px}
+/* Tạo nhanh kiểu trò chuyện */
+.tcprog{display:flex;flex-direction:column;gap:5px;margin:2px 0 8px}.tcprog>span{height:4px;background:#dfe5eb;position:relative}.tcprog i{position:absolute;left:0;top:0;bottom:0;background:#534AB7}
+.tcprog .tcskip{align-self:flex-end;font-size:12.5px;padding:2px 0;min-height:0;text-transform:none;letter-spacing:normal;border:0;background:none;color:#1f6fd1;font-weight:700}
+.tcchat{display:flex;flex-direction:column;gap:10px;padding-bottom:6px}
+.tcb{display:flex;gap:7px;align-items:flex-start}.tcb>div{background:#fff;border:1px solid #e3e8ee;padding:9px 11px;font-size:14px;line-height:1.45;max-width:calc(100% - 40px);min-width:0;flex:0 1 auto}
+.tcb>div small{display:block;margin-top:5px;font-size:12.5px;color:#5f6f7f}
+.tcav{flex:none;width:28px;height:28px;border-radius:50%;background:#534AB7;color:#fff;display:grid;place-items:center;font-size:11.5px;font-weight:900}
+.tcm{display:flex;justify-content:flex-end}.tcm>div{background:#0c2b44;color:#fff;padding:9px 11px;font-size:14px;line-height:1.45;max-width:82%;overflow-wrap:anywhere}
+.tcok{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.tcq{display:flex;flex-wrap:wrap;gap:6px;padding-left:35px;align-items:center}.tcq.end{padding-left:0}.tcq.end>button{flex:1;min-height:52px}
+.tcbtn{min-height:0;padding:9px 12px;font-size:13.5px;font-weight:700;border:1.5px solid #1f6fd1;background:#fff;color:#1f6fd1;text-transform:none;letter-spacing:normal;text-align:left}
+.tcbtn.star{border-color:#534AB7;background:#EEEDFE;color:#3C3489}
+.tcq .tcdef{font-size:12.5px;color:#5f6f7f;min-height:0;padding:8px 4px;text-decoration:underline;text-transform:none;letter-spacing:normal;border:0;background:none;font-weight:600}
+.tcsum{display:flex;flex-direction:column;margin-top:8px}
+.tcrow{display:flex;align-items:center;gap:8px;padding:9px 0;border:0;border-top:1px solid #eef1f4;background:none;width:100%;text-align:left;min-height:0;font:inherit;color:inherit;text-transform:none;letter-spacing:normal}
+.tcrow span{width:84px;flex:none;font-size:12.5px;color:#5f6f7f}.tcrow b{flex:1;font-size:13.5px;min-width:0}.tcrow i{font-style:normal;color:#5f6f7f}
+.tcbar .tnsay{margin:0}.tcbar .tnsay button{min-height:46px}
