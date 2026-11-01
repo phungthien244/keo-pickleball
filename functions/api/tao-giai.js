@@ -90,6 +90,7 @@ export async function onRequestPost(ctx) {
   if (!refOk) return out(req, { ok: false, e: "forbidden" }, 403);
   const raw = await req.text(); if (raw.length > 6000) return out(req, { ok: false, e: "too big" }, 413);
   let b; try { b = JSON.parse(raw) } catch (e) { return out(req, { ok: false, e: "bad json" }, 400) }
+  if (b && b.models) return models(ctx);
   const txt = String(b.txt || "").trim(), cid = String(b.cid || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40);
   if (!txt || txt.length > 400 || !cid) return out(req, { ok: false, e: "bad input" }, 400);
   const gk = ctx.env.GEMINI_API_KEY, qk = ctx.env.GROQ_API_KEY;
@@ -107,9 +108,8 @@ export async function onRequestPost(ctx) {
   return out(req, { ok: true, t, by });
 }
 // Xem các model đang dùng được (chỉ từ trang pikeco): GET /api/tao-giai?models=1
-export async function onRequestGet(ctx) {
-  const req = ctx.request, ref = req.headers.get("referer") || "";let refOk = false; try { refOk = OK_HOST.test(new URL(ref).hostname) } catch (e) { }
-  if (!refOk || !new URL(req.url).searchParams.has("models")) return out(req, { ok: false }, 403);
+async function models(ctx) {
+  const req = ctx.request;
   const o = { colo: req.cf && req.cf.colo, country: req.cf && req.cf.country };
   try { const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": ctx.env.GEMINI_API_KEY || "" } }); const j = await r.json();
     o.gemini = (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes("generateContent")).map(m => m.name.replace("models/", "")); if (!r.ok) o.geminiErr = JSON.stringify(j).slice(0, 200) } catch (e) { o.geminiErr = String(e) }
