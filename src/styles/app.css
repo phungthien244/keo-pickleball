@@ -2901,3 +2901,15 @@ html.mxlock,html.mxlock body{overflow:hidden!important;overscroll-behavior:none}
 .tnfix>button span{font-size:13px;color:#5f6f7f}
 .tnfrom{background:#eef4fa;border-left:4px solid #1f6fd1;padding:10px 12px;font-size:13px;margin:0 0 8px}
 .tnhint{background:#fef3c7;padding:9px 11px;font-size:12.5px;color:#78350f}
+/* Tạo nhanh · 4 nhóm */
+.tnlb{display:block;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#5f6f7f;margin:10px 0 2px}.tnlb.miss{color:#b91c1c}
+.tnneed{font-size:12.5px;color:#991b1b}.tnneed.g{color:#92400e}
+.tn2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tn3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tngc{background:#fff;border:1px solid #e3e8ee;padding:4px 12px 8px;margin:8px 0 0}.tngc.no{border-color:#dc2626}
+.tngh{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:8px 0;min-height:0;font:inherit;color:inherit;text-align:left;text-transform:none;letter-spacing:normal}
+.tngh b{flex:1;font-size:15px}.tngh .ed{font-size:12.5px;font-weight:700;color:#1f6fd1}
+.tnst{font-size:10.5px;font-weight:800;padding:2px 7px}.tnst.ok{background:#dcfce7;color:#166534}.tnst.g{background:#fef3c7;color:#92400e}.tnst.no{background:#fee2e2;color:#991b1b}
+.tnr{display:flex;gap:8px;align-items:center;font-size:13.5px;padding:6px 0;border-top:1px solid #eef1f4}
+.tnr span{width:92px;flex:none;font-size:12.5px;color:#5f6f7f}.tnr b{flex:1}
+.tnr em{font-style:normal;font-size:10.5px;font-weight:800;background:#fef3c7;color:#92400e;padding:2px 6px}
+.tnsay{display:flex;gap:8px;margin:10px 0 0}.tnsay input{flex:1;min-width:0}.tnsay button{flex:none;min-height:0;padding:0 16px}
