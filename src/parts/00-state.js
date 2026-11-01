@@ -20,7 +20,8 @@ const canScore=m=>!!m&&(canWrite||(REF&&MYCT.includes(Number(m.court))));
 let MODE="platform",CID="aep",PFX="",CLUB=null,ROLE=null,legacy=true,INVITE=null,clubChecked=false;
 // Bản Zalo Mini App: đường dẫn trong app nằm sau dấu #, mở thẳng CLB (?clb=… hoặc mặc định aep)
 const MINI=typeof window!=="undefined"&&!!window.ZMINI;
-const API=MINI?"https://pikeco.app":"";
+// Mini App thật (Zalo) gọi máy chủ pikeco.app; bản thử trên pages.dev gọi máy chủ của chính nó
+const API=MINI&&!(typeof location!=="undefined"&&/\.pages\.dev$|^localhost$/.test(location.hostname))?"https://pikeco.app":"";
 // Mini App mở: link CLB (?clb=) → trang Đăng ký CLB đó; đã từng vào CLB → CLB đó; chưa có → Khám phá CLB
 function miniStart(){
   const q=String(new URLSearchParams(location.search||"").get("clb")||"").toLowerCase().replace(/[^a-z0-9-]/g,"");
