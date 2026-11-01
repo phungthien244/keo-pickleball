@@ -40,7 +40,7 @@ test("thiếu thì hỏi bắt buộc trước (chưa có Bỏ qua hết), nút 
   e.input("tn-txt", "16 cặp chia 4 bảng đánh loại, 2 sân, phải xong trước 9h");
   await e.click("tngo"); await e.until(() => e.T().includes("Đánh ngày nào?"));
   expect(e.V()).not.toContain('data-act="tcskip"'); expect(e.V()).not.toContain('data-v="__def"');
-  await e.click("tca", { k: "date", v: String(day0()) }); await e.until(() => e.T().includes("Mấy giờ bắt đầu?"));
+  await e.click("tca", { k: "date", v: String(day0() + 864e5) }); await e.until(() => e.T().includes("Mấy giờ bắt đầu?"));
   await e.click("tca", { k: "time", v: "07:00" }); await e.until(() => e.T().includes("Lệ phí mỗi người"));
   e.input("tn-say", "250k"); await e.click("tnsay"); await e.until(() => e.T().includes("Có cần chuyển khoản"));
   await e.click("tca", { k: "pay", v: "opt" }); await e.click("tca", { k: "gton", v: "0" });

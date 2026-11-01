@@ -19,13 +19,13 @@ const tcBestN=n=>Math.max(1,Math.min(8,Math.round(n/4)));
 function tcFmtOpts(t){const n=+t.pairs||0;
   if(!n)return [["bang","Chia bảng rồi đánh loại"],["giai","Vòng tròn"],["xoay","Xoay cặp (giao lưu)"]];
   const L=[...new Set([tcBestN(n),Math.max(1,Math.round(n/8))])].filter(N=>N>=2&&n/N>=3).map(N=>[`b:${N}`,`${N} bảng → ${tcRound(tnQ2(Math.min(n,N*2)))}`]);
-  return [...L,["giai","Vòng tròn"],["xoay","Xoay cặp (giao lưu)"],["?","Giải thích giúp tôi"]]}
+  return [...L,...(n<=10?[["giai","Vòng tròn"]]:[]),["xoay","Xoay cặp (giao lưu)"],["?","Giải thích giúp tôi"]]}
 // Giải thích các cách bằng số của chính giải này
 function tcExplain(t){const n=+t.pairs||0,c=+t.courts||0;
   const one=(l,p)=>{const x={...t,...p},m=tnCount(x.fmt,n,x.koN,(x.koN||1)*2,true),E=tnEst(x),per=x.fmt==="giai"?n-1:Math.max(1,Math.floor(n/(x.koN||1))-1);
     return `<b>${l}</b>: ${m} trận${E?`, xong khoảng ${tcHm(E.end)}`:""}. Cặp nào cũng đánh ít nhất ${per} trận.`};
   const L=tcFmtOpts(t).filter(([v])=>v.startsWith("b:")).map(([v,l])=>one(l,{fmt:"bang",koN:+v.slice(2),lay:2}));
-  if(n)L.push(one("Vòng tròn",{fmt:"giai"}));
+  if(n&&n<=10)L.push(one("Vòng tròn",{fmt:"giai"}));else if(n)L.push(`<b>Vòng tròn</b>: ${n*(n-1)/2} trận, quá nhiều cho ${n} cặp nên app không gợi ý. Hợp khi từ 10 cặp trở xuống.`);
   L.push(`<b>Xoay cặp</b>: không cố định cặp, mỗi trận app tự ghép người cân trình. Hợp buổi giao lưu, không cần đăng ký theo cặp.`);
   const best=tcStar(t,"fmt"),bl=(tcFmtOpts(t).find(([v])=>v===best)||[])[1];
   return `${n?`Với ${n} cặp${c?`, ${c} sân`:""}:`:"Các cách đánh:"}<br><br>${L.join("<br><br>")}${bl?`<br><br>Lần đầu tổ chức thì nên chọn <b>${esc(bl)}</b>.`:""}`}
