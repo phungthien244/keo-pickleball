@@ -30,12 +30,15 @@ const SCHEMA = `Trả về MỘT đối tượng JSON, chỉ gồm các khoá d�
 - h1, h2, h3: tiền thưởng nhất, nhì, ba (nghìn đồng); gtv: % trích (gt trich) hoặc số nghìn đồng (gt codinh/gop)
 - trao: "namnu" số 1 nam và nữ, "top3" hạng 1, 2, 3
 - nds: chỉ khi giải có từ 2 nội dung trở lên: [{name, dt, cap, max (số cặp), fee, koN}]
-Quy ước tiền: số trơn nhỏ (≤ 20) đi với giải thưởng là triệu ("nhất 2" = 2000); "500" là 500 nghìn.`;
+Quy ước tiền: số trơn nhỏ (≤ 20) đi với giải thưởng là triệu ("nhất 2" = 2000); "500" là 500 nghìn. "lít"/"xị" = 100 nghìn ("8 lít" = 800, "2 lít" = 200).
+Quy ước khác: có nói số bảng hoặc chia bảng → fmt "bang". "nhất nhì (mỗi bảng) vào vòng trong" → lay 2; "chỉ nhất bảng đi tiếp" → lay 1. "không tranh hạng 3/không đánh tranh 3" → third false.
+Mọi số phải là số JSON (không để trong ngoặc kép).`;
 
 const EX = [
   ["Chủ nhật 7h, 16 cặp chia 4 bảng lấy 2, 200k, nhất 1 củ nhì 500, ck trước", { fmt: "bang", time: "07:00", pairs: 16, koN: 4, lay: 2, fee: 200, gton: true, gt: "hang", h1: 1000, h2: 500, pay: "req" }],
   ["tối t7 giao lưu xoay cặp 24 người, ai thua góp, không giải", { fmt: "xoay", time: "19:00", people: 24, thu: "keo", gton: false }],
-  ["8 đôi nam 5.5 đánh vòng tròn, 2 xị một người, trả tại sân", { fmt: "giai", pairs: 8, dt: "MM", cap: 5.5, fee: 200, pay: "off" }]
+  ["8 đôi nam 5.5 đánh vòng tròn, 2 xị một người, trả tại sân", { fmt: "giai", pairs: 8, dt: "MM", cap: 5.5, fee: 200, pay: "off" }],
+  ["đôi nữ 12 cặp 3 bảng nhất nhì vào bán kết, không đánh tranh 3, nhất 8 lít nhì 4 lít", { fmt: "bang", dt: "FF", pairs: 12, koN: 3, lay: 2, third: false, gton: true, gt: "hang", h1: 800, h2: 400 }]
 ];
 
 function prompt(b) {
@@ -110,6 +113,7 @@ export async function onRequestPost(ctx) {
   let t = qk ? await groq(qk, p, dbg) : null, by = "groq";
   if (!t && gk) { t = await gemini(gk, p, dbg); by = "gemini"; }
   if (!t || typeof t !== "object" || Array.isArray(t)) return out(req, { ok: false, e: "ai failed", d: dbg }, 502);
+  for (const [k, v] of Object.entries(t)) if (typeof v === "string" && /^\d+(\.\d+)?$/.test(v) && !["time", "end", "endBy", "date", "name", "place"].includes(k)) t[k] = +v;
   return out(req, { ok: true, t, by });
 }
 // Xem các model đang dùng được (chỉ từ trang pikeco): GET /api/tao-giai?models=1

@@ -313,7 +313,9 @@ async function tnAct(act,b){
   if(act==="tnmau"){drafts["tn-txt"]=TN_MAU[+v][1];render();return true}
   if(act==="tngo"){const txt=String(val("tn-txt","")).trim();if(!txt){toast("Tả giải bằng một câu, ví dụ: Chủ nhật 7h, 16 cặp chia bảng, 200k.");return true}
     tnBusy=true;render();const ai=await tnAI(txt,null);tnBusy=false;
-    const base=tnParse(txt);tn={...base,...(ai||{}),guess:new Set(),ok:new Set()};if(ai&&ai.nds)tn.nds=ai.nds;
+    // Số đọc bằng luật (mẫu chặt) giữ nguyên; AI bổ sung phần còn lại và các lựa chọn
+    const base=tnParse(txt),NUM=["fee","h1","h2","h3","pairs","people","koN","courts","time","end","endBy","target","feeG","gtv"],keep={};for(const k of NUM)if(base[k]!=null)keep[k]=base[k];
+    tn={...base,...(ai||{}),...keep,guess:new Set(),ok:new Set()};if(ai&&ai.nds)tn.nds=ai.nds;
     if(base.wd&&tn.date===base.date&&tn.time&&tnAt(tn)<Date.now())tn.date+=7*864e5;delete tn.wd;
     tn=tnFill(tn);tnG=tnNextG(tn);tnGEdit=false;tnPg=tnG?"grp":"card";render();top();return true}
   if(act==="tnprev"){const X=schedById(b.dataset.id);if(!X)return true;tnFromPrev(X);tn=tnFill(tn);tnPg="card";render();top();return true}
