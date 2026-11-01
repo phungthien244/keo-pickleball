@@ -1,11 +1,12 @@
 // Tạo giải nhanh bằng AI: đọc câu tả giải (tiếng Việt, kiểu nói của người chơi) thành các mục của form tạo giải.
 //  - Có `cur` (giải đang soạn): chỉ trả về các mục người dùng muốn đổi.
-//  - Gemini (GEMINI_API_KEY, gói miễn phí Google AI Studio) trước, lỗi thì Groq (GROQ_API_KEY) nếu có.
+//  - Groq (GROQ_API_KEY) trước, lỗi thì Gemini (GEMINI_API_KEY). Gemini chặn máy chủ ở Hồng Kông nên chỉ là dự phòng.
 // Khoá để trong biến bí mật của Cloudflare Pages, không gửi ra trình duyệt. Chỉ nhận câu tả giải và cài đặt chung của CLB,
 // không nhận tên hay số điện thoại người chơi. Mỗi CLB tối đa 40 lượt mỗi ngày.
 const OK_HOST = /(^|\.)pikeco\.app$|^h5\.zdn\.vn$|\.pikeco\.pages\.dev$|^pikeco\.pages\.dev$|^localhost$/;
-const GM = ["gemini-2.5-flash", "gemini-flash-latest", "gemini-2.0-flash"];
-const GROQ = "llama-3.3-70b-versatile";
+// Máy chủ Cloudflare gần Việt Nam thường chạy ở Hồng Kông, nơi Gemini chặn: dùng Groq trước, Gemini sau
+const GM = ["gemini-flash-latest"];
+const GROQ = ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"];
 const LIMIT = 40;
 
 const SCHEMA = `Trả về MỘT đối tượng JSON, chỉ gồm các khoá dưới đây. Mục nào câu không nói rõ thì BỎ QUA khoá đó (không đoán, không để null).
@@ -70,14 +71,18 @@ async function gemini(key, p, dbg) {
   return null;
 }
 async function groq(key, p, dbg) {
-  try {
-    const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST", headers: { authorization: "Bearer " + key, "content-type": "application/json" },
-      body: JSON.stringify({ model: GROQ, temperature: 0, response_format: { type: "json_object" }, messages: [{ role: "user", content: p }] })
-    });
-    if (!r.ok) { dbg.push(`groq: ${r.status} ${(await r.text()).slice(0, 160)}`); return null; }
-    const j = await r.json(); return parseJ(j?.choices?.[0]?.message?.content);
-  } catch (e) { dbg.push(`groq: ${String(e).slice(0, 80)}`); return null }
+  for (const model of GROQ) {
+    try {
+      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST", headers: { authorization: "Bearer " + key, "content-type": "application/json" },
+        body: JSON.stringify({ model, temperature: 0, response_format: { type: "json_object" }, ...(/gpt-oss/.test(model) ? { reasoning_effort: "low" } : {}), messages: [{ role: "user", content: p }] })
+      });
+      if (!r.ok) { dbg.push(`${model}: ${r.status} ${(await r.text()).slice(0, 160)}`); continue; }
+      const j = await r.json(), o = parseJ(j?.choices?.[0]?.message?.content); if (o) return o;
+      dbg.push(`${model}: không đọc được JSON`);
+    } catch (e) { dbg.push(`${model}: ${String(e).slice(0, 80)}`) }
+  }
+  return null;
 }
 const cors = req => { const o = req.headers.get("origin") || ""; let ok = false; try { ok = OK_HOST.test(new URL(o).hostname) } catch (e) { }
   return ok ? { "access-control-allow-origin": o, "access-control-allow-methods": "POST", "access-control-allow-headers": "content-type", vary: "origin" } : {}; };
@@ -102,8 +107,8 @@ export async function onRequestPost(ctx) {
   ctx.waitUntil(cache.put(ck, new Response(String(n + 1), { headers: { "cache-control": "max-age=90000" } })));
   const p = prompt({ txt, cur: b.cur && typeof b.cur === "object" ? b.cur : null, ctx: b.ctx && typeof b.ctx === "object" ? b.ctx : {} });
   const dbg = [];
-  let t = gk ? await gemini(gk, p, dbg) : null, by = "gemini";
-  if (!t && qk) { t = await groq(qk, p, dbg); by = "groq"; }
+  let t = qk ? await groq(qk, p, dbg) : null, by = "groq";
+  if (!t && gk) { t = await gemini(gk, p, dbg); by = "gemini"; }
   if (!t || typeof t !== "object" || Array.isArray(t)) return out(req, { ok: false, e: "ai failed", d: dbg }, 502);
   return out(req, { ok: true, t, by });
 }
