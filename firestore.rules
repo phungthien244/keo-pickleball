@@ -16,6 +16,16 @@ service cloud.firestore {
         && request.auth.token.email_verified == true;
     }
 
+    // Thể thức người dùng hỏi mà app chưa có (Tạo nhanh): chỉ tên thể thức, CLB, ngày. Chủ app xem ở trang Quản trị
+    match /yeucau/{id} {
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['tt', 'cid', 'day', 'at'])
+        && request.resource.data.tt in ['loai', 'don', 'vua', 'nhanh2', 'swiss', 'doi', 'khac']
+        && request.resource.data.cid is string && request.resource.data.cid.size() <= 40
+        && request.resource.data.day is string && request.resource.data.day.size() == 10 && request.resource.data.at is int
+        && id == request.resource.data.day + '_' + request.resource.data.cid + '_' + request.resource.data.tt;
+      allow read: if isPA();
+    }
+
     // ===== Dữ liệu cũ (bản sao lưu) =====
     match /secret/{id} { allow read, write: if false; }
     match /editors/{uid} {

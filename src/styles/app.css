@@ -2930,3 +2930,30 @@ html.mxlock,html.mxlock body{overflow:hidden!important;overscroll-behavior:none}
 .tcrow{display:flex;align-items:center;gap:8px;padding:9px 0;border:0;border-top:1px solid #eef1f4;background:none;width:100%;text-align:left;min-height:0;font:inherit;color:inherit;text-transform:none;letter-spacing:normal}
 .tcrow span{width:84px;flex:none;font-size:12.5px;color:#5f6f7f}.tcrow b{flex:1;font-size:13.5px;min-width:0}.tcrow i{font-style:normal;color:#5f6f7f}
 .tcbar .tnsay{margin:0}.tcbar .tnsay button{min-height:46px}
+/* Trang đầu Tạo giải mới */
+.tghead{display:flex;justify-content:space-between;align-items:center;margin-top:2px}.tghead>span{font-size:11px;font-weight:800;letter-spacing:.08em;color:#534AB7}
+.tghead .lnk{font-size:12.5px;min-height:0;padding:4px 0;text-transform:none;letter-spacing:normal;border:0;background:none;color:#1f6fd1;font-weight:700}
+.tgt{display:block;font-size:18px;line-height:1.25;margin:4px 0 8px}
+.tntxt textarea{border:2px solid #534AB7}
+.tgor{display:flex;align-items:center;gap:8px;margin:14px 0 8px}.tgor i{flex:1;height:1px;background:#d5dce3}.tgor span{font-size:12px;font-weight:800;color:#5f6f7f}
+.tgfc{display:flex;gap:12px;align-items:center;width:100%;background:#fff;border:1px solid #e3e8ee;padding:12px;margin:0 0 8px;text-align:left;min-height:0;font:inherit;color:inherit;text-transform:none;letter-spacing:normal}
+.tgfc>i{font-style:normal;font-size:24px;width:32px;text-align:center;flex:none}.tgfc>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tgfc b{font-size:15px}.tgfc small{font-size:12.5px;color:#5f6f7f;line-height:1.4}.tgfc em{font-style:normal;font-size:11.5px;font-weight:700;color:#3C3489}.tgfc>span:last-child{color:#5f6f7f;font-size:18px}
+.tgfull{display:block;margin:6px auto 0;font-size:12.5px;text-transform:none;letter-spacing:normal;border:0;background:none;color:#1f6fd1;font-weight:700;min-height:0;padding:8px}
+.tgbox{background:#fff;border:1px solid #e3e8ee;padding:12px;display:flex;flex-direction:column;gap:2px;margin:8px 0}.tgbox>small{font-size:13px;line-height:1.6}
+.tgck{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #eef1f4;font-size:13.5px}
+.tgck i{font-style:normal;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;background:#f1f3f5;color:#9aa5b1;flex:none}
+.tgck b{flex:1;font-weight:500;color:#5f6f7f}.tgck span{font-size:12.5px;color:#b45309;text-align:right}
+.tgck.on i{background:#dcfce7;color:#166534}.tgck.on b{font-weight:700;color:#0c2b44}.tgck.on span{color:#166534}
+.tgread{background:#fff;border:1px solid #e3e8ee;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;margin:8px 0}
+.tgread>span{font-size:30px;color:#534AB7;animation:tgspin 1.6s linear infinite}.tgread>i{display:block;width:100%;height:6px;background:linear-gradient(90deg,#534AB7 0 40%,#eef1f4 40%);background-size:250% 100%;animation:tgbar 1.2s ease-in-out infinite}
+@keyframes tgspin{to{transform:rotate(360deg)}}@keyframes tgbar{from{background-position:100% 0}to{background-position:0 0}}
+.tgstep{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid #eef1f4}.tgstep i{font-style:normal;width:28px;height:28px;flex:none;border-radius:50%;background:#EEEDFE;color:#3C3489;font-weight:900;display:grid;place-items:center}
+.tgstep span{display:flex;flex-direction:column;gap:2px}.tgstep b{font-size:14.5px}.tgstep small{font-size:12.5px;color:#5f6f7f;line-height:1.45}
+/* Trò chuyện: đang gõ, hiện dần */
+.tctyping>div{display:flex;gap:4px;align-items:center;padding:12px 14px}.tctyping i{width:7px;height:7px;border-radius:50%;background:#9aa5b1;animation:tcdot 1s infinite ease-in-out}
+.tctyping i:nth-child(2){animation-delay:.15s}.tctyping i:nth-child(3){animation-delay:.3s}
+@keyframes tcdot{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+.tcnew{animation:tcin .28s ease-out both}@keyframes tcin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.tcnew,.tctyping i,.tgread>span,.tgread>i{animation:none}}
+.yctab{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}.yctab th,.yctab td{text-align:left;padding:7px 6px;border-top:1px solid var(--line)}.yctab th{font-size:12px;color:var(--muted)}

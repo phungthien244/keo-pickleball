@@ -32,11 +32,20 @@ const SCHEMA = `Trả về MỘT đối tượng JSON, chỉ gồm các khoá d�
 - nds: chỉ khi giải có từ 2 nội dung trở lên: [{name, dt, cap, max (số cặp), fee, koN}]
 Quy ước tiền: số trơn nhỏ (≤ 20) đi với giải thưởng là triệu ("nhất 2" = 2000); "500" là 500 nghìn. "lít"/"xị" = 100 nghìn ("8 lít" = 800, "2 lít" = 200).
 Quy ước khác: có nói số bảng hoặc chia bảng → fmt "bang". "nhất nhì (mỗi bảng) vào vòng trong" → lay 2; "chỉ nhất bảng đi tiếp" → lay 1. "không tranh hạng 3/không đánh tranh 3" → third false.
+Luôn có thêm khoá "loai" cho biết câu thuộc loại nào:
+- "tao": câu tả giải hoặc sửa giải (có ít nhất một khoá ở trên)
+- "hoi": hỏi nghĩa của luật hay thuật ngữ; kèm "hoi": một trong "cach2" (thắng cách 2), "toida" (điểm tối đa/điểm trần), "bo" (thắng 2/3, 3/5, BO3), "rally" (rally/truyền thống), "hatgiong" (hạt giống), "ko" (knockout, tứ kết, bán kết), "vongtron", "xoay", "hang3" (tranh hạng ba), "trongtai", "honhop" (đôi hỗn hợp/open), "cham" (chạm mấy điểm), "khac"
+- "chuaco": muốn thể thức app chưa có; kèm "tt": một trong "loai" (loại trực tiếp từ đầu, không chia bảng), "don" (đánh đơn), "vua" (vua sân / king of the court), "nhanh2" (nhánh thắng nhánh thua, thua 2 lần mới bị loại), "swiss" (hệ Thuỵ Sĩ), "doi" (đồng đội), "khac"
+- "ngoai": việc không phải tạo giải (đặt sân, in áo, quảng cáo, chuyện khác)
+- "vonghia": câu vô nghĩa, đùa, không hiểu được
 Mọi số phải là số JSON (không để trong ngoặc kép).`;
 
 const EX = [
-  ["Chủ nhật 7h, 16 cặp chia 4 bảng lấy 2, 200k, nhất 1 củ nhì 500, ck trước", { fmt: "bang", time: "07:00", pairs: 16, koN: 4, lay: 2, fee: 200, gton: true, gt: "hang", h1: 1000, h2: 500, pay: "req" }],
-  ["tối t7 giao lưu xoay cặp 24 người, ai thua góp, không giải", { fmt: "xoay", time: "19:00", people: 24, thu: "keo", gton: false }],
+  ["Chủ nhật 7h, 16 cặp chia 4 bảng lấy 2, 200k, nhất 1 củ nhì 500, ck trước", { loai: "tao", fmt: "bang", time: "07:00", pairs: 16, koN: 4, lay: 2, fee: 200, gton: true, gt: "hang", h1: 1000, h2: 500, pay: "req" }],
+  ["giải vua sân tối thứ 6 nhé", { loai: "chuaco", tt: "vua", time: "19:00" }],
+  ["bo3 là sao", { loai: "hoi", hoi: "bo" }],
+  ["thuê giúp tôi 2 trọng tài với in áo", { loai: "ngoai" }],
+  ["tối t7 giao lưu xoay cặp 24 người, ai thua góp, không giải", { loai: "tao", fmt: "xoay", time: "19:00", people: 24, thu: "keo", gton: false }],
   ["8 đôi nam 5.5 đánh vòng tròn, 2 xị một người, trả tại sân", { fmt: "giai", pairs: 8, dt: "MM", cap: 5.5, fee: 200, pay: "off" }],
   ["đôi nữ 12 cặp 3 bảng nhất nhì vào bán kết, không đánh tranh 3, nhất 8 lít nhì 4 lít", { fmt: "bang", dt: "FF", pairs: 12, koN: 3, lay: 2, third: false, gton: true, gt: "hang", h1: 800, h2: 400 }]
 ];
@@ -51,7 +60,7 @@ ${EX.map(([q, a]) => `Câu: ${q}\nJSON: ${JSON.stringify(a)}`).join("\n")}`;
   if (b.cur) return `${head}
 Giải đang soạn: ${JSON.stringify(b.cur)}
 Người dùng muốn sửa: "${b.txt}"
-Chỉ trả về các khoá cần đổi theo lời người dùng (số mới là giá trị cuối cùng, ví dụ "thêm 2 sân" khi đang 4 sân → courts 6).`;
+Chỉ trả về các khoá cần đổi theo lời người dùng (số mới là giá trị cuối cùng, ví dụ "thêm 2 sân" khi đang 4 sân → courts 6), cùng khoá "loai".`;
   return `${head}
 Câu: ${b.txt}
 JSON:`;
@@ -114,6 +123,7 @@ export async function onRequestPost(ctx) {
   if (!t && gk) { t = await gemini(gk, p, dbg); by = "gemini"; }
   if (!t || typeof t !== "object" || Array.isArray(t)) return out(req, { ok: false, e: "ai failed", d: dbg }, 502);
   for (const [k, v] of Object.entries(t)) if (typeof v === "string" && /^\d+(\.\d+)?$/.test(v) && !["time", "end", "endBy", "date", "name", "place"].includes(k)) t[k] = +v;
+  for (const k of ["loai", "tt", "hoi"]) if (t[k] != null) t[k] = String(t[k]).slice(0, 12);
   return out(req, { ok: true, t, by });
 }
 // Xem các model đang dùng được (chỉ từ trang pikeco): GET /api/tao-giai?models=1

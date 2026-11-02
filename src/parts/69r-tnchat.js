@@ -101,7 +101,7 @@ function tcPend(t){const nd=Q=>!!(Q.need&&Q.need(t)),A=TC_Q.filter(Q=>tcOn(t,Q)&
 const tcReq=t=>tcPend(t).filter(Q=>Q.need&&Q.need(t));
 // Bắt đầu trò chuyện từ bản nháp tn (sau khi đọc câu): mục nói trong câu (không phải ĐOÁN) coi như đã biết
 function tcStart(t,txt,said){t.said=new Set((said||[]).filter(k=>t[k]!=null&&t[k]!==""&&!t.guess.has(k)));t.ans=new Set();t.log=[];t.txt=txt||"";t.reAsk=null;t.capAsk=null;t.cust=new Set();
-  if(t.target)t.rG=tcR(+t.target,false,0,1);return t}
+  if(t.target)t.rG=tcR(+t.target,false,0,1);t.seenH=tcSeen(t);return t}
 function tcAnswer(t,k,v){const Q=TC_Q.find(x=>x.k===k);if(!Q)return;
   if(k==="fmt"&&v==="?"){t.log.push({a:"Giải thích giúp tôi"},{b:tcExplain(t)});return}
   const def=v==="__def",val=def?(Q.def?Q.def(t):Q.star?Q.star(t):null):v;if(val==null)return;
@@ -156,26 +156,132 @@ function tcSum(t){const E=tnEst(t);
     fx.push(["noend","Bỏ giờ phải xong",0]);
     h+=`<div class="tnfix"><span class="cap">Chạm một cách để sửa</span>${fx.map(([k,l,e])=>`<button data-act="tnfix" data-v="${k}"><b>${l}</b><span>${e?`xong ${tcHm(e)}${E.by&&e<=E.by?" ✓":""}`:""} ›</span></button>`).join("")}</div>`}
   return h}
-function tcPage(D){const t=tn,P=tcPend(t),cur=P[0],req=tcReq(t).length;
+/* ----- Gõ sai, hỏi luật, thể thức chưa có, số vô lý (canvas trang er) -----
+   Thứ tự: lọc trên máy (vô nghĩa, thể thức chưa có, hỏi luật) → AI (nếu còn lượt) → đọc bằng luật.
+   AI chỉ phân loại câu; câu trả lời do app viết sẵn. Sau mỗi câu trả lời luôn hỏi lại câu đang dở. */
+const TC_GL={
+  cach2:[/cach (biet )?2|cach hai|win by/,"<b>Cách 2</b>: tới 10–10 thì phải thắng cách 2 điểm, ví dụ 12–10, chứ không phải ai chạm 11 trước là thắng."],
+  toida:[/toi da|diem tran|tran diem/,"<b>Điểm tối đa</b>: khi phải thắng cách 2, trận có thể kéo dài. Tối đa 15 nghĩa là tới 14–14 thì ai được 15 trước là thắng, để trận không quá lâu."],
+  bo:[/\bbo ?[135]\b|2\/3|3\/5|thang 2 van|thang 3 van|best of/,"<b>Thắng 2/3 (BO3)</b>: đánh tối đa 3 ván, ai thắng 2 ván trước là thắng trận. <b>Thắng 3/5 (BO5)</b> tương tự, thường chỉ dùng cho chung kết vì lâu."],
+  rally:[/rally|truyen thong|tinh diem kieu/,"<b>Rally</b>: pha nào cũng tính điểm, trận nhanh và dễ đoán giờ. <b>Truyền thống</b>: chỉ bên giao bóng mới được điểm, trận lâu hơn khoảng 1,5 lần."],
+  hatgiong:[/hat giong|\bseed/,"<b>Hạt giống</b>: các cặp mạnh nhất được xếp mỗi cặp một bảng, để không gặp nhau ngay vòng bảng. Số hạt giống bằng số bảng."],
+  ko:[/knock ?out|\bko\b|danh loai|tu ket|ban ket|vong trong/,"<b>Đánh loại (knockout)</b>: sau vòng bảng, các cặp đứng đầu vào nhánh đấu, thua là dừng: tứ kết → bán kết → chung kết."],
+  vongtron:[/vong tron|round robin/,"<b>Vòng tròn</b>: cặp nào cũng gặp tất cả cặp còn lại một lần, xếp hạng theo số trận thắng. Hợp khi ít cặp (từ 10 cặp trở xuống)."],
+  xoay:[/xoay cap|giao luu/,"<b>Xoay cặp</b>: không cố định cặp, mỗi trận app tự ghép người cân trình. Hợp buổi giao lưu của CLB."],
+  hang3:[/hang (ba|3)|tranh ba/,"<b>Tranh hạng ba</b>: 2 cặp thua bán kết đánh thêm một trận để chọn hạng ba. Không đánh thì cả hai cùng đồng hạng ba."],
+  trongtai:[/trong tai|\bqr\b/,"<b>Trọng tài (QR)</b>: mỗi sân một người quét mã QR của sân, nhập điểm từng pha, loa tự gọi điểm. Không có trọng tài thì BTC nhập tỉ số trên app."],
+  honhop:[/hon hop|\bopen\b/,"<b>Đôi hỗn hợp</b>: ai đánh với ai cũng được, nam nam, nữ nữ hay nam nữ."],
+  cham:[/cham (\d+|la thang|bao nhieu)|cham la gi/,"<b>Chạm 11</b>: bên nào được 11 điểm trước là thắng ván. Chạm 15, 21 thì trận dài hơn."]};
+const tcAskQ=n=>/la gi|la sao|nghia la|the nao|sao vay|giai thich|khac gi|\?|la cai gi|hieu sao/.test(n);
+// Thể thức app chưa có: k (ghi lại), dò chữ, tên, gần nhất
+const TC_NO=[
+  ["loai",n=>/loai truc tiep|thua (la )?(ve|nghi|out)|single elim/.test(n)&&!/bang/.test(n),"loại trực tiếp riêng"],
+  ["don",n=>/\bdon (nam|nu)\b|danh don|\bsingles?\b|\b1 vs 1\b|1 ?- ?1\b/.test(n),"đánh đơn"],
+  ["vua",n=>/vua san|king/.test(n),"vua sân"],
+  ["nhanh2",n=>/nhanh (thang|thua)|double elim|thua 2 (lan|tran) (moi|thi)/.test(n),"nhánh thắng nhánh thua"],
+  ["swiss",n=>/thuy si|swiss/.test(n),"hệ Thuỵ Sĩ"],
+  ["doi",n=>/dong doi|\bteam\b|doi tuyen|giai doi khang/.test(n),"đánh đồng đội"]];
+const TC_NOL={loai:"loại trực tiếp riêng",don:"đánh đơn",vua:"vua sân",nhanh2:"nhánh thắng nhánh thua",swiss:"hệ Thuỵ Sĩ",doi:"đánh đồng đội",khac:"thể thức này"};
+// Câu trả lời cho thể thức chưa có: gợi ý cách gần nhất bằng số của giải này
+function tcNoAsk(t,k){const n=+t.pairs||16,N=Math.max(2,Math.round(n/3)),L=TC_NOL[k]||TC_NOL.khac;
+  if(k==="don")return {q:`Nội dung <b>đánh đơn</b> app đang làm, <b>sắp có</b>. Hiện app chạy các nội dung đánh đôi.`,o:[["MM","Đôi nam"],["FF","Đôi nữ"],["mix","Đôi nam nữ"],["free","Đôi hỗn hợp"]].map(([v,l])=>({l,p:{dt:v,fmt:t.fmt&&t.fmt!=="xoay"?t.fmt:"bang"},a:"dt"}))};
+  const near=k==="vua"?["xoay","Xoay cặp","mỗi trận đổi bạn, app ghép cân trình, ai cũng được đánh liên tục."]:k==="swiss"&&n<=10?["giai","Vòng tròn","cặp nào cũng gặp nhau, xếp hạng theo số trận thắng."]
+    :["bang","Chia bảng + knockout",k==="loai"?`với bảng nhỏ: ${N} bảng ${Math.floor(n/N)}–${Math.ceil(n/N)} cặp, mỗi cặp đánh 2–3 trận rồi vào loại. Không ai phải về sau 1 trận.`:"chia bảng đánh vòng tròn, các cặp đứng đầu vào nhánh đấu loại."];
+  return {q:`App chưa có <b>${L}</b>.<br><br>Gần nhất là <b>${near[1]}</b>: ${near[2]}`,o:[{l:`Dùng ${near[1].toLowerCase()}`,p:{fmt:near[0],...(near[0]==="bang"&&k==="loai"?{koN:N,lay:2}:{})},a:"fmt",star:1},{l:"Chọn thể thức khác",act:"tcre",v:"fmt"}]}}
+// Ghi lại thể thức người dùng muốn có (chỉ tên thể thức, CLB, ngày): chủ app xem ở trang Quản trị
+function tcWant(k){if(!k||!CID)return;if(!TC_NOL[k])k="khac";const d=ymdIso(Date.now());
+  try{FB.setDoc(FB.doc(FB.fs,`yeucau/${d}_${CID}_${k}`),{tt:k,cid:CID,day:d,at:Date.now()}).catch(()=>{})}catch(e){}}
+// Từ chối tên tục, xúc phạm (tên giải hiện công khai)
+const TC_BAD=/(^|[^\p{L}])(địt|đụ|đéo|lồn|cặc|buồi|đĩ|đmm?|dmm?|đcm|dcm|vcl|vkl|clgt|cl|cc|óc chó|chó đẻ|mẹ mày|đm mày|fuck|shit|bitch)(?![\p{L}])/iu;
+const tcBadName=x=>TC_BAD.test(String(x||"").toLowerCase());
+// Câu không có số, không có từ khoá nào → vô nghĩa, không gọi AI
+const TC_KW=/san|cap|bang|gio|nguoi|phi|thuong|giai|nhat|nhi|ngay|thu|chu nhat|\bcn\b|mai|chuyen khoan|\bck\b|doi|nam|nu|vong|xoay|cham|cach|toi da|tien|k\b|trieu|lit|xi|canh|clb|thanh vien|khach|tran|danh|loai|ket|ten|dang ky|trong tai|ghep|sang|chieu|toi|tuan|bo\d|hang/;
+const tcJunk=n=>!/\d/.test(n)&&!TC_KW.test(n);
+// Số vô lý, câu mâu thuẫn: hỏi lại bằng nút, không tự sửa
+function tcOdd(t){const d0=tnDay0(Date.now());
+  if(t.perG&&t.koN&&t.pairs&&t.koN*t.perG!==t.pairs){const p=t.pairs,N=t.koN,g=t.perG,b=tcBestN(p);delete t.perG;
+    return {q:`${p} cặp mà ${N} bảng × ${g} cặp chỉ có ${N*g} cặp. Bạn muốn sao?`,o:[{l:`${p} cặp, ${b} bảng`,p:{koN:b},star:1},...(b!==N?[{l:`${p} cặp, ${N} bảng ${Math.ceil(p/N)} cặp`,p:{koN:N}}]:[]),{l:`${N*g} cặp, ${N} bảng`,p:{pairs:N*g}}]}}
+  delete t.perG;
+  const big=(k,x,mx,u,f)=>({q:`<b>${x} ${u}</b> ${f} Bạn chắc chứ?`,o:[{l:`Ý mình là ${Math.max(2,Math.round(x/10))} ${u}`,p:{[k]:Math.max(2,Math.round(x/10))},star:1},{l:x>mx?`${mx} ${u} (tối đa)`:`Đúng ${x} ${u}`,p:{[k]:Math.min(x,mx)}}]});
+  if(t.pairs>40&&!t.ok40){t.ok40=1;return big("pairs",t.pairs,64,"cặp",`là rất nhiều${t.courts?` cho ${t.courts} sân`:""}, đánh cả ngày chưa chắc xong.`)}
+  if(t.people>80&&!t.ok80){t.ok80=1;return big("people",t.people,120,"người","là rất đông cho một buổi.")}
+  if(t.courts>16&&!t.ok16){t.ok16=1;return big("courts",t.courts,30,"sân","là rất nhiều sân.")}
+  if(+t.fee>2000&&!t.okFee){t.okFee=1;const a=Math.round(+t.fee/100);return {q:`Lệ phí <b>${tnK(+t.fee)}</b> mỗi người, bạn chắc chứ?`,o:[{l:`Ý mình là ${fmtK(a)}`,p:{fee:a},star:1},{l:`Đúng ${tnK(+t.fee)}`,p:{}}]}}
+  if(t.date!=null&&t.date<d0){const n=d0+((new Date(t.date).getDay()-new Date(d0).getDay()+7)%7||7)*864e5;t.date=null;
+    return {q:`Ngày đó đã qua rồi. Bạn muốn đánh ngày nào?`,o:[{l:`${tnDow(n)} ${tnDm(n)} (gần nhất)`,p:{date:n},star:1},{l:`${tnDow(n+7*864e5)} ${tnDm(n+7*864e5)}`,p:{date:n+7*864e5}}]}}
+  if(t.name&&tcBadName(t.name)){t.name="";return {q:`Tên này không dùng được vì tên giải hiện công khai cho mọi người. Mình đặt tạm <b>${esc(tnAutoName(t))}</b> nhé?`,o:[{l:"Dùng tên này",p:{},star:1},{l:"Gõ tên khác",act:"tned",v:"name"}]}}
+  return null}
+// Đọc câu đầu (sau Soạn giải): thể thức chưa có thì hỏi trước, rồi số vô lý
+function tcFirst(t,txt){const n=tnNorm(txt),no=TC_NO.find(([,f])=>f(n));
+  if(no){tcWant(no[0]);if(no[0]!=="don"){t.fmt=null;t.said.delete("fmt")}t.ask=tcNoAsk(t,no[0]);return}
+  if(tnAIM.loai==="chuaco"&&tnAIM.tt){tcWant(tnAIM.tt);t.fmt=null;t.said.delete("fmt");t.ask=tcNoAsk(t,tnAIM.tt);return}
+  t.ask=tcOdd(t)}
+// Người dùng gõ trong khung trò chuyện
+async function tcSay(s){const t=tn,n=tnNorm(s),cur=t.ask?null:tcPend(t)[0];delete drafts["tn-say"];
+  // Câu đang hỏi giữ lại trong khung trò chuyện, trả lời xong thì hỏi lại
+  if(t.ask)t.log.push({b:t.ask.q});else if(cur)t.log.push({q:cur.q(t)});t.log.push({a:s});t.ask=null;
+  const miss=()=>{t.miss=(t.miss||0)+1;t.log.push({b:t.miss>=2?"Có vẻ gõ hơi khó. Bấm một nút là nhanh nhất, hoặc chuyển sang form đầy đủ để tự điền.":"Mình chưa hiểu 😅 Bạn bấm nút bên dưới, hoặc gõ kiểu <b>“4 sân”</b>, <b>“250k”</b>, <b>“nhất 1 triệu”</b>."})};
+  const merge=o=>{const k=Object.keys(o).filter(x=>x!=="wd");if(!k.length)return false;tnMerge(o);tcTyped(t,k);t.miss=0;t.ask=tcOdd(t);return true};
+  const rules=()=>{const p=tnParse(s);delete p.wd;const k=Object.keys(p).filter(x=>!["date","time"].includes(x)||/ngay|gio|\dh|thu|chu nhat|mai|\//.test(n)),o={};for(const x of k)o[x]=p[x];return o};
+  // 1. Thể thức chưa có
+  const no=TC_NO.find(([,f])=>f(n));
+  if(no){tcWant(no[0]);const o=rules();delete o.fmt;if(Object.keys(o).length){tnMerge(o);tcTyped(t,Object.keys(o))}t.miss=0;t.ask=tcNoAsk(t,no[0]);return}
+  // 2. Hỏi luật
+  if(tcAskQ(n)){const g=Object.values(TC_GL).find(([re])=>re.test(n));if(g){t.miss=0;t.log.push({b:g[1]});return}}
+  // 3. Vô nghĩa: không gọi AI
+  if(tcJunk(n)){miss();return}
+  // 4. AI (còn lượt), rồi đọc bằng luật
+  tnBusy=true;tcWait=Infinity;render();tcDown();const a=await tnAI(s,tnCur(t));tnBusy=false;const M=tnAIM;
+  if(M.lim&&!t.noAI){t.noAI=1;t.log.push({b:"Hôm nay CLB đã dùng hết lượt AI. App vẫn đọc được số, ngày giờ, tiền; phần còn lại bạn bấm nút nhé."})}
+  if(M.loai==="chuaco"&&M.tt){tcWant(M.tt);if(a){delete a.fmt;if(Object.keys(a).length){tnMerge(a);tcTyped(t,Object.keys(a))}}t.miss=0;t.ask=tcNoAsk(t,M.tt);return}
+  if(M.loai==="hoi"){t.miss=0;t.log.push({b:(TC_GL[M.hoi]||[])[1]||"Câu này mình chưa giải thích được. Mình chỉ rành các luật dùng khi tạo giải: cách 2, điểm tối đa, thắng 2/3, hạt giống, tranh hạng ba…"});return}
+  if(M.loai==="ngoai"){t.miss=0;t.log.push({b:"Việc này app chưa làm, bạn tự lo giúp mình nhé. Mình tiếp tục tạo giải:"});return}
+  if(a&&merge(a))return;
+  if(merge(rules()))return;
+  miss()}
+// Chọn nút của câu hỏi phụ (thể thức chưa có, số vô lý, mâu thuẫn, tên)
+function tcAskAns(t,i){const A=t.ask,o=A&&A.o[+i];if(!o)return;t.log.push({q:A.q.replace(/<br>/g," ").replace(/<[^>]+>/g,""),a:o.l});t.ask=null;
+  for(const [k,v] of Object.entries(o.p||{})){t[k]=v;t.guess.delete(k)}
+  if(o.p&&o.p.fmt){t.ans.add("fmt");if(o.p.koN)t.ans.add("koN");if(o.p.fmt!=="xoay"){t.thu="phi";if(t.third==null)t.third=true;if(!t.pairReg)t.pairReg="pair"}}
+  if(o.a)t.ans.add(o.a);if(o.p&&"dt" in o.p)t.ans.add("dt");if(o.p&&"date" in o.p)t.ans.add("date");if(o.p&&("pairs" in o.p||"koN" in o.p))t.ans.add("koN");
+  t.ask=tcOdd(t)}
+
+/* ----- Giao diện: hiệu ứng đang gõ -----
+   Sau mỗi câu trả lời, lời app hiện sau một nhịp ngắn (chấm "đang gõ") tuỳ độ dài, rồi hiện dần. Test thì không chờ. */
+let tcWait=0,tcTm=null;
+function tcParts(t){const P=[],cur=t.ask?null:tcPend(t)[0],req=tcReq(t).length,me=h=>P.push({me:1,h:tcMe(h)}),bot=(h,ex)=>P.push({h:tcBot(h,ex),n:(h+(ex||"")).replace(/<[^>]+>/g,"").length});
+  if(t.from)bot(`Mình lấy lại cài đặt của <b>${esc(t.fromName||"")}</b>, ngày chuyển sang tuần gần nhất.`);
+  else if(t.pick){me(esc(t.pick));bot("Được. Mình hỏi vài câu để soạn giải nhé, câu nào chưa biết thì bấm “Để app chọn”.")}
+  else{me(esc(t.txt));const s=t.seenH;bot(s?"Mình đã hiểu:":"Mình chưa đọc được nhiều từ câu này, mình hỏi từng mục nhé.",s);
+    if(cur||t.log.length||t.ask)bot(`Còn vài câu nữa cho giải chạy trơn tru.${req?"":" Câu nào bỏ qua thì app chọn theo cách phổ biến."}`)}
+  for(const x of t.log){if(x.q)bot(`<b>${esc(x.q)}</b>`);if(x.a)me(esc(x.a));if(x.b)bot(x.b)}
+  if(t.ask){const A=t.ask;bot(A.q);P.push({h:`<div class="tcq">${A.o.map((o,i)=>`<button class="tcbtn${o.star?" star":""}" data-act="${o.act||"tcx"}" data-v="${esc(o.act?o.v:String(i))}">${esc(o.l)}${o.star?" ★":""}</button>`).join("")}${(t.miss||0)>=2?`<button class="lnk tcdef" data-act="tnfull">Tạo bằng form đầy đủ ›</button>`:""}</div>`})}
+  else if(cur){const st=cur.star?cur.star(t):null,nt=cur.note?cur.note(t):"",canDef=cur.def||st!=null;
+    bot(`<b>${esc(cur.q(t))}</b>`,nt?`<small>${esc(nt)}</small>`:"");
+    P.push({h:`<div class="tcq">${cur.o(t).map(([v,l])=>`<button class="tcbtn${String(v)===String(st)?" star":""}" data-act="tca" data-k="${cur.k}" data-v="${esc(String(v))}">${esc(l)}${String(v)===String(st)?" ★":""}</button>`).join("")}${canDef?`<button class="lnk tcdef" data-act="tca" data-k="${cur.k}" data-v="__def">Để app chọn</button>`:""}${req?"":`<button class="lnk tcdef" data-act="tcskip">Bỏ qua các câu còn lại</button>`}${(t.miss||0)>=2?`<button class="lnk tcdef" data-act="tnfull">Tạo bằng form đầy đủ ›</button>`:""}</div>`})}
+  else{bot("Xong rồi! Bạn kiểm tra lại nhé. Bấm dòng nào thì mình hỏi lại câu đó.",tcSum(t));
+    const E=tnEst(t);P.push({h:`<div class="tcq end">${E&&E.late?`<button class="btn-line" data-act="tnmk" data-v="late">Tạo giải dù không kịp</button>`:`<button class="ball go" data-act="tnmk">✓ Tạo giải</button>`}</div>`})}
+  return P}
+// Lời app mới (sau câu của người dùng) chờ một nhịp rồi mới hiện
+function tcBeat(){const P=tcParts(tn);let i=P.length;while(i>0&&!P[i-1].me)i--;const n=P.slice(i).reduce((a,x)=>a+(x.n||0),0);
+  const ms=typeof window!=="undefined"&&window.__PBTEST?0:Math.min(1500,500+n*9);clearTimeout(tcTm);
+  if(!ms){tcWait=0;return}tcWait=Date.now()+ms;tcTm=setTimeout(()=>{tcWait=0;render();tcDown()},ms)}
+function tcPage(D){const t=tn,P=tcParts(t),wait=tcWait>Date.now();
   mxDr({t:"Tạo nhanh",back:"tnback",sub:t.from?"Như giải lần trước":"Trò chuyện với AI tạo giải"});
-  let h="";
-  h+=`<div class="tcchat">`;
-  if(t.from)h+=tcBot(`Mình lấy lại cài đặt của <b>${esc(t.fromName||"")}</b>, ngày chuyển sang tuần gần nhất.`);
-  else{h+=tcMe(esc(t.txt));const s=tcSeen(t);h+=s?tcBot("Mình đã hiểu:",s):tcBot("Mình chưa đọc được nhiều từ câu này, mình hỏi từng mục nhé.")}
-  if(cur&&!t.log.length&&!t.from)h+=tcBot(`Còn vài câu nữa cho giải chạy trơn tru.${req?"":" Câu nào bỏ qua thì app chọn theo cách phổ biến."}`);
-  for(const x of t.log){if(x.q)h+=tcBot(`<b>${esc(x.q)}</b>`);if(x.a)h+=tcMe(esc(x.a));if(x.b)h+=tcBot(x.b)}
-  if(cur){const st=cur.star?cur.star(t):null,nt=cur.note?cur.note(t):"",canDef=cur.def||st!=null;
-    h+=tcBot(`<b>${esc(cur.q(t))}</b>`,nt?`<small>${esc(nt)}</small>`:"");
-    h+=`<div class="tcq">${cur.o(t).map(([v,l])=>`<button class="tcbtn${String(v)===String(st)?" star":""}" data-act="tca" data-k="${cur.k}" data-v="${esc(String(v))}">${esc(l)}${String(v)===String(st)?" ★":""}</button>`).join("")}${canDef&&!(cur.need&&cur.need(t)&&!cur.def&&st==null)?`<button class="lnk tcdef" data-act="tca" data-k="${cur.k}" data-v="__def">Để app chọn</button>`:""}${req?"":`<button class="lnk tcdef" data-act="tcskip">Bỏ qua các câu còn lại</button>`}</div>`}
-  else{h+=tcBot("Xong rồi! Bạn kiểm tra lại nhé. Bấm dòng nào thì mình hỏi lại câu đó.",tcSum(t));
-    const E=tnEst(t);h+=`<div class="tcq end">${E&&E.late?`<button class="btn-line" data-act="tnmk" data-v="late">Tạo giải dù không kịp</button>`:`<button class="ball go" data-act="tnmk">✓ Tạo giải</button>`}</div>`}
+  let L=P;if(wait){let i=P.length;while(i>0&&!P[i-1].me)i--;L=P.slice(0,i)}
+  const seen=t.seenN||0;
+  let h=`<div class="tcchat">${L.map((x,i)=>i>=seen&&!x.me?x.h.replace(/^<div class="(tcb|tcq)([^"]*)"/,`<div class="$1$2 tcnew" style="animation-delay:${Math.min(4,i-seen)*110}ms"`):x.h).join("")}${wait?`<div class="tcb tctyping"><span class="tcav" aria-hidden="true">AI</span><div aria-label="AI đang trả lời"><i></i><i></i><i></i></div></div>`:""}`;
+  if(!wait)t.seenN=P.length;
   if(errs.xf)h+=`<p class="err">${esc(errs.xf)}</p>`;
-  h+=`</div><div class="hqcta tcbar"><div class="tnsay"><input id="tn-say" data-draft="tn-say" maxlength="200" placeholder="Hoặc gõ câu trả lời, yêu cầu khác…" value="${esc(val("tn-say",""))}"><button class="ball go" data-act="tnsay" aria-label="Gửi"${tnBusy?" disabled":""}>${tnBusy?"…":"Gửi"}</button></div></div>`;
+  h+=`</div><div class="hqcta tcbar"><div class="tnsay"><input id="tn-say" data-draft="tn-say" maxlength="200" placeholder="Hoặc gõ câu trả lời, yêu cầu khác…" value="${esc(val("tn-say",""))}"><button class="ball go" data-act="tnsay" aria-label="Gửi"${tnBusy||wait?" disabled":""}>Gửi</button></div></div>`;
   return h+tnEdSheet()}
 // Cuộn xuống cuối khung chat sau khi trả lời
 const tcDown=()=>{try{requestAnimationFrame(()=>{try{scrollTo({top:document.body.scrollHeight})}catch(e){}})}catch(e){}};
+const tcGo=()=>{tcBeat();render();tcDown()};
 async function tcAct(act,b){if(!tn||!tn.ans)return false;
-  if(act==="tca"){tcAnswer(tn,b.dataset.k,b.dataset.v);render();tcDown();return true}
-  if(act==="tcskip"){tcSkipAll(tn);render();tcDown();return true}
-  if(act==="tcre"){tcRe(tn,b.dataset.v);render();tcDown();return true}
+  if(tcWait>Date.now())return true;
+  if(act==="tca"){tcAnswer(tn,b.dataset.k,b.dataset.v);tn.ask=tcOdd(tn);tcGo();return true}
+  if(act==="tcx"){tcAskAns(tn,b.dataset.v);tcGo();return true}
+  if(act==="tcskip"){tcSkipAll(tn);tcGo();return true}
+  if(act==="tcre"){tn.ask=null;tcRe(tn,b.dataset.v);tcGo();return true}
   return false}

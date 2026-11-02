@@ -12,15 +12,15 @@ const base = (extra = {}) => ({
 const ZU = { uid: "zalo_9", isAnonymous: false, displayName: "Zalo" };
 const boot = async data => { const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", search: "?clb=q7", user: ZU, data }); globalThis.window.ZMINI = 1; await e.boot(); await e.until(() => e.V().includes('data-act="mxsheet"')); return e; };
 const sched = e => [...e.store.entries()].filter(([k]) => /^clubs\/q7\/sched\/[^/]+$/.test(k)).map(([, v]) => v);
-const open = async e => { await e.click("xnew"); await e.until(() => e.T().includes("Tạo nhanh")); await e.click("tnpg", { v: "txt" }); await e.until(() => e.T().includes("Chạm để dùng câu mẫu")); };
+const open = async e => { await e.click("xnew"); await e.until(() => e.T().includes("Tả giải bằng một câu")); expect(e.T()).toContain("HOẶC CHỌN THỂ THỨC"); };
 const day0 = () => new Date().setHours(0, 0, 0, 0);
 
 test("câu đủ mọi mục (đọc bằng luật khi không có AI) → trò chuyện chỉ còn câu có sẵn cách phổ biến → bỏ qua hết → tạo giải đúng luật từng vòng", async () => {
   const e = await boot(base());
   await open(e);
   e.input("tn-txt", "Chủ nhật này 7h đến 11h30, 16 cặp đôi nam nữ, chia 4 bảng lấy 2 đánh loại trực tiếp, 4 sân, 200k/người, chuyển khoản trước, nhất 1 triệu nhì 500 ba 200k, thành viên clb");
-  await e.until(() => e.T().includes("App đọc nhanh được"));
-  expect(e.T()).toContain("nhất 1 triệu"); expect(e.T()).toContain("chuyển khoản trước");
+  await e.until(() => e.T().includes("App đã nhận ra · 7/7"));
+  expect(e.T()).toContain("Nhất 1 triệu · Nhì 500k"); expect(e.T()).toContain("chuyển khoản trước"); expect(e.T()).not.toContain("HOẶC CHỌN THỂ THỨC");
   await e.click("tngo"); await e.until(() => e.T().includes("Mình đã hiểu"));
   // Mục đã nói không hỏi lại; câu đầu tiên là luật điểm vòng bảng, có Bỏ qua hết
   expect(e.T()).toContain("Vòng bảng mỗi trận đánh thế nào?"); expect(e.V()).toContain('data-act="tcskip"');
@@ -109,4 +109,34 @@ test("như giải lần trước: dùng lại cả tiền và giải thưởng, 
   await e.click("tnmk"); await e.until(() => sched(e).length === 2);
   const X = sched(e).find(x => x.at > Date.now());
   expect(X).toMatchObject({ fmt: "xoay", courts: 3, max: 20, place: "Sân A", thu: "keo", gton: true, gt: "codinh", gtv: 300 });
+});
+
+test("trang đầu: chạm thể thức (không gõ) → trò chuyện hỏi từ số cặp", async () => {
+  const e = await boot(base());
+  await open(e);
+  await e.click("tnfmt", { v: "giai" }); await e.until(() => e.T().includes("Bao nhiêu cặp?"));
+  expect(e.T()).toContain("Vòng tròn theo cặp"); expect(e.T()).not.toContain("Giải đánh theo thể thức nào?");
+  await e.click("tca", { k: "n", v: "6" }); await e.until(() => e.T().includes("Đánh ngày nào?"));
+});
+
+test("gõ sai: vô nghĩa (2 lần thì có form đầy đủ), hỏi luật, thể thức chưa có (ghi lại), số vô lý, mâu thuẫn, tên tục", async () => {
+  const e = await boot(base());
+  await open(e);
+  e.input("tn-txt", "16 cặp chia 2 bảng mỗi bảng 3 cặp, CN 7h, 4 sân, 200k, ck trước, không giải, tên \"địt mẹ cup\"");
+  await e.click("tngo"); await e.until(() => e.T().includes("Bạn muốn sao?"));
+  expect(e.T()).toContain("16 cặp mà 2 bảng × 3 cặp chỉ có 6 cặp");
+  await e.click("tcx", { v: "0" }); await e.until(() => e.T().includes("Tên này không dùng được"));
+  await e.click("tcx", { v: "0" });
+  const say = async t => { e.input("tn-say", t); await e.click("tnsay"); };
+  await say("haha"); await e.until(() => e.T().includes("Mình chưa hiểu"));
+  expect(e.V()).not.toContain('data-act="tnfull"');
+  await say("ê ê"); await e.until(() => e.T().includes("Có vẻ gõ hơi khó")); expect(e.V()).toContain('data-act="tnfull"');
+  await say("cách 2 là gì vậy"); await e.until(() => e.T().includes("phải thắng cách 2 điểm"));
+  await say("thôi đánh loại trực tiếp luôn, thua là về"); await e.until(() => e.T().includes("App chưa có loại trực tiếp riêng"));
+  await e.until(() => e.store.has(`yeucau/${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}_q7_loai`));
+  await e.click("tcx", { v: "0" }); await e.until(() => !e.T().includes("Chọn thể thức khác"));
+  await say("500 cặp"); await e.until(() => e.T().includes("Bạn chắc chứ?"));
+  await e.click("tcx", { v: "0" });
+  await e.click("tcskip"); await e.until(() => e.T().includes("Xong rồi!"));
+  expect(e.T()).toContain("Số cặp 50 cặp"); expect(e.T()).toContain("Tên giải Giải đôi");
 });

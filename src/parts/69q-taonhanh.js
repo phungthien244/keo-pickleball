@@ -54,6 +54,7 @@ function tnParse(txt){
   {const m=s.match(/\b(\d{1,2})\s*(?:h|gio|:)\s*(\d{2})?(?!\d)/);if(m&&+m[1]<24){let h=+m[1];const around=s.slice(Math.max(0,m.index-12),m.index+m[0].length+12);if(h<12&&/chieu|toi/.test(around))h+=12;o.time=`${String(h).padStart(2,"0")}:${String(+(m[2]||0)).padStart(2,"0")}`}}
   {const m=s.match(/(\d+)\s*san\b/);if(m)o.courts=+m[1]}
   {const m=s.match(/cham\s*(\d+)/);if(m)o.target=+m[1]}
+  {const m=s.match(/moi bang\s*(?:co\s*)?(\d+)\s*(?:cap|doi)\b/);if(m){o.perG=+m[1];s=s.replace(m[0]," ")}}
   if(!o.nds){const m=s.match(/(\d+)\s*cap\b/);if(m)o.pairs=+m[1]}
   {const m=s.match(/(\d+)\s*(?:nguoi|vdv|van dong vien)\b/);if(m)o.people=+m[1]}
   {const m=s.match(/(\d+)\s*bang\b/);if(m)o.koN=+m[1]}
@@ -145,11 +146,14 @@ function tnCtx(){const L=tnLast(),last=L[0]||{},n=new Date();
   return {today:ymdIso(n),dow:["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"][n.getDay()],now:`${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`,
     club:CLUB?.name||"",last:last.fmt?{fmt:last.fmt==="giai"?(last.ko?"bang":"giai"):"xoay",courts:+last.courts||0,place:last.place||"",fee:last.thu==="phi"?+last.phi||0:+last.fee||0,time:last.at?hm(last.at):""}:null}}
 const tnCur=t=>{const o={};for(const k of TN_KEYS)if(t[k]!=null&&t[k]!=="")o[k]=k==="date"?ymdIso(t[k]):t[k];return o};
-async function tnAI(txt,cur){
+// tnAIM: lần gọi gần nhất {loai: tao|hoi|chuaco|ngoai|vonghia, tt: thể thức chưa có, hoi: thuật ngữ, lim: hết lượt}
+let tnAIM={};
+async function tnAI(txt,cur){tnAIM={};
   if(typeof fetch!=="function"||typeof window==="undefined"||window.__PBTEST&&!window.__PBAI)return null;
   const ab=typeof AbortController!=="undefined"?new AbortController():null,tm=setTimeout(()=>ab&&ab.abort(),9000);
   try{const r=await fetch(API+"/api/tao-giai",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({cid:CID,txt:String(txt).slice(0,400),cur:cur||null,ctx:tnCtx()}),...(ab?{signal:ab.signal}:{})});
-    clearTimeout(tm);if(!r.ok)return null;const j=await r.json();return j&&j.ok?tnClean(j.t):null}
+    clearTimeout(tm);if(r.status===429){tnAIM={lim:1};return null}if(!r.ok)return null;const j=await r.json();if(!j||!j.ok)return null;
+    const m=j.t||{};tnAIM={loai:String(m.loai||""),tt:String(m.tt||""),hoi:String(m.hoi||"")};return tnClean(m)}
   catch(e){clearTimeout(tm);return null}
 }
 
@@ -224,27 +228,40 @@ function tnEdSheet(){
   if(tnEd!=="name")return "";
   return `<div class="mxdim" data-act="tnedx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="Tên giải"><span class="grab"></span><b class="mxh">Tên giải</b>${tnIn("name","Tên giải · tối đa 30 ký tự",tnName(tn),'maxlength="30"')}<button class="ball go wide" data-act="tnedok">✓ Xong</button></div>`;
 }
+// Trang đầu Tạo giải mới (canvas trang tg): ô tả giải bằng AI + các thể thức đang có + như giải lần trước + form đầy đủ
+const TN_FC=[["bang","🏆","Chia bảng + knockout","Chia bảng đánh vòng tròn, cặp đứng đầu vào đánh loại tới chung kết","Hợp 8–32 cặp · có giải thưởng"],
+  ["giai","🔁","Vòng tròn theo cặp","Cặp nào cũng gặp nhau một lần, xếp hạng theo số trận thắng","Hợp 4–10 cặp"],
+  ["xoay","🔀","Giao lưu xoay cặp","Mỗi trận đổi bạn đánh, app tự ghép cân trình","Hợp buổi tối CLB · không cần đăng ký cặp"]];
+// 7 mục app nhận ra khi đang gõ: [tên, có chưa, chữ]
+function tnCheck(o){const g=k=>o.guess.has(k),at=tnAt(o);
+  return [["Thể thức",!!o.fmt,o.fmt?TN_FMT[o.fmt]+(o.fmt==="bang"&&o.koN&&!g("koN")?` · ${o.koN} bảng`:""):"nói “chia 4 bảng”, “vòng tròn” hoặc “xoay cặp”"],
+    [o.fmt==="xoay"?"Số người":"Số cặp",!!(o.nds||o.pairs||o.people),o.nds?o.nds.map(n=>`${n.name} ${n.max} cặp`).join(" · "):o.pairs?`${o.pairs} cặp`:o.people?`${o.people} người`:"ví dụ: 16 cặp"],
+    ["Ngày giờ",o.date!=null&&!!o.time,o.date!=null&&o.time?`${tnDow(at)} ${tnDm(at)} · ${o.time}`:o.date!=null?`${tnDow(o.date)} ${tnDm(o.date)} · thiếu giờ`:o.time?`${o.time} · thiếu ngày`:"ví dụ: CN 7h"],
+    ["Sân",!!o.courts,o.courts?`${o.courts} sân${g("courts")?" · theo giải trước":""}`:"ví dụ: 4 sân"],
+    ["Lệ phí",o.nds||o.fee!=null&&o.fee!==""&&!g("fee"),o.nds?"theo từng nội dung":o.fee!=null&&o.fee!==""&&!g("fee")?(+o.fee?`${fmtK(+o.fee)}/người`:"Miễn phí"):"ví dụ: 200k/người"],
+    ["Chuyển khoản",!!o.pay&&!g("pay"),o.pay&&!g("pay")?{off:"trả tại sân",opt:"tuỳ chọn",req:"chuyển khoản trước"}[o.pay]:"nói thêm, hoặc app hỏi sau"],
+    ["Giải thưởng",o.gton!=null&&!g("gton"),o.gton===false&&!g("gton")?"Không":o.h1&&!g("h1")?[`Nhất ${tnK(+o.h1)}`,o.h2&&`Nhì ${tnK(+o.h2)}`].filter(Boolean).join(" · "):o.gton&&!g("gton")?"Có":"ví dụ: nhất 1 triệu nhì 500"]]}
+const tnCkRow=([l,on,v],busy)=>`<div class="tgck${on?" on":""}"><i>${on?"✓":"•"}</i><b>${l}</b><span>${busy&&!on?"đang đọc…":esc(v)}</span></div>`;
 function tnPage(D){
-  if(tnPg==="pick"){mxDr({t:"Tạo giải mới",back:"tnx",sub:"Chọn cách tạo",x:true});
+  if(tnPg==="txt")tnPg="pick";
+  if(tnPg==="help"){mxDr({t:"Cách dùng",back:"tnpg",v:"pick",sub:"Tạo giải trong 1 phút"});
+    return `<section class="tgbox"><span class="cap">3 bước</span><div class="tgstep"><i>1</i><span><b>Gõ một câu, hoặc chọn thể thức</b><small>Càng đủ ý càng ít phải hỏi lại. Không cần đúng thứ tự. Bấm micro trên bàn phím để nói thay vì gõ.</small></span></div><div class="tgstep"><i>2</i><span><b>Trả lời vài câu bằng nút bấm</b><small>Mục nào chưa nói, app hỏi từng câu. Chưa biết chọn gì thì bấm “Để app chọn”.</small></span></div><div class="tgstep"><i>3</i><span><b>Kiểm tra rồi bấm Tạo</b><small>Bấm dòng nào trên thẻ tóm tắt thì app hỏi lại dòng đó.</small></span></div></section>
+      <section class="tgbox"><span class="cap">Nên nói những gì</span><div class="tnchips">${["Thể thức","Số cặp / người","Ngày giờ","Số sân","Lệ phí","Chuyển khoản","Giải thưởng"].map(x=>`<span class="tnk">${x}</span>`).join("")}</div></section>
+      <section class="tgbox"><span class="cap">App hiểu cả cách nói quen thuộc</span><small>“150 cành”, “2 lít” · “nhất 1 củ” · “CN tuần sau” · “6 rưỡi tối” · “đôi nam 5.5” · “ck trước mới giữ chỗ”</small></section>
+      <div class="hqcta"><button class="ball go" data-act="tnpg" data-v="pick">Đã hiểu, bắt đầu ›</button></div>`}
+  if(tnPg==="pick"){const txt=String(val("tn-txt","")),o=txt.trim()?tnFill(tnParse(txt)):null;
+    mxDr({t:"Tạo giải mới",back:"tnx",sub:tnBusy?"AI đang soạn giải…":o?"Đang tả giải":"Chọn cách tạo",x:true});
+    let h=`<div class="tghead"><span>✦ TẠO NHANH BẰNG AI</span><button class="lnk" data-act="tnpg" data-v="help">❓ Cách dùng</button></div><b class="tgt">Tả giải bằng một câu, app soạn sẵn mọi mục</b>`
+      +`<label class="fld tntxt"><span class="sr">Tả giải</span><textarea id="tn-txt" data-draft="tn-txt" data-live="1" rows="3" maxlength="400" placeholder="Ví dụ: Chủ nhật 7h, 16 cặp chia 4 bảng, 4 sân, 200k/người, nhất 1 triệu"${tnBusy?" disabled":""}>${esc(txt)}</textarea></label>`;
+    if(o){const C=tnCheck(o);
+      if(tnBusy)h+=`<section class="tgread"><span aria-hidden="true">✦</span><b>AI đang soạn giải…</b><i></i></section><section class="tgbox">${C.filter(x=>x[1]).map(x=>tnCkRow(x)).join("")}${tnCkRow(["Sân, luật, chuyển khoản…",false,""],true)}</section>`;
+      else h+=`<section class="tgbox"><span class="cap">App đã nhận ra · ${C.filter(x=>x[1]).length}/7</span>${C.map(x=>tnCkRow(x)).join("")}</section><small class="rule">Thiếu vẫn bấm Soạn được, app sẽ hỏi bằng nút bấm. Xoá hết chữ thì các thể thức hiện lại.</small>`;
+      return h+`<div class="hqcta"><button class="ball go" data-act="tngo"${tnBusy?" disabled":""}>${tnBusy?"Đang soạn…":"✦ Soạn giải"}</button></div>`}
     const seen=new Set(),L=tnLast().filter(x=>x.at&&!x.series&&!seen.has(xName(x))&&seen.add(xName(x))).concat(tnLast().filter(x=>x.at&&x.series)).filter((x,i,a)=>a.findIndex(y=>xName(y)===xName(x))===i).slice(0,2);
-    return tnBig("⚡","Tạo nhanh","Tả giải bằng một câu, app soạn sẵn mọi mục. Bạn chỉ cần kiểm tra rồi bấm Tạo.","tnpg","txt",true)
+    return h+`<div class="tgor"><i></i><span>HOẶC CHỌN THỂ THỨC</span><i></i></div>`
+      +TN_FC.map(([k,ic,t,s,f])=>`<button class="tgfc" data-act="tnfmt" data-v="${k}"><i aria-hidden="true">${ic}</i><span><b>${t}</b><small>${s}</small><em>${f}</em></span><span aria-hidden="true">›</span></button>`).join("")
       +(L.length?`<section class="tnprev"><span class="cap">Như giải lần trước · 1 chạm</span>${L.map(x=>`<button data-act="tnprev" data-id="${esc(x.id)}"><span class="t"><b>${esc(xName(x))}</b><small>${esc([x.fmt==="giai"?(x.ko?"Chia bảng + KO":"Vòng tròn"):"Xoay cặp",ndL(x).length?`${ndL(x).length} nội dung`:x.max?`${x.fmt==="giai"?Math.round(x.max/2)+" cặp":x.max+" người"}`:"",`${x.courts||2} sân`,x.at?`${tnDow(x.at)} ${tnDm(x.at)}`:""].filter(Boolean).join(" · "))}</small></span><span class="go">Dùng lại ›</span></button>`).join("")}</section>`:"")
-      +tnBig("✎","Tạo đầy đủ","Mở form như hiện nay, tự điền từng mục","tnfull",null);
-  }
-  if(tnPg==="txt"){mxDr({t:"Tạo nhanh",back:"tnback",sub:"Tả giải bằng một câu"});
-    const txt=String(val("tn-txt","")),o=txt.trim()?tnFill(tnParse(txt)):null;
-    let h=`<label class="fld tntxt"><span class="sr">Tả giải</span><textarea id="tn-txt" data-draft="tn-txt" data-live="1" rows="4" maxlength="400" placeholder="Ví dụ: Chủ nhật 7h, 16 cặp chia 4 bảng đánh loại, 200k/người, nhất 1 triệu nhì 500, chuyển khoản trước">${esc(txt)}</textarea></label>`;
-    if(o){const c=[];const ok=(l,k)=>c.push(`<span class="tnk${o.guess.has(k)?" g":""}">${o.guess.has(k)?"≈":"✓"} ${l}</span>`);
-      if(o.fmt)ok(TN_FMT[o.fmt],"fmt");if(o.nds)o.nds.forEach(n=>ok(`${n.name} · ${n.max} cặp`,"nd"));if(o.pairs)ok(`${o.pairs} cặp`,"pairs");if(o.people)ok(`${o.people} người`,"people");
-      if(o.koN&&o.fmt==="bang")ok(`${o.koN} bảng · lấy ${o.lay||2}`,"koN");
-      if(o.date!=null&&o.time)ok(`${tnDow(tnAt(o))} ${tnDm(tnAt(o))} · ${o.time}${o.end?`–${o.end}`:""}`,"date");else if(o.date!=null)ok(`${tnDow(o.date)} ${tnDm(o.date)}`,"date");else if(o.time)ok(o.time,"time");
-      if(o.fee!=null&&!o.nds)ok(o.fee?`${o.fee}k/người`:"Miễn phí","fee");if(o.pay)ok({off:"trả tại sân",opt:"chuyển khoản tuỳ chọn",req:"chuyển khoản trước"}[o.pay],"pay");
-      if(o.gton===false)ok("không giải thưởng","gton");else if(o.h1)ok(`nhất ${tnK(o.h1)}`,"h1");else if(o.gton)ok("có giải thưởng","gton");
-      if(o.courts)ok(`${o.courts} sân`,"courts");
-      h+=`<section class="tnseen"><span class="cap">App đọc nhanh được</span><div>${c.join("")}</div><small>Bấm Soạn giải: AI đọc kỹ cả câu, mục nào chưa có app hỏi tiếp.</small></section>`}
-    else h+=`<section class="tnmau"><span class="cap">Chạm để dùng câu mẫu</span>${TN_MAU.map(([t,s],i)=>`<button data-act="tnmau" data-v="${i}"><b>${t}</b><small>${esc(s)}</small></button>`).join("")}</section>`;
-    h+=`<small class="rule">🎤 Bấm micro trên bàn phím điện thoại để nói thay vì gõ.</small>`;
-    return h+`<div class="hqcta"><button class="ball go" data-act="tngo"${tnBusy?" disabled":""}>${tnBusy?"Đang đọc…":"Soạn giải ›"}</button></div>`;
+      +`<button class="lnk tgfull" data-act="tnfull">Tạo bằng form đầy đủ ›</button>`;
   }
   if(tnPg==="grp"&&tn){const g=tnG||tnNextG(tn);if(!g){tnPg="card";return tnPage(D)}tnG=g;
     const i=TN_G.findIndex(x=>x[0]===g),need=tnNeed(tn,g).length;
@@ -318,7 +335,8 @@ async function tnAct(act,b){
   const top=()=>{try{scrollTo({top:0})}catch(e){}};
   if(act==="tnx"){tnPg=null;tn=null;tnEd=null;tnG=null;render();return true}
   if(act==="tnfull"){tnPg=null;gsDO=false;gsTO=false;gsPg=null;gsOpt=null;xQ=true;xQs=1;gmSw=false;xNew="pick";xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;render();top();return true}
-  if(act==="tnpg"){tnPg=v;if(v==="txt"){tn=null;tnG=null}tnEd=null;delete errs.xf;render();top();return true}
+  if(act==="tnpg"){tnPg=v==="txt"?"pick":v;if(v==="txt"||v==="pick"){tn=null;tnG=null}tnEd=null;delete errs.xf;render();top();return true}
+  if(act==="tnfmt"){const L=TN_FC.find(x=>x[0]===v);if(!L)return true;tn=tcStart(tnFill({fmt:v}),"",["fmt"]);tn.pick=L[2];tnG=null;tnGEdit=false;tnPg="card";tcBeat();render();top();return true}
   if(act==="tnback"){tnEd=null;delete errs.xf;if(tnPg==="grp"&&tnGEdit){tnGEdit=false;tnG=null;tnPg="card"}else tnPg=tnPg==="card"||tnPg==="grp"?(tn&&tn.from?"pick":"txt"):"pick";render();top();return true}
   if(act==="tnmau"){drafts["tn-txt"]=TN_MAU[+v][1];render();return true}
   if(act==="tngo"){const txt=String(val("tn-txt","")).trim();if(!txt){toast("Tả giải bằng một câu, ví dụ: Chủ nhật 7h, 16 cặp chia bảng, 200k.");return true}
@@ -327,8 +345,8 @@ async function tnAct(act,b){
     // Mục đọc được bằng luật (mẫu chặt) giữ nguyên; AI điền phần còn lại
     const base=tnParse(txt);tn={...(ai||{}),...base,guess:new Set(),ok:new Set()};if(ai&&ai.nds&&!base.nds)tn.nds=ai.nds;
     if(base.wd&&tn.date===base.date&&tn.time&&tnAt(tn)<Date.now())tn.date+=7*864e5;delete tn.wd;
-    const said=Object.keys(tn).filter(k=>tn[k]!=null&&tn[k]!=="");tn=tcStart(tnFill(tn),txt,said);tnG=null;tnGEdit=false;tnPg="card";render();top();return true}
-  if(act==="tnprev"){const X=schedById(b.dataset.id);if(!X)return true;tnFromPrev(X);tn=tcStart(tnFill(tn),"",Object.keys(tn));for(const Q of TC_Q)tn.ans.add(Q.k);tnPg="card";render();top();return true}
+    const said=Object.keys(tn).filter(k=>tn[k]!=null&&tn[k]!=="");tn=tcStart(tnFill(tn),txt,said);if(tnAIM.lim){tn.noAI=1;tn.log.push({b:"Hôm nay CLB đã dùng hết lượt AI. App vẫn đọc được số, ngày giờ, tiền; phần còn lại bạn bấm nút nhé."})}tcFirst(tn,txt);tnG=null;tnGEdit=false;tnPg="card";tcBeat();render();top();return true}
+  if(act==="tnprev"){const X=schedById(b.dataset.id);if(!X)return true;tnFromPrev(X);tn=tcStart(tnFill(tn),"",Object.keys(tn));for(const Q of TC_Q)tn.ans.add(Q.k);tnPg="card";tcBeat();render();top();return true}
   if(!tn)return true;
   if(act==="tnset"){const i0=String(v).indexOf(":"),k=String(v).slice(0,i0),x=String(v).slice(i0+1),num=["date","pairs","people","courts","fee","target","lay","koN"].includes(k);
     tn[k]=k==="guests"||k==="gton"||k==="third"?x==="1":num?+x:x;tn.guess.delete(k);delete drafts["tn-"+k];
@@ -341,9 +359,10 @@ async function tnAct(act,b){
     tn.ok.add(v);if(tnGEdit){tnGEdit=false;tnG=null;tnPg="card"}else{tnG=tnNextG(tn);tnPg=tnG?"grp":"card"}render();top();return true}
   if(act==="tned"){tnEd=v;render();return true}
   if(act==="tnedx"){tnEd=null;delete drafts["tn-name"];render();return true}
-  if(act==="tnedok"){tnRd();tnEd=null;render();return true}
+  if(act==="tnedok"){tnRd();if(tcBadName(tn.name)){tn.name="";toast("Tên này không dùng được vì tên giải hiện công khai, bạn đặt tên khác nhé.");return true}tnEd=null;render();return true}
   if(act==="tnndx"){tn.nds.splice(+v,1);if(tn.nds.length<2){const n=tn.nds[0];tn.nds=null;if(n){tn.pairs=n.max;tn.dt=n.dt;tn.cap=n.cap;tn.fee=n.fee;tn.koN=n.koN;tn.lay=2}}render();return true}
   if(act==="tnfix"){if(v==="t7"){tn.target=7;tn.rG={...tnRu(tn,"G"),to:7,w2:false,cap:0}}else if(v==="c2")tn.courts=(tn.courts||1)+2;else if(v==="half"){tn.pairs=Math.max(4,Math.round(tn.pairs/2));tn.koN=Math.max(1,Math.round((tn.koN||2)/2))}else if(v==="noend")tn.endBy="";render();return true}
+  if(act==="tnsay"&&tn.ans){const s=String(val("tn-say","")).trim();if(!s||tnBusy||tcWait>Date.now())return true;await tcSay(s);tcBeat();render();tcDown();return true}
   if(act==="tnsay"){const s=String(val("tn-say","")).trim();if(!s)return true;tnBusy=true;render();const a=await tnAI(s,tnCur(tn));tnBusy=false;
     const C=tn.ans?(k=>{tn.log.push({a:s});if(k)tcTyped(tn,k);else tn.log.push({b:"Mình chưa hiểu câu này. Bấm nút bên dưới, hoặc nói rõ hơn, ví dụ “6 sân”, “250k”, “nhất 1 triệu nhì 500”."})}):null;
     if(a&&Object.keys(a).length){tnMerge(a);delete drafts["tn-say"];if(C)C(Object.keys(a));else toast("Đã sửa theo lời bạn")}

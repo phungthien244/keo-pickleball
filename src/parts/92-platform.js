@@ -155,6 +155,12 @@ function vQt(){
   h+=`<div class="panel clubp"><h2>Mã mời tạo CLB</h2><p class="rule">Người có mã mời tạo CLB xong là dùng được ngay, không cần chờ duyệt. Mỗi mã dùng một lần.</p>
     <div class="bar" style="margin-top:8px"><button data-act="qa-code">Tạo mã mới</button></div>
     ${codes.map(k=>`<div class="mrow2"><span class="mname"><b class="num">${esc(k.id)}</b><span class="meta" style="display:block">${k.used?`Đã dùng cho ${esc(k.club||"")}`:"Chưa dùng"}</span></span>${k.used?"":`<button data-act="cp" data-v="${esc(k.id)}">Copy</button>`}${k.used?"":`<button class="ghost danger" data-act="qa-codedel" data-id="${esc(k.id)}">Xoá</button>`}</div>`).join("")}</div>`;
+  // Thể thức người dùng hỏi mà app chưa có (mỗi CLB mỗi ngày tính 1 lần)
+  if(S.yc===undefined){S.yc=null;FB.getDocs(FB.collection(FB.fs,"yeucau")).then(q=>{S.yc=q.docs.map(d=>d.data());render()}).catch(()=>{S.yc=[];render()})}
+  {const Y=S.yc||[],M={};for(const y of Y){const m=M[y.tt]||(M[y.tt]={n:0,c:new Set(),last:""});m.n++;m.c.add(y.cid);if(y.day>m.last)m.last=y.day}
+    const R=Object.entries(M).sort((a,b)=>b[1].c.size-a[1].c.size||b[1].n-a[1].n);
+    h+=`<div class="panel clubp"><h2>Thể thức người dùng muốn có</h2><p class="rule">Khi BTC gõ vào Tạo nhanh một thể thức app chưa có, app ghi lại tên thể thức, CLB và ngày (không ghi nội dung chat). Mỗi CLB mỗi ngày tính 1 lần.</p>
+      ${S.yc===null?`<p class="rule">Đang tải…</p>`:R.length?`<table class="yctab"><tr><th>Thể thức</th><th>Số lần</th><th>Số CLB</th><th>Gần nhất</th></tr>${R.map(([k,m])=>`<tr><td>${esc(TC_NOL[k]||k)}</td><td class="num">${m.n}</td><td class="num">${m.c.size}</td><td class="num">${esc(m.last.slice(5).split("-").reverse().join("/"))}</td></tr>`).join("")}</table>`:`<p class="rule">Chưa có ai hỏi.</p>`}</div>`}
   const e=(S.pcfg&&S.pcfg.emailjs)||{};
   h+=`<div class="panel clubp"><h2>Email báo CLB mới</h2><p class="rule">Dùng EmailJS (miễn phí 200 email/tháng). Có CLB mới, trình duyệt của người tạo gửi email cho bạn với tên CLB, chủ CLB, số Zalo và link duyệt.</p>
     <div class="form" style="margin-top:8px"><label><span class="lbl">Service ID</span><input id="ej-s" data-draft="ej-s" value="${esc(val("ej-s",e.service||""))}"></label><label><span class="lbl">Template ID</span><input id="ej-t" data-draft="ej-t" value="${esc(val("ej-t",e.template||""))}"></label><label><span class="lbl">Public key</span><input id="ej-k" data-draft="ej-k" value="${esc(val("ej-k",e.key||""))}"></label></div>
