@@ -104,9 +104,40 @@ async function thPoster(g,X,img){
   g.font=FD(800,24);const t="pikeco.app",w=g.measureText(t).width+36;thRect(g,TH_W-w-24,TH_H-62,w,42,TC.navy);g.fillStyle=TC.yellow;g.fillText(t,TH_W-w-6,TH_H-33);
   return {title:`${xName(X)} · ${(CLUB&&CLUB.name)||""}`};
 }
+/* Ảnh kết quả giải cặp (bục nhận giải): nền xanh đậm chuyển tím, bục 3 hạng có ảnh 2 người, tỉ số chung kết, 3 con số.
+   o = {tag, title, sub, top:[{n, pa, pb}] (vô địch, á quân, hạng ba), fin: "Chung kết 2–1", stats:[[số, chữ]]} */
+async function thPodium(g,o){
+  await thFrame(g,{tag:o.tag||"🏆 KẾT QUẢ",tagBg:TC.yellow,tagFg:TC.navy,ball:false});
+  const gr=g.createLinearGradient(0,64,TH_W,534);gr.addColorStop(0,"#0c2b44");gr.addColorStop(.6,"#1e3a8a");gr.addColorStop(1,"#312e81");thRect(g,0,64,TH_W,470,gr);
+  g.save();g.globalAlpha=.10;g.beginPath();g.arc(1120,120,190,0,Math.PI*2);g.fillStyle="#fbbf24";g.fill();g.restore();
+  thText(g,o.title,48,140,560,v=>FD(900,v),[48,42,36,30],"#fff");
+  thText(g,o.sub,48,182,560,v=>FB_(600,v),[24,22,20],TC.sky);
+  (o.stats||[]).slice(0,3).forEach(([v,l],i)=>{const x=48+i*186;g.fillStyle="rgba(255,255,255,.08)";g.fillRect(x,226,172,104);
+    thText(g,String(v),x+86,286,156,q=>FD(900,q),[44,38,32],["#fca5a5","#93c5fd","#c4b5fd"][i],"center");thText(g,String(l),x+86,316,156,q=>FB_(600,q),[19,17,15],"#cfe0ef","center")});
+  if(o.fin){g.fillStyle="rgba(255,255,255,.10)";g.fillRect(48,360,560,64);thText(g,o.fin,68,402,520,q=>FB_(700,q),[26,23,20],"#fbbf24")}
+  const base=520,P=[[1,735,100,34,["#e2e8f0","#94a3b8"],"#1e293b"],[0,900,150,42,["#fde68a","#f59e0b"],"#451a03"],[2,1065,70,32,["#fed7aa","#c2410c"],"#fff"]];
+  for(const [i,cx,h,r,cs,fc] of P){const t=o.top[i];if(!t)continue;const y=base-h;
+    const bg=g.createLinearGradient(0,y,0,base);bg.addColorStop(0,cs[0]);bg.addColorStop(1,cs[1]);thRect(g,cx-75,y,150,h,bg);
+    g.fillStyle=fc;g.font=FD(900,i===0?60:46);g.textAlign="center";g.fillText(String(i+1),cx,y+(i===0?68:52));
+    if(i===0){g.font=FD(800,15);g.fillText("VÔ ĐỊCH",cx,y+96)}g.textAlign="left";
+    thText(g,t.n,cx,y-18,170,v=>FD(800,v),i===0?[24,21,18]:[20,18,16],"#fff","center");
+    const ay=y-36-r-(i===0?14:6);await thAv(g,t.pa,cx-r*.62,ay,r,i===0?5:3);await thAv(g,t.pb,cx+r*.62,ay,r,i===0?5:3)}
+  return {title:o.cardTitle||o.title};
+}
+// Kết quả lúc vừa xong chung kết (chưa chốt): lấy từ giải đang chạy
+async function thKq(g,D){
+  const GD=typeof gDerive==="function"?gDerive(D):null;if(!GD||!GD.isKO||!GD.complete)return false;
+  const T=GD.table.filter(t=>!t.out),P=id=>D.pmap.get(id)||{name:"?"},fin=GD.games.find(x=>x.ko&&x.rn==="Chung kết"&&x.st==="done");
+  const top=T.slice(0,3).map(t=>({n:pairTx(D,t.p),pa:P(t.p.a),pb:P(t.p.b)}));
+  return thPodium(g,{title:String(D.c.sname||"Giải đấu"),sub:`${dmy(Date.now())} · ${(CLUB&&CLUB.name)||""}`,top,fin:fin?`Chung kết ${Math.max(fin.sx,fin.sy)}–${Math.min(fin.sx,fin.sy)}`:"",
+    stats:[[GD.games.filter(x=>x.st==="done").length,"trận"],[GD.table.length,"cặp"],[GD.groups.length,"bảng"]],cardTitle:`🏆 Kết quả ${D.c.sname||"giải"} · ${(CLUB&&CLUB.name)||""}`});
+}
 async function thBuoi(g,D,sid){
   const x=sessList(D).find(z=>String(z.sid)===String(sid));if(!x)return false;
   const s=x.snap||{},G=s.type==="giai"?(s.giai||{}):null;
+  if(G&&G.ko){const T=(G.table||[]).filter(t=>!t.out),P=(id,n)=>D.pmap.get(id)||{name:n},games=G.games||[],fin=games.find(x=>x.k==="Chung kết");
+    return thPodium(g,{tag:"🏆 TỔNG KẾT",title:shareName(s.sname,`Giải đấu #${x.sid}`),sub:`${dmy(x.at)} · ${(CLUB&&CLUB.name)||""}`,top:T.slice(0,3).map(t=>({n:`${t.na} & ${t.nb}`,pa:P(t.a,t.na),pb:P(t.b,t.nb)})),
+      fin:fin?`Chung kết ${Math.max(+fin.sx||0,+fin.sy||0)}–${Math.min(+fin.sx||0,+fin.sy||0)}`:"",stats:[[games.filter(z=>!z.wo).length,"trận"],[(G.table||[]).length,"cặp"],[G.ko.n,"bảng"]],cardTitle:`Tổng kết ${shareName(s.sname,`giải đấu #${x.sid}`)} · ${clubNm(D)}`})}
   const top=G?((G.table||[]).filter(t=>!t.out).slice(0,3).map(t=>({p:D.pmap.get(t.a)||{name:t.na},n:`${t.na} & ${t.nb}`}))):(x.rows||[]).slice(0,3).map(r=>({p:D.pmap.get(r.id)||{name:r.name},n:r.name||D.pmap.get(r.id)?.name||"?"}));
   await thFrame(g,{tag:"TỔNG KẾT",ball:false});
   thText(g,`${shareName(s.sname,`Giải đấu #${x.sid}`)} · ${dmy(x.at)}`,48,128,1104,v=>FD(900,v),[50,44,38],"#fff");
@@ -156,6 +187,7 @@ async function thDraw(path){
     else if(s[0]==="buoi"&&s[1])r=await thBuoi(g,D,s[1]);
     else if(s[0]==="dang-ky"&&s[1]){const X=schedById(s[1]);if(X){const pi=X.poster?await thImg(await posterGet(X.id)):null;r=pi?await thPoster(g,X,pi):await thGiai(g,D,X)}}
     else if(s[0]==="san")r=await thSan(g,D);
+    else if(s[0]==="kq")r=await thKq(g,D);
     else if(!s.length||s[0]==="gioi-thieu")r=await thClb(g,D);
   }catch(e){r=false}
   if(!r)return null;

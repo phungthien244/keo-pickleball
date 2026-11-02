@@ -80,13 +80,29 @@ function gsEditVals(D,X){
   return {info:`${X.at?`${DOW[new Date(X.at).getDay()]} ${hm(X.at)}`:""}${+v("max")?` · ${v("max")} chỗ`:""}`,nguoi:gsOnV(v("guests"))?"Nhận VĐV ngoài":"Chỉ thành viên",
     tien:`${fee?fmtK(fee):"miễn phí"} · ${gsOnV(v("gton"))?"có giải":"không giải"}`,luat:`${v("courts")} sân · chạm ${v("target")}`,tt:"Loa, QR trọng tài",khac:"Mẫu, nhân bản, huỷ"};
 }
+/* Sửa giải (canvas N01): một danh sách mọi mục, bấm dòng mở chỗ sửa ngay dưới dòng đó · ✓ Lưu ghi ngay vào giải
+   Giải đã bắt đầu: thể thức, số chỗ, nội dung, cách đăng ký khoá 🔒; luật điểm từng vòng (chia bảng + KO) sửa thẳng trên giải đang chạy */
+const GS_FLAT=[["Thông tin",["name","when","place","max","dl","lv","guests","poster","note"]],["Người chơi",["dt","pairReg","gmode"]],["Thể thức, luật",["ko","kor","courts","luat","abs"]],["Tiền, giải thưởng",["fee","feeG","thu","pay","gt","incl"]]];
+let gsFlatX=null;
+function gsFlat(D,X,cur){gsFlatX=X.id;
+  const nm=xName(X),G=X.fmt==="giai",KO=G&&kOn(X),T=gsDefs(D,X),live=!!cur&&phaseOf(D)==="live",lock=new Set(live?["ko","max","dt","pairReg"]:[]),GD=live&&KO?gDerive(D):null;
+  if(GD&&GD.K)T.kor={i:"🏓",t:"Luật điểm từng vòng",val:`Bảng ${ruleTx(koRule(GD.K,"g"))}`,body:()=>`<div class="kobd">${koRules(GD.K)}</div>`,live:1};
+  if(live)T.abs={i:"⏱",t:"Gọi cặp vắng",val:`Chờ ${absWait()} phút rồi xử thua`,body:()=>gsLb("Chờ bao lâu")+`<div class="gmchips c4">${[3,5,10,15].map(m=>`<button class="gmchip${absWait()===m?" on":""}" data-act="gsabs" data-v="${m}">${m} phút</button>`).join("")}</div>`,live:1};
+  const skip=k=>!T[k]||(G&&k==="gmode")||(!G&&(k==="dt"||k==="pairReg"||k==="ko"))||(KO&&k==="luat")||(k==="kor"&&!GD);
+  mxDr({t:"Sửa giải",back:"gmeditx",sub:esc(nm)});
+  let h="";
+  for(const [sec,ks] of GS_FLAT){const L=ks.filter(k=>!skip(k));if(!L.length)continue;
+    h+=`<span class="gmlb">${sec}</span><div class="gmlist gsflat">${L.map(k=>{const o=T[k];
+      if(lock.has(k))return `<div class="gmli gsrow lk"><i>${o.i}</i><span class="t"><b>${o.t}</b></span><em>${esc(o.val)}</em><span aria-label="Đã khoá">🔒</span></div>`;
+      const on=gsOpt===k;return `<button class="gmli gsrow${on?" on":""}" data-act="${on?"gsx":"gsopt"}" data-v="${k}" aria-expanded="${on}"><i>${o.i}</i><span class="t"><b>${o.t}</b></span><em>${esc(o.val)}</em><span aria-hidden="true">${on?"⌃":"›"}</span></button>`
+        +(on?`<div class="gsin">${o.body()}${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}${o.live?`<button class="btn-line wide" data-act="gsx">✓ Xong</button>`:`<div class="two"><button class="btn-line" data-act="gsx">Huỷ</button><button class="ball go" data-act="gsok">✓ Lưu</button></div>`}</div>`:"")}).join("")}</div>`}
+  const nav=(k,i,t,s)=>`<button class="gmli gsrow" data-act="gmsec" data-v="${k}"><i>${i}</i><span class="t"><b>${t}</b><small>${s}</small></span><span aria-hidden="true">›</span></button>`;
+  h+=`<span class="gmlb">Việc khác</span><div class="gmlist">${cur?nav("nguoi","👥","Điểm danh, ghép cặp, chia bảng","Người chơi hôm nay")+nav("tien","💰","Thu tiền hôm nay","Ai đã trả, ai còn nợ"):""}${nav("tt","🎯","Trọng tài, loa","Giao sân, QR trọng tài, giọng đọc")+nav("khac","📋","Mẫu, nhân bản, huỷ giải","Lưu làm mẫu, gửi thông báo, huỷ")}</div>`;
+  return h+`<small class="rule">${live?"Mục 🔒 không đổi được khi giải đã bắt đầu. ":""}Sửa lúc nào cũng được, kể cả khi đang đánh. Người đã đăng ký thấy ngay thay đổi.</small>`;
+}
 function gsEdit(D,X,cur){
   const nm=xName(X),G=X.fmt==="giai";
-  if(!gmSec){
-    const V=gsEditVals(D,X);mxDr({t:"Sửa giải",back:"gmeditx",sub:esc(nm)});
-    return `<div class="gmlist">${GM_ED.map(([k,i,t])=>`<button class="gmli gsrow" data-act="gmsec" data-v="${k}"><i>${i}</i><span class="t"><b>${t}</b></span><em>${esc(V[k]||"")}</em><span aria-hidden="true">›</span></button>`).join("")}</div>
-      <small class="rule">Sửa lúc nào cũng được, kể cả khi đang đánh. Người đã đăng ký thấy ngay thay đổi.</small>`;
-  }
+  if(!gmSec)return gsFlat(D,X,cur);
   const g=GM_ED.find(x=>x[0]===gmSec);mxDr({t:g?g[2]:"Sửa giải",back:"gmsecx",sub:esc(nm)});
   if(gmSec==="khac"){const s=xState(X),R=withX(X,()=>regList(D)),it=(i,t,sb,a,red)=>`<button class="gmli" data-act="${a}" data-id="${esc(X.id)}"><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b><small>${sb}</small></span><span aria-hidden="true">›</span></button>`;
     return `<div class="gmlist">${it("⭐",X.tpl?"Bỏ khỏi mẫu":"Lưu làm mẫu",X.tpl?"Đang là mẫu":"Tạo giải sau chỉ cần chọn mẫu","xbtpl")}${it("⧉","Nhân bản giải","Cùng cài đặt, chọn ngày mới","xbdup")}${it("📣","Gửi thông báo vào nhóm","Đổi giờ, đổi sân…","xbshare")}</div>
@@ -102,7 +118,11 @@ async function gsAct(act,b){
   if(act==="gsk"){if(v==="d")gsDO=!gsDO;else gsTO=!gsTO;render();return true}
   if(act==="gspg"){gsPg="opt";gsOpt=null;render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="gspgx"){gsPg=null;gsOpt=null;render();try{scrollTo({top:0})}catch(e){}return true}
-  if(act==="gsopt"){gsOpt=v;delete errs.xf;render();return true}
+  if(act==="gsopt"){if(gsOpt&&gsOpt!==v&&xEdit&&!xNew)xClearDraft();
+    // Sửa giải một danh sách: mở dòng nào thì sửa trên giải đó
+    if(gmEdit&&!gmSec&&!xNew&&gsFlatX&&xEdit!==gsFlatX){xClearDraft();xEdit=gsFlatX}
+    gsOpt=v;delete errs.xf;render();return true}
+  if(act==="gsabs"){await write(()=>saveCfg({absWait:+v||5}),`Gọi cặp vắng: chờ ${+v||5} phút`);return true}
   if(act==="gsx"){if(xEdit&&!xNew)xClearDraft();gsOpt=null;delete errs.xf;render();return true}
   if(act==="gsok"){
     const rd=k=>{const el=document.getElementById&&document.getElementById("xf-"+k);if(el&&el.value!=null)drafts["xf-"+k]=el.value};

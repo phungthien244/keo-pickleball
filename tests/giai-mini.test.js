@@ -99,3 +99,30 @@ test("ngày đánh: ⋯ → BTC check-in giùm, tích chọn là check-in, bỏ 
   await e.click("ckbtct", { id: "s1_p_p1" }); await e.until(() => e.store.get("clubs/q7/regs/s1_p_p1").arrived === false);
   await e.click("ckbtcx"); await e.until(() => e.V().includes("MỞ MÃ CHECK-IN"));
 });
+
+test("sửa giải một danh sách: mọi mục hiện ngay, bấm dòng sửa tại chỗ, ✓ Lưu ghi vào giải", async () => {
+  const e = await boot(base());
+  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('class="g2st"'));
+  await e.click("xbmenu"); await e.click("gmxe"); await e.until(() => e.T().includes("Lệ phí thành viên"));
+  expect(e.T()).toContain("Tên giải"); expect(e.T()).toContain("Trọng tài, loa");
+  await e.click("gsopt", { v: "fee" }); await e.until(() => e.V().includes('class="gsin"'));
+  await e.click("xqfee", { v: "100" }); await e.click("gsok");
+  await e.until(() => e.store.get("clubs/q7/sched/s1").phi === 100);
+  expect(e.V()).not.toContain('class="gsin"');
+});
+
+test("tổng kết giải chia bảng + KO: công khai, vô địch, đường tới chức vô địch, nhánh, bảng, không có tiền", async () => {
+  const t = (id, a, b, na, nb, w, l) => ({ id, a, b, na, nb, gp: w + l, w, l, pf: 0, pa: 0 });
+  const P = n => ({ name: n, rating0: 3, gender: "M", active: true, createdAt: 1 });
+  const e = await boot(base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 9, phase: "prep" },
+    "clubs/q7/players/p1": P("An"), "clubs/q7/players/p2": P("Bình"), "clubs/q7/players/p3": P("Chi"), "clubs/q7/players/p4": P("Dũng"),
+    "clubs/q7/app/hist-5": { sid: 5, type: "giai", title: "Q7", startedAt: Date.now() - 4e6, endedAt: Date.now(), matchCount: 4, rows: [], sname: "Giải tháng 11", rule: "Chạm 11", money: { in: 800 }, track: true,
+      giai: { prizes: [], complete: true, table: [t("t1", "p1", "p2", "An", "Bình", 3, 0), t("t2", "p3", "p4", "Chi", "Dũng", 1, 2), t("t3", "p5", "p6", "Em", "Gia", 1, 1), t("t4", "p7", "p8", "Hà", "Ích", 0, 2)],
+        ko: { n: 2, q: 4, groups: [{ p: ["t1", "t3"] }, { p: ["t2", "t4"] }] },
+        games: [{ r: 1, x: "t1", y: "t3", sx: 11, sy: 5 }, { r: 1, x: "t2", y: "t4", sx: 11, sy: 7 }, { r: 2, x: "t1", y: "t4", k: "Bán kết", sx: 11, sy: 3 }, { r: 2, x: "t2", y: "t3", k: "Bán kết", sx: 11, sy: 9 }, { r: 3, x: "t1", y: "t2", k: "Chung kết", sx: 2, sy: 1 }, { r: 3, x: "t3", y: "t4", k: "Tranh hạng ba", sx: 11, sy: 8 }] } }
+  }));
+  await e.nav("buoi", { id: "5" }); await e.until(() => e.T().includes("Tổng kết giải"));
+  expect(e.T()).toContain("Vô địch"); expect(e.T()).toContain("An & Bình"); expect(e.T()).toContain("Đường tới chức vô địch");
+  expect(e.T()).toContain("Chung kết"); expect(e.T()).toContain("BẢNG A"); expect(e.T()).toContain("Tranh hạng ba");
+  expect(e.T()).not.toContain("Dư vào quỹ"); expect(e.T()).not.toContain("Rating sau giải");
+});

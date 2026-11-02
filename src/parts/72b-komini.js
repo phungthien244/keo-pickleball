@@ -277,14 +277,26 @@ function kPlayV(D,X,GD){
     if(!GD.gDone)h+=`<small class="rule">Nhánh điền tên khi đánh xong vòng bảng.</small>`;
     h+=`<div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="m17" aria-label="Thêm việc">⋯</button><button class="ball go" data-act="k17send">📣 Gửi nhánh vào nhóm</button></div>`;
   }
-  return h+kPlaySheets(D,X,GD);
+  return h+kPlaySheets(D,X,GD)+kKqSheet(D,X,GD);
 }
+/* Xong chung kết và tranh hạng ba: máy BTC hiện “Giải đã có kết quả” một lần · Công bố = loa đọc + gửi ảnh kết quả vào nhóm Zalo */
+let kqOpen=false,kqLoa=true,kqZ=true;
+const kqDone=D=>!!(cfg().kqPub||{})[String(D.sid)];
+const kqTop=(D,GD)=>{const T=GD.table.filter(t=>!t.out),L=["Vô địch","Á quân","Hạng ba","Hạng ba"];return T.slice(0,GD.third?3:4).map((t,i)=>({lb:L[i],p:t.p}))};
+function kKqSheet(D,X,GD){
+  if(!canWrite||!GD.complete||!(kqOpen||!kqDone(D)))return "";const T=kqTop(D,GD),N=t=>t?pairNm(D,t.p):"";
+  const tg=(v,on,l)=>`<button class="gmchip${on?" on":""}" data-act="kqt" data-v="${v}" aria-pressed="${on}">${on?"☑":"☐"} ${l}</button>`;
+  return `<div class="mxdim" data-act="kqx"></div><div class="mxsheet dhsh gmsh kqsh" role="dialog" aria-label="Giải đã có kết quả"><span class="grab"></span><b class="mxh">🏆 Giải đã có kết quả</b>
+    <div class="g5pod">${[1,0,2].filter(i=>T[i]).map(i=>`<div class="p p${i}"><small>${N(T[i])}</small><b>${i+1}</b></div>`).join("")}</div>${T[3]?`<small class="rule">Đồng hạng ba: ${N(T[2])} · ${N(T[3])}</small>`:""}
+    <span class="gmlb">Công bố gồm</span><div class="kqopt">${tg("loa",kqLoa,"Loa đọc kết quả tại sân")}${tg("z",kqZ,"Gửi ảnh kết quả vào nhóm Zalo")}</div>
+    <div class="two"><button class="btn-line" data-act="kqx">Để sau</button><button class="ball go" data-act="kqgo"${kqLoa||kqZ?"":" disabled"}>📣 Công bố kết quả</button></div></div>`}
+const kqText=(D,GD)=>`${D.c.sname||"Giải đấu"}. ${kqTop(D,GD).map(o=>`${o.lb}: ${pairTx(D,o.p).replace(/&/g,"và")}`).join(". ")}. Xin chúc mừng các vận động viên.`;
 function kPlaySheets(D,X,GD){
   if(!kSh)return "";const G=GD.G,it=(i,t,s,a,v,red)=>`<button class="gmli" data-act="${a}"${v!=null?` data-v="${esc(v)}"`:""}><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b>${s?`<small>${s}</small>`:""}</span><span aria-hidden="true">›</span></button>`;
   const sh=(t,b)=>`<div class="mxdim" data-act="kshx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="${esc(t)}"><span class="grab"></span><b class="mxh">${t}</b>${b}</div>`;
   if(kSh==="m14")return sh("Thêm việc",it("📣","Yêu cầu trọng tài",ycN(D),"yclist")+it("🔊","Loa · câu đọc","Sửa câu đọc của giải này","lpg")+it("⚙","Xếp trận tiếp",autoNext()?"Đang: Tự động · bấm để chuyển BTC bấm":"Đang: BTC bấm · bấm để chuyển Tự động","scauto")+it("▣","Mã trọng tài","Mỗi sân một mã","dhqr")+it("⇅","Đổi thứ tự trận","Kéo thả hoặc theo tiến độ","kord")+it("📋","Kết quả các trận","Sửa điểm trận đã xong","g4v","kq")+`<small class="rule">Tạm dừng sân, gọi cặp vắng, xử thua: chạm vào ô sân đó.</small>`);
   if(kSh==="m15")return sh("Thêm việc",it("🔊","Loa đọc bảng xếp hạng","Bấm thì mới đọc","k15read")+it("⚖","Cách xếp khi bằng thắng","Đối đầu → hiệu số → điểm ghi","ksh","tie")+it("🖼","Gửi ảnh các bảng","Vào nhóm Zalo","k15send")+(!GD.gDone?it("▶",armed("kforce:x")?"Bấm lần nữa · trận còn lại không đánh":"Tạo nhánh ngay","Khi còn trận chưa đánh","kforce",null,1):""));
-  if(kSh==="m17"){const R0=GD.ko[0][0];return sh("Thêm việc",it("🔊","Loa đọc nhánh đấu","Bấm thì mới đọc","k17read")+it("⇄",G.kswap?"Xong đổi chỗ":"Đổi 2 cặp trong nhánh","Trước khi vòng đó bắt đầu","kswapm")+it("⚙","Luật điểm vòng này",`${R0.rn}: ${ruleTx(R0.rule)}`,"ksh","rule")+it("🖼","Gửi ảnh nhánh","Vào nhóm Zalo","k17send")+it("↺",armed("kreset:x")?"Bấm lần nữa để xếp lại":"Xếp lại nhánh","Xoá kết quả vòng trong đã nhập","kreset",null,1))}
+  if(kSh==="m17"){const R0=GD.ko[0][0];return sh("Thêm việc",it("🔊","Loa đọc nhánh đấu","Bấm thì mới đọc","k17read")+it("⇄",G.kswap?"Xong đổi chỗ":"Đổi 2 cặp trong nhánh","Trước khi vòng đó bắt đầu","kswapm")+it("⚙","Luật điểm vòng này",`${R0.rn}: ${ruleTx(R0.rule)}`,"ksh","rule")+(GD.complete?it("📣","Công bố kết quả","Loa đọc + gửi ảnh kết quả vào nhóm","kqopen"):"")+it("🖼","Gửi ảnh nhánh","Vào nhóm Zalo","k17send")+it("↺",armed("kreset:x")?"Bấm lần nữa để xếp lại":"Xếp lại nhánh","Xoá kết quả vòng trong đã nhập","kreset",null,1))}
   if(kSh==="tie")return sh("Cách xếp khi bằng thắng",`<small class="rule">Hai cặp bằng số trận thắng: xét trận đối đầu giữa hai cặp; vẫn bằng thì xét hiệu số (điểm ghi trừ điểm thua); vẫn bằng thì xét tổng điểm ghi được.</small>`);
   if(kSh==="rule")return sh("Luật điểm",`<div class="kobd">${koRules(GD.K)}</div>`);
   if(kSh==="up"){const W=GD.games.filter(g=>g.st==="wait").slice(0,20);return sh("Đưa trận nào lên trước?",`<div class="g2list">${W.map(g=>`<button class="g2p" data-act="kup" data-v="${esc(g.x)}|${esc(g.y)}"><span class="t"><b>${kPN(D,GD,g.x)} – ${kPN(D,GD,g.y)}</b><small>${g.ko?esc(g.rn):`Bảng ${KOG[g.grp]}`}</small></span></button>`).join("")||`<p class="rule">Không còn trận chờ.</p>`}</div>`)}
@@ -298,6 +310,15 @@ async function kPlayAct(act,b){
   if(act==="kgo"&&b.dataset.v&&gMulti())gNdF=b.dataset.v;
   const D=derive(),GD=gDerive(D),v=b.dataset.v,X=xCur();if(!GD||!GD.isKO)return false;const G=GD.G;
   if(act==="kseg"){kSeg=v;kSh=null;render();return true}
+  if(act==="kqopen"){kqOpen=true;kSh=null;render();return true}
+  if(act==="kqt"){if(v==="loa")kqLoa=!kqLoa;else kqZ=!kqZ;render();return true}
+  if(act==="kqx"){kqOpen=false;if(!kqDone(D))await write(()=>saveCfg({kqPub:{...(cfg().kqPub||{}),[String(D.sid)]:Date.now()}}));render();return true}
+  if(act==="kqgo"){if(!GD.complete)return true;kqOpen=false;const T=kqTop(D,GD),nm=D.c.sname||"giải";
+    await write(()=>saveCfg({kqPub:{...(cfg().kqPub||{}),[String(D.sid)]:Date.now()}}));
+    if(kqLoa)speak(kqText(D,GD),"","kq:"+D.sid);
+    if(kqZ)await shareOut({title:"Gửi kết quả vào nhóm",cardTitle:`🏆 Kết quả ${nm} · ${CLUB?.name||""}`,cardDesc:T.slice(0,3).map(o=>`${o.lb}: ${pairTx(D,o.p)}`).join(" · "),
+      text:[`🏆 KẾT QUẢ ${String(nm).toUpperCase()}`,...T.map(o=>`${o.lb}: ${pairTx(D,o.p)}`),"👉 Xem nhánh đấu và kết quả từng trận:"].join("\n"),path:pathOf("app",{tab:"san"}),thp:"/"+CID+"/kq"});
+    else render();return true}
   if(act==="kgo"){await write(()=>saveG({koGo:true}),"Đã tạo nhánh");kSeg="san";if(autoNext())await gFill();return true}
   if(act==="kforce"){if(!armOr("kforce:x"))return true;kSh=null;await write(()=>saveG({koForce:true}),"Vòng bảng dừng ở đây");return true}
   if(act==="k17read"){speak(kNhanhText(D,GD,X).split("\n").slice(1).join(". "),"","kn:"+Date.now(),true);await write(()=>saveG({koRead:true}));kSh=null;return true}

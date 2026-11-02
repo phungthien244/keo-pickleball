@@ -284,7 +284,33 @@ async function endGiai(){
     await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},fmt:"xoay",giai:null,phase:"prep",sname:"",schedId:null});
   },"Đã lưu giải, đây là trang tổng kết để chia sẻ");go("buoi",{sid:D.sid});
 }
+/* Tổng kết giải chia bảng + knockout (canvas N13): công khai, không có tiền.
+   Vô địch nổi bật · á quân, hạng ba · đường tới chức vô địch · nhánh đấu · bảng xếp hạng từng bảng · chia sẻ */
+function vKoSum(D,x,back){
+  const s=x.snap,G=s.giai||{},T=G.table||[],tb=new Map(T.map(t=>[t.id,t])),games=G.games||[],R=T.filter(t=>!t.out);
+  const PP=(id,n)=>D.pmap.get(id)||{name:n},tNm=t=>t?`${esc(t.na)} &amp; ${esc(t.nb)}`:"?",avs=(t,c)=>t?`<span class="avs">${av(PP(t.a,t.na),c,1)}${av(PP(t.b,t.nb),c,1)}</span>`:"";
+  const ko=games.filter(g=>g.k),grp=games.filter(g=>!g.k),fin=ko.find(g=>g.k==="Chung kết"),h3=ko.find(g=>g.k==="Tranh hạng ba");
+  const sc=(g,id)=>{const me=g.x===id?g.sx:g.sy,op=g.x===id?g.sy:g.sx;return g.wo?(g.wo===id?"thắng (đối thủ bỏ)":"thua (bỏ)"):`${me}–${op}`};
+  const c1=R[0],c2=R[1],thirds=h3?R.slice(2,3):R.slice(2,4);
+  let h=back+`<div class="tkhero"><span class="cap">🏆 Tổng kết giải</span><h1>${esc(shareName(s.sname,`Giải đấu #${x.sid}`))}</h1><small>${dmy(x.at)} · ${esc(clubNm(D))} · ${T.length} cặp · ${games.filter(g=>!g.wo).length} trận</small></div>`;
+  if(c1)h+=`<div class="tkchamp"><span class="cap">🥇 Vô địch</span>${avs(c1,"xl")}<b>${tNm(c1)}</b>${fin?`<small>Chung kết ${fin.x===c1.id||fin.y===c1.id?"thắng":""} ${sc(fin,c1.id)}</small>`:""}</div>`;
+  if(c2)h+=`<div class="tksub n${1+thirds.length}"><div class="s2"><span class="cap">🥈 Á quân</span>${avs(c2,"md")}<b>${tNm(c2)}</b></div>${thirds.map(t=>`<div class="s3"><span class="cap">🥉 ${thirds.length>1?"Đồng hạng ba":"Hạng ba"}</span>${avs(t,"md")}<b>${tNm(t)}</b></div>`).join("")}</div>`;
+  if(c1){const gw=grp.filter(g=>g.x===c1.id||g.y===c1.id),w=gw.filter(g=>g.wo?g.wo!==c1.id:(g.x===c1.id?g.sx>g.sy:g.sy>g.sx)).length;
+    const st=[["Vòng bảng",`${w}–${gw.length-w}`],...ko.filter(g=>(g.x===c1.id||g.y===c1.id)&&g.k!=="Tranh hạng ba").map(g=>[g.k,sc(g,c1.id)])];
+    h+=`<section class="tkbox"><span class="cap">Đường tới chức vô địch</span><div class="tkpath">${st.map(([l,v],i)=>`<div${i===st.length-1?' class="on"':""}><i></i><b class="num">${esc(v)}</b><small>${esc(l)}</small></div>`).join("")}</div></section>`}
+  // Nhánh đấu: mỗi vòng một cột
+  const rounds=[...new Set(ko.filter(g=>g.k!=="Tranh hạng ba").map(g=>g.k))];
+  if(rounds.length){const box=g=>{const X=tb.get(g.x),Y=tb.get(g.y),wx=g.wo?g.wo!==g.x:g.sx>g.sy;return `<div class="kbx"><span class="${wx?"w":""}"><em>${tNm(X)}</em><b>${g.wo?(wx?"T":""):g.sx}</b></span><span class="${wx?"":"w"}"><em>${tNm(Y)}</em><b>${g.wo?(wx?"":"T"):g.sy}</b></span></div>`};
+    h+=`<section class="tkbox"><span class="cap">Nhánh đấu</span><div class="tkbr">${rounds.map(r=>`<div class="col"><small>${esc(r)}</small>${ko.filter(g=>g.k===r).map(box).join("")}</div>`).join("")}</div>${h3?`<small class="rule">Tranh hạng ba: ${tNm(tb.get(h3.x))} ${h3.sx}–${h3.sy} ${tNm(tb.get(h3.y))}</small>`:""}</section>`}
+  // Bảng xếp hạng từng bảng (trận vòng bảng)
+  const GS=(G.ko&&G.ko.groups)||[];
+  if(GS.length){const tbl=(ids,gi)=>{const rows=ids.map(id=>{const gs=grp.filter(g=>(g.x===id||g.y===id)&&ids.includes(g.x)&&ids.includes(g.y)),w=gs.filter(g=>g.wo?g.wo!==id:(g.x===id?g.sx>g.sy:g.sy>g.sx)).length,d=gs.reduce((a,g)=>a+(g.wo?0:(g.x===id?g.sx-g.sy:g.sy-g.sx)),0);return {t:tb.get(id),w,l:gs.length-w,d}}).filter(r=>r.t).sort((a,b)=>b.w-a.w||b.d-a.d);
+      return `<div class="tkg"><b>BẢNG ${KOG[gi]}</b>${rows.map((r,i)=>`<span class="${i<2?"q":""}"><i>${i+1}</i><em>${tNm(r.t)}</em><b class="num">${r.w}–${r.l}</b></span>`).join("")}</div>`};
+    h+=`<div class="tkgs">${GS.map((g,i)=>tbl(g.p||[],i)).join("")}</div>`}
+  h+=`<div class="sharebox"><span class="lbl">Chia sẻ tổng kết</span><span class="url">${esc(shareUrl(x.sid).replace(/^https?:\/\//,""))}</span><div class="bt"><button class="primary" data-act="share" data-id="${x.sid}">🖼 Gửi vào nhóm Zalo</button><button data-act="copylink" data-id="${x.sid}">Copy tin nhắn</button></div></div>${canWrite?`<div class="bar"><span class="grow"></span>${delBtn("sdel",x.sid,"Xóa giải đấu này")}</div>`:""}`;
+  return h}
 function vGiaiSum(D,x,back){
+  if(x.snap&&x.snap.giai&&x.snap.giai.ko&&!(x.snap.giai.nd&&x.snap.giai.nd.length))return vKoSum(D,x,back);
   const s=x.snap,G=s.giai||{},T=G.table||[],pz=G.prizes||[],tb=new Map(T.map(t=>[t.id,t]));
   const PP=(id,n)=>D.pmap.get(id)||{name:n};
   const tAv=(t,cls)=>`<span class="avs">${av(PP(t.a,t.na),cls)}${av(PP(t.b,t.nb),cls)}</span>`;

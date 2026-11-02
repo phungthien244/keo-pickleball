@@ -3,7 +3,8 @@
    chuẩn bị 3 bước (R4–R6, nút của bản cũ) → nhập điểm (màn cũ, đầu trang SÂN n · Trọng tài) → lưu → chờ trận tiếp (R11).
    Nhờ BTC gọi tên: hộp xác nhận + dải trạng thái (đã gửi / BTC đã đọc / lỗi) theo yêu cầu loa trong calls. */
 let rfLastM={},rfStep=1,rfAsk=null,rfErr={},rfSeen={},rfBye=null,rfNameEd=false;
-const rfName=()=>String(val("rf-name","")||who()).trim().slice(0,40)||who();
+// Tên trọng tài: tự sửa > tên Zalo (xin phép một lần) > tên tài khoản
+const rfName=()=>String(val("rf-name","")||(MINI&&zaloProf().n)||who()).trim().slice(0,40)||who();
 const rfOn=()=>MINI&&REF&&!canWrite;
 const rfLb=(D,m)=>{if(!m.giai)return "";const GD=m.nd?gDeriveK(D,m.nd):gDerive(D);if(!GD)return "";if(m.ko)return koMName(GD,m.ko)||"";const g=(GD.games||[]).find(q=>q.m&&q.m.id===m.id);return g&&g.grp!=null?`Bảng ${KOG[g.grp]}`:""};
 const rfBadge=c=>`<span class="rfb">SÂN ${esc(cName(c))}</span>`;
@@ -116,10 +117,11 @@ function rfMain(D){
 function rfClaim(D){
   const q=dhClaim();if(!q||!q.c||legacy||!authUser)return "";
   if(REFQ&&Number(REFQ.court)===Number(q.c)&&REFQ.sid===D.sid){try{sessionStorage.removeItem("pb-ttq")}catch(e){}return ""}
+  if(MINI&&!zaloProf().n&&typeof mxAskName==="function")setTimeout(()=>mxAskName(),0);
   const P=rfPlan(D,q.c);
   return `<div class="ttfs rfc" role="dialog" aria-label="Nhận vai trọng tài">${rfHead(q.c,"Mã của ban tổ chức")}
     <div class="rfcb"><small>${esc(CLUB?.name||"")} · ${esc(rfGiaiNm(D))}</small><b class="big">SÂN ${esc(cName(q.c))}</b><span>Bạn được mời làm <b>trọng tài</b> sân này.</span>
-      <section class="ttbox"><div class="ttrow"><span class="grow">Tên hiện cho BTC</span>${rfNameEd?`<input id="rf-name" data-draft="rf-name" maxlength="40" value="${esc(rfName())}">`:`<b>${esc(rfName())}</b><button class="lnk" data-act="ttname" aria-label="Sửa tên">✎</button>`}</div>${P.length?`<div class="ttrow"><span class="grow">Hôm nay</span><b>${P.length} trận dự kiến</b></div>`:""}</section></div>
+      <section class="ttbox"><div class="ttrow">${MINI&&zaloProf().p?`<span class="av md rfzav"><img src="${esc(zaloProf().p)}" alt=""></span>`:""}<span class="grow">Tên hiện cho BTC${MINI&&zaloProf().n&&!val("rf-name","")?`<br><small class="okc">Lấy từ Zalo · sửa được</small>`:""}</span>${rfNameEd?`<input id="rf-name" data-draft="rf-name" maxlength="40" value="${esc(rfName())}">`:`<b>${esc(rfName())}</b><button class="lnk" data-act="ttname" aria-label="Sửa tên">✎</button>`}</div>${P.length?`<div class="ttrow"><span class="grow">Hôm nay</span><b>${P.length} trận dự kiến</b></div>`:""}</section></div>
     <div class="ttft"><button class="ttln" data-act="dhclaimx">Không phải tôi</button><button class="ttgo" data-act="dhclaimok">✓ Nhận sân ${esc(cName(q.c))}</button></div></div>`;
 }
 // BTC thu hồi sân (R13)

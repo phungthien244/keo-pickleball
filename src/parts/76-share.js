@@ -45,7 +45,7 @@ async function zSendText(o){
 }
 // Mở bảng chia sẻ, vẽ ảnh thẻ riêng của trang (hồ sơ, giải, tổng kết, sân, CLB) để xem trước
 async function shareOut(o){SHR=o;shDraw();
-  o._thP=thDraw(o.path).catch(()=>null);o._th=await o._thP;if(SHR===o)shDraw();
+  o._thP=thDraw(o.thp||o.path).catch(()=>null);o._th=await o._thP;if(SHR===o)shDraw();
   // Web: lưu sẵn ảnh để link dán vào Facebook/Zalo có ảnh xem trước đúng trang
   if(!MINI&&o._th&&(canWrite||isZaloU(authUser)))thSave(o._th);
 }
