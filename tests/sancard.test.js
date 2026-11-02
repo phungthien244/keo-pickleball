@@ -66,3 +66,31 @@ test("cài đặt Xếp trận tiếp ở ⋯ Đang đánh: chuyển Tự độn
   await e.click("gmmore"); await e.until(() => e.T().includes("Đang: BTC bấm"));
   await e.click("gmdo", { a: "scauto" }); await e.until(() => e.store.get("clubs/q7/app/config").autoNext === true);
 });
+
+test("gọi cặp vắng: chạm ô sân → loa gọi, ô cam đếm ngược; hết giờ ô đỏ → chờ thêm 2 phút hoặc xử thua (bấm 2 lần)", async () => {
+  const e = await boot(base({ "clubs/q7/matches/m1": { session: 1, seq: 1, court: 1, a: ["p1", "p3"], b: ["p2", "p4"], status: "playing", createdAt: Date.now() - 6e5, ref: { by: "r1", byName: "Nam", at: Date.now(), here: { p1: 1, p3: 1, p2: 1 }, ev: [] } } }));
+  await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct c"'));
+  await e.click("scsh", { v: "1" }); await e.until(() => e.T().includes("Gọi cặp vắng"));
+  await e.click("scabs", { id: "m1", v: "b" }); await e.until(() => (e.store.get("clubs/q7/matches/m1").abs || {}).s === "b");
+  await e.until(() => calls(e).some(c => /Mời Bình và Dũng vào sân 1\. Sau 5 phút/.test(c.txt || "")));
+  await e.until(() => e.V().includes('class="sct o"')); expect(e.T()).toContain("CHỜ CẶP VẮNG");
+  // hết giờ
+  await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m1"), { abs: { ...e.store.get("clubs/q7/matches/m1").abs, until: Date.now() - 1000 } });
+  await e.until(() => e.V().includes('class="sct h"')); expect(e.T()).toContain("HẾT GIỜ CHỜ");
+  await e.click("scsh", { v: "1" }); await e.until(() => e.T().includes("Hết 5 phút"));
+  await e.click("scabsw", { id: "m1" }); await e.until(() => e.store.get("clubs/q7/matches/m1").abs.until > Date.now());
+  await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m1"), { abs: { ...e.store.get("clubs/q7/matches/m1").abs, until: Date.now() - 1000 } });
+  await e.click("scsh", { v: "1" }); await e.until(() => e.T().includes("Hết 5 phút"));
+  await e.click("ycff", { id: "m1", v: "b" }); await e.click("ycff", { id: "m1", v: "b" });
+  await e.until(() => e.store.get("clubs/q7/matches/m1").status === "done");
+  expect(e.store.get("clubs/q7/matches/m1")).toMatchObject({ sa: 11, sb: 0, ff: "b" });
+});
+
+test("trọng tài báo cặp chưa đến: BTC thấy dải đỏ, bấm Gọi cặp vắng (yêu cầu xong) và nhắn Zalo cho trọng tài", async () => {
+  const e = await boot(base({ "clubs/q7/calls/c1": { k: "btc", court: 1, why: "Cặp chưa đến sân", by: "Nam", uid: "zalo_r", at: Date.now(), sid: null, st: "new", zid: "z123" } }));
+  await e.nav("app", { t: "san" }); await e.until(() => e.T().includes("Cặp chưa đến sân"));
+  await e.click("dhsc", { id: "c1" }); await e.until(() => e.T().includes("Gọi cặp vắng"));
+  expect(e.V()).toContain('data-act="yczc" data-id="z123"');
+  await e.click("scabs", { id: "m1", v: "a", c: "c1" }); await e.until(() => e.store.get("clubs/q7/calls/c1").st === "done");
+  expect(e.store.get("clubs/q7/matches/m1").abs.s).toBe("a");
+});

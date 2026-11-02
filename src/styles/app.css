@@ -2962,3 +2962,16 @@ html.mxlock,html.mxlock body{overflow:hidden!important;overscroll-behavior:none}
 .tced{display:flex;flex-direction:column;gap:6px;padding:8px 0 12px}.tced .tcq{padding-left:0}.tcel{font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#5f6f7f;margin-top:4px}
 small.tcel{text-transform:none;letter-spacing:normal;font-weight:500;font-size:12px}
 .tcbtn.on{background:#0c2b44;border-color:#0c2b44;color:#fff}.tced .tcok{min-height:44px;flex:1;display:grid;place-items:center;padding:0}
+/* Gọi cặp vắng */
+.sct.o{--c:#ea580c;--bg:#ffedd5;--fg:#7c2d12}.sct.h{--c:#dc2626;--bg:#fee2e2;--fg:#7f1d1d}.sct.h .f button{background:#dc2626;color:#fff;border:0}
+.scabs{background:#ffedd5;border-left:4px solid #ea580c;padding:10px 12px;display:flex;flex-direction:column;gap:8px;margin:6px 0}.scabs.h{background:#fee2e2;border-color:#dc2626}
+.scabs b{font-size:14.5px;color:#7c2d12}.scabs.h b{color:#991b1b}.scabs small{font-size:12px;color:#5f6f7f}.scabs .two{display:flex;gap:8px}.scabs .two>*{flex:1;min-height:48px}
+.ball.red{background:#dc2626;border-color:#dc2626;color:#fff}
+.rfabs{display:flex;align-items:center;gap:10px;padding:10px;background:#fffbeb;border:1px solid #f59e0b;margin-top:8px;font-size:13px;line-height:1.4}.rfabs>span{flex:1}.rfabs button{flex:none}
+.rfabs.on{background:#ffedd5;border-color:#ea580c;color:#7c2d12;font-weight:700}
+.dhor{display:block;text-align:center;font-size:11.5px;color:#5f6f7f;font-weight:700;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.06em}
+.line.zchat{border-color:#0068ff;color:#0068ff;font-weight:800;width:100%}
+/* Chốt: đọc lần lượt */
+.g5seq{background:#EEEDFE;border-left:4px solid #534AB7;padding:10px 12px;display:flex;flex-direction:column;gap:6px;margin:8px 0}.g5seq .cap{color:#3C3489}.g5seq .q{font-size:13.5px;line-height:1.45}
+.g5seq .two{display:flex;gap:8px}.g5seq .two>*{flex:1;min-height:46px}.g5seq .two .ball{flex:1.6}
+.g5all{width:100%;margin-top:8px;border-color:#534AB7;color:#3C3489;background:#EEEDFE;min-height:46px}

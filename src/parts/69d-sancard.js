@@ -47,13 +47,21 @@ function scSheet(D){
   const it=(i,t,s,a,id,v,red)=>`<button class="gmli" data-act="${a}"${id?` data-id="${esc(id)}"`:""}${v!=null?` data-v="${esc(v)}"`:""}><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b>${s?`<small>${s}</small>`:""}</span><span aria-hidden="true">›</span></button>`;
   let b="";const o=scO||{lb:()=>"",nm:x=>[g4Nm(D,x.a),g4Nm(D,x.b)],fill:false},strip=h=>h.replace(/<button class="btn-line gmdot" data-act="scsh"[^>]*>⋯<\/button>/,"");
   if(m)b+=strip(scCard(D,m,o.lb(m),...o.nm(m)));else if(last)b+=strip(scEnd(D,last,o.lb(last),...o.nm(last),o.fill));else if(o.fill)b+=`<div class="g4c e"><span class="t">Sân trống</span><button class="ball go" data-act="scfill" data-v="${k}">▶ Tạo trận</button></div>`;
+  const [nA,nB]=m?o.nm(m):["",""],tgt=m?+(mRule(m)||{}).to||+D.c.target||11:11,ff=s=>it("🏳",armed("ycff:"+m.id+":"+s)?"Bấm lần nữa để xử thua":`Xử thua ${s==="a"?nA:nB}`,`${s==="a"?nB:nA} thắng ${tgt}–0`,"ycff",m.id,s,1);
+  if(m&&absOn(m)){const A=m.abs,pn=A.s==="a"?nA:nB,end=A.until<=Date.now();
+    b+=`<div class="scabs${end?" h":""}"><b>${end?`⏱ Hết ${absWait()} phút, ${pn} chưa có mặt`:`⏱ Đang chờ ${pn} · còn <span data-cd="${A.until}">${gdMMSS(A.until-Date.now())}</span>`}</b>${end?`<div class="two"><button class="btn-line" data-act="scabsw" data-id="${esc(m.id)}">Chờ thêm 2 phút</button><button class="ball red" data-act="ycff" data-id="${esc(m.id)}" data-v="${A.s}">${armed("ycff:"+m.id+":"+A.s)?"Bấm lần nữa":`Xử thua ${pn}`}</button></div><small>Xử thua: trận lưu ${A.s==="a"?`0–${tgt}`:`${tgt}–0`}, ${A.s==="a"?nB:nA} thắng. Bấm 2 lần cho chắc.</small>`:""}</div>`;
+    if(!end)gdTick();b+=it("✓",`${pn} đã tới`,"Huỷ đếm, đánh bình thường","scabsx",m.id)}
+  else if(m&&scStep(D,m)<3){const miss=s=>(m[s]||[]).filter(id=>!rfHere(m,id)).length,ord=m.ref&&miss("b")>miss("a")?["b","a"]:["a","b"];
+    for(const s of ord)b+=it("⏱",`Gọi cặp vắng · ${s==="a"?nA:nB}`,`Loa gọi tên, chờ ${absWait()} phút, hết giờ BTC quyết xử thua`,"scabs",m.id,s)}
+  if(isG(D.c)){const cp=(cfg().giai||{}).cpause||{};b+=it("⏸",cp[k]?"Mở lại sân":"Tạm dừng sân",cp[k]?"Sân đang dừng, bấm để nhận trận lại":"Sân hỏng, mưa… app không xếp trận vào","scpause",null,k)}
+  if(m&&!absOn(m))b+=ff("a")+ff("b");
   if(m){
     if(m.ref&&m.ref.started)b+=it("📜","Lịch sử từng pha","Trọng tài nhập từng pha","dhhist",m.id);
     const used=new Set(D.playing.map(x=>Number(x.court))),free=Array.from({length:Math.max(1,+D.c.courts||1)},(_,i)=>i+1).filter(c=>!used.has(c));
     if(free.length)b+=`<span class="mxsec">⇄ Chuyển sang sân khác</span><div class="dhfree">${free.map(c=>`<button class="line sm" data-act="dhmove" data-id="${esc(m.id)}" data-v="${c}">Sân ${esc(cName(c))}</button>`).join("")}</div>`;
     b+=it("✕",armed("sccancel:"+m.id)?"Bấm lần nữa để huỷ trận":"Huỷ trận","Trận bị xoá, hoàn tác được trong 1 phút","sccancel",m.id,null,1)}
   else if(last)b+=it("🔊","Đọc kết quả","","scread",last.id)+(last.ref&&last.ref.started?it("📜","Lịch sử từng pha","","dhhist",last.id):"")+it("↶",armed("screopen:"+last.id)?"Bấm lần nữa để mở lại":"Mở lại trận","Đưa trận về đang đánh để sửa điểm","screopen",last.id);
-  else if(!b){scSh=null;return ""}
+  if(!b){scSh=null;return ""}
   return `<div class="mxdim" data-act="scshx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="Sân ${esc(cName(k))}"><span class="grab"></span><b class="mxh">Sân ${esc(cName(k))}</b>${b}</div>`;
 }
 // Tự động xếp trận tiếp: máy loa (hoặc máy BTC khi chưa chọn máy loa) đưa trận vào sân vừa xong
@@ -73,6 +81,11 @@ async function scAct(act,b){
   if(act==="scf"){scF=v||"all";render();return true}
   if(act==="scfillall"){scSh=null;if(isG(D.c)){const n=await gFill(false);toast(n?`Đã đưa ${n} trận vào sân`:"Chưa có trận nào đưa vào được: hết trận hoặc cặp đang bận.")}else await generate();return true}
   if(act==="scshx"){scSh=null;render();return true}
+  if(act==="scabs"){if(!m||!canWrite)return true;const s=v==="b"?"b":"a",now=Date.now();scSh=null;speak(absTx(D,m,s),"","abs:"+m.id);
+    await write(async()=>{await db.collection("matches").doc(m.id).update({abs:{s,at:now,until:now+absWait()*6e4,r2:false,by:who()}});if(b.dataset.c)await db.collection("calls").doc(b.dataset.c).update({st:"done",doneAt:now,doneBy:who()})},`Đã gọi · chờ ${absWait()} phút`);dhSC=null;return true}
+  if(act==="scabsx"){if(!m)return true;scSh=null;await write(()=>db.collection("matches").doc(m.id).update({abs:null}),"Đã huỷ đếm");return true}
+  if(act==="scabsw"){if(!m||!m.abs)return true;await write(()=>db.collection("matches").doc(m.id).update({abs:{...m.abs,until:Date.now()+2*6e4,r2:true}}),"Chờ thêm 2 phút");return true}
+  if(act==="scpause"){const g=cfg().giai||{},cp={...(g.cpause||{})};if(cp[v])delete cp[v];else cp[v]=true;scSh=null;await write(()=>saveG({cpause:cp}),cp[v]?`Đã dừng sân ${cName(+v)}`:`Đã mở lại sân ${cName(+v)}`);if(!cp[v]&&autoNext())await gFill();return true}
   if(act==="scinv"){if(!m)return true;scSh=null;speak(scInvTx(D,m),"","inv:"+m.id);db.collection("matches").doc(m.id).update({inv:Date.now()}).catch(()=>{});render();return true}
   if(act==="scread"){if(!m)return true;scSh=null;speak(resultText(D,m,m.sa,m.sb),"","r:"+m.id);db.collection("matches").doc(m.id).update({readAt:Date.now()}).catch(()=>{});render();return true}
   if(act==="scfill"){scSh=null;if(isG(D.c)){const n=await gFill(false,Number(v));if(!n)toast("Chưa có trận nào đưa vào được: hết trận hoặc cặp đang bận.")}else await generate(Number(v));return true}
@@ -88,12 +101,23 @@ async function scAct(act,b){
 }
 /* ----- Bố cục A: lọc theo trạng thái + lưới 2 cột tô màu (đỏ cần BTC · xanh lá kết thúc · xanh dương đang đánh · vàng chuẩn bị · xám trống) ----- */
 let scF="all",scO=null;
-const SC_LB={x:"CẦN BTC",k:"KẾT THÚC",d:"ĐANG ĐÁNH",c:"CHUẨN BỊ",n:"ĐÃ XẾP",e:"TRỐNG"},SC_ORD={x:0,k:1,d:2,c:3,n:4,e:5};
+const SC_LB={h:"HẾT GIỜ CHỜ",x:"CẦN BTC",o:"CHỜ CẶP VẮNG",k:"KẾT THÚC",d:"ĐANG ĐÁNH",c:"CHUẨN BỊ",n:"ĐÃ XẾP",e:"TRỐNG"},SC_ORD={h:0,x:0,o:1,k:1,d:2,c:3,n:4,e:5};
+/* Gọi cặp vắng: m.abs = {s: "a"|"b" cặp vắng, at, until, r2: đã nhắc lần 2}. Loa đọc khi bấm, còn 1 phút nhắc lần 2,
+   hết giờ ô sân đỏ, BTC chọn Chờ thêm 2 phút hoặc Xử thua (app không tự xử thua). */
+const absWait=()=>Math.max(1,Math.min(30,+cfg().absWait||5));
+const absOn=m=>!!(m&&m.abs&&m.abs.until&&m.status!=="done");
+const absTx=(D,m,s,r2)=>{const p=scSpk(D,m[s]||[]),k=cName(m.court);return r2?`Nhắc lần hai: mời ${p} vào sân ${k}. Còn một phút, không có mặt sẽ xử thua.`:`Mời ${p} vào sân ${k}. Sau ${absWait()} phút không có mặt sẽ xử thua.`};
+// Máy loa (hoặc máy BTC khi chưa chọn máy loa) nhắc lần 2 khi còn 1 phút
+function scAbsTick(){
+  if(!canWrite||legacy)return;const L=loaDev();if(L&&L!==DEVID)return;const D=derive(),now=Date.now();
+  for(const m of D.playing)if(absOn(m)&&!m.abs.r2&&m.abs.until-now<=60e3&&m.abs.until>now){m.abs.r2=true;speak(absTx(D,m,m.abs.s,1),"","abs2:"+m.id);db.collection("matches").doc(m.id).update({abs:{...m.abs,r2:true}}).catch(()=>{})}
+}
 // o: {lb:m=>nhãn, nm:m=>[đội A, đội B], fill:bool có trận để đưa vào, cp:{sân tạm dừng}}
 function scTiles(D,o){
   const n=Math.max(1,+D.c.courts||1),calls=ycBtc(),T=[],cp=o.cp||{};
   for(let k=1;k<=n;k++){const m=D.playing.find(x=>Number(x.court)===k),cx=m&&calls.find(x=>Number(x.court)===k);
     if(m&&cx){T.push({k,s:"x",m,cx});continue}
+    if(absOn(m)){T.push({k,s:m.abs.until<=Date.now()?"h":"o",m});continue}
     // Vừa xếp vào sân, chưa có trọng tài nhận: "Đã xếp" (khác "Đang đánh" là khi trọng tài đã bấm Bắt đầu)
     if(m){const st=scStep(D,m);T.push({k,s:!m.ref?"n":st===1||st===2?"c":"d",m,st});continue}
     if(cp[k]){T.push({k,s:"e",p:1});continue}
@@ -103,7 +127,10 @@ function scTiles(D,o){
 function scTile(D,t,o){
   const k=t.k,m=t.m,[nA,nB]=m?o.nm(m):["",""],lb=m?o.lb(m):"",now=Date.now(),age=m&&typeof m.createdAt==="number"?Math.max(0,Math.round((now-m.createdAt)/6e4)):0;
   let big="—",sub="",meta="",btn="";
-  if(t.s==="x"){big=esc(t.cx.why||"Cần BTC");sub=`${nA} · ${nB}`;meta=`${esc(t.cx.by||"Trọng tài")} · ${t.cx.at?Math.max(0,Math.round((now-t.cx.at)/6e4)):0}′ trước`;btn=`<button class="ball" data-act="dhsc" data-id="${esc(t.cx.id)}">Tới xử lý</button>`}
+  if(t.s==="o"||t.s==="h"){const A=m.abs,pn=A.s==="a"?nA:nB;
+    if(t.s==="o"){big=`⏱ <span data-cd="${A.until}">${gdMMSS(A.until-now)}</span>`;sub=`${pn} vắng · loa đã gọi`;meta=A.r2?"Đã nhắc lần 2":"Còn 1′ loa nhắc lần 2";gdTick()}
+    else{big=`${pn} vắng`;sub=`Hết ${absWait()} phút chờ`;meta=lb;btn=`<button class="ball" data-act="scsh" data-v="${k}">Tới xử lý</button>`}}
+  else if(t.s==="x"){big=esc(t.cx.why||"Cần BTC");sub=`${nA} · ${nB}`;meta=`${esc(t.cx.by||"Trọng tài")} · ${t.cx.at?Math.max(0,Math.round((now-t.cx.at)/6e4)):0}′ trước`;btn=`<button class="ball" data-act="dhsc" data-id="${esc(t.cx.id)}">Tới xử lý</button>`}
   else if(t.s==="d"){const R=m.ref&&m.ref.started?ttRun(D,m):null;big=R?`${R.s.a}–${R.s.b}`:`${age}′`;sub=`${nA} · ${nB}`;meta=[lb,R?`ván ${R.g+1}`:m.ref?"":"BTC nhập"].filter(Boolean).join(" · ")}
   else if(t.s==="n"){big=`${age}′`;sub=`${nA} · ${nB}`;meta=[lb,"chưa bắt đầu"].filter(Boolean).join(" · ");btn=`<button class="btn-line" data-act="scinv" data-id="${esc(m.id)}">📣 Mời vào sân</button>`}
   else if(t.s==="c"){const ids=[...m.a,...m.b],miss=ids.filter(id=>!rfHere(m,id));big=SC_ST[t.st-1];sub=`${ids.length-miss.length}/${ids.length} có mặt${miss.length&&t.st===1?` · thiếu ${miss.map(id=>esc(ttPN(D,id))).join(", ")}`:""}`;meta=`TT ${esc(m.ref.byName||"")} · ${age}′`}

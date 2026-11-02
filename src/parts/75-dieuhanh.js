@@ -13,11 +13,15 @@ function watchCalls(){
   if(dhPumpT){clearInterval(dhPumpT);dhPumpT=null}
   if(legacy||!authUser||!(canWrite||REF)||!window.FB||!FB.onSnapshot)return;
   try{unsubCalls=FB.onSnapshot(FB.collection(FB.fs,PFX+"calls"),{},q=>{const t0=Date.now()-12*36e5;S.calls=q.docs.map(d=>({id:d.id,...d.data()})).filter(x=>(x.at||0)>t0);render();dhPump()},()=>{})}catch(e){}
-  if(canWrite&&typeof setInterval==="function")dhPumpT=setInterval(()=>{dhPump();scAuto()},3000);
+  if(canWrite&&typeof setInterval==="function")dhPumpT=setInterval(()=>{dhPump();scAuto();scAbsTick();btcZReg()},3000);
 }
+const btcZ=()=>(Array.isArray(cfg().btcZ)?cfg().btcZ:[]).filter(z=>z&&z.z).slice(0,3);
+let btcZT=0;
+function btcZReg(){const z=myZid();if(!MINI||!z||!canWrite||legacy||ROLE==="scorer"||Date.now()-btcZT<6e4)return;btcZT=Date.now();
+  const L=btcZ();if(L.some(x=>x.z===z))return;saveCfg({btcZ:[{n:String(who()||"BTC").slice(0,30),z},...L.filter(x=>x.z!==z)].slice(0,3)}).catch(()=>{})}
 async function dhAddCall(o){
   const D=derive();
-  try{await db.collection("calls").doc().set({...o,at:Date.now(),uid:(authUser&&authUser.uid)||"",by:who(),sid:D.sid,st:"new"});return true}
+  try{await db.collection("calls").doc().set({...o,at:Date.now(),uid:(authUser&&authUser.uid)||"",by:who(),sid:D.sid,st:"new",...(myZid()?{zid:myZid()}:{})});return true}
   catch(e){toast("Chưa gửi được, kiểm tra mạng rồi thử lại.");return false}
 }
 // Máy không nối loa: lời đọc thành yêu cầu gửi về máy loa (chống gọi lặp trong 1 phút)
@@ -78,7 +82,7 @@ function dhLive(D,o){if(o.live.length||D.c.courts)gdTick();return dhPauseBar()+d
 let dhSC=null,dhPS=false,dhAN=false,dhQR=false,dhCB=null,dhGV=false,dhAw=false;
 const dhDim=a=>`<div class="mxdim" data-act="${a}"></div>`;
 const DH_ANN=["Mời các vận động viên chưa check-in tới bàn ban tổ chức","Còn 10 phút bắt đầu vòng knockout","Nước uống đã có ở bàn ban tổ chức","Xin mời các vận động viên giữ trật tự khu vực sân đang thi đấu"];
-const DH_WHY=[["Tranh cãi điểm","Trận tạm dừng · BTC xem lịch sử từng pha"],["Chấn thương","Gửi kèm timeout y tế"],["Thiếu người, bỏ cuộc","BTC xác nhận xử thua"],["Cần bóng, nước, việc khác",""]];
+const DH_WHY=[["Tranh cãi điểm","Trận tạm dừng · BTC xem lịch sử từng pha"],["Chấn thương","Gửi kèm timeout y tế"],["Thiếu người, bỏ cuộc","BTC xác nhận xử thua"],["Cần bóng, nước, việc khác",""],["Cặp chưa đến sân","Đã gọi tên mà chưa tới · BTC bấm giờ chờ rồi xử thua"]];
 function dhSheets(D){
   let h="";
   if(dhSC&&!(MINI&&canWrite)){const x=(S.calls||[]).find(z=>z.id===dhSC);if(!x){dhSC=null}else{
@@ -106,7 +110,7 @@ function dhSheets(D){
       ${q?`<div class="two b"><button class="line" data-act="cplink" data-v="${esc(dhRefLink(k,q.code))}">Copy link</button><button class="primary" data-act="dhqrsh" data-v="${k}">↗ Chia sẻ Sân ${esc(cName(k))}</button></div>`:""}
       <div class="two b"><button class="line" data-act="dhqrx">Đóng</button><button class="line red" data-act="dhqrnew">${armed("dhqrnew:x")?"Bấm lần nữa":"Đổi mã · thu hồi tất cả"}</button></div></div>`}
   if(dhCB!=null)h+=dhDim("dhcbx")+`<div class="mxsheet dhsh" role="dialog" aria-label="Gọi BTC"><span class="grab"></span><span class="mxsec">Gọi BTC tới Sân ${esc(cName(dhCB))}</span><b class="mxh">Chuyện gì xảy ra?</b>
-    <div class="dhwhy">${DH_WHY.map(([t,s],i)=>`<button class="line" data-act="dhcbgo" data-v="${i}"><b>${t}</b>${s?`<small>${s}</small>`:""}</button>`).join("")}</div><button class="line" data-act="dhcbx">Huỷ</button></div>`;
+    <div class="dhwhy">${DH_WHY.map(([t,s],i)=>`<button class="line" data-act="dhcbgo" data-v="${i}"><b>${t}</b>${s?`<small>${s}</small>`:""}</button>`).join("")}</div>${btcZ().length?`<span class="dhor">hoặc</span>${btcZ().map(z=>`<button class="line zchat" data-act="dhzc" data-v="${esc(z.z)}">💬 Nhắn Zalo cho BTC (${esc(z.n)})</button>`).join("")}<small class="rule">Mở khung chat Zalo khi cần nói nhiều, không cần chọn lý do.</small>`:""}<button class="line" data-act="dhcbx">Huỷ</button></div>`;
   if(dhGV){const c=REFQ&&REFQ.court;
     h+=dhDim("dhgvx")+`<div class="mxsheet dhsh" role="dialog" aria-label="Bàn giao sân"><span class="grab"></span><b class="mxh">Bàn giao ${c?"Sân "+esc(cName(c)):"sân"}</b>
       <small class="rule">Người nhận quét QR dán ở sân để làm trọng tài tiếp. Đang giữa trận thì lưu tỉ số trước, hoặc người sau mở Màn trọng tài nhập tiếp đúng điểm.</small>
@@ -185,6 +189,8 @@ async function dhAct(act,b){
     catch(e){toast("Mã QR đã đổi hoặc hết hạn. Nhờ BTC đưa mã mới.")}return true}
   if(act==="dhcb"){dhCB=Number(v)||1;render();return true}
   if(act==="dhcbx"){dhCB=null;render();return true}
+  if(act==="dhzc"){dhCB=null;render();await zChat(v,"");return true}
+  if(act==="dhabs"){const c=Number(v)||1;if(await dhAddCall({k:"btc",court:c,why:DH_WHY[4][0]}))toast("Đã báo BTC · BTC sẽ loa gọi và bấm giờ");render();return true}
   if(act==="dhcbgo"){const w=DH_WHY[+v];const c=dhCB;dhCB=null;if(w&&c&&await dhAddCall({k:"btc",court:c,why:w[0]}))toast("Đã gọi BTC · máy BTC hiện thông báo đỏ");render();return true}
   if(act==="dhgv"){dhGV=true;render();return true}
   if(act==="dhgvx"){dhGV=false;render();return true}
@@ -229,7 +235,11 @@ async function dhAct(act,b){
     let d=0;if(+X.at){while(+X.at+d<Date.now()+36e5)d+=7*864e5}for(const k of ["at","deadline","lockAt"])if(+n[k])n[k]=+n[k]+d;n.st="draft";n.createdAt=Date.now();
     let nid=null;await write(async()=>{const ref=db.collection("sched").doc();nid=ref.id;await ref.set(n)},`Đã tạo ${xName(X)} từ mẫu (nháp)`);if(nid)go("app",{tab:"dk",x:nid});return true}
   if(act==="dhaw0"){dhAw=!dhAw;render();return true}
-  if(act==="dhaw"){const M=money(D),p=prizes(D,M)[+v];if(!p)return true;speak(dhAwText(D,p),"","aw:"+v);await write(()=>saveCfg({award:{...(cfg().award||{}),[v]:Date.now()}}));return true}
+  if(act==="dhseq"){const R=chotRanks(D,prizes(D,money(D))),order=R.map((p,i)=>i).reverse();
+    if(v==="stop"){chotSeq=null;stopSpeak();render();return true}
+    chotSeq=v==="go"?0:(chotSeq||0)+1;if(chotSeq>=order.length){chotSeq=null;render();return true}
+    const i=order[chotSeq];speak(dhAwText(D,R[i]),"","aw:"+i);await write(()=>saveCfg({award:{...(cfg().award||{}),[i]:Date.now()}}));render();return true}
+  if(act==="dhaw"){const M=money(D),p=chotRanks(D,prizes(D,M))[+v];if(!p)return true;speak(dhAwText(D,p),"","aw:"+v);await write(()=>saveCfg({award:{...(cfg().award||{}),[v]:Date.now()}}));return true}
   return true;
 }
 // Thẻ Trọng tài trong Quản lý: giao sân (người + QR), máy loa

@@ -315,6 +315,12 @@ async function g4Act(act,b){
 
 /* ----- Chặng Chốt (C1–C4): 4 bước, mỗi bước một nút tiếp ----- */
 let g5Cost=null,g5Send=true;
+// Các hạng để trao giải: theo giải thưởng; không có tiền thưởng thì vẫn lấy hạng 1, 2, 3 của giải cặp để đọc loa
+let chotSeq=null;
+function chotRanks(D,pz){const G=isG(D.c),KO=G&&isKO(D.c.giai);
+  if(pz.length)return pz.map((p,i)=>({...p,label:KO&&i===0?"Vô địch":p.label}));
+  if(!G)return [];const GD=gDerive(D);if(!GD||!GD.complete)return [];const T=GD.table.filter(t=>!t.out),L=KO?["Vô địch","Á quân","Hạng ba","Hạng ba"]:["Giải nhất","Giải nhì","Giải ba"];
+  return T.slice(0,KO&&!GD.third?4:3).map((t,i)=>({label:L[i],ids:[t.p.a,t.p.b],k:0}))}
 function gmChotV(D,X){
   const c=D.c,G=isG(c),M0=money(D),R0=recv(D,M0),extra=chotMien?Object.fromEntries(R0.unpaid.map(p=>[p.id,0])):null,M=money(D,extra),R=recv(D,M),pz=prizes(D,M);
   const st=Math.max(1,Math.min(4,chotStep));
@@ -322,10 +328,15 @@ function gmChotV(D,X){
   if(D.playing.length)h+=`<div class="warnbox"><b>Còn ${D.playing.length} trận đang đánh.</b>Lưu tỉ số hoặc huỷ trận ở Đang đánh rồi quay lại chốt.</div>`;
   const nmOf=ids=>ids.map(id=>esc(D.pmap.get(id)?.name||"?")).join(" &amp; ");
   if(st===1&&gMulti()&&X&&ndOn(X))h+=ndPodium(D,X);
-  else if(st===1){const aw=cfg().award||{},order=pz.map((p,i)=>i).reverse(),KO=G&&isKO(c.giai),lbl=(p,i)=>KO&&i===0?"Vô địch":p.label;
-    if(KO&&pz.length)h+=`<div class="g5pod">${[1,0,2].filter(i=>pz[i]).map(i=>`<div class="p p${i}"><small>${nmOf(pz[i].ids)}</small><b>${i+1}</b></div>`).join("")}</div>`;
-    h+=pz.length?`<div class="g2list">${order.map(i=>{const p=pz[i],done=!!aw[i];return `<div class="g5r"><i class="${done?"ok":"w"}">${done?"✓":"!"}</i><span class="t">${esc(lbl(p,i))} · ${nmOf(p.ids)} · ${fmtK(p.k)}</span>${done?"":spkBtn("aw:"+i,`<button class="btn-line sm" data-act="dhaw" data-v="${i}">📣 Gọi</button>`)}</div>`}).join("")}</div>`
-      :`<div class="gmempty"><b>Giải này không có giải thưởng</b><span>Bấm Tiếp để thu nốt tiền.</span></div>`}
+  else if(st===1){const aw=cfg().award||{},R=chotRanks(D,pz),order=R.map((p,i)=>i).reverse(),KO=G&&isKO(c.giai);
+    if(KO&&R.length)h+=`<div class="g5pod">${[1,0,2].filter(i=>R[i]).map(i=>`<div class="p p${i}"><small>${nmOf(R[i].ids)}</small><b>${i+1}</b></div>`).join("")}</div>`;
+    if(R.length){
+      // Đọc lần lượt từ hạng thấp lên: mỗi hạng chờ BTC bấm Tiếp để trao giải, chụp ảnh
+      if(chotSeq!=null&&order[chotSeq]!=null){const i=order[chotSeq],nx=order[chotSeq+1];
+        h+=`<div class="g5seq"><span class="cap">🔊 Đang đọc · ${chotSeq+1}/${order.length}</span><span class="q">“${esc(dhAwText(D,R[i]))}”</span><div class="two"><button class="btn-line" data-act="dhseq" data-v="stop">Dừng</button><button class="ball" data-act="dhseq" data-v="next">${nx!=null?`Tiếp: ${esc(R[nx].label)} ›`:"✓ Xong"}</button></div></div>`}
+      h+=`<div class="g2list">${order.map(i=>{const p=R[i],done=!!aw[i];return `<div class="g5r"><i class="${done?"ok":"w"}">${done?"✓":"!"}</i><span class="t">${esc(p.label)} · ${nmOf(p.ids)}${p.k?` · ${fmtK(p.k)}`:""}</span>${spkBtn("aw:"+i,`<button class="btn-line sm" data-act="dhaw" data-v="${i}" aria-label="Đọc ${esc(p.label)}">${done?"🔊":"📣 Gọi"}</button>`)}</div>`}).join("")}</div>`;
+      if(chotSeq==null)h+=`<button class="btn-line wide g5all" data-act="dhseq" data-v="go">🔊 Đọc lần lượt: ${order.map(i=>esc(R[i].label)).join(" → ")}</button>`}
+    else h+=`<div class="gmempty"><b>Giải này không có giải thưởng</b><span>Bấm Tiếp để thu nốt tiền.</span></div>`}
   if(st===2){
     if(R0.unpaid.length){h+=`<span class="gmlb">${R0.unpaid.length} người chưa trả</span><div class="g2list">${R0.unpaid.map(p=>`<div class="g2p">${av(p,"sm",1)}<span class="t"><b>${esc(p.name)}</b></span><b class="num">${fmtK(M0.payOf(p.id))}</b><button class="btn-line sm" data-act="lpaid" data-p="${esc(p.id)}">Đã nhận</button></div>`).join("")}</div>
       <span class="gmlb">Không thu được thì</span><div class="gmchips c2"><button class="gmchip${!chotMien?" on":""}" data-act="chotm" data-v="0">Ghi vào còn nợ</button><button class="gmchip${chotMien?" on":""}" data-act="chotm" data-v="1">Miễn</button></div>`}

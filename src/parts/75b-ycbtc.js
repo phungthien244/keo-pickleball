@@ -46,6 +46,11 @@ function ycSheets(D){
        +it("🏳",armed("ycff:"+m.id+":a")?"Bấm lần nữa để xử thua":`Xử thua ${g4Nm(D,m.a)}`,`${g4Nm(D,m.b)} thắng ${tgt}–0`,"ycff",m.id,1,"a")
        +it("🏳",armed("ycff:"+m.id+":b")?"Bấm lần nữa để xử thua":`Xử thua ${g4Nm(D,m.b)}`,`${g4Nm(D,m.a)} thắng ${tgt}–0`,"ycff",m.id,1,"b");
       ok=`<button class="btn-line wide" data-act="dhscok" data-id="${esc(x.id)}">✓ Đã xử lý</button>`}
+    if(m&&i===4){const tgt=+(mRule(m)||{}).to||+D.c.target||11,miss=s=>(m[s]||[]).filter(id=>!rfHere(m,id)).length,ord=miss("b")>miss("a")?["b","a"]:["a","b"];
+      L=ord.map(s=>`<button class="gmli" data-act="scabs" data-id="${esc(m.id)}" data-v="${s}" data-c="${esc(x.id)}"><i>⏱</i><span class="t"><b>Gọi cặp vắng · ${g4Nm(D,m[s])}</b><small>Loa gọi tên, chờ ${absWait()} phút, hết giờ BTC quyết xử thua</small></span><span aria-hidden="true">›</span></button>`).join("")
+       +it("🏳",armed("ycff:"+m.id+":"+ord[0])?"Bấm lần nữa để xử thua":`Xử thua ${g4Nm(D,m[ord[0]])} ngay`,`${g4Nm(D,m[ord[0]==="a"?"b":"a"])} thắng ${tgt}–0`,"ycff",m.id,1,ord[0]);
+      ok=`<button class="btn-line wide" data-act="dhscok" data-id="${esc(x.id)}">✓ Đã tới · đánh bình thường</button>`}
+    if(x.zid&&MINI)L+=it("💬",`Nhắn Zalo cho ${esc(x.by||"trọng tài")}`,"Mở khung chat Zalo","yczc",x.zid);
     return dhDim("dhscx")+`<div class="mxsheet dhsh gmsh" role="dialog" aria-label="Sân ${esc(cName(x.court))} cần BTC"><span class="grab"></span><b class="mxh">Sân ${esc(cName(x.court))} · ${esc(x.why||"Cần BTC")}</b>
       <small class="rule">${esc(x.by||"Trọng tài")} gọi ${x.at?hm(x.at):""}${sc}${x.wait&&x.wait>Date.now()?` · chờ tới ${hm(x.wait)}`:m?" · trận đang tạm dừng":""}</small>${L?`<div class="gmlist">${L}</div>`:""}${ok}</div>`}
   if(ycList){const L=ycHist(D);
@@ -72,6 +77,7 @@ function ycMine(){
 }
 async function ycAct(act,b){
   const id=b.dataset.id,D=derive();
+  if(act==="yczc"){await zChat(id,"");return true}
   if(act==="yclist"){ycList=true;gmMore=false;kSh=null;render();return true}
   if(act==="yclistx"){ycList=false;render();return true}
   if(act==="yccancel"){await write(()=>db.collection("calls").doc(id).update({st:"skip",doneAt:Date.now()}),"Đã huỷ gọi BTC");return true}
@@ -82,6 +88,6 @@ async function ycAct(act,b){
   if(act==="ycff"){const m=(S.matches||[]).find(x=>x.id===id),t=b.dataset.v;if(!m)return true;if(!armOr("ycff:"+id+":"+t))return true;
     const tgt=+(mRule(m)||{}).to||+D.c.target||11,sa=t==="a"?0:tgt,sb=t==="a"?tgt:0,x=(S.calls||[]).find(z=>z.id===dhSC);
     await write(async()=>{await db.collection("matches").doc(id).update({sa,sb,status:"done",doneAt:Date.now(),ff:t});if(x)await db.collection("calls").doc(x.id).update({st:"done",doneAt:Date.now(),doneBy:who()})},`Đã xử thua · ${t==="a"?g4Nm(D,m.b):g4Nm(D,m.a)} thắng`);
-    dhSC=null;if(m.giai&&autoNext()){await new Promise(r=>setTimeout(r,60));await gFill()}return true}
+    dhSC=null;scSh=null;if(m.giai&&autoNext()){await new Promise(r=>setTimeout(r,60));await gFill()}return true}
   return false;
 }
