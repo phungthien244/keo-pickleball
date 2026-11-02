@@ -283,7 +283,7 @@ function tnPage(D){
 /* ----- Tạo giải: điền form cũ rồi lưu ----- */
 async function tnCreate(D){
   const t=tn,fmt=t.fmt;if(!fmt||TN_G.some(([g])=>tnGSt(t,g)==="no"))return;
-  xNew=fmt;xEdit=null;xSEdit=null;xQ=false;xClearDraft();
+  const keepP=xfPoster;xNew=fmt;xEdit=null;xSEdit=null;xQ=false;xClearDraft();xfPoster=keepP;
   const set=(k,v)=>{drafts["xf-"+k]=String(v)};
   const pairs=t.nds?t.nds.reduce((a,n)=>a+(+n.max||0),0):t.pairs||0;
   set("name",tnName(t));set("date",ymdIso(t.date));set("time",t.time);if(t.end)set("end",t.end);set("courts",t.courts||2);set("target",tnRu(t,"G").to);
@@ -337,7 +337,7 @@ async function tnAct(act,b){
   if(act==="tnx"){tnPg=null;tn=null;tnEd=null;tnG=null;render();return true}
   if(act==="tnfull"){tnPg=null;gsDO=false;gsTO=false;gsPg=null;gsOpt=null;xQ=true;xQs=1;gmSw=false;xNew="pick";xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;render();top();return true}
   if(act==="tnpg"){tnPg=v==="txt"?"pick":v;if(v==="txt"||v==="pick"){tn=null;tnG=null}tnEd=null;delete errs.xf;render();top();return true}
-  if(act==="tnfmt"){const L=TN_FC.find(x=>x[0]===v);if(!L)return true;tn=tcStart(tnFill({fmt:v}),"",["fmt"]);tn.pick=L[2];tnG=null;tnGEdit=false;tnPg="card";tcBeat();render();top();return true}
+  if(act==="tnfmt"){const L=TN_FC.find(x=>x[0]===v);if(!L)return true;xfPoster=null;tn=tcStart(tnFill({fmt:v}),"",["fmt"]);tn.pick=L[2];tnG=null;tnGEdit=false;tnPg="card";tcBeat();render();top();return true}
   if(act==="tnback"){tnEd=null;delete errs.xf;if(tnPg==="grp"&&tnGEdit){tnGEdit=false;tnG=null;tnPg="card"}else tnPg=tnPg==="card"||tnPg==="grp"?(tn&&tn.from?"pick":"txt"):"pick";render();top();return true}
   if(act==="tnmau"){drafts["tn-txt"]=TN_MAU[+v][1];render();return true}
   if(act==="tngo"){const txt=String(val("tn-txt","")).trim();if(!txt){toast("Tả giải bằng một câu, ví dụ: Chủ nhật 7h, 16 cặp chia bảng, 200k.");return true}
@@ -346,8 +346,8 @@ async function tnAct(act,b){
     // Mục đọc được bằng luật (mẫu chặt) giữ nguyên; AI điền phần còn lại
     const base=tnParse(txt);tn={...(ai||{}),...base,guess:new Set(),ok:new Set()};if(ai&&ai.nds&&!base.nds)tn.nds=ai.nds;
     if(base.wd&&tn.date===base.date&&tn.time&&tnAt(tn)<Date.now())tn.date+=7*864e5;delete tn.wd;
-    const said=Object.keys(tn).filter(k=>tn[k]!=null&&tn[k]!=="");tn=tcStart(tnFill(tn),txt,said);if(tnAIM.lim){tn.noAI=1;tn.log.push({b:"Hôm nay CLB đã dùng hết lượt AI. App vẫn đọc được số, ngày giờ, tiền; phần còn lại bạn bấm nút nhé."})}tcFirst(tn,txt);tnG=null;tnGEdit=false;tnPg="card";tcBeat();render();top();return true}
-  if(act==="tnprev"){const X=schedById(b.dataset.id);if(!X)return true;tnFromPrev(X);tn=tcStart(tnFill(tn),"",Object.keys(tn));for(const Q of TC_Q)tn.ans.add(Q.k);tnPg="card";tcBeat();render();top();return true}
+    const said=Object.keys(tn).filter(k=>tn[k]!=null&&tn[k]!=="");xfPoster=null;tn=tcStart(tnFill(tn),txt,said);if(tnAIM.lim){tn.noAI=1;tn.log.push({b:"Hôm nay CLB đã dùng hết lượt AI. App vẫn đọc được số, ngày giờ, tiền; phần còn lại bạn bấm nút nhé."})}tcFirst(tn,txt);tnG=null;tnGEdit=false;tnPg="card";tcBeat();render();top();return true}
+  if(act==="tnprev"){const X=schedById(b.dataset.id);if(!X)return true;tnFromPrev(X);xfPoster=null;tn=tcStart(tnFill(tn),"",Object.keys(tn));for(const Q of TC_Q)tn.ans.add(Q.k);tnPg="card";tcBeat();render();top();return true}
   if(!tn)return true;
   if(act==="tnset"){const i0=String(v).indexOf(":"),k=String(v).slice(0,i0),x=String(v).slice(i0+1),num=["date","pairs","people","courts","fee","target","lay","koN"].includes(k);
     tn[k]=k==="guests"||k==="gton"||k==="third"?x==="1":num?+x:x;tn.guess.delete(k);delete drafts["tn-"+k];

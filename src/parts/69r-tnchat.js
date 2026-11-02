@@ -142,6 +142,7 @@ function tcRows(t){const R=[],at=tnAt(t),E=tnEst(t);
   if(!t.nds&&!(t.fmt==="xoay"&&(t.thu==="keo"||t.thu==="deu")))R.push(["Lệ phí",t.fee==null||t.fee===""?"—":+t.fee?`${fmtK(+t.fee)}/người`:"Miễn phí","fee"]);
   R.push(["Chuyển khoản",{off:"Không, trả tại sân",opt:"Tuỳ chọn",req:"Bắt buộc mới giữ chỗ"}[t.pay]||"—","pay"]);
   R.push(["Giải thưởng",t.gton==null?"—":!t.gton?"Không":(t.gt||"hang")==="hang"?[t.h1&&`Nhất ${tnK(+t.h1)}`,t.h2&&`Nhì ${tnK(+t.h2)}`,t.h3&&`Ba ${tnK(+t.h3)}`].filter(Boolean).join(" · ")||"—":t.gt==="trich"?`Trích ${t.gtv}% lệ phí`:t.gt==="gop"?`Mỗi người góp ${fmtK(+t.gtv||0)}`:`CLB bỏ ra ${fmtK(+t.gtv||0)}`,"gton"]);
+  R.push(["Ảnh bìa",xfPoster&&!xfPoster.del&&(xfPoster.out||xfPoster.src)?(xfPoster.out?"Đã chọn ảnh":"Đang xử lý ảnh…"):"Chưa có · app tự vẽ khi chia sẻ","poster"]);
   return R}
 /* ----- Sửa ngay trên thẻ tóm tắt: bấm dòng → mở nút chọn ngay dưới dòng đó, chọn là đổi, không hỏi lại từ đầu ----- */
 const TC_CV={fmt:t=>t.fmt==="bang"?`b:${t.koN}`:t.fmt,n:t=>t.fmt==="xoay"?t.people:t.pairs,dt:t=>t.dt||"free",date:t=>t.date,time:t=>t.time,courts:t=>t.courts,thu:t=>t.thu,fee:t=>t.fee,pay:t=>t.pay,
@@ -154,7 +155,15 @@ function tcRuleEd(t,X){const r=tcRu(t,X),c=(f,v,l,on)=>`<button class="tcbtn${on
     +`<span class="tcel">Tới ${r.to-1}–${r.to-1} thì sao</span><div class="tcq">${c("w","0",`Chạm ${r.to}, ai tới trước thắng`,!r.w2)}${c("w","c",`Cách 2, có tối đa`,r.w2&&r.cap!==0)}${c("w","n","Cách 2, không giới hạn",r.w2&&r.cap===0)}</div>`
     +(r.w2&&r.cap!==0?`<span class="tcel">Tối đa</span><div class="tcq">${[2,3,4,6,10].map(x=>c("cap",r.to+x,`${r.to+x}`,r.cap===r.to+x)).join("")}</div>`:"")
     +`<div class="tcq"><button class="ball go tcok" data-act="tced" data-v="">✓ Xong</button></div>`}
+// Ảnh bìa (không bắt buộc): dùng chung phần poster của form tạo giải (xfPoster), lưu khi bấm Tạo giải
+function tcPosterEd(){const P=xfPoster,cur=P&&!P.del?P.out:null,busy=P&&P.src&&!P.out;
+  return (cur?`<img class="xpimg" src="${esc(cur)}" alt="Ảnh bìa giải">`:`<div class="xpnone">${busy?"Đang xử lý ảnh…":"Chưa có ảnh: khi chia sẻ qua Zalo, app tự vẽ ảnh từ tên giải, ngày và sân."}</div>`)
+    +(P&&P.src?`<div class="tcq">${[["fit","Vừa khung"],["fill","Cắt ngang"]].map(([v,l])=>`<button class="tcbtn${P.mode===v?" on":""}" data-act="tcpm" data-v="${v}">${l}</button>`).join("")}</div>`
+      +(P.mode==="fill"?`<div class="tcq">${[["0","Phần trên"],["0.5","Giữa"],["1","Phần dưới"]].map(([v,l])=>`<button class="tcbtn${String(P.pos)===v?" on":""}" data-act="tcpp" data-v="${v}">${l}</button>`).join("")}</div>`:""):"")
+    +`<div class="tcq"><label class="tcbtn">${cur?"Đổi ảnh":"Chọn ảnh"}<input type="file" accept="image/*" data-xposter="1" class="sr"></label>${cur?`<button class="tcbtn" data-act="tcpdel">Bỏ ảnh</button>`:""}<button class="ball go tcok" data-act="tced" data-v="">✓ Xong</button></div>`
+    +`<small class="tcel">Hiện khi chia sẻ giải qua Zalo và trên đầu trang giải. Khung ngang 1200×630: ảnh dọc chọn “Vừa khung” để giữ trọn ảnh.</small>`}
 function tcEdBody(t,k){
+  if(k==="poster")return tcPosterEd();
   if(k==="sG")return tcRuleEd(t,"G");if(k==="pK")return tcRuleEd(t,"K");if(k==="pF")return tcRuleEd(t,"F");
   if(k==="fmt")return tcChips(t,"fmt")+(t.fmt==="bang"&&t.pairs?`<span class="tcel">Số bảng</span>${tcChips(t,"koN")}`:"")+(t.fmt==="bang"&&tcQ(t)>=4?`<span class="tcel">Tranh hạng ba</span>${tcChips(t,"third")}`:"");
   if(k==="gton")return tcChips(t,"gton")+(t.gton?`<span class="tcel">Mức thưởng</span>${tcChips(t,"prize")}<small class="tcel">Mức khác thì gõ ở ô dưới, ví dụ “nhất 1 triệu nhì 500 ba 200”.</small>`:"");
@@ -334,5 +343,8 @@ async function tcAct(act,b){if(!tn||!tn.ans)return false;
   if(act==="tcre"){tn.ask=null;tn.edit=null;tcRe(tn,b.dataset.v);tcGo();return true}
   if(act==="tced"){tn.edit=b.dataset.v||null;render();return true}
   if(act==="tce"){tcEdit(tn,b.dataset.k,b.dataset.v);render();return true}
+  if(act==="tcpm"){if(xfPoster){xfPoster.mode=b.dataset.v==="fill"?"fill":"fit";xPosterRedo()}return true}
+  if(act==="tcpp"){if(xfPoster){xfPoster.pos=Math.max(0,Math.min(1,+b.dataset.v||0));xPosterRedo()}return true}
+  if(act==="tcpdel"){xfPoster=null;render();return true}
   if(act==="tcr"){tcRuleSet(tn,b.dataset.x,b.dataset.f,b.dataset.v);render();return true}
   return false}

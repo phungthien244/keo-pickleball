@@ -158,6 +158,10 @@ test("gõ luật điểm đúng vòng đang hỏi; sửa ngay trên thẻ tóm t
   await e.click("tced", { v: "courts" }); await e.until(() => e.V().includes('data-act="tce" data-k="courts"'));
   await e.click("tce", { k: "courts", v: "6" }); await e.until(() => e.T().includes("6 sân"));
   expect(e.T()).toContain("Xong rồi!"); expect(e.T()).not.toContain("Dùng mấy sân?");
+  // Ảnh bìa: dòng không bắt buộc, bấm mở chọn ảnh ngay trên thẻ
+  expect(e.T()).toContain("Chưa có · app tự vẽ khi chia sẻ");
+  await e.click("tced", { v: "poster" }); await e.until(() => e.V().includes('data-xposter="1"')); expect(e.T()).toContain("Chọn ảnh");
+  await e.click("tced", { v: "" });
   // Sửa chung kết: số ván, tối đa
   await e.click("tced", { v: "pF" }); await e.click("tcr", { x: "F", f: "sets", v: "3" }); await e.click("tcr", { x: "F", f: "cap", v: "17" });
   await e.until(() => e.T().includes("Thắng 2/3 ván · mỗi ván 15 điểm cách 2, tối đa 17"));
