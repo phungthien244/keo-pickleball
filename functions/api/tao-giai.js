@@ -29,6 +29,8 @@ const SCHEMA = `Trả về MỘT đối tượng JSON, chỉ gồm các khoá d�
 - gt: "hang" mức thưởng cố định từng hạng, "trich" trích % lệ phí, "codinh" CLB bỏ ra một khoản, "gop" mỗi người góp thêm
 - h1, h2, h3: tiền thưởng nhất, nhì, ba (nghìn đồng); gtv: % trích (gt trich) hoặc số nghìn đồng (gt codinh/gop)
 - trao: "namnu" số 1 nam và nữ, "top3" hạng 1, 2, 3
+- rG, rK, rF: luật điểm của vòng bảng (hoặc mọi trận nếu không chia bảng), của tứ kết–bán kết, của chung kết: {sets: 1|3|5 (số ván: 1 ván, thắng 2/3, thắng 3/5), to: số điểm mỗi ván, w2: true nếu phải thắng cách 2, cap: điểm tối đa (0 = không giới hạn)}.
+  "chạm N" mà KHÔNG có chữ "cách" → w2 false (ai tới N trước thắng). Chỉ đặt w2 true khi câu nói "cách 2"/"cách". Không nói vòng nào thì là rG. Nếu chỉ nói "chạm N" chung chung thì dùng target thay vì rG.
 - nds: chỉ khi giải có từ 2 nội dung trở lên: [{name, dt, cap, max (số cặp), fee, koN}]
 Quy ước tiền: số trơn nhỏ (≤ 20) đi với giải thưởng là triệu ("nhất 2" = 2000); "500" là 500 nghìn. "lít"/"xị" = 100 nghìn ("8 lít" = 800, "2 lít" = 200).
 Quy ước khác: có nói số bảng hoặc chia bảng → fmt "bang". "nhất nhì (mỗi bảng) vào vòng trong" → lay 2; "chỉ nhất bảng đi tiếp" → lay 1. "không tranh hạng 3/không đánh tranh 3" → third false.
@@ -42,6 +44,7 @@ Mọi số phải là số JSON (không để trong ngoặc kép).`;
 
 const EX = [
   ["Chủ nhật 7h, 16 cặp chia 4 bảng lấy 2, 200k, nhất 1 củ nhì 500, ck trước", { loai: "tao", fmt: "bang", time: "07:00", pairs: 16, koN: 4, lay: 2, fee: 200, gton: true, gt: "hang", h1: 1000, h2: 500, pay: "req" }],
+  ["vòng bảng chạm 11, tứ kết bán kết 15 cách 2 tối đa 18, chung kết 3 ván 11 cách 2 max 15", { loai: "tao", rG: { sets: 1, to: 11, w2: false, cap: 0 }, rK: { sets: 1, to: 15, w2: true, cap: 18 }, rF: { sets: 3, to: 11, w2: true, cap: 15 } }],
   ["giải vua sân tối thứ 6 nhé", { loai: "chuaco", tt: "vua", time: "19:00" }],
   ["bo3 là sao", { loai: "hoi", hoi: "bo" }],
   ["thuê giúp tôi 2 trọng tài với in áo", { loai: "ngoai" }],

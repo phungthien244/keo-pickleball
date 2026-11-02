@@ -26,7 +26,7 @@ test("câu đủ mọi mục (đọc bằng luật khi không có AI) → trò c
   expect(e.T()).toContain("Vòng bảng mỗi trận đánh thế nào?"); expect(e.V()).toContain('data-act="tcskip"');
   expect(e.T()).not.toContain("Nội dung đánh đôi gì?");
   await e.click("tcskip"); await e.until(() => e.T().includes("Xong rồi!"));
-  expect(e.T()).toContain("Nhất 1 triệu · Nhì 500k · Ba 200k"); expect(e.T()).toContain("Thắng 2/3 ván chạm 11, cách 2, tối đa 15");
+  expect(e.T()).toContain("Nhất 1 triệu · Nhì 500k · Ba 200k"); expect(e.T()).toContain("Thắng 2/3 ván · mỗi ván 11 điểm cách 2, tối đa 15");
   await e.click("tnmk"); await e.until(() => sched(e).length === 1);
   const X = sched(e)[0];
   expect(X).toMatchObject({ fmt: "giai", ko: true, max: 32, dt: "mix", courts: 4, phi: 200, pay: "req", gton: true, gt: "hang", hang: [1000, 500, 200], end: "11:30", st: "open" });
@@ -37,7 +37,7 @@ test("câu đủ mọi mục (đọc bằng luật khi không có AI) → trò c
 test("thiếu thì hỏi bắt buộc trước (chưa có Bỏ qua hết), nút trả lời nhanh, tối đa khác, vòng sau tuỳ chỉnh; không kịp giờ gợi ý sửa; bấm dòng thì hỏi lại", async () => {
   const e = await boot(base());
   await open(e);
-  e.input("tn-txt", "16 cặp chia 4 bảng đánh loại, 2 sân, phải xong trước 9h");
+  e.input("tn-txt", "16 cặp chia 4 bảng đánh loại, 2 sân");
   await e.click("tngo"); await e.until(() => e.T().includes("Đánh ngày nào?"));
   expect(e.V()).not.toContain('data-act="tcskip"'); expect(e.V()).not.toContain('data-v="__def"');
   await e.click("tca", { k: "date", v: String(day0() + 864e5) }); await e.until(() => e.T().includes("Mấy giờ bắt đầu?"));
@@ -54,9 +54,8 @@ test("thiếu thì hỏi bắt buộc trước (chưa có Bỏ qua hết), nút 
   await e.click("tca", { k: "sK", v: "3:11" }); await e.click("tca", { k: "wK", v: "0" });
   await e.click("tca", { k: "pF", v: "5:11:15" });
   await e.click("tcskip"); await e.until(() => e.T().includes("Xong rồi!"));
-  expect(e.T()).toContain("1 ván chạm 11, cách 2, tối đa 15"); expect(e.T()).toContain("Thắng 2/3 ván chạm 11"); expect(e.T()).toContain("Thắng 3/5 ván chạm 11");
-  expect(e.T()).toContain("Không kịp"); expect(e.V()).toContain('data-act="tnfix" data-v="c2"');
-  await e.click("tnfix", { v: "noend" }); await e.until(() => !e.T().includes("Không kịp"));
+  expect(e.T()).toContain("1 ván · 11 điểm cách 2, tối đa 15"); expect(e.T()).toContain("Thắng 2/3 ván · mỗi ván chạm 11"); expect(e.T()).toContain("Thắng 3/5 ván · mỗi ván 11 điểm cách 2, tối đa 15");
+  expect(e.T()).not.toContain("Xong trước"); expect(e.T()).not.toContain("Không kịp");
   // Bấm dòng Sân → hỏi lại số sân
   await e.click("tcre", { v: "courts" }); await e.until(() => e.T().includes("Dùng mấy sân?"));
   await e.click("tca", { k: "courts", v: "4" }); await e.until(() => e.T().includes("Xong rồi!"));
@@ -150,8 +149,10 @@ test("gõ luật điểm đúng vòng đang hỏi; sửa ngay trên thẻ tóm t
   await e.until(() => e.T().includes("Tứ kết và bán kết đánh thế nào?"));
   const say = async t => { e.input("tn-say", t); await e.click("tnsay"); };
   await say("1 ván chạm 15"); await e.until(() => e.T().includes("Chung kết đánh thế nào?"));
-  expect(e.T()).toContain("Đã ghi tứ kết, bán kết"); expect(e.T()).toContain("1 ván chạm 15, cách 2, tối đa 18.");
-  await say("thắng 3/5 chạm 11 tối đa 15"); await e.until(() => !e.T().includes("Chung kết đánh thế nào?") || e.T().includes("Có đánh tranh hạng ba"));
+  expect(e.T()).toContain("Đã ghi tứ kết, bán kết"); expect(e.T()).toContain("1 ván · chạm 15.");
+  await say("thắng 3/5, 15 cách 2"); await e.until(() => e.T().includes("Cách 2 thì tối đa mấy điểm?"));
+  await e.click("tcx", { v: "2" }); await e.until(() => e.T().includes("Có đánh tranh hạng ba"));
+  expect(e.T()).toContain("Thắng 3/5 ván · mỗi ván 15 điểm cách 2, tối đa ?");
   await e.click("tcskip"); await e.until(() => e.T().includes("Xong rồi!"));
   // Sửa sân ngay trên thẻ
   await e.click("tced", { v: "courts" }); await e.until(() => e.V().includes('data-act="tce" data-k="courts"'));
@@ -159,7 +160,7 @@ test("gõ luật điểm đúng vòng đang hỏi; sửa ngay trên thẻ tóm t
   expect(e.T()).toContain("Xong rồi!"); expect(e.T()).not.toContain("Dùng mấy sân?");
   // Sửa chung kết: số ván, tối đa
   await e.click("tced", { v: "pF" }); await e.click("tcr", { x: "F", f: "sets", v: "3" }); await e.click("tcr", { x: "F", f: "cap", v: "17" });
-  await e.until(() => e.T().includes("Thắng 2/3 ván chạm 11, cách 2, tối đa 17"));
+  await e.until(() => e.T().includes("Thắng 2/3 ván · mỗi ván 15 điểm cách 2, tối đa 17"));
   // Đổi sang xoay cặp: thiếu số người thì mở luôn dòng đó
   await e.click("tced", { v: "fmt" }); await e.click("tce", { k: "fmt", v: "xoay" }); await e.until(() => e.V().includes('data-act="tce" data-k="n"'));
   await e.click("tce", { k: "n", v: "20" }); await e.until(() => e.T().includes("Tối đa 20 người"));

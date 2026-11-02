@@ -26,7 +26,7 @@ function koGroupsOk(G){const K=koK(G),gs=K.groups||[];if(!gs.length)return false
 /* Luật điểm từng vòng: {to: chạm, w2: cách 2, cap: tối đa (0 = không giới hạn), sets: 1|3|5} */
 function koBase(c){c=c||cfg();return {to:+c.target||11,w2:winBy2(c),cap:ptMax(c),sets:1}}
 function koRule(K,st,c){const b=koBase(c),r=st==="g"?K.rg:st==="f"?K.rf:K.rk;return {...b,...(r||{})}}
-const ruleTx=R=>`${R.sets>1?`${R.sets} set · `:""}chạm ${R.to}${R.w2?`, cách 2${R.cap?`, tối đa ${R.cap}`:", không giới hạn"}`:""}`;
+const ruleTx=R=>{const p=R.w2?`${R.to} điểm cách 2, ${R.cap?`tối đa ${R.cap}`:"không giới hạn"}`:`chạm ${R.to}`;return R.sets>1?`thắng ${Math.ceil(R.sets/2)}/${R.sets} ván · mỗi ván ${p}`:p};
 // Thứ tự hạt giống trong nhánh: 1–8, 4–5, 2–7, 3–6…
 function seedOrder(Q){let o=[1];while(o.length<Q){const n=o.length*2+1,x=[];for(const s of o)x.push(s,n-s);o=x}return o}
 const koRName=n=>n===2?"Chung kết":n===4?"Bán kết":n===8?"Tứ kết":n===16?"Vòng 1/8":n===32?"Vòng 1/16":n===64?"Vòng 1/32":`Vòng ${n} cặp`;
@@ -95,7 +95,7 @@ const gFind=(GD,x,y)=>GD.games.find(q=>q.st==="wait"&&((q.x===x&&q.y===y)||(q.x=
 const koMName=(GD,code)=>{const g=GD&&GD.games.find(q=>q.ko===code);return g?(g.ab&&g.rn!=="Chung kết"&&g.rn!=="Tranh hạng ba"?`${g.rn} ${g.ab.replace(/^\D+/,"")}`:g.rn):"Knockout"};
 // Luật của một trận (trận cũ có to/bo)
 const mRule=m=>m&&m.rule?m.rule:m&&m.bo===3?{to:koTgt(),w2:false,cap:0,sets:3}:m&&m.to?{to:m.to,w2:false,cap:0,sets:1}:null;
-const mRuleTx=m=>{const R=mRule(m);return R?(R.sets>1?`${R.sets} set · nhập số set thắng · mỗi set ${ruleTx({...R,sets:1})}`:ruleTx(R).replace(/^c/,"C")):null};
+const mRuleTx=m=>{const R=mRule(m);return R?(R.sets>1?`Thắng ${Math.ceil(R.sets/2)}/${R.sets} ván · nhập số ván thắng · mỗi ván ${ruleTx({...R,sets:1})}`:ruleTx(R).replace(/^c/,"C")):null};
 // Kiểm tra tỉ số theo luật của trận
 function vPtsM(m,a,b){
   const R=mRule(m);if(!R)return validPts(a,b,cfg());

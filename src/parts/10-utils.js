@@ -105,7 +105,7 @@ function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTim
 
 const winBy2=c=>c.win2!=null?!!c.win2:!isG(c);
 const ptMax=c=>winBy2(c)?(+c.ptMax||0):0;
-function ruleTxt(c){const t=+c.target||11;return !winBy2(c)?`Chạm ${t}, không cần cách 2`:`Chạm ${t}, thắng cách 2${ptMax(c)?`, tối đa ${ptMax(c)}`:""}`}
+function ruleTxt(c){const t=+c.target||11;return !winBy2(c)?`Chạm ${t}, không cần cách 2`:`${t} điểm cách 2, ${ptMax(c)?`tối đa ${ptMax(c)}`:"không giới hạn"}`}
 function validPts(a,b,c){
   const t=+c.target||11;
   if(!Number.isInteger(a)||!Number.isInteger(b)||a<0||b<0||a===b)return "Nhập điểm hai đội, không được hòa.";

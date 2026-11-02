@@ -126,7 +126,7 @@ const ymdIso=t=>{const d=new Date(t);return `${d.getFullYear()}-${String(d.getMo
 const tnK=v=>v>=1000&&v%100===0?`${String(v/1000).replace(".",",")} triệu`:fmtK(v);
 
 /* ----- AI: đọc câu, sửa bằng lời (máy chủ /api/tao-giai). Lỗi hoặc quá 9 giây thì trả null ----- */
-const TN_KEYS=["fmt","name","date","time","end","endBy","courts","place","target","pairs","people","koN","lay","third","dt","cap","pairReg","guests","feeG","fee","thu","pay","gton","gt","h1","h2","h3","gtv","trao","nds"];
+const TN_KEYS=["rG","rK","rF","fmt","name","date","time","end","endBy","courts","place","target","pairs","people","koN","lay","third","dt","cap","pairReg","guests","feeG","fee","thu","pay","gton","gt","h1","h2","h3","gtv","trao","nds"];
 function tnClean(a){
   if(!a||typeof a!=="object")return {};const o={},n=(v,mn,mx)=>{const x=+v;return Number.isFinite(x)&&x>=mn&&x<=mx?x:undefined},en=(v,L)=>L.includes(v)?v:undefined;
   const hm2=v=>/^\d{1,2}:\d{2}$/.test(String(v||""))?String(v).padStart(5,"0"):undefined;
@@ -139,6 +139,7 @@ function tnClean(a){
   set("dt",en(a.dt,["free","MM","FF","mix"]));set("cap",n(a.cap,1,16));set("pairReg",en(a.pairReg,["pair","solo"]));if(typeof a.guests==="boolean")o.guests=a.guests;
   set("feeG",n(a.feeG,0,10000));set("fee",n(a.fee,0,10000));set("thu",en(a.thu,["phi","deu","keo"]));set("pay",en(a.pay,["off","opt","req"]));
   if(typeof a.gton==="boolean")o.gton=a.gton;set("gt",en(a.gt,["hang","trich","codinh","gop"]));for(const k of ["h1","h2","h3"])set(k,n(a[k],0,100000));set("gtv",n(a.gtv,0,100000));set("trao",en(a.trao,["namnu","top3"]));
+  for(const X of ["rG","rK","rF"]){const r=a[X];if(r&&typeof r==="object"){const to=n(r.to,5,31);if(to){const w2=r.w2===true;let cap=w2?n(r.cap,0,51)||0:0;if(cap&&cap<=to)cap=to+2;const sets=[1,3,5].includes(+r.sets)?+r.sets:1;o[X]={to,w2,cap,sets:X!=="rF"&&sets===5?3:sets}}}}
   if(Array.isArray(a.nds)&&a.nds.length>=2)o.nds=a.nds.slice(0,8).map(x=>({dt:en(x&&x.dt,["free","MM","FF","mix"])||"free",cap:n(x&&x.cap,1,16)||0,max:n(x&&x.max,2,64)||16,fee:n(x&&x.fee,0,10000),koN:n(x&&x.koN,1,16),name:String((x&&x.name)||"").trim().slice(0,30)})).map(x=>({...x,name:x.name||`${TN_DT[x.dt]}${x.cap?" "+x.cap:""}`}));
   return o;
 }
@@ -293,8 +294,8 @@ async function tnCreate(D){
   if(fmt==="xoay")set("max",t.people||0);
   else{set("max",pairs*2);set("pairReg",t.pairReg||"pair");drafts["xf-dt"]=t.nds?"free":(t.dt||"free")}
   if(fmt==="bang"){const N=Math.max(1,t.koN||(t.nds?2:4));set("koN",N);set("koQ",tnQ2(Math.min(pairs||N*2,N*(t.lay||2))));set("koThird",t.third===false?"0":"1");set("koTouched","1");
-    for(const X of ["G","K","F"]){const r=tnRu(t,X);set("ko"+X+"t",r.to);set("ko"+X+"w",r.w2?"1":"0");set("ko"+X+"c",r.w2?r.cap||0:0);set("ko"+X+"s",r.sets||1)}}
-  else{const r=tnRu(t,"G");set("adv","1");set("win2",r.w2?"1":"0");set("ptMax",r.w2?r.cap||0:0)}
+    for(const X of ["G","K","F"]){const r=tnRu(t,X);set("ko"+X+"t",r.to);set("ko"+X+"w",r.w2?"1":"0");set("ko"+X+"c",r.w2?(r.cap<0?r.to+4:r.cap||0):0);set("ko"+X+"s",r.sets||1)}}
+  else{const r=tnRu(t,"G");set("adv","1");set("win2",r.w2?"1":"0");set("ptMax",r.w2?(r.cap<0?r.to+4:r.cap||0):0)}
   if(fmt!=="xoay")set("refOn",t.ref?"1":"0");
   set("gton",t.gton?"1":"0");
   if(t.gton){set("gt",t.gt||"hang");set("h1",+t.h1||0);set("h2",+t.h2||0);set("h3",+t.h3||0);set("gtv",+t.gtv||0);if(t.trao)set("trao",t.trao)}
@@ -326,7 +327,7 @@ function tnRd(){
   for(const k of Object.keys(drafts))if(k.startsWith("tn-")&&k!=="tn-txt"&&k!=="tn-say")delete drafts[k];
 }
 // Gộp kết quả AI vào bản nháp: mục AI nêu thì thay, bỏ nhãn ĐOÁN
-function tnMerge(a){if(!a)return;for(const [k,v] of Object.entries(a)){tn[k]=v;tn.guess.delete(k)}if(a.fmt==="bang"&&tn.pairs&&!tn.koN){tn.koN=Math.max(1,Math.round(tn.pairs/4));tn.lay=2}}
+function tnMerge(a){if(!a)return;if(tn&&tn.ans)delete a.endBy;for(const [k,v] of Object.entries(a)){tn[k]=v;tn.guess.delete(k)}if(a.fmt==="bang"&&tn.pairs&&!tn.koN){tn.koN=Math.max(1,Math.round(tn.pairs/4));tn.lay=2}}
 async function tnAct(act,b){
   const v=b.dataset.v,D=derive();
   if(act==="xnew"){if(!MINI||!canWrite||legacy||!mxDrOn()||b.dataset.full)return false;tnPg="pick";tn=null;tnEd=null;tnG=null;gmMore=false;
