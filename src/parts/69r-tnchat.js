@@ -111,7 +111,7 @@ function tcAnswer(t,k,v){const Q=TC_Q.find(x=>x.k===k);if(!Q)return;
 function tcSkipAll(t){for(const Q of tcPend(t)){if(Q.need&&Q.need(t))return false;const s=Q.def?Q.def(t):Q.star?Q.star(t):null;if(s!=null)Q.set(t,String(s));t.ans.add(Q.k)}t.log.push({a:"Bỏ qua hết, app tự chọn"});return true}
 // Hỏi lại một câu (bấm dòng trên thẻ tóm tắt): bỏ câu trả lời của nó và các câu phụ
 const TC_DEP={fmt:["fmt","koN","sG","wG","cG","pK","sK","wK","cK","pF","sF","wF","cF","third"],gton:["gton","prize"],sG:["sG","wG","cG"],pK:["pK","sK","wK","cK"],pF:["pF","sF","wF","cF"],n:["n","koN"]};
-function tcRe(t,k){const L=TC_DEP[k]||[k];for(const x of L){t.ans.delete(x);const Q=TC_Q.find(q=>q.k===x);for(const y of (Q&&Q.keys)||[])t.said.delete(y)}if(k==="fmt"){t.cust=new Set();t.capAsk=null}t.reAsk=k}
+function tcRe(t,k){t.sumOn=false;const L=TC_DEP[k]||[k];for(const x of L){t.ans.delete(x);const Q=TC_Q.find(q=>q.k===x);for(const y of (Q&&Q.keys)||[])t.said.delete(y)}if(k==="fmt"){t.cust=new Set();t.capAsk=null}t.reAsk=k}
 // Gõ chữ: các mục vừa đổi coi như đã trả lời câu tương ứng
 function tcTyped(t,keys){for(const Q of TC_Q)if((Q.keys||[]).some(k=>keys.includes(k))){t.ans.add(Q.k);if(t.reAsk===Q.k)t.reAsk=null}if(keys.includes("target"))tcSet(t,"G",{to:+t.target})}
 
@@ -145,9 +145,35 @@ function tcRows(t){const R=[],at=tnAt(t),E=tnEst(t);
   R.push(["Chuyển khoản",{off:"Không, trả tại sân",opt:"Tuỳ chọn",req:"Bắt buộc mới giữ chỗ"}[t.pay]||"—","pay"]);
   R.push(["Giải thưởng",t.gton==null?"—":!t.gton?"Không":(t.gt||"hang")==="hang"?[t.h1&&`Nhất ${tnK(+t.h1)}`,t.h2&&`Nhì ${tnK(+t.h2)}`,t.h3&&`Ba ${tnK(+t.h3)}`].filter(Boolean).join(" · ")||"—":t.gt==="trich"?`Trích ${t.gtv}% lệ phí`:t.gt==="gop"?`Mỗi người góp ${fmtK(+t.gtv||0)}`:`CLB bỏ ra ${fmtK(+t.gtv||0)}`,"gton"]);
   return R}
+/* ----- Sửa ngay trên thẻ tóm tắt: bấm dòng → mở nút chọn ngay dưới dòng đó, chọn là đổi, không hỏi lại từ đầu ----- */
+const TC_CV={fmt:t=>t.fmt==="bang"?`b:${t.koN}`:t.fmt,n:t=>t.fmt==="xoay"?t.people:t.pairs,dt:t=>t.dt||"free",date:t=>t.date,time:t=>t.time,courts:t=>t.courts,thu:t=>t.thu,fee:t=>t.fee,pay:t=>t.pay,
+  gton:t=>t.gton==null?"":t.gton?"1":"0",guests:t=>t.guests?"1":"0",ref:t=>t.ref?"1":"0",pairReg:t=>t.pairReg||"pair",endBy:t=>t.endBy||"",koN:t=>t.koN,third:t=>t.third===false?"0":"1"};
+const tcChips=(t,k,act="tce")=>{const Q=TC_Q.find(x=>x.k===k),cv=String(TC_CV[k]?TC_CV[k](t):"");return `<div class="tcq">${Q.o(t).filter(([v])=>v!=="?").map(([v,l])=>`<button class="tcbtn${String(v)===cv?" on":""}" data-act="${act}" data-k="${k}" data-v="${esc(String(v))}">${esc(l)}</button>`).join("")}</div>`};
+// Luật điểm một vòng: số ván · chạm · tới sát nút thì sao
+function tcRuleEd(t,X){const r=tcRu(t,X),c=(f,v,l,on)=>`<button class="tcbtn${on?" on":""}" data-act="tcr" data-x="${X}" data-f="${f}" data-v="${v}">${l}</button>`;
+  return `<span class="tcel">Số ván</span><div class="tcq">${c("sets",1,"1 ván",r.sets===1)}${c("sets",3,"Thắng 2/3",r.sets===3)}${X==="F"?c("sets",5,"Thắng 3/5",r.sets===5):""}</div>`
+    +`<span class="tcel">Chạm</span><div class="tcq">${[7,11,15,21].map(v=>c("to",v,`Chạm ${v}`,r.to===v)).join("")}</div>`
+    +`<span class="tcel">Tới ${r.to-1}–${r.to-1} thì sao</span><div class="tcq">${c("w","0",`Chạm ${r.to} là thắng`,!r.w2)}${c("w","c",`Cách 2, có tối đa`,r.w2&&!!r.cap)}${c("w","n","Cách 2, không giới hạn",r.w2&&!r.cap)}</div>`
+    +(r.w2&&r.cap?`<span class="tcel">Tối đa</span><div class="tcq">${[2,3,4,6,10].map(x=>c("cap",r.to+x,`${r.to+x}`,r.cap===r.to+x)).join("")}</div>`:"")
+    +`<div class="tcq"><button class="ball go tcok" data-act="tced" data-v="">✓ Xong</button></div>`}
+function tcEdBody(t,k){
+  if(k==="sG")return tcRuleEd(t,"G");if(k==="pK")return tcRuleEd(t,"K");if(k==="pF")return tcRuleEd(t,"F");
+  if(k==="fmt")return tcChips(t,"fmt")+(t.fmt==="bang"&&t.pairs?`<span class="tcel">Số bảng</span>${tcChips(t,"koN")}`:"")+(t.fmt==="bang"&&tcQ(t)>=4?`<span class="tcel">Tranh hạng ba</span>${tcChips(t,"third")}`:"");
+  if(k==="gton")return tcChips(t,"gton")+(t.gton?`<span class="tcel">Mức thưởng</span>${tcChips(t,"prize")}<small class="tcel">Mức khác thì gõ ở ô dưới, ví dụ “nhất 1 triệu nhì 500 ba 200”.</small>`:"");
+  const Q=TC_Q.find(x=>x.k===k);if(!Q)return "";
+  return tcChips(t,k)+(["n","fee","courts","time","date"].includes(k)?`<small class="tcel">Số khác thì gõ ở ô dưới, ví dụ ${{n:"“20 cặp”",fee:"“250k”",courts:"“5 sân”",time:"“6h30”",date:"“15/11”"}[k]}.</small>`:"")}
+// Sau khi sửa: câu mới phát sinh mà có cách phổ biến thì lấy nút ★; còn thiếu mục bắt buộc thì mở dòng đó
+const TC_ROWK={prize:"gton",koN:"fmt",cG:"sG",wG:"sG",sK:"pK",wK:"pK",cK:"pK",sF:"pF",wF:"pF",cF:"pF",third:"fmt",endX:"time"};
+function tcSettle(t){t.capAsk=null;for(const Q of tcPend(t)){if(Q.need&&Q.need(t))continue;const s=Q.def?Q.def(t):Q.star?Q.star(t):null;if(s!=null)Q.set(t,String(s));t.ans.add(Q.k)}
+  const r=tcReq(t)[0];return r?TC_ROWK[r.k]||r.k:null}
+function tcEdit(t,k,v){const Q=TC_Q.find(x=>x.k===k);if(!Q)return;Q.set(t,String(v));t.ans.add(k);for(const x of Q.keys||[])t.guess.delete(x);
+  if(k==="fmt"&&!String(v).startsWith("b:")&&t.fmt==="bang"&&t.pairs&&!t.koN)t.koN=tcBestN(t.pairs);
+  const nx=tcSettle(t),stay=["fmt","gton"].includes(TC_ROWK[k]||k)&&(k==="fmt"?t.fmt==="bang":t.gton);t.edit=nx||(stay?TC_ROWK[k]||k:null)}
+function tcRuleSet(t,X,f,v){const r={...tcRu(t,X)};if(f==="sets")r.sets=+v;else if(f==="to"){r.to=+v;if(r.cap&&r.cap<=r.to)r.cap=r.to+4}else if(f==="cap")r.cap=+v;
+  else if(f==="w"){r.w2=v!=="0";r.cap=v==="c"?(r.cap>r.to?r.cap:r.to+4):0}t["r"+X]=r;if(X==="G")t.target=r.to}
 function tcSum(t){const E=tnEst(t);
   let h=`<div class="tcsum"><button class="tcrow" data-act="tned" data-v="name"><span>Tên giải</span><b>${esc(tnName(t))}</b><i>›</i></button>`
-    +tcRows(t).map(([l,v,k])=>`<button class="tcrow" data-act="${k==="nds"?"tngrp":"tcre"}" data-v="${k==="nds"?"nguoi":k}"><span>${l}</span><b>${v}</b><i>›</i></button>`).join("")+`</div>`;
+    +tcRows(t).map(([l,v,k])=>{const on=t.edit===k;return `<button class="tcrow${on?" on":""}" data-act="${k==="nds"?"tngrp":"tced"}" data-v="${k==="nds"?"nguoi":on?"":k}" aria-expanded="${on}"><span>${l}</span><b>${v}</b><i>${on?"⌃":"›"}</i></button>${on?`<div class="tced">${tcEdBody(t,k)}</div>`:""}`}).join("")+`</div>`;
   if(E&&E.late){h+=`<div class="tnbad"><b>⚠ Không kịp · dự kiến xong ${tcHm(E.end)}</b><small>${E.m} trận trên ${t.courts} sân cần khoảng ${dur(E.mins)}, giải phải xong trước ${t.endBy}</small></div>`;
     const fx=[],tryE=p=>{const x=tnEst({...t,...p});return x?x.end:0};
     if(tcRu(t,"G").to>7)fx.push(["t7",`Vòng bảng chạm 7 thay vì ${tcRu(t,"G").to}`,tryE({rG:{...tcRu(t,"G"),to:7,cap:0,w2:false},target:7})]);
@@ -217,12 +243,17 @@ function tcFirst(t,txt){const n=tnNorm(txt),no=TC_NO.find(([,f])=>f(n));
   if(tnAIM.loai==="chuaco"&&tnAIM.tt){tcWant(tnAIM.tt);t.fmt=null;t.said.delete("fmt");t.ask=tcNoAsk(t,tnAIM.tt);return}
   t.ask=tcOdd(t)}
 // Người dùng gõ trong khung trò chuyện
-async function tcSay(s){const t=tn,n=tnNorm(s),cur=t.ask?null:tcPend(t)[0];delete drafts["tn-say"];
+async function tcSay(s){const t=tn,n=tnNorm(s),cur=t.ask||t.sumOn?null:tcPend(t)[0];delete drafts["tn-say"];
   // Câu đang hỏi giữ lại trong khung trò chuyện, trả lời xong thì hỏi lại
   if(t.ask)t.log.push({b:t.ask.q});else if(cur)t.log.push({q:cur.q(t)});t.log.push({a:s});t.ask=null;
   const miss=()=>{t.miss=(t.miss||0)+1;t.log.push({b:t.miss>=2?"Có vẻ gõ hơi khó. Bấm một nút là nhanh nhất, hoặc chuyển sang form đầy đủ để tự điền.":"Mình chưa hiểu 😅 Bạn bấm nút bên dưới, hoặc gõ kiểu <b>“4 sân”</b>, <b>“250k”</b>, <b>“nhất 1 triệu”</b>."})};
   const merge=o=>{const k=Object.keys(o).filter(x=>x!=="wd");if(!k.length)return false;tnMerge(o);tcTyped(t,k);t.miss=0;t.ask=tcOdd(t);return true};
   const rules=()=>{const p=tnParse(s);delete p.wd;const k=Object.keys(p).filter(x=>!["date","time"].includes(x)||/ngay|gio|\dh|thu|chu nhat|mai|\//.test(n)),o={};for(const x of k)o[x]=p[x];return o};
+  t.wasDone=!cur&&!t.ask;
+  // 0. Đang hỏi (hoặc đang sửa) luật điểm một vòng: đọc "1 ván chạm 15", "thắng 2/3", "cách 2 tối đa 18" cho đúng vòng đó
+  {const RX={sG:"G",wG:"G",cG:"G",pK:"K",sK:"K",wK:"K",cK:"K",pF:"F",sF:"F",wF:"F",cF:"F"},X=RX[t.edit]||(cur&&RX[cur.k]);
+    if(X&&!tcAskQ(n)){const r=tcRuleTxt(t,X,n);if(r){t["r"+X]=r;if(X==="G")t.target=r.to;for(const k of Object.keys(RX))if(RX[k]===X)t.ans.add(k);if(t.cust)t.cust.delete(X);t.capAsk=null;t.miss=0;
+      t.log.push({b:`Đã ghi <b>${X==="G"?(t.fmt==="bang"?"vòng bảng":"mỗi trận"):X==="K"?(tcQ(t)>=8?"tứ kết, bán kết":"bán kết"):"chung kết"}</b>: ${esc(tcRTx(r))}.`});return}}}
   // 1. Thể thức chưa có
   const no=TC_NO.find(([,f])=>f(n));
   if(no){tcWant(no[0]);const o=rules();delete o.fmt;if(Object.keys(o).length){tnMerge(o);tcTyped(t,Object.keys(o))}t.miss=0;t.ask=tcNoAsk(t,no[0]);return}
@@ -239,6 +270,18 @@ async function tcSay(s){const t=tn,n=tnNorm(s),cur=t.ask?null:tcPend(t)[0];delet
   if(a&&merge(a))return;
   if(merge(rules()))return;
   miss()}
+// Đọc luật điểm gõ tay cho một vòng; không có gì thì trả null
+function tcRuleTxt(t,X,n){const r={...tcRu(t,X)};let m,hit=false;
+  if(/giong vong bang/.test(n)&&X!=="G")return {...tcRu(t,"G")};
+  if(/3\/5|bo ?5|thang 3 van|\b5 van/.test(n)){r.sets=5;hit=true}else if(/2\/3|bo ?3|thang 2 van|\b[23] van/.test(n)){r.sets=3;hit=true}else if(/\b1 van|mot van/.test(n)){r.sets=1;hit=true}
+  if(r.sets===5&&X!=="F")r.sets=3;
+  if(m=n.match(/cham\s*(\d{1,2})/)){r.to=Math.max(5,Math.min(31,+m[1]));hit=true}
+  if(m=n.match(/(?:toi da|tran|max)\s*(\d{1,2})/)){r.w2=true;r.cap=Math.max(r.to+1,+m[1]);hit=true}
+  else if(/khong gioi han/.test(n)){r.w2=true;r.cap=0;hit=true}
+  else if(/cach (biet )?2|cach hai/.test(n)){r.w2=true;if(!r.cap||r.cap<=r.to)r.cap=r.to+(X==="K"?3:4);hit=true}
+  else if(/cham (la|thi|ai truoc)|khong (can )?cach|khong cach/.test(n)){r.w2=false;r.cap=0;hit=true}
+  else if(hit&&(n.match(/cham\s*(\d{1,2})/)||[])[1]&&r.cap&&r.cap<=r.to)r.cap=r.to+3;
+  return hit?r:null}
 // Chọn nút của câu hỏi phụ (thể thức chưa có, số vô lý, mâu thuẫn, tên)
 function tcAskAns(t,i){const A=t.ask,o=A&&A.o[+i];if(!o)return;t.log.push({q:A.q.replace(/<br>/g," ").replace(/<[^>]+>/g,""),a:o.l});t.ask=null;
   for(const [k,v] of Object.entries(o.p||{})){t[k]=v;t.guess.delete(k)}
@@ -249,7 +292,7 @@ function tcAskAns(t,i){const A=t.ask,o=A&&A.o[+i];if(!o)return;t.log.push({q:A.q
 /* ----- Giao diện: hiệu ứng đang gõ -----
    Sau mỗi câu trả lời, lời app hiện sau một nhịp ngắn (chấm "đang gõ") tuỳ độ dài, rồi hiện dần. Test thì không chờ. */
 let tcWait=0,tcTm=null;
-function tcParts(t){const P=[],cur=t.ask?null:tcPend(t)[0],req=tcReq(t).length,me=h=>P.push({me:1,h:tcMe(h)}),bot=(h,ex)=>P.push({h:tcBot(h,ex),n:(h+(ex||"")).replace(/<[^>]+>/g,"").length});
+function tcParts(t){const P=[],cur=t.ask||t.sumOn?null:tcPend(t)[0],req=tcReq(t).length,me=h=>P.push({me:1,h:tcMe(h)}),bot=(h,ex)=>P.push({h:tcBot(h,ex),n:(h+(ex||"")).replace(/<[^>]+>/g,"").length});
   if(t.from)bot(`Mình lấy lại cài đặt của <b>${esc(t.fromName||"")}</b>, ngày chuyển sang tuần gần nhất.`);
   else if(t.pick){me(esc(t.pick));bot("Được. Mình hỏi vài câu để soạn giải nhé, câu nào chưa biết thì bấm “Để app chọn”.")}
   else{me(esc(t.txt));const s=t.seenH;bot(s?"Mình đã hiểu:":"Mình chưa đọc được nhiều từ câu này, mình hỏi từng mục nhé.",s);
@@ -259,8 +302,10 @@ function tcParts(t){const P=[],cur=t.ask?null:tcPend(t)[0],req=tcReq(t).length,m
   else if(cur){const st=cur.star?cur.star(t):null,nt=cur.note?cur.note(t):"",canDef=cur.def||st!=null;
     bot(`<b>${esc(cur.q(t))}</b>`,nt?`<small>${esc(nt)}</small>`:"");
     P.push({h:`<div class="tcq">${cur.o(t).map(([v,l])=>`<button class="tcbtn${String(v)===String(st)?" star":""}" data-act="tca" data-k="${cur.k}" data-v="${esc(String(v))}">${esc(l)}${String(v)===String(st)?" ★":""}</button>`).join("")}${canDef?`<button class="lnk tcdef" data-act="tca" data-k="${cur.k}" data-v="__def">Để app chọn</button>`:""}${req?"":`<button class="lnk tcdef" data-act="tcskip">Bỏ qua các câu còn lại</button>`}${(t.miss||0)>=2?`<button class="lnk tcdef" data-act="tnfull">Tạo bằng form đầy đủ ›</button>`:""}</div>`})}
-  else{bot("Xong rồi! Bạn kiểm tra lại nhé. Bấm dòng nào thì mình hỏi lại câu đó.",tcSum(t));
-    const E=tnEst(t);P.push({h:`<div class="tcq end">${E&&E.late?`<button class="btn-line" data-act="tnmk" data-v="late">Tạo giải dù không kịp</button>`:`<button class="ball go" data-act="tnmk">✓ Tạo giải</button>`}</div>`})}
+  else{bot("Xong rồi! Bạn kiểm tra lại nhé. Muốn đổi dòng nào thì bấm vào dòng đó để chọn lại ngay.",tcSum(t));
+    t.sumOn=true;const E=tnEst(t),R=tcReq(t);
+    if(R.length)P.push({h:`<div class="tcq end"><button class="btn-line" data-act="tced" data-v="${TC_ROWK[R[0].k]||R[0].k}">Còn thiếu: ${esc(R[0].q(t).replace(/\?$/,""))}</button></div>`});
+    else P.push({h:`<div class="tcq end">${E&&E.late?`<button class="btn-line" data-act="tnmk" data-v="late">Tạo giải dù không kịp</button>`:`<button class="ball go" data-act="tnmk">✓ Tạo giải</button>`}</div>`})}
   return P}
 // Lời app mới (sau câu của người dùng) chờ một nhịp rồi mới hiện
 function tcBeat(){const P=tcParts(tn);let i=P.length;while(i>0&&!P[i-1].me)i--;const n=P.slice(i).reduce((a,x)=>a+(x.n||0),0);
@@ -283,5 +328,8 @@ async function tcAct(act,b){if(!tn||!tn.ans)return false;
   if(act==="tca"){tcAnswer(tn,b.dataset.k,b.dataset.v);tn.ask=tcOdd(tn);tcGo();return true}
   if(act==="tcx"){tcAskAns(tn,b.dataset.v);tcGo();return true}
   if(act==="tcskip"){tcSkipAll(tn);tcGo();return true}
-  if(act==="tcre"){tn.ask=null;tcRe(tn,b.dataset.v);tcGo();return true}
+  if(act==="tcre"){tn.ask=null;tn.edit=null;tcRe(tn,b.dataset.v);tcGo();return true}
+  if(act==="tced"){tn.edit=b.dataset.v||null;render();return true}
+  if(act==="tce"){tcEdit(tn,b.dataset.k,b.dataset.v);render();return true}
+  if(act==="tcr"){tcRuleSet(tn,b.dataset.x,b.dataset.f,b.dataset.v);render();return true}
   return false}

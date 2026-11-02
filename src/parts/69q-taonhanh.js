@@ -362,7 +362,7 @@ async function tnAct(act,b){
   if(act==="tnedok"){tnRd();if(tcBadName(tn.name)){tn.name="";toast("Tên này không dùng được vì tên giải hiện công khai, bạn đặt tên khác nhé.");return true}tnEd=null;render();return true}
   if(act==="tnndx"){tn.nds.splice(+v,1);if(tn.nds.length<2){const n=tn.nds[0];tn.nds=null;if(n){tn.pairs=n.max;tn.dt=n.dt;tn.cap=n.cap;tn.fee=n.fee;tn.koN=n.koN;tn.lay=2}}render();return true}
   if(act==="tnfix"){if(v==="t7"){tn.target=7;tn.rG={...tnRu(tn,"G"),to:7,w2:false,cap:0}}else if(v==="c2")tn.courts=(tn.courts||1)+2;else if(v==="half"){tn.pairs=Math.max(4,Math.round(tn.pairs/2));tn.koN=Math.max(1,Math.round((tn.koN||2)/2))}else if(v==="noend")tn.endBy="";render();return true}
-  if(act==="tnsay"&&tn.ans){const s=String(val("tn-say","")).trim();if(!s||tnBusy||tcWait>Date.now())return true;await tcSay(s);tcBeat();render();tcDown();return true}
+  if(act==="tnsay"&&tn.ans){const s=String(val("tn-say","")).trim();if(!s||tnBusy||tcWait>Date.now())return true;await tcSay(s);if(tn.wasDone&&!tn.ask){const e=tcSettle(tn);if(e)tn.edit=e}tcBeat();render();tcDown();return true}
   if(act==="tnsay"){const s=String(val("tn-say","")).trim();if(!s)return true;tnBusy=true;render();const a=await tnAI(s,tnCur(tn));tnBusy=false;
     const C=tn.ans?(k=>{tn.log.push({a:s});if(k)tcTyped(tn,k);else tn.log.push({b:"Mình chưa hiểu câu này. Bấm nút bên dưới, hoặc nói rõ hơn, ví dụ “6 sân”, “250k”, “nhất 1 triệu nhì 500”."})}):null;
     if(a&&Object.keys(a).length){tnMerge(a);delete drafts["tn-say"];if(C)C(Object.keys(a));else toast("Đã sửa theo lời bạn")}

@@ -140,3 +140,30 @@ test("gõ sai: vô nghĩa (2 lần thì có form đầy đủ), hỏi luật, th
   await e.click("tcskip"); await e.until(() => e.T().includes("Xong rồi!"));
   expect(e.T()).toContain("Số cặp 50 cặp"); expect(e.T()).toContain("Tên giải Giải đôi");
 });
+
+test("gõ luật điểm đúng vòng đang hỏi; sửa ngay trên thẻ tóm tắt không hỏi lại từ đầu", async () => {
+  const e = await boot(base());
+  await open(e);
+  e.input("tn-txt", "Chủ nhật 7h, 16 cặp chia 4 bảng, 4 sân, 200k/người, chuyển khoản trước, không giải");
+  await e.click("tngo"); await e.until(() => e.T().includes("Mình đã hiểu"));
+  await e.click("tca", { k: "dt", v: "mix" }); await e.click("tca", { k: "sG", v: "1:11" }); await e.click("tca", { k: "wG", v: "0" });
+  await e.until(() => e.T().includes("Tứ kết và bán kết đánh thế nào?"));
+  const say = async t => { e.input("tn-say", t); await e.click("tnsay"); };
+  await say("1 ván chạm 15"); await e.until(() => e.T().includes("Chung kết đánh thế nào?"));
+  expect(e.T()).toContain("Đã ghi tứ kết, bán kết"); expect(e.T()).toContain("1 ván chạm 15, cách 2, tối đa 18.");
+  await say("thắng 3/5 chạm 11 tối đa 15"); await e.until(() => !e.T().includes("Chung kết đánh thế nào?") || e.T().includes("Có đánh tranh hạng ba"));
+  await e.click("tcskip"); await e.until(() => e.T().includes("Xong rồi!"));
+  // Sửa sân ngay trên thẻ
+  await e.click("tced", { v: "courts" }); await e.until(() => e.V().includes('data-act="tce" data-k="courts"'));
+  await e.click("tce", { k: "courts", v: "6" }); await e.until(() => e.T().includes("6 sân"));
+  expect(e.T()).toContain("Xong rồi!"); expect(e.T()).not.toContain("Dùng mấy sân?");
+  // Sửa chung kết: số ván, tối đa
+  await e.click("tced", { v: "pF" }); await e.click("tcr", { x: "F", f: "sets", v: "3" }); await e.click("tcr", { x: "F", f: "cap", v: "17" });
+  await e.until(() => e.T().includes("Thắng 2/3 ván chạm 11, cách 2, tối đa 17"));
+  // Đổi sang xoay cặp: thiếu số người thì mở luôn dòng đó
+  await e.click("tced", { v: "fmt" }); await e.click("tce", { k: "fmt", v: "xoay" }); await e.until(() => e.V().includes('data-act="tce" data-k="n"'));
+  await e.click("tce", { k: "n", v: "20" }); await e.until(() => e.T().includes("Tối đa 20 người"));
+  expect(e.T()).toContain("Xong rồi!");
+  await e.click("tnmk"); await e.until(() => sched(e).length === 1);
+  expect(sched(e)[0]).toMatchObject({ fmt: "xoay", max: 20, courts: 6 });
+});
