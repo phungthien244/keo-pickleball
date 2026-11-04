@@ -117,7 +117,10 @@ function mtItems(D){
     I.push({at:a-48*3600e3,ic:"⏰",t:`Sắp tới: ${xName(z.x)}`,s:`${mtWhen(a)}${z.x.place?" · "+z.x.place:""}`,go:mtGo(z.c,z.x.id)});
     const [st,cl]=mtPay(z);if(cl==="w")I.push({at:a-48*3600e3+1,ic:"💸",t:`${st} · ${xName(z.x)}`,s:"Bấm để chuyển khoản",go:mtGo(z.c,z.x.id)})}
   if(D&&MODE==="club"&&mtMgrHere()){
-    for(const r of (S.regs||[]))if(!r.cancel&&typeof r.sid==="string"&&r.at&&r.at>now-3*864e5){const x=schedById(r.sid);if(x&&(x.at||0)>now)I.push({at:r.at,ic:"🙋",t:`${r.name||"Một người"} đăng ký ${xName(x)}`,s:`${(S.regs||[]).filter(y=>y.sid===r.sid&&!y.cancel).length}${+x.max?"/"+x.max:""} người`,go:`data-act="mtql" data-x="${esc(x.id)}"`})}
+    // Gộp theo lịch đánh: một dòng "+N người" thay vì mỗi người một tin
+    const G=new Map();for(const r of (S.regs||[]))if(!r.cancel&&typeof r.sid==="string"&&r.at&&r.at>now-3*864e5){const b=String(r.sid).split("~")[0],x=schedById(b)||schedById(r.sid);if(!x||(x.at||0)<=now)continue;const g=G.get(x.id)||{x,n:0,at:0,last:""};g.n++;if(r.at>=g.at){g.at=r.at;g.last=r.name||""}G.set(x.id,g)}
+    for(const g of G.values()){const tot=(S.regs||[]).filter(y=>!y.cancel&&typeof y.sid==="string"&&(y.sid===g.x.id||y.sid.startsWith(g.x.id+"~"))).length;
+      I.push({at:g.at,ic:"🙋",t:g.n>1?`${xName(g.x)}: +${g.n} người đăng ký`:`${g.last||"Một người"} đăng ký ${xName(g.x)}`,s:`Tổng ${tot}${+g.x.max?"/"+g.x.max:""} người${g.n>1&&g.last?` · mới nhất ${g.last}`:""}`,go:`data-act="mtql" data-x="${esc(g.x.id)}"`})}
     const pc=typeof pendCount==="function"?pendCount():0;if(pc)I.push({at:Math.max(0,...(S.links||[]).filter(x=>x.status==="pending").map(x=>+x.at||0)),ic:"👋",t:`${pc} người xin vào ${(CLUB&&CLUB.name)||"trang"}`,s:"Duyệt một chạm",go:`data-act="mtqlt" data-v="nguoi"`});
     const ck=typeof ckPending==="function"?ckPending().length:0;if(ck)I.push({at:Math.max(0,...ckPending().map(x=>+x.ci||0)),ic:"🏦",t:`${ck} chuyển khoản chờ xác nhận`,s:"Kiểm tra rồi bấm Đã nhận",go:`data-act="mtql"`})}
   return I.sort((a,b)=>b.at-a.at).slice(0,30);
@@ -133,6 +136,21 @@ function mtTin(D){
 }
 
 /* ----- Tab Tôi ----- */
+let mtRen=false;
+function mtMyName(){const id=S.myClub;if(!id)return "";if(MODE==="club"&&CID===id&&CLUB)return CLUB.name||"";
+  const c=(S.clubs||[]).find(z=>z.id===id)||myClubs().find(z=>z.id===id);if(c&&c.name)return c.name;
+  if(!mtMyName.ld){mtMyName.ld=1;FB.getDoc(FB.doc(FB.fs,"clubs/"+id)).then(x=>{if(x.exists()){const L=myClubs().filter(z=>z.id!==id);L.unshift({id,name:x.data().name,role:"Chủ"});try{localStorage.setItem("pb-mini-clubs",JSON.stringify(L.slice(0,10)))}catch(e){}render()}}).catch(()=>{})}
+  return ""}
+async function mtRename(){
+  const id=S.myClub,v=String(val("mt-nm",mtMyName())).trim().replace(/\s+/g," ");
+  if(v.length<3){errs.mtn="Tên cần ít nhất 3 chữ.";render();return}
+  if(typeof tcBadName==="function"&&tcBadName(v)){errs.mtn="Tên này chưa phù hợp, đặt tên khác nhé.";render();return}
+  try{await FB.updateDoc(FB.doc(FB.fs,"clubs/"+id),{name:v.slice(0,60)});
+    if(MODE==="club"&&CID===id&&CLUB)CLUB.name=v;const c=(S.clubs||[]).find(z=>z.id===id);if(c)c.name=v;
+    try{const L=myClubs().filter(z=>z.id!==id);L.unshift({id,name:v,role:"Chủ"});localStorage.setItem("pb-mini-clubs",JSON.stringify(L.slice(0,10)))}catch(e){}
+    delete drafts["mt-nm"];delete errs.mtn;mtRen=false;toast("Đã đổi tên trang");render()}
+  catch(e){errs.mtn="Chưa đổi được tên, thử lại.";render()}
+}
 function mtToi(D){
   const P=zaloProf(),nm=String(P.n||"").trim(),p=D&&MODE==="club"?mxMe(D):null,C=myClubs();
   if(S.myClub===undefined&&isZaloU(authUser))loadMyClub();
@@ -142,9 +160,15 @@ function mtToi(D){
   h+=`<div class="mxcard list">`
     +(p?li(`href="${pathOf("app",{tab:"bxh"})}" data-go="app" data-t="bxh"`,"🏅","Thứ hạng của tôi",esc((CLUB&&CLUB.name)||""))+li(`href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"`,"📜","Lịch sử trận",`${D.all.get(p.id).ses.size} lần chơi`)+li(`href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}"`,"👤","Hồ sơ, thành tích, sửa ảnh",""):"")
     +li(`data-act="mxsheet"`,"⭐","Trang tổ chức đã tham gia",C.length?`${C.length} trang`:"Chưa có")+`</div>`;
-  h+=`<span class="mxsec">Tôi tổ chức</span><div class="mxcard list">`
-    +(S.myClub?li(`data-act="mtqlc" data-id="${esc(S.myClub)}"`,"🏟",esc(((S.clubs||[]).find(c=>c.id===S.myClub)||C.find(c=>c.id===S.myClub)||{}).name||"Trang tổ chức của tôi"),"Đổi tên, ảnh bìa, tài khoản nhận tiền, người cùng tổ chức")
-      :li(`data-act="mtplus"`,"＋","Tạo lịch đánh đầu tiên","App tự lập trang tổ chức cho bạn, không cần duyệt"))+`</div>`;
+  h+=`<span class="mxsec">Tôi tổ chức</span><div class="mxcard list">`;
+  if(S.myClub){const nm=mtMyName();
+    h+=mtRen?`<div class="mtren"><label class="fld"><span class="lbl">Tên trang tổ chức</span><input id="mt-nm" data-draft="mt-nm" maxlength="60" placeholder="VD: Pickleball Q7 tối thứ 7" value="${esc(val("mt-nm",nm))}"></label>${errs.mtn?`<p class="err">${esc(errs.mtn)}</p>`:""}<span class="two"><button class="ghost" data-act="mtrenx">Huỷ</button><button class="primary" data-act="mtrenok">✓ Lưu tên</button></span></div>`
+      :`<div class="mxli"><i aria-hidden="true">🏟</i><span class="t">${esc(nm||"Trang tổ chức của tôi")}<small>Người chơi thấy tên này trong Tìm và Lịch</small></span><button class="mxsm" data-act="mtren">Đổi tên</button></div>`;
+    h+=li(`data-act="mtqlc" data-id="${esc(S.myClub)}"`,"⚙","Quản lý trang","Ảnh bìa, tài khoản nhận tiền, người cùng tổ chức")}
+  const co=mtOrgClubs().filter(c=>c.id!==S.myClub);
+  for(const c of co)h+=li(`data-act="mtqlc" data-id="${esc(c.id)}"`,"🤝",esc(c.name||c.id),`Cùng tổ chức · ${esc(c.role||"Quản lý")}`);
+  if(!S.myClub&&!co.length)h+=li(`data-act="mtplus"`,"＋","Tạo lịch đánh đầu tiên","App tự lập trang tổ chức cho bạn, không cần duyệt");
+  h+=`</div>`;
   h+=`<div class="mxcard list">${mxInvBtn()}<button class="mxli" data-act="openurl" data-v="https://mini.zalo.me/legal/terms-preview/${MINI_APP_ID}"><span class="t">Điều khoản sử dụng</span><span>↗</span></button>${MODE==="club"&&S.link?`<button class="mxli" data-act="mxleave"><span class="t" style="color:var(--lose)">${armed("mxleave:x")?`Bấm lần nữa: rời ${esc((CLUB&&CLUB.name)||"trang")} và xoá thông tin của tôi`:`Rời ${esc((CLUB&&CLUB.name)||"trang này")}`}</span></button>`:""}</div>`;
   return mtWrap(MT_T.toi,h,"",D);
 }
@@ -191,6 +215,9 @@ function mtResume(){
 function mtPlus(){
   if(isZaloU(authUser)&&S.myClub===undefined){mtPlusWant=true;loadMyClub();toast("Đang mở…");return}
   if(S.myClub){mtOpenTao(S.myClub);return}
+  // Chưa có trang riêng nhưng đang cùng tổ chức trang khác: tạo ở trang đó, không lập trang mới
+  if(mtMgrHere()){mtOpenTao(CID);return}
+  const m=mtOrgClubs()[0];if(m){mtOpenTao(m.id);return}
   MXT="tao";try{scrollTo({top:0})}catch(e){}render();
 }
 
@@ -214,6 +241,9 @@ async function mtAct(act,b,id){
   if(act==="mtqlt"){if(!mtMgrHere())return true;mxSetMode("ql");MXT=null;mxTS=[];go("app",{tab:v||"dk"});return true}
   if(act==="mtqlc"){if(MODE==="club"&&id===CID&&mtMgrHere()){mxSetMode("ql");MXT=null;mxTS=[];go("app",{tab:"dk"});return true}
     try{localStorage.setItem("pb-mxm-"+id,"ql")}catch(e){}mtKeep("-");quickNext();setPath("/"+id);location.reload();return true}
+  if(act==="mtren"){mtRen=true;delete drafts["mt-nm"];delete errs.mtn;render();return true}
+  if(act==="mtrenx"){mtRen=false;delete errs.mtn;render();return true}
+  if(act==="mtrenok"){await mtRename();return true}
   if(act==="mtexit"){mxSetMode("choi");mtTab(mxO||"lich");return true}
   return false;
 }

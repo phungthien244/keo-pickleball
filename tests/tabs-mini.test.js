@@ -12,6 +12,7 @@ const data = () => ({
   "clubs/q7/sched/s1": sc(),
   "clubs/q7/sched/s2": sc({ name: "Giải đôi nam", fmt: "giai", ko: true, loai: "g", at: at(3), cp: true, fee: 200 }),
   "clubs/q7/regs/s1_x": { sid: "s1", uid: "zalo_5", pid: "", name: "Lan", at: Date.now() - 60e3 },
+  "clubs/q7/regs/s1_y": { sid: "s1", uid: "zalo_6", pid: "", name: "Minh", at: Date.now() - 30e3 },
   "clubs/q8": { name: "Q8 Smash", public: true, owner: "o8", createdAt: 1 },
   "clubs/q8/app/config": { title: "Q8", courts: 2, session: 1, phase: "prep" },
   "clubs/q8/sched/m1": sc({ name: "Mini game CN", fmt: "giai", loai: "m", at: at(1), cp: true, fee: 100 }),
@@ -39,7 +40,7 @@ test("Lịch · Tôi tổ chức: thẻ từng lịch đánh có số người, 
   const e = await boot();
   await e.until(() => e.T().includes("Tôi tổ chức · 2"));
   await e.click("mtseg", { v: "tc" });
-  expect(e.T()).toContain("Social tối thứ 7"); expect(e.T()).toContain("1/8"); expect(e.T()).toContain("Còn 7 chỗ");
+  expect(e.T()).toContain("Social tối thứ 7"); expect(e.T()).toContain("2/8"); expect(e.T()).toContain("Còn 6 chỗ");
   expect(e.T()).toContain("GIẢI");
   await e.click("mtql", { x: "s1" }); await e.until(() => e.V().includes("mxdr"));
   expect(e.V()).not.toContain('class="mxnav n5"');
@@ -49,7 +50,7 @@ test("Tin: người mới đăng ký lịch đánh của tôi, nhắc lịch s�
   const e = await boot();
   await e.until(() => e.T().includes("Mini game CN"));
   await e.click("mtab", { v: "tin" });
-  expect(e.T()).toContain("Lan đăng ký Social tối thứ 7");
+  expect(e.T()).toContain("Social tối thứ 7: +2 người đăng ký"); expect(e.T()).toContain("mới nhất Minh");
   expect(e.T()).toContain("Sắp tới: Mini game CN");
   await e.click("mtab", { v: "tim" });
   await e.until(() => e.T().includes("Lịch đánh gần bạn") && e.V().includes('id="os-q8-m1"'));
@@ -67,4 +68,16 @@ test("＋ khi đã có trang tổ chức: vào thẳng Tạo lịch đánh với
   expect(e.T()).toContain("HOẶC CHỌN LOẠI");
   expect(e.V()).toContain('class="tgfc s" data-act="tnfmt" data-v="xoay"');
   expect(e.V()).toContain('class="tgfc m" data-act="tnfmt" data-v="giai"');
+});
+
+test("Tôi: đổi tên trang tổ chức tại chỗ (tên tục bị chặn)", async () => {
+  const e = await boot();
+  e.store.set("users/zalo_9", { club: "q7", at: 1 });
+  await e.until(() => e.T().includes("Lịch đánh của tôi"));
+  await e.click("mtab", { v: "toi" }); await e.until(() => e.V().includes('data-act="mtren"'));
+  expect(e.T()).toContain("Pickleball Q7");
+  await e.click("mtren"); e.input("mt-nm", "ab"); await e.click("mtrenok"); expect(e.T()).toContain("ít nhất 3 chữ");
+  e.input("mt-nm", "Pickleball Q7 tối thứ 7"); await e.click("mtrenok");
+  await e.until(() => e.store.get("clubs/q7").name === "Pickleball Q7 tối thứ 7");
+  expect(e.V()).toContain('data-act="mtren"');
 });

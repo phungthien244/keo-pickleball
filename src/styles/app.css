@@ -3040,3 +3040,5 @@ small.tcel{text-transform:none;letter-spacing:normal;font-weight:500;font-size:1
 .tgfc.s{border-left:5px solid #16a34a}.tgfc.m{border-left:5px solid #7c3aed}.tgfc.g{border-left:5px solid #1f6fd1}
 .mtsrch input{border:1.5px solid var(--navy)}
 .mxbody.mt .fld{display:flex;flex-direction:column;gap:4px}
+.mtren{display:flex;flex-direction:column;gap:8px;padding:10px 0}.mtren .two{display:grid;grid-template-columns:1fr 2fr;gap:8px}
+.mxli .mxsm{margin-left:auto}
