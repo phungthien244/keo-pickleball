@@ -79,12 +79,12 @@ function vGiaiHub(D){
   if(quick)h+=`<span class="gmsec">Hôm nay</span>`+gmCard(D,null,true);
   h+=sec("Hôm nay",today)+sec("Sắp tới",up)+sec("Nháp",drafts);
   if(!S.schedReady)h+=`<p class="rule">Đang tải…</p>`;
-  else if(!U.length&&!quick)h+=`<div class="gmempty"><b>Chưa có giải nào sắp tới</b><span>Bấm “Tạo giải mới” ở dưới.</span></div>`;
+  else if(!U.length&&!quick)h+=`<div class="gmempty"><b>Chưa có giải nào sắp tới</b><span>Bấm “Tạo lịch đánh” ở dưới.</span></div>`;
   const SR=(S.series||[]).filter(s=>s.on);
   if(SR.length)h+=`<span class="gmsec">Lặp hằng tuần</span>`+SR.map(s=>`<div class="gmser"><span class="t"><b>${(s.days||[]).slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DOW[d]).join(" & ")} · ${esc(s.time||"")}</b><small>${esc(xName(s.tpl||{}))} · ${s.auto?`tự mở đăng ký trước ${+s.openD||2} ngày`:"tự bấm mở đăng ký"}</small></span><button class="lnk" data-act="xsedit" data-id="${s.id}">Sửa</button><button class="lnk" data-act="xsoff" data-id="${s.id}">${armed("xsoff:"+s.id)?"Tắt?":"Tắt"}</button></div>`).join("");
   if(done.length)h+=`<button class="gmdone" data-act="xdone" aria-expanded="${xDoneOpen}"><span>Đã xong · ${done.length} giải gần đây</span><span>${xDoneOpen?"−":"›"}</span></button>`+(xDoneOpen?done.map(x=>gmCard(D,x)).join(""):"");
   if(!cx&&!quick&&isAdm())h+=`<button class="lnk gmquick" data-act="gmquick">⚡ Đánh nhanh · không cần đăng ký trước</button>`;
-  return h+`<div class="hqcta"><button class="ball wide nv" data-act="xnew">＋ Tạo giải mới</button></div>`;
+  return h+`<div class="hqcta"><button class="ball wide nv" data-act="xnew">＋ Tạo lịch đánh</button></div>`;
 }
 // Lần đầu: chưa có giải nào
 function gmFirst(D){
@@ -92,7 +92,7 @@ function gmFirst(D){
   return `<div class="gmhi"><b>Chào${nm?" "+esc(nm):""} 👋</b><span>Pikeco giúp mở giải, xếp sân, tính tiền. Bắt đầu bằng giải đầu tiên nhé.</span></div>
     <button class="gmopt on" data-act="xqfmt" data-v="xoay"><i>🔄</i><span><b>Buổi giao lưu</b><small>Ai đến cũng đánh. App tự xếp cặp đổi liên tục, tính tiền sân cho từng người. Hợp buổi tập hằng tuần.</small></span><em>PHỔ BIẾN</em></button>
     <button class="gmopt" data-act="xqfmt" data-v="giai"><i>🏆</i><span><b>Giải có cặp cố định</b><small>Đăng ký theo cặp, chia bảng, có giải thưởng. Hợp giải tháng, giải giao hữu.</small></span></button>
-    <button class="lnk gmquick" data-act="gmquick">⚡ Đánh nhanh ngay · không cần đăng ký trước</button><div class="hqcta"><button class="ball wide nv" data-act="xnew">＋ Tạo giải mới</button></div>`;
+    <button class="lnk gmquick" data-act="gmquick">⚡ Đánh nhanh ngay · không cần đăng ký trước</button><div class="hqcta"><button class="ball wide nv" data-act="xnew">＋ Tạo lịch đánh</button></div>`;
 }
 
 /* ----- Tạo giải 3 câu ----- */
@@ -234,7 +234,7 @@ function gmSheets(D,X,st,cur){
   if(gmSw){const U=schedUp(),cx=xCur(),L=[...(!cx&&(gmLive(D)||D.SM.length)?[null]:[]),...U];
     return `<div class="mxdim" data-act="gmswx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="Đổi giải"><span class="grab"></span><b class="mxh">Đổi sang giải khác</b>
       ${L.map(x=>`<a class="gmli" ${gmLink(x)}><span class="t"><b>${esc(x?xName(x):"Giải đánh nhanh")}</b><small>${esc(x?[x.at&&`${dowVN(x.at)} ${dmy(x.at).slice(0,5)}`,x.at&&hm(x.at)].filter(Boolean).join(" · "):"đang ở sân")}</small></span>${gmTag(x)}${(x?x.id:"_q")===(X?X.id:"_q")?`<b class="ck">✓</b>`:""}</a>`).join("")||`<p class="rule">Chưa có giải nào khác.</p>`}
-      ${MINI?"":`<a class="btn-line" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Xem tất cả giải</a>`}<button class="ball" data-act="xnew">＋ Tạo giải mới</button></div>`}
+      ${MINI?"":`<a class="btn-line" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk">Xem tất cả giải</a>`}<button class="ball" data-act="xnew">＋ Tạo lịch đánh</button></div>`}
   if(!gmMore)return "";
   const live=gmLive(D)||D.SM.length,ck=ckSched(),R=[];
   const others=[...(!xCur()&&live&&X?[null]:[]),...schedUp()].filter(x=>(x?x.id:"_q")!==(X?X.id:"_q"));

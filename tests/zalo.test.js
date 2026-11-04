@@ -68,7 +68,7 @@ test("người chơi: Trang chủ Mini App liệt kê các giải đấu sắp t
     "clubs/q7/sched/s3": sched({ name: "Nháp riêng", st: "draft" }), "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
   MINI(e, "#/q7");
-  await e.boot(); await e.until(() => e.T().includes("Giải đấu sắp tới"));
+  await e.boot(); await e.until(() => e.T().includes("Lịch đánh sắp tới"));
   expect(e.T()).toContain("Giải đấu tối"); expect(e.T()).toContain("Giải đấu cuối tuần"); expect(e.T()).toContain("Tự mở");
   expect(e.T()).not.toContain("Nháp riêng");
   expect(e.V()).toContain('data-x="s1"');
@@ -104,7 +104,7 @@ test("Mini App: người chơi xin tham gia CLB, chờ duyệt, đăng ký, vào
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
   MINI(e, "#/q7/dang-ky");
   await e.boot(); await e.until(() => e.V().includes('data-act="mxsheetreg"'));
-  expect(e.V()).toContain('class="mxnav"');
+  expect(e.V()).toContain('class="mxnav n5"');
   expect(e.V()).not.toContain('data-act="regin"');
   await e.click("mxsheetreg"); await e.until(() => e.V().includes('data-act="mxdk" data-v="pick"'));
   await e.click("mxdk", { v: "pick" }); await e.until(() => e.T().includes("Gửi yêu cầu tham gia"));
@@ -161,42 +161,41 @@ test("bản web: người xem thấy nút mở Mini App để đăng ký, không
   expect(e.T()).toContain("Mở trong Zalo để đăng ký");
 });
 
-test("Mini App lần đầu, không có link CLB: vào trang Khám phá, chọn CLB", async () => {
+test("Mini App lần đầu, không có link: tab Tìm lịch đánh, tìm thấy trang tổ chức, mở trang đó", async () => {
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", data: { ...base(), "clubs/q8": { name: "Q8 Smash", public: true, owner: "o8", createdAt: 1, city: "TP.HCM" } } });
   MINI(e);
   globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
-  await e.boot(); await e.until(() => e.T().includes("Chơi pickleball"));
-  expect(e.T()).toContain("Giải đấu đang nhận vận động viên");
-  expect(e.T()).toContain("Dùng pikeco thế nào");
-  expect(e.V()).toContain('data-act="miniclub" data-id="q8"');
-  expect(e.V()).toContain('data-act="mxtao"');
-  expect(e.V()).not.toContain('data-act="openweb"');
-  await e.click("mxexme"); expect(e.T()).toContain("Bạn quản lý một CLB?");
-  await e.click("mxexfind");
+  await e.boot(); await e.until(() => e.T().includes("Lịch đánh gần bạn"));
+  await e.until(() => e.T().includes("Chưa có lịch đánh nào đang mở"));
+  expect(e.V()).toContain('class="mxnav n5"');
+  expect(e.V()).toContain('data-act="mtplus"');
+  await e.click("mtab", { v: "toi" }); expect(e.T()).toContain("Tạo lịch đánh đầu tiên");
+  await e.click("mtab", { v: "tim" });
+  e.input("cq", "q8"); await e.until(() => e.V().includes('data-act="miniclub" data-id="q8"'));
+  expect(e.T()).toContain("Trang tổ chức · 1");
   await e.click("miniclub", { id: "q8" });
   expect(String(e.replaced || e.url || "")).toContain("#/q8");
   expect(e.reloaded).toBe(1);
 });
 
-test("Mini App: người dùng Zalo tạo CLB ngay trong app, thành Chủ CLB, vào thẳng quản lý", async () => {
+test("Mini App: bấm ＋ chọn Social, app tự lập trang tổ chức (không chờ duyệt) rồi mở khung tạo lịch đánh", async () => {
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", data: base() });
   MINI(e);
   globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
   globalThis.window.ZMP = { getUserID: async () => "777", getAccessToken: async () => "AT", getUserInfo: async () => ({ userInfo: { name: "Dũng Nguyễn", avatar: "" } }) };
   globalThis.fetch = async () => ({ json: async () => ({ token: "77" }) });
-  await e.boot(); await e.until(() => e.T().includes("Chơi pickleball"));
-  await e.click("mxtao"); await e.until(() => e.T().includes("Dũng Nguyễn (Zalo) sẽ là Chủ CLB"));
-  e.input("nc-name", "CLB Pickleball Quận 7"); e.input("nc-city", "TP.HCM");
-  await e.click("nc-create"); expect(e.T()).toContain("Nhập số Zalo liên hệ");
-  e.input("nc-contact", "0901234567");
-  await e.click("nc-create");
-  await e.until(() => e.store.get("clubs/clb-pickleball-quan"));
-  const c = e.store.get("clubs/clb-pickleball-quan");
-  expect(c.owner).toBe("zalo_77"); expect(c.status).toBe("pending");
-  expect(e.store.get("clubs/clb-pickleball-quan/members/zalo_77")).toMatchObject({ role: "owner", name: "Dũng Nguyễn", via: "zalo" });
-  expect(e.store.get("users/zalo_77").club).toBe("clb-pickleball-quan");
+  await e.boot(); await e.until(() => e.T().includes("Lịch đánh gần bạn"));
+  await e.click("mtplus"); await e.until(() => e.T().includes("Tổ chức một buổi chơi"));
+  expect(e.T()).toContain("Social"); expect(e.T()).toContain("Mini game"); expect(e.T()).toContain("Giải");
+  if (e.V().includes('id="mt-me"')) e.input("mt-me", "Dũng Nguyễn");
+  await e.click("mtnew", { v: "xoay" });
+  await e.until(() => e.store.get("users/zalo_77"));
+  const slug = e.store.get("users/zalo_77").club, c = e.store.get("clubs/" + slug);
+  expect(slug).toMatch(/^dung-nguyen-[a-z0-9]{4}$/);
+  expect(c).toMatchObject({ owner: "zalo_77", status: "active", name: "Trang của Dũng Nguyễn" });
+  expect(e.store.get(`clubs/${slug}/members/zalo_77`)).toMatchObject({ role: "owner", name: "Dũng Nguyễn", via: "zalo" });
   await e.until(() => e.reloaded === 1);
-  expect(String(e.replaced || e.url || "")).toContain("#/clb-pickleball-quan");
+  expect(String(e.replaced || e.url || "")).toContain("#/" + slug);
   delete globalThis.window.ZMP;
 });
 
@@ -330,8 +329,9 @@ test("link mời quản lý mở bằng Zalo: nhận quyền trong Mini App, có
   expect(e.T()).toContain("Thành viên");
   expect(e.V()).not.toContain('class="mxstrip"');
   await e.click("mxmode", { v: "choi" });
-  await e.until(() => e.T().includes("Trực tiếp"));
-  expect(e.V()).toContain('data-act="mxmode" data-v="choi" aria-pressed="true"');
+  // Chế độ Chơi: trang tổ chức có nút Quản lý › để quay lại
+  await e.until(() => e.V().includes('data-act="mxmode" data-v="ql"'));
+  expect(e.V()).toContain('class="mxnav n5"');
 });
 
 test("trang Cài đặt: link mời gửi qua Zalo mở Mini App", async () => {
@@ -399,7 +399,7 @@ test("giải đăng ký theo cặp: người rủ chọn đồng đội trong CL
   const data = base({ "clubs/q7/sched/s1": sched({ fmt: "giai", pairReg: "pair", name: "Giải cặp" }), "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
   MINI(e, "#/q7");
-  await e.boot(); await e.until(() => e.T().includes("Giải đấu sắp tới"));
+  await e.boot(); await e.until(() => e.T().includes("Lịch đánh sắp tới"));
   expect(e.T()).toContain("Đăng ký theo cặp");
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));

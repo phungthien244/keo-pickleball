@@ -47,6 +47,10 @@ store.set("clubs/hanoi-dinks",{name:"Hà Nội Dinks",public:true,owner:"u8",sta
 Object.assign(store.get("clubs/aep"),{city:"TP.HCM · Quận 10",about:"CLB vui vẻ, chơi đều mỗi tuần, chấp cân trình. Người mới được hướng dẫn tận tình.",sched:"Tối thứ 3, 5 · 19:00–21:30",venue:"Sân Kỳ Hòa, Q10",level:"2.5–3.5, nhận người mới",feeTxt:"50k/giải đấu, VĐV ngoài CLB 70k",zalo:"0901234567"});
 store.set("clubs/hanoi-dinks/app/config",{title:"Hà Nội Dinks",session:1,sname:"Sáng thứ 7",thu:"phi",phi:60,courts:2,reg:{on:true,sid:1,guests:true,max:12,feeG:80,at:Date.now()+3*864e5,place:"Sân Cầu Giấy"}});
 store.set("clubs/hanoi-dinks/regs/1_a",{sid:1,uid:"x",pid:"z",at:1});
+// Lịch đánh ở trang khác cho tab Tìm (Mini game, Giải)
+{const d=n=>{const T=new Date();T.setDate(T.getDate()+n);T.setHours(8,0,0,0);return T.getTime()};
+store.set("clubs/hanoi-dinks/sched/mg1",{name:"Mini game đôi nam nữ",loai:"m",fmt:"giai",end:"10:00",place:"Sân Cầu Giấy",courts:2,target:11,max:16,guests:true,thu:"phi",phi:100,fee:100,cp:true,pay:"opt",at:d(2),deadline:d(2),lockAt:d(2)-2*36e5,st:"open",openAt:0,createdAt:Date.now()});
+store.set("clubs/hanoi-dinks/sched/gd1",{name:"Giải đôi nam 5.5",loai:"g",fmt:"giai",ko:true,end:"12:00",place:"Sân Cầu Giấy",courts:4,target:11,max:32,guests:true,thu:"phi",phi:200,fee:200,cp:true,pay:"req",at:d(5),deadline:d(4),lockAt:d(4),st:"open",openAt:0,createdAt:Date.now()});}
 store.set("clubs/q7-smash/private/info",{contact:"0901234567",ownerEmail:"q7smash@demo.vn"});store.set("clubs/hanoi-dinks/private/info",{contact:"0912345678",ownerEmail:"dinks@demo.vn"});
 store.set("codes/K7MX2Q9P",{used:false,at:Date.now()});store.set("codes/A2B3C4D5",{used:true,club:"hanoi-dinks",at:Date.now()-864e5*3});
 // Bản thử: giữ dữ liệu trên máy giữa các lần tải trang; ?lam-lai để về dữ liệu mẫu

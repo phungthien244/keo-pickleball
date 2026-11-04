@@ -230,9 +230,10 @@ function tnEdSheet(){
   return `<div class="mxdim" data-act="tnedx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="Tên giải"><span class="grab"></span><b class="mxh">Tên giải</b>${tnIn("name","Tên giải · tối đa 30 ký tự",tnName(tn),'maxlength="30"')}<button class="ball go wide" data-act="tnedok">✓ Xong</button></div>`;
 }
 // Trang đầu Tạo giải mới (canvas trang tg): ô tả giải bằng AI + các thể thức đang có + như giải lần trước + form đầy đủ
-const TN_FC=[["bang","🏆","Chia bảng + knockout","Chia bảng đánh vòng tròn, cặp đứng đầu vào đánh loại tới chung kết","Hợp 8–32 cặp · có giải thưởng"],
-  ["giai","🔁","Vòng tròn theo cặp","Cặp nào cũng gặp nhau một lần, xếp hạng theo số trận thắng","Hợp 4–10 cặp"],
-  ["xoay","🔀","Giao lưu xoay cặp","Mỗi trận đổi bạn đánh, app tự ghép cân trình","Hợp buổi tối CLB · không cần đăng ký cặp"]];
+// 3 loại lịch đánh (canvas L04): [thể thức, biểu tượng, tên, mô tả, hợp với, loại]
+const TN_FC=[["xoay","🔀","Social","Đến chơi giao lưu, đăng ký từng người, app ghép cặp xoay vòng cân trình","Hợp buổi tối, nhóm bạn, chơi vui đều tay","s"],
+  ["giai","🎯","Mini game","Giải nhỏ cho vui: vài cặp gặp nhau vòng tròn, 1–2 tiếng, quà nhỏ nếu có","Hợp cuối tuần · 4–10 cặp · không nặng thắng thua","m"],
+  ["bang","🏆","Giải","Thi đấu chia bảng rồi đánh loại tới chung kết, có giải thưởng, có thứ hạng","Hợp 8–32 cặp · nhiều nội dung","g"]];
 // 7 mục app nhận ra khi đang gõ: [tên, có chưa, chữ]
 function tnCheck(o){const g=k=>o.guess.has(k),at=tnAt(o);
   return [["Thể thức",!!o.fmt,o.fmt?TN_FMT[o.fmt]+(o.fmt==="bang"&&o.koN&&!g("koN")?` · ${o.koN} bảng`:""):"nói “chia 4 bảng”, “vòng tròn” hoặc “xoay cặp”"],
@@ -251,16 +252,16 @@ function tnPage(D){
       <section class="tgbox"><span class="cap">App hiểu cả cách nói quen thuộc</span><small>“150 cành”, “2 lít” · “nhất 1 củ” · “CN tuần sau” · “6 rưỡi tối” · “đôi nam 5.5” · “ck trước mới giữ chỗ”</small></section>
       <div class="hqcta"><button class="ball go" data-act="tnpg" data-v="pick">Đã hiểu, bắt đầu ›</button></div>`}
   if(tnPg==="pick"){const txt=String(val("tn-txt","")),o=txt.trim()?tnFill(tnParse(txt)):null;
-    mxDr({t:"Tạo giải mới",back:"tnx",sub:tnBusy?"AI đang soạn giải…":o?"Đang tả giải":"Chọn cách tạo",x:true});
-    let h=`<div class="tghead"><span>✦ TẠO NHANH BẰNG AI</span><button class="lnk" data-act="tnpg" data-v="help">❓ Cách dùng</button></div><b class="tgt">Tả giải bằng một câu, app soạn sẵn mọi mục</b>`
-      +`<label class="fld tntxt"><span class="sr">Tả giải</span><textarea id="tn-txt" data-draft="tn-txt" data-live="1" rows="3" maxlength="400" placeholder="Ví dụ: Chủ nhật 7h, 16 cặp chia 4 bảng, 4 sân, 200k/người, nhất 1 triệu"${tnBusy?" disabled":""}>${esc(txt)}</textarea></label>`;
+    mxDr({t:"Tạo lịch đánh",back:"tnx",sub:tnBusy?"AI đang soạn…":o?"Đang tả lịch đánh":"Chọn cách tạo",x:true});
+    let h=`<div class="tghead"><span>✦ TẠO NHANH BẰNG AI</span><button class="lnk" data-act="tnpg" data-v="help">❓ Cách dùng</button></div><b class="tgt">Tả lịch đánh bằng một câu, app soạn sẵn mọi mục</b>`
+      +`<label class="fld tntxt"><span class="sr">Tả giải</span><textarea id="tn-txt" data-draft="tn-txt" data-live="1" rows="3" maxlength="400" placeholder="Ví dụ: Tối thứ 7 social 19h, 3 sân, 80k/người · hoặc: CN 7h giải 16 cặp chia 4 bảng, nhất 1 triệu"${tnBusy?" disabled":""}>${esc(txt)}</textarea></label>`;
     if(o){const C=tnCheck(o);
       if(tnBusy)h+=`<section class="tgread"><span aria-hidden="true">✦</span><b>AI đang soạn giải…</b><i></i></section><section class="tgbox">${C.filter(x=>x[1]).map(x=>tnCkRow(x)).join("")}${tnCkRow(["Sân, luật, chuyển khoản…",false,""],true)}</section>`;
       else h+=`<section class="tgbox"><span class="cap">App đã nhận ra · ${C.filter(x=>x[1]).length}/7</span>${C.map(x=>tnCkRow(x)).join("")}</section><small class="rule">Thiếu vẫn bấm Soạn được, app sẽ hỏi bằng nút bấm. Xoá hết chữ thì các thể thức hiện lại.</small>`;
       return h+`<div class="hqcta"><button class="ball go" data-act="tngo"${tnBusy?" disabled":""}>${tnBusy?"Đang soạn…":"✦ Soạn giải"}</button></div>`}
     const seen=new Set(),L=tnLast().filter(x=>x.at&&!x.series&&!seen.has(xName(x))&&seen.add(xName(x))).concat(tnLast().filter(x=>x.at&&x.series)).filter((x,i,a)=>a.findIndex(y=>xName(y)===xName(x))===i).slice(0,2);
-    return h+`<div class="tgor"><i></i><span>HOẶC CHỌN THỂ THỨC</span><i></i></div>`
-      +TN_FC.map(([k,ic,t,s,f])=>`<button class="tgfc" data-act="tnfmt" data-v="${k}"><i aria-hidden="true">${ic}</i><span><b>${t}</b><small>${s}</small><em>${f}</em></span><span aria-hidden="true">›</span></button>`).join("")
+    return h+`<div class="tgor"><i></i><span>HOẶC CHỌN LOẠI</span><i></i></div>`
+      +TN_FC.map(([k,ic,t,s,f,l])=>`<button class="tgfc ${l}" data-act="tnfmt" data-v="${k}"><i aria-hidden="true">${ic}</i><span><b>${t}</b><small>${s}</small><em>${f}</em></span><span aria-hidden="true">›</span></button>`).join("")
       +(L.length?`<section class="tnprev"><span class="cap">Như giải lần trước · 1 chạm</span>${L.map(x=>`<button data-act="tnprev" data-id="${esc(x.id)}"><span class="t"><b>${esc(xName(x))}</b><small>${esc([x.fmt==="giai"?(x.ko?"Chia bảng + KO":"Vòng tròn"):"Xoay cặp",ndL(x).length?`${ndL(x).length} nội dung`:x.max?`${x.fmt==="giai"?Math.round(x.max/2)+" cặp":x.max+" người"}`:"",`${x.courts||2} sân`,x.at?`${tnDow(x.at)} ${tnDm(x.at)}`:""].filter(Boolean).join(" · "))}</small></span><span class="go">Dùng lại ›</span></button>`).join("")}</section>`:"")
       +`<button class="lnk tgfull" data-act="tnfull">Tạo bằng form đầy đủ ›</button>`;
   }
@@ -286,7 +287,7 @@ async function tnCreate(D){
   const keepP=xfPoster;xNew=fmt;xEdit=null;xSEdit=null;xQ=false;xClearDraft();xfPoster=keepP;
   const set=(k,v)=>{drafts["xf-"+k]=String(v)};
   const pairs=t.nds?t.nds.reduce((a,n)=>a+(+n.max||0),0):t.pairs||0;
-  set("name",tnName(t));set("date",ymdIso(t.date));set("time",t.time);if(t.end)set("end",t.end);set("courts",t.courts||2);set("target",tnRu(t,"G").to);
+  set("loai",t.loai||(fmt==="xoay"?"s":"g"));set("name",tnName(t));set("date",ymdIso(t.date));set("time",t.time);if(t.end)set("end",t.end);set("courts",t.courts||2);set("target",tnRu(t,"G").to);
   if(t.place)set("place",t.place);set("guests",t.guests?"1":"0");set("reg","1");set("pay",t.pay||"off");
   if(t.guests&&t.feeG!=null&&t.feeG!=="")set("feeG",t.feeG);
   const fee=t.nds?Math.min(...t.nds.map(n=>+n.fee||0)):+t.fee||0,thu=fmt==="xoay"?(t.thu||"phi"):"phi";
@@ -337,7 +338,7 @@ async function tnAct(act,b){
   if(act==="tnx"){tnPg=null;tn=null;tnEd=null;tnG=null;render();return true}
   if(act==="tnfull"){tnPg=null;gsDO=false;gsTO=false;gsPg=null;gsOpt=null;xQ=true;xQs=1;gmSw=false;xNew="pick";xEdit=null;xSEdit=null;xClearDraft();delete errs.xf;render();top();return true}
   if(act==="tnpg"){tnPg=v==="txt"?"pick":v;if(v==="txt"||v==="pick"){tn=null;tnG=null}tnEd=null;delete errs.xf;render();top();return true}
-  if(act==="tnfmt"){const L=TN_FC.find(x=>x[0]===v);if(!L)return true;xfPoster=null;tn=tcStart(tnFill({fmt:v}),"",["fmt"]);tn.pick=L[2];tnG=null;tnGEdit=false;tnPg="card";tcBeat();render();top();return true}
+  if(act==="tnfmt"){const L=TN_FC.find(x=>x[0]===v);if(!L)return true;xfPoster=null;tn=tcStart(tnFill({fmt:v}),"",["fmt"]);tn.pick=L[2];tn.loai=L[5];tnG=null;tnGEdit=false;tnPg="card";tcBeat();render();top();return true}
   if(act==="tnback"){tnEd=null;delete errs.xf;if(tnPg==="grp"&&tnGEdit){tnGEdit=false;tnG=null;tnPg="card"}else tnPg=tnPg==="card"||tnPg==="grp"?(tn&&tn.from?"pick":"txt"):"pick";render();top();return true}
   if(act==="tnmau"){drafts["tn-txt"]=TN_MAU[+v][1];render();return true}
   if(act==="tngo"){const txt=String(val("tn-txt","")).trim();if(!txt){toast("Tả giải bằng một câu, ví dụ: Chủ nhật 7h, 16 cặp chia bảng, 200k.");return true}

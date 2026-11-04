@@ -334,6 +334,7 @@ function xRead(D){
     dlH:Math.max(0,n("dlH",0)),lockH:Math.max(0,n("lockH",2)),
     reg:b("reg"),cp:b("cp"),gton:b("gton"),gt:["hang","trich","codinh","gop"].includes(v("gt"))?v("gt"):"trich",gtv:Math.max(0,n("gtv",0)),trao:v("trao")==="top3"?"top3":"namnu",
     hang:[n("h1",0),n("h2",0),n("h3",0)],chia:[n("c1",50),n("c2",30),n("c3",20)],adv:b("adv"),win2:v("win2")==="1",ptMax:Math.max(0,n("ptMax",0)),gmode:v("gmode")==="same"?"same":"mix",refOn:b("refOn"),preOn:b("preOn"),incl:v("incl").slice(0,120)};
+  {const l=v("loai");if(["s","m","g"].includes(l))f.loai=l}
   if(!f.cp){f.pay="off";f.fee=0;f.incl=""}
   const t=v("time"),d=v("date");
   return {f,t,d,rep:v("rep")==="1",days:String(xv(D,"days")).split(",").filter(Boolean).map(Number),auto:v("auto")!=="0",openD:Math.max(1,n("openD",2))};

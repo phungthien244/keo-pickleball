@@ -4,7 +4,7 @@ let mxSheet=null,mxSeg={rank:"clb",hist:"buoi",live:"san"},mxDk=null,mxCheck=fal
 const mxPid=()=>myPid();
 const mxMe=D=>{const id=mxPid();return id?D.pmap.get(id):null};
 const mxIco={home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',live:'<circle cx="12" cy="12" r="3"/><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/>',rank:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/>',hist:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',me:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',find:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
-  reg:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h4"/>',court:'<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M12 5v14M3 12h18"/>',money:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',ppl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',more:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>'};
+  reg:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h4"/>',court:'<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M12 5v14M3 12h18"/>',money:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',ppl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0"/>',more:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>'};
 const mxSvg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${mxIco[k]}</svg>`;
 const mxDate=t=>{const d=new Date(t);return `<span class="mxdate"><small>${["CN","T2","T3","T4","T5","T6","T7"][d.getDay()]}</small><b>${d.getDate()}</b><small>THG ${d.getMonth()+1}</small></span>`};
 // Thanh tiêu đề Zalo đã có nút quay lại: không vẽ nút quay lại trong trang
@@ -37,8 +37,8 @@ function mxStat(D){
 function mxHead(D,ql,sw,p,nm){
   const sb=mxSubT(D);
   if(sb)return `<header class="mxhd sub${sb.ov?" ov":""}"${sb.img?` style="--ovbg:url('${esc(sb.img)}')"`:""}><button class="mxbk" data-act="mxback" aria-label="Quay lại"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><b class="tt">${esc(sb.t)}</b></header>${sb.ov?"":`<div class="mxhsp"></div>`}`;
-  return `<div class="mxtop"><header class="mxhd"><button class="mxclub" data-act="mxsheet">${clubAv(CLUB||{id:CID},"",nm)}<span class="t"><b>${esc(nm)} <i aria-hidden="true">▾</i></b><small>pikeco.app</small></span></button></header>`
-    +`<div class="mxstrip">${mxStat(D)}${sw}<a class="mxme" href="${pathOf("app",{tab:"toi"})}" data-go="app" data-t="toi" aria-label="Tôi">${p?av(p,"sm",1):mxSvg("me")}</a></div></div><div class="mxhsp big"></div>`+(ql?"":mxTurn(D));
+  // Trang tổ chức: ‹ quay về tab đang đứng · tên trang · người tổ chức có nút Quản lý
+  return `<header class="mxhd sub"><button class="mxbk" data-act="${ql?"mtexit":"mxback"}" aria-label="Quay lại"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><b class="tt">${esc(nm)}</b>${ql?`<button class="mxql" data-act="mxmode" data-v="choi">Chơi ›</button>`:sw?`<button class="mxql" data-act="mxmode" data-v="ql">${mxAs&&mxAs.cw?"Quản lý":"Trọng tài"} ›</button>`:""}</header><div class="mxhsp"></div>`+(ql?"":mxTurn(D));
 }
 // Thanh đầu trang nền tảng (Khám phá, Tôi, Tạo CLB)
 const mxHeadP=(t,right="",back="")=>`<header class="mxhd${back?" sub":""}">${back}<b class="tt">${t}</b>${right}</header><div class="mxhsp"></div>`;
@@ -51,21 +51,19 @@ function mxHeadQL(D,nm){
   if(MXD){const o=MXD,bk=o.go?`<a class="mxbk" ${o.go} aria-label="Quay lại">‹</a>`:`<button class="mxbk" data-act="${esc(o.back||"mxback")}"${o.id?` data-id="${esc(o.id)}"`:""}${o.v!=null?` data-v="${esc(o.v)}"`:""} aria-label="${o.x?"Đóng":"Quay lại"}">${o.x?"✕":"‹"}</button>`;
     const tt=`<b>${esc(o.t)}${o.tact?` <i aria-hidden="true">▾</i>`:""}</b>${o.sub?`<small>${o.sub}</small>`:""}`;
     return `<header class="mxhd sub mxdr${o.x?" x":""}">${bk}${o.tact?`<button class="mxdt" data-act="${esc(o.tact)}">${tt}</button>`:`<span class="mxdt">${tt}</span>`}</header><div class="mxhsp dr"></div>`}
-  return `<header class="mxhd ql"><button class="mxclub" data-act="mxsheet">${clubAv(CLUB||{id:CID},"",nm)}<span class="t"><b>${esc(nm)} <i aria-hidden="true">▾</i></b><small>${esc(MX_TABN[mxMgrCur()]||"")}</small></span></button></header><div class="mxhsp"></div>`;
+  return `<header class="mxhd ql"><button class="mxbk" data-act="mtexit" aria-label="Về Lịch đánh của tôi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="mxclub" data-act="mxsheet">${clubAv(CLUB||{id:CID},"",nm)}<span class="t"><b>${esc(nm)} <i aria-hidden="true">▾</i></b><small>${esc(MX_TABN[mxMgrCur()]||"")}</small></span></button></header><div class="mxhsp"></div>`;
 }
 function mxShell(D,body,cta=""){
   const p=mxMe(D),nm=(CLUB&&CLUB.name)||D.c.title;
-  const R0=mxAs||{cw:canWrite,rf:REF},ql=mxMode()==="ql",sw=!legacy&&(R0.cw||R0.rf)?`<span class="mxsw" role="group" aria-label="Chế độ"><button data-act="mxmode" data-v="choi" aria-pressed="${!ql}">Chơi</button><button data-act="mxmode" data-v="ql" aria-pressed="${ql}">${R0.cw?"Quản lý":"Trọng tài"}</button></span>`:"";
+  const R0=mxAs||{cw:canWrite,rf:REF},ql=mxMode()==="ql",sw=!legacy&&(R0.cw||R0.rf);
   const nh=ql&&canWrite,dr=nh&&!!MXD;
   let h=(nh?mxHeadQL(D,nm):mxHead(D,ql,sw,p,nm))+`<div class="mxbody${dr?" dr":""}">${rfAwayBar(D)}${body}</div>`;
   if(cta)h+=`<div class="mxcta">${cta}</div>`;
-  h+=dr?"":ql?mxMgrNav():mxNav();
+  h+=dr?"":ql?mxMgrNav():mxNav(D);
   return h+mxSheetHtml()+(ql?ycSheets(D)+ckPopup(D):wkSheet(D));
 }
-function mxNav(){
-  const it=(k,t,go,lb)=>`<a class="${mxCur()===k?"on":""}" href="${go}" ${t}>${mxSvg(k==="hist"?"hist":k)}<span>${lb}</span></a>`;
-  return `<nav class="mxnav">${it("home",`data-go="home"`,pathOf("home"),"Trang chủ")}${it("live",`data-go="app" data-t="san"`,pathOf("app",{tab:"san"}),REF&&!canWrite?"Sân của tôi":"Trực tiếp")}${it("rank",`data-go="app" data-t="bxh"`,pathOf("app",{tab:"bxh"}),"Xếp hạng")}${it("hist",`data-go="app" data-t="ls"`,pathOf("app",{tab:"ls"}),"Lịch sử")}${it("me",`data-go="app" data-t="toi"`,pathOf("app",{tab:"toi"}),"Tôi")}</nav>`;
-}
+// Thanh dưới người chơi: 5 tab chung (65t-tabs)
+const mxNav=D=>mtNav(D);
 // Đang nạp CLB (vừa chuyển CLB): dựng sẵn khung Mini App, không lộ giao diện web
 function mxLoading(){
   const k=myClubs().find(x=>x.id===CID),nm=(CLUB&&CLUB.name)||(k&&k.name)||"";
@@ -88,11 +86,10 @@ function mxSheetHtml(){
   if(mxSheet!=="club")return "";exCacheLoad();
   const C=myClubs(),row=c=>`<button class="mxrow${c.id===CID&&MODE==="club"?" cur":""}" data-act="miniclub" data-id="${esc(c.id)}">${clubAv(c)}<span class="t"><b>${esc(c.name||c.id)}</b><small>${esc(c.role||"Đã xem")}</small></span>${c.id===CID&&MODE==="club"?`<span class="ck">✓</span>`:""}</button>`;
   const man=C.filter(c=>/Chủ|Quản lý|Trọng tài/.test(c.role||"")),join=C.filter(c=>!man.includes(c));
-  return `<div class="mxdim" data-act="mxsheetx"></div><div class="mxsheet" role="dialog" aria-label="Chuyển CLB"><span class="grab"></span><b class="mxh">Chuyển CLB</b>
+  return `<div class="mxdim" data-act="mxsheetx"></div><div class="mxsheet" role="dialog" aria-label="Chuyển CLB"><span class="grab"></span><b class="mxh">Trang tổ chức của bạn</b>
     ${man.length?`<span class="mxsec">Đang quản lý</span>${man.map(row).join("")}`:""}
     <span class="mxsec">${join.length?"Đang tham gia":"Chưa tham gia CLB nào"}</span>${join.map(row).join("")}
-    <button class="line wide" data-act="miniexplore">⌕ Khám phá CLB khác</button>
-    <button class="ghost wide" data-act="mxtao">＋ Tạo CLB mới</button></div>`;
+    <button class="line wide" data-act="mtab" data-v="tim">⌕ Tìm lịch đánh</button></div>`;
 }
 const mxRole=()=>{const L=S.link;if(canWrite)return ROLE==="owner"?"Chủ CLB":"Quản lý";if(REF)return "Trọng tài";
   if(L&&L.status==="ok")return "Thành viên";if(L&&L.status==="pending")return "Chờ duyệt";
@@ -111,16 +108,16 @@ function mxHome(D){
   }
   // Các buổi sắp tới: mỗi buổi một thẻ, đăng ký riêng
   const XC=(S.sched||[]).length?xPlayerCards(D):"";
-  if(XC)h+=`<span class="mxsec">Giải đấu sắp tới</span>${XC}`;
+  if(XC)h+=`<span class="mxsec">Lịch đánh sắp tới</span>${XC}`;
   else if(!live&&regOpen())h+=mxSessCard(D,true);
   if(!live&&H){const r=p&&(H.rows||[]).find(x=>x.id===p.id);
-    h+=`<a class="mxcard" href="${pathOf("buoi",{sid:H.sid})}" data-go="buoi" data-id="${H.sid}"><span class="lbl">Giải đấu vừa xong · ${dmy(H.startedAt||H.endedAt)}</span><b>${esc(H.sname||`Giải đấu #${H.sid}`)}</b><span>${H.matchCount||0} trận${H.rows&&H.rows[0]?` · nhất ${esc(H.rows[0].name)}`:""}</span>${r?`<span class="mxmine">Bạn: ${r.w||0} thắng ${r.l||0} thua · <span class="${dCls(+r.d)}">${dTxt(+r.d)}</span></span>`:""}</a>`}
-  if(!live&&!XC&&!regOpen())h+=H?`<div class="mxcard muted"><b>Chưa mở đăng ký giải đấu tới</b><span>Chủ CLB mở là bạn thấy ở đây.</span></div>`:`<div class="mxcard muted"><b>CLB chưa có giải đấu nào</b><span>Chủ CLB mở đăng ký là bạn thấy ở đây.</span></div>`;
+    h+=`<a class="mxcard" href="${pathOf("buoi",{sid:H.sid})}" data-go="buoi" data-id="${H.sid}"><span class="lbl">Vừa diễn ra · ${dmy(H.startedAt||H.endedAt)}</span><b>${esc(H.sname||`Giải đấu #${H.sid}`)}</b><span>${H.matchCount||0} trận${H.rows&&H.rows[0]?` · nhất ${esc(H.rows[0].name)}`:""}</span>${r?`<span class="mxmine">Bạn: ${r.w||0} thắng ${r.l||0} thua · <span class="${dCls(+r.d)}">${dTxt(+r.d)}</span></span>`:""}</a>`}
+  if(!live&&!XC&&!regOpen())h+=H?`<div class="mxcard muted"><b>Chưa có lịch đánh sắp tới</b><span>Người tổ chức mở đăng ký là bạn thấy ở đây.</span></div>`:`<div class="mxcard muted"><b>Trang này chưa có lịch đánh nào</b><span>Người tổ chức mở đăng ký là bạn thấy ở đây.</span></div>`;
   if(p){const dt=debts().filter(x=>x.id===p.id),sum=dt.reduce((a,x)=>a+x.k,0);
     if(sum>0)h+=`<button class="mxcard warn" data-act="mxtien"><b>Bạn còn ${fmtK(sum)} chưa trả</b><span>${dt.length} giải đấu · bấm để chuyển khoản</span></button>`}
   const top=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating).slice(0,3);
   if(top.length)h+=`<div class="mxcard"><div class="mxch"><b>Top rating</b><a href="${pathOf("app",{tab:"bxh"})}" data-go="app" data-t="bxh">Xem tất cả ›</a></div>${top.map((x,i)=>`<div class="mxli" data-pid="${x.id}"><span class="no">${i+1}</span>${av(x,"sm",1)}<span class="t">${esc(x.name)}</span><b class="num">${r2(D.st.get(x.id).rating)}</b></div>`).join("")}</div>`;
-  h+=`<div class="mxtiles">${fundView()==="off"?"":`<a class="mxtile" href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"><small>Quỹ CLB</small><b class="num">${(fundNow()<0?"−":"")+fmtK(Math.abs(fundNow()))}</b></a>`}<a class="mxtile" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><small>Thành viên</small><b class="num">${D.players.filter(x=>!x.guest).length}</b></a><a class="mxtile" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><small>Giới thiệu</small><b>CLB ›</b></a></div>`;
+  h+=`<div class="mxtiles">${fundView()==="off"?"":`<a class="mxtile" href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"><small>Quỹ</small><b class="num">${(fundNow()<0?"−":"")+fmtK(Math.abs(fundNow()))}</b></a>`}<a class="mxtile" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><small>Thành viên</small><b class="num">${D.players.filter(x=>!x.guest).length}</b></a><a class="mxtile" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><small>Giới thiệu</small><b>Xem ›</b></a></div>`;
   const cta=!live&&!XC&&regOpen()?mxRegCta(D):"";
   return mxShell(D,h,cta);
 }
@@ -483,7 +480,9 @@ function mxMgrView0(D){
 function renderMini(D){
   MXD=null;
   rfCheckEnd(D);
+  if(!renderMini.r){renderMini.r=1;mtResume()}
   if(rfOn()&&MYCT.length&&REFQ&&!rfAway)return rfShell(D);
+  if(MXT)return mtView(D);
   if(mxMode()==="ql"&&!(route==="cmp"||(route==="app"&&(tab==="gt"||tab==="toi"))))return mxShell(D,mxMgrView(D));
   // Quản lý đang ở chế độ Chơi: xem đúng như người chơi (không hiện nút nhập điểm, quản lý giải)
   if(mxMgr()){const cw=canWrite,rf=REF;mxAs={cw,rf};canWrite=false;REF=false;try{return renderMini(D)}finally{canWrite=cw;REF=rf;mxAs=null}}
@@ -510,6 +509,7 @@ async function mxAct(act,b,id){
   return withX(X0,()=>mxAct2(act,b,id));
 }
 async function mxAct2(act,b,id){
+  if(act.startsWith("mt")&&await mtAct(act,b,id))return true;
   if(act==="mxscan"){ckScan();return true}
   if(act==="mxinv"){mxInvOpen=!mxInvOpen;render();return true}
   if(act==="mxinvgo"){const el=document.getElementById&&document.getElementById("mx-inv"),v=parseInv((el&&el.value)||drafts["mx-inv"]);
@@ -519,7 +519,7 @@ async function mxAct2(act,b,id){
     if(MODE==="club"&&c===CID){INVITE=v.tok;await acceptInvite();render();return true}
     try{sessionStorage.setItem("pb-inv-"+c,v.tok)}catch(e){}setPath("/"+c);location.reload();return true}
   if(act==="mxmode"){const m=b.dataset.v==="choi"?"choi":"ql";if(m==="ql")rfAway=false;if(m===mxMode())return true;mxSetMode(m);mxSheet=null;if(m==="ql")go("app",{tab:canWrite?"dk":"san"});else go("home");return true}
-  if(act==="mxback"){mxSheet=null;if(mxNavN>0)history.back();else if(mxMode()==="ql")go("app",{tab:canWrite?"dk":"san"});else go("home");return true}
+  if(act==="mxback"){mxSheet=null;if(mxNavN>0)history.back();else if(mxMode()==="ql")go("app",{tab:canWrite?"dk":"san"});else mtTab(mxO||"lich");return true}
   if(act==="mxsheet"){mxSheet=mxSheet==="club"?null:"club";render();return true}
   if(act==="mxsheetx"){mxSheet=null;render();return true}
   if(act==="mxsheetreg"){mxSheet="reg";render();return true}

@@ -80,13 +80,14 @@ const absUrl=p=>(MINI?"https://pikeco.app":location.origin)+p;
 let mxNavN=0; // số trang đã mở trong Mini App (nút quay lại)
 function go(r,opt={}){
   if((RSEG[r]!==undefined?"platform":"club")!==MODE){if(MINI){if(r==="clb"){setPath("/clb");location.reload()}return}location.href=pathOf(r,opt);return}
+  if(MINI&&typeof mxTS!=="undefined"){mxTS.push(MXT);MXT=null}
   route=r;autoRoute=false;if(r==="buoi")routeSid=Number(opt.sid)||0;if(r==="vdv"||r==="cmp")routePid=String(opt.pid||"");if(r==="app"&&opt.tab)tab=opt.tab;if(r==="app")routeX=tab==="dk"?(opt.x||null):null;
   setPath(pathOf(r));if(MINI)mxNavN++;
   if(!opt.keep)try{scrollTo({top:0})}catch(e){}
   render();if(typeof repaint==="function")repaint()}
 // Mini App: thanh đầu trong suốt trên ảnh bìa đổi sang nền xanh khi cuộn
 if(MINI)addEventListener("scroll",()=>{const c=document.documentElement.classList,y=window.scrollY||0;if(y>40)c.add("mxsc");else if(y<10)c.remove("mxsc")},{passive:true});
-addEventListener("popstate",()=>{if(mxNavN>0)mxNavN--;const r=readPath(curPath());
+addEventListener("popstate",()=>{if(mxNavN>0)mxNavN--;if(MINI&&typeof mxTS!=="undefined"&&mxTS.length)MXT=mxTS.pop();const r=readPath(curPath());
   if(r.mode!==MODE||(r.mode==="club"&&r.cid!==CID)){location.reload();return}
   autoRoute=false;applyPath(r);render();if(typeof repaint==="function")repaint()});
 const DEF_BANK={bin:"970422",code:"mb",name:"MB Bank",acc:"17263544538888",holder:"PHAM TIEN DUNG"};let BANK=DEF_BANK;

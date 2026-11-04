@@ -122,8 +122,9 @@ service cloud.firestore {
           && d.public == true
           && !exists(/databases/$(database)/documents/users/$(me))
           && getAfter(/databases/$(database)/documents/users/$(me)).data.club == c
-          && (d.status == 'pending'
-              || (d.status == 'active' && d.code is string
+          // Ai cũng lập được trang tổ chức ngay (không chờ duyệt); có mã mời thì mã phải hợp lệ
+          && (d.status == 'pending' || d.status == 'active')
+          && (!('code' in d) || (d.code is string
                   && get(/databases/$(database)/documents/codes/$(d.code)).data.used == false
                   && getAfter(/databases/$(database)/documents/codes/$(d.code)).data.club == c));
       }

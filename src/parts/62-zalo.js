@@ -143,7 +143,7 @@ function miniNav(){
 /* ----- Xử lý bấm ----- */
 async function zaloAct(act,b,id){
   if(act==="zlogin"){zaloStart();return true}
-  if(act==="miniclub"){const x=b.dataset.x;if(id===CID&&MODE==="club"){go("app",{tab:"dk",x});return true}quickNext();setPath("/"+id+(x?"/dang-ky/"+encodeURIComponent(x):""));location.reload();return true}
+  if(act==="miniclub"){const x=b.dataset.x;if(id===CID&&MODE==="club"){go("app",{tab:"dk",x});return true}mtKeep("-");quickNext();setPath("/"+id+(x?"/dang-ky/"+encodeURIComponent(x):""));location.reload();return true}
   if(act==="miniexplore"){quickNext();setPath("/clb");location.reload();return true}
   if(act==="openweb"){const u="https://pikeco.app"+(b.dataset.v||"/");if(window.ZMP&&window.ZMP.openWebview){try{await window.ZMP.openWebview({url:u})}catch(e){location.href=u}}else location.href=u;return true}
   if(act==="lnkcancel"){if(!armOr("lnkcancel:x"))return true;try{await FB.deleteDoc(FB.doc(FB.fs,PFX+"links/"+authUser.uid))}catch(e){}return true}

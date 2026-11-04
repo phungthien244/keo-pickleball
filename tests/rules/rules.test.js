@@ -77,8 +77,8 @@ describe("tạo CLB", () => {
   test("mỗi tài khoản một CLB", async () => {
     await assertFails(newClub(google("own"), "own", "clb-thu-hai"));
   });
-  test("không tạo được CLB hoạt động ngay nếu không có mã", async () => {
-    await assertFails(newClub(google("n1"), "n1", "clb-moi", { status: "active" }));
+  test("không có mã vẫn lập trang hoạt động ngay (không chờ duyệt)", async () => {
+    await assertSucceeds(newClub(google("n1"), "n1", "clb-moi", { status: "active" }));
   });
   test("mã mời hợp lệ thì CLB hoạt động ngay, mã chỉ dùng một lần", async () => {
     await assertSucceeds(newClub(google("n1"), "n1", "clb-ma", {}, "GOOD1234"));
@@ -198,7 +198,7 @@ describe("người chơi Zalo", () => {
     await assertSucceeds(newClub(zalo("zalo_7"), "zalo_7", "q7-zalo"));
     await assertFails(newClub(zalo("zalo_7"), "zalo_7", "q7-zalo2"));
     await assertFails(newClub(zalo("zalo_8"), "zalo_9", "q8-zalo"));
-    await assertFails(newClub(zalo("zalo_8"), "zalo_8", "q8-zalo", { status: "active" }));
+    await assertSucceeds(newClub(zalo("zalo_9"), "zalo_9", "q9-zalo", { status: "active" }));
     await assertSucceeds(newClub(zalo("zalo_8"), "zalo_8", "q8-zalo", {}, "GOOD1234"));
   });
   test("nhận link mời quản lý/trọng tài bằng Zalo, không tự làm chủ, không dùng link hết hạn", async () => {

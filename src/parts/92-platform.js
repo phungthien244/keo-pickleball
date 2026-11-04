@@ -69,7 +69,7 @@ function vLogin(){
 }
 let lastAnimP="";const doAnimP=k=>{const d=k!==lastAnimP;lastAnimP=k;return d};
 function renderPlatform(){
-  if(MINI){if(!splashGone)hideSplash();document.title="pikeco.app";const ae=document.activeElement,aid=ae&&ae.id;setView(`<section class="mx${doAnimP("mx|"+(mxSeg.exTab||""))?" mxanim":""}">${mxExplore()}</section>`);dnDraw();if(aid){const el=document.getElementById(aid);if(el)el.focus()}return}
+  if(MINI){if(!splashGone)hideSplash();document.title="pikeco.app";const ae=document.activeElement,aid=ae&&ae.id;setView(`<section class="mx${doAnimP("mx|"+(MXT||""))?" mxanim":""}">${mtView(null)}</section>`);dnDraw();if(aid){const el=document.getElementById(aid);if(el)el.focus()}return}
   const u=authUser,t=$(".tkwrap"),tb=$("#tabs"),lg=$("#clogo");if(t)t.hidden=true;if(tb)tb.hidden=true;if(lg)lg.hidden=true;
   $("#title").innerHTML=`pikeco<span class="dotapp">.app</span>`;$("#curl").textContent="";
   $("#hact").innerHTML=MINI?"":isGoogle(u)?`${S.myClub?`<a href="/${esc(S.myClub)}">CLB của tôi</a>`:""}<button data-act="logout">Thoát</button>`:`<a href="/dang-nhap" data-go="login">Đăng nhập</a>`;
