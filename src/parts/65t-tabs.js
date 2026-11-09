@@ -121,7 +121,6 @@ function mtItems(D){
     const G=new Map();for(const r of (S.regs||[]))if(!r.cancel&&typeof r.sid==="string"&&r.at&&r.at>now-3*864e5){const b=String(r.sid).split("~")[0],x=schedById(b)||schedById(r.sid);if(!x||(x.at||0)<=now)continue;const g=G.get(x.id)||{x,n:0,at:0,last:""};g.n++;if(r.at>=g.at){g.at=r.at;g.last=r.name||""}G.set(x.id,g)}
     for(const g of G.values()){const tot=(S.regs||[]).filter(y=>!y.cancel&&typeof y.sid==="string"&&(y.sid===g.x.id||y.sid.startsWith(g.x.id+"~"))).length;
       I.push({at:g.at,ic:"🙋",t:g.n>1?`${xName(g.x)}: +${g.n} người đăng ký`:`${g.last||"Một người"} đăng ký ${xName(g.x)}`,s:`Tổng ${tot}${+g.x.max?"/"+g.x.max:""} người${g.n>1&&g.last?` · mới nhất ${g.last}`:""}`,go:`data-act="mtql" data-x="${esc(g.x.id)}"`})}
-    const pc=typeof pendCount==="function"?pendCount():0;if(pc)I.push({at:Math.max(0,...(S.links||[]).filter(x=>x.status==="pending").map(x=>+x.at||0)),ic:"👋",t:`${pc} người xin vào ${(CLUB&&CLUB.name)||"trang"}`,s:"Duyệt một chạm",go:`data-act="mtqlt" data-v="nguoi"`});
     const ck=typeof ckPending==="function"?ckPending().length:0;if(ck)I.push({at:Math.max(0,...ckPending().map(x=>+x.ci||0)),ic:"🏦",t:`${ck} chuyển khoản chờ xác nhận`,s:"Kiểm tra rồi bấm Đã nhận",go:`data-act="mtql"`})}
   return I.sort((a,b)=>b.at-a.at).slice(0,30);
 }
@@ -166,7 +165,7 @@ function mtToi(D){
     +(mtLvEd?`<div class="mtren">${lvPick("mt-lv")}<span class="two"><button class="ghost" data-act="mtlvx">Huỷ</button><button class="primary" data-act="mtlvok">✓ Lưu trình</button></span></div>`
       :`<div class="mxli"><i aria-hidden="true">🎚</i><span class="t">Trình của tôi: ${lv?lvName(lv):"chưa chọn"}<small>Chỉ bạn thấy · dùng để ghép cặp cân sức</small></span><button class="mxsm" data-act="mtlv">${lv?"Sửa":"Chọn"}</button></div>`)
     +(p?li(`href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"`,"📜","Lịch sử trận",`${D.all.get(p.id).g} trận`)+li(`href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}"`,"👤","Hồ sơ, sửa ảnh",""):"")
-    +li(`data-act="mxsheet"`,"⭐","Trang tổ chức đã tham gia",C.length?`${C.length} trang`:"Chưa có")+`</div>`;
+    +`</div>`;
   h+=`<span class="mxsec">Tôi tổ chức</span><div class="mxcard list">`;
   if(S.myClub){const nm=mtMyName();
     h+=mtRen?`<div class="mtren"><label class="fld"><span class="lbl">Tên trang tổ chức</span><input id="mt-nm" data-draft="mt-nm" maxlength="60" placeholder="VD: Pickleball Q7 tối thứ 7" value="${esc(val("mt-nm",nm))}"></label>${errs.mtn?`<p class="err">${esc(errs.mtn)}</p>`:""}<span class="two"><button class="ghost" data-act="mtrenx">Huỷ</button><button class="primary" data-act="mtrenok">✓ Lưu tên</button></span></div>`

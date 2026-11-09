@@ -134,7 +134,7 @@ function xAdminDetail(D,X){
     if(X.poster){const pi=posterCache[X.id];if(pi===undefined)posterGet(X.id).then(()=>render());else if(pi)h+=`<img class="gdposter" src="${esc(pi)}" alt="Poster ${esc(xName(X))}">`}
     h+=`<section class="xhero"><span class="k">${X.at?`${esc(dowVN(X.at))} · ${esc(dmy(X.at))} · `:""}${esc(xTime(X))}</span><h1>${esc(xName(X))}</h1>
       <span class="sub">${esc([xFmt(X),X.courts&&`${X.courts} sân`,X.target&&`chạm ${X.target}`,fee&&fmtK(fee),X.place].filter(Boolean).join(" · "))}</span>
-      <span class="xrow">${xChip(X)}${X.series?`<span class="xchip dk">↻ hằng tuần</span>`:""}${X.guests?`<span class="xchip dk">Nhận VĐV ngoài CLB</span>`:""}</span>
+      <span class="xrow">${xChip(X)}${X.series?`<span class="xchip dk">↻ hằng tuần</span>`:""}</span>
       ${+X.max?`<span class="xprog big"><i><b style="width:${Math.min(100,Math.round(R.conf.length/X.max*100))}%"></b></i><b class="num">${R.conf.length}/${X.max}</b></span>`:`<b class="num" style="font-size:20px">${R.conf.length} người đã đăng ký</b>`}
       <small>${[R.wait.length&&`${R.wait.length} người chờ chỗ`,payOn()&&`đã nhận ${kVND(got)}`,X.deadline&&`đóng đăng ký ${hm(X.deadline)} ${dowVN(X.deadline)}`].filter(Boolean).join(" · ")}</small></section>`;
     if(s==="draft"||s==="plan")h+=`<button class="primary wide" data-act="xopen" data-id="${X.id}">Mở đăng ký ngay</button>`;
@@ -262,7 +262,6 @@ function xForm(D){
   if(xStep===3)h+=opt("reg","Đăng ký qua Zalo",[+v("max")?`${v("max")} ${G?"người":"chỗ"}`:"không giới hạn",(v("lvMin")||v("lvMax"))&&`trình ${v("lvMin")||"…"}–${v("lvMax")||"…"}`,v("guests")==="1"?"nhận VĐV ngoài CLB":"chỉ thành viên"].filter(Boolean).join(" · "),
     `${stp("max",G?"Số người tối đa":"Số chỗ (0 là không giới hạn)","",0,200)}${G?`<div class="fld"><span class="lbl">Cách đăng ký</span>${seg("pairReg",[["solo","Từng người"],["pair","Theo cặp (tự rủ đồng đội)"]])}</div>`:""}${G&&v("pairReg")==="pair"?`<small class="rule">Mỗi người tự đăng ký và đóng lệ phí riêng, chọn hoặc mời đồng đội. Người chưa có đồng đội được BTC ghép (bốc thăm A/B, cân trình) lúc tới sân.</small>`:G?`<small class="rule">${KO?"Đăng ký từng người. Ngày đánh, ở bước Tùy chọn của tab Sân: bốc thăm cặp nhóm A/B, chọn số bảng rồi bốc chia bảng.":"Đăng ký từng người, bạn ghép cặp ở bước Tùy chọn của tab Sân."}</small>`:""}
      <div class="form">${inp("lvMin","Trình từ",'type="number" step="0.5" min="1" max="8" inputmode="decimal" placeholder="2.5"')}${inp("lvMax","đến",'type="number" step="0.5" min="1" max="8" inputmode="decimal" placeholder="4.0"')}</div>
-     <div class="fld"><span class="lbl">Đối tượng</span>${seg("guests",[["0","Chỉ thành viên"],["1","Cả VĐV ngoài CLB"]])}</div>
      ${stp("dlH","Đóng đăng ký trước giải đấu"," giờ",0,72)}${stp("lockH","Khóa hủy trước giải đấu"," giờ",0,72)}`);
   if(xStep===3)h+=opt("cp",G?"Lệ phí":"Thu chi phí",`${THU[thu]||""}${fee?` · ${fmtK(fee)}`:""}${v("pay")!=="off"?` · chuyển khoản ${v("pay")==="req"?"bắt buộc":"tùy chọn"}`:""}`,
     `<div class="fld"><span class="lbl">Cách thu</span>${seg("thu",[["keo","Thua góp"],["deu","Chia đều"],["phi","Phí cố định"]])}</div>
@@ -303,7 +302,7 @@ function xReview(D,G,KO){
     ${row("Thể thức",(KO?"Vòng bảng → Knockout":G?"Cặp cố định":"Xoay cặp")+(G?` · ${DT_LB[v("dt")||"free"]}`:""))}
     ${row("Thời gian",[d?dmy(new Date(d+"T00:00").getTime()):"",v("time")&&`${v("time")}${v("end")?"–"+v("end"):""}`].filter(Boolean).join(" · ")||"chưa chọn")}
     ${row("Nơi đánh",v("place")||"—")}${row("Sân, luật",`${v("courts")} sân · chạm ${v("target")}${v("win2")==="1"?" cách 2":""}`)}
-    ${row("Đăng ký",on("reg")?`${+v("max")?v("max")+" chỗ":"không giới hạn"}${v("guests")==="1"?" · cả ngoài CLB":""}`:"Tắt")}
+    ${row("Đăng ký",on("reg")?`${+v("max")?v("max")+" chỗ":"không giới hạn"}`:"Tắt")}
     ${row("Lệ phí",on("cp")?`${THU[thu]||""}${fee?` · ${fmtK(fee)}`:""}`:"Không thu")}${row("Giải thưởng",on("gton")?GT[v("gt")]||"Bật":"Không")}
     <small class="rule">Sửa mục nào thì bấm bước đó trên thanh phía trên.</small></div></section>`;
 }
@@ -329,7 +328,7 @@ function xRead(D){
       for(const X of ["G","K","F"]){o["ko"+X+"t"]=String(Math.max(5,Math.min(31,Math.round(n("ko"+X+"t",11)))));o["ko"+X+"w"]=v("ko"+X+"w")==="1"?"1":"0";o["ko"+X+"c"]=String(Math.max(0,Math.min(51,Math.round(n("ko"+X+"c",0)))));o["ko"+X+"s"]=["1","3","5"].includes(v("ko"+X+"s"))?v("ko"+X+"s"):"1"}
       return o})():{}),
     end:v("end").slice(0,5),place:v("place").slice(0,60),map:/^https?:\/\//.test(v("map"))?v("map").slice(0,300):"",note:b("noteOn")?v("note").slice(0,300):"",
-    courts:Math.max(1,Math.round(n("courts",2))),target:Math.max(5,Math.round(n("target",11))),max:Math.max(0,Math.round(n("max",0))),lvMin:v("lvMin"),lvMax:v("lvMax"),guests:v("guests")==="1",
+    courts:Math.max(1,Math.round(n("courts",2))),target:Math.max(5,Math.round(n("target",11))),max:Math.max(0,Math.round(n("max",0))),lvMin:v("lvMin"),lvMax:v("lvMax"),guests:true,
     thu:["phi","deu","keo"].includes(v("thu"))?v("thu"):"keo",fee:Math.max(0,n("fee",0)),phi:Math.max(0,n("phi",0)),feeG:v("feeG")===""?"":Math.max(0,n("feeG",0)),pay:["off","opt","req"].includes(v("pay"))?v("pay"):"off",
     dlH:Math.max(0,n("dlH",0)),lockH:Math.max(0,n("lockH",2)),
     reg:b("reg"),cp:b("cp"),gton:b("gton"),gt:["hang","trich","codinh","gop"].includes(v("gt"))?v("gt"):"trich",gtv:Math.max(0,n("gtv",0)),trao:v("trao")==="top3"?"top3":"namnu",

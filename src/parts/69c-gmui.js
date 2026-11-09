@@ -60,7 +60,7 @@ function gsDefs(D,X){
     pairReg:{i:"🤝",t:"Cách đăng ký",val:v("pairReg")==="pair"?"Theo cặp":"Từng người",body:()=>gsChips("pairReg",[["pair","Theo cặp"],["solo","Từng người, BTC ghép"]],v("pairReg")==="pair"?"pair":"solo",2)}
   };
 }
-const GS_NEW=["lv","guests","pay","dl","luat","gt","rep","poster","note"];
+const GS_NEW=["lv","pay","dl","luat","gt","rep","poster","note"];
 const gsRow=(k,o,act="gsopt")=>`<button class="gmli gsrow" data-act="${act}" data-v="${k}"><i>${o.i}</i><span class="t"><b>${o.t}</b></span><em>${esc(o.val)}</em><span aria-hidden="true">›</span></button>`;
 function gsSheet(D,X){
   if(!gsOpt)return "";const o=gsDefs(D,X)[gsOpt];if(!o){gsOpt=null;return ""}
@@ -74,15 +74,15 @@ function gsNewPage(D){
     <div class="hqcta"><button class="ball" data-act="gspgx">Xong</button></div>`+gsSheet(D,null);
 }
 // S1–S4 · Sửa giải (Mini App, giải trong lịch)
-const GS_GRP={info:["name","when","place","max","dl","lv","poster","note"],nguoi:["guests","dt","pairReg"],tien:["fee","feeG","thu","pay","gt","incl"],luat:["courts","luat","gmode"]};
+const GS_GRP={info:["name","when","place","max","dl","lv","poster","note"],nguoi:["dt","pairReg"],tien:["fee","thu","pay","gt","incl"],luat:["courts","luat","gmode"]};
 function gsEditVals(D,X){
   const T=gsDefs(D,X),v=k=>xv(D,k),G=X.fmt==="giai",fee=gsFee(D);
-  return {info:`${X.at?`${DOW[new Date(X.at).getDay()]} ${hm(X.at)}`:""}${+v("max")?` · ${v("max")} chỗ`:""}`,nguoi:gsOnV(v("guests"))?"Nhận VĐV ngoài":"Chỉ thành viên",
+  return {info:`${X.at?`${DOW[new Date(X.at).getDay()]} ${hm(X.at)}`:""}${+v("max")?` · ${v("max")} chỗ`:""}`,nguoi:"Mọi người đăng ký bằng Zalo",
     tien:`${fee?fmtK(fee):"miễn phí"} · ${gsOnV(v("gton"))?"có giải":"không giải"}`,luat:`${v("courts")} sân · chạm ${v("target")}`,tt:"Loa, QR trọng tài",khac:"Mẫu, nhân bản, huỷ"};
 }
 /* Sửa giải (canvas N01): một danh sách mọi mục, bấm dòng mở chỗ sửa ngay dưới dòng đó · ✓ Lưu ghi ngay vào giải
    Giải đã bắt đầu: thể thức, số chỗ, nội dung, cách đăng ký khoá 🔒; luật điểm từng vòng (chia bảng + KO) sửa thẳng trên giải đang chạy */
-const GS_FLAT=[["Thông tin",["name","when","place","max","dl","lv","guests","poster","note"]],["Người chơi",["dt","pairReg","gmode"]],["Thể thức, luật",["ko","kor","courts","luat","abs"]],["Tiền, giải thưởng",["fee","feeG","thu","pay","gt","incl"]]];
+const GS_FLAT=[["Thông tin",["name","when","place","max","dl","lv","poster","note"]],["Người chơi",["dt","pairReg","gmode"]],["Thể thức, luật",["ko","kor","courts","luat","abs"]],["Tiền, giải thưởng",["fee","thu","pay","gt","incl"]]];
 let gsFlatX=null;
 function gsFlat(D,X,cur){gsFlatX=X.id;
   const nm=xName(X),G=X.fmt==="giai",KO=G&&kOn(X),T=gsDefs(D,X),live=!!cur&&phaseOf(D)==="live",lock=new Set(live?["ko","max","dt","pairReg"]:[]),GD=live&&KO?gDerive(D):null;
@@ -145,7 +145,7 @@ function g2PayTag(x,k,po){
   if(!po||!k)return "";return x.pay==="ok"?g2Tag("ĐÃ TRẢ","g"):x.pay==="sent"?g2Tag("BÁO CHUYỂN","b"):g2Tag("CHƯA TRẢ","y");
 }
 function g2Row(D,X,x,wait){
-  const p=x.pid&&D.pmap.get(x.pid),lv=xbLv(D,x),sub=[x.guest?"ngoài CLB":"thành viên",lv?lvName(lv):""].filter(Boolean).join(" · ");
+  const p=x.pid&&D.pmap.get(x.pid),lv=xbLv(D,x),sub=[regKhach(x)?"khách · chưa xác minh":"",lv?lvName(lv):""].filter(Boolean).join(" · ");
   return `<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>${esc(sub)}</small></span>${wait?g2Tag("CHỜ CHỖ","y"):g2PayTag(x,feeOf(x),payOn())}</button>`;
 }
 function gmRegV(D,X){
@@ -190,7 +190,7 @@ function g2Sheets(D,X,R){
     const it=(i,t,sb,a,red,id=X.id)=>`<button class="gmli" data-act="${a}" data-id="${esc(id)}"><i>${i}</i><span class="t"><b${red?` class="red"`:""}>${t}</b><small>${sb}</small></span><span aria-hidden="true">›</span></button>`;
     return `<div class="mxdim" data-act="xbmenux"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="Thêm việc"><span class="grab"></span><b class="mxh">${esc(xName(X))}</b>
       ${it("✎","Sửa giải","Giờ, sân, luật, tiền, giải thưởng","gmxe")}${it("⇄","Đổi sang giải khác",others?`${others} giải đang có`:"Chưa có giải khác","gmxs")}
-      ${it("＋","Thêm người vào giải","Chọn từ danh sách thành viên","gmxa")}${it("✓","Duyệt tiền nhiều người",sent?`${sent} người báo đã chuyển`:"Chưa ai báo chuyển","gmxb")}
+      ${it("＋","Thêm khách","Người không dùng app: tên + trình","gmxa")}${it("✓","Duyệt tiền nhiều người",sent?`${sent} người báo đã chuyển`:"Chưa ai báo chuyển","gmxb")}
       ${it("📋","Gửi danh sách vào nhóm","Ai đã đăng ký, ai còn chờ","xbshare")}
       ${s==="open"?it("⏸","Tạm dừng đăng ký","Người chơi không đăng ký thêm được","xpause"):s==="draft"||s==="plan"?it("▶","Mở đăng ký","Người chơi thấy và đăng ký được","xopen"):""}
       ${s!=="cancel"&&s!=="done"&&s!=="live"?it("✕",armed("xcancel:"+X.id)?"Bấm lần nữa để huỷ giải":"Huỷ giải","Nhắn người đã đăng ký, hoàn tiền","xcancel",1):""}</div>`}
@@ -198,7 +198,7 @@ function g2Sheets(D,X,R){
 }
 function g2Person(D,X,R,x){
   const p=x.pid&&D.pmap.get(x.pid),k=feeOf(x),pay=x.pay||"none",nm=xbName(D,x),pos=R.all.indexOf(x),wait=pos>=R.max,zid=zidOf(D,x),lv=xbLv(D,x),ph=phOfUid(x.uid),po=payOn();
-  const sub=[x.guest?"Ngoài CLB":"Thành viên",lv?`trình ${lvName(lv).toLowerCase()}`:"",ph?`📞 ${phFmt(ph)}`:"",x.at?`đăng ký ${hm(x.at)} ${dowVN(x.at).toLowerCase()}`:""].filter(Boolean).join(" · ");
+  const sub=[regKhach(x)?"Khách · chưa xác minh":"✓ Zalo",lv?`trình ${lvName(lv).toLowerCase()}`:"",ph?`📞 ${phFmt(ph)}`:"",x.at?`đăng ký ${hm(x.at)} ${dowVN(x.at).toLowerCase()}`:""].filter(Boolean).join(" · ");
   let h=`<div class="mxdim" data-act="xbselx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="${esc(nm)}"><span class="grab"></span><div class="g2who">${av(p||{name:nm},"md",1)}<span class="t"><b>${esc(nm)}</b><small>${esc(sub)}</small></span></div>`;
   if(po&&k&&!x.cancel){if(pay==="sent")h+=gmNextBox({t:`Báo đã chuyển ${fmtK(k)}`,s:"Kiểm tra tài khoản rồi bấm Đã nhận"},false);else if(pay!=="ok")h+=gmNextBox({t:`Chưa trả ${fmtK(k)}`,s:"Thu tiền mặt hoặc nhắc chuyển khoản"},false)}
   const big=[];
@@ -207,6 +207,8 @@ function g2Person(D,X,R,x){
   big.push(zid?`<button class="tvbig" data-act="zchat" data-v="${esc(zid)}" data-n="${esc(nm)}"><i>💬</i><span>Nhắn Zalo</span></button>`:`<button class="tvbig" disabled><i>💬</i><span>Nhắn Zalo</span></button>`);
   big.push(ph?`<a class="tvbig" href="tel:${esc(ph)}"><i>📞</i><span>Gọi</span></a>`:`<button class="tvbig" disabled><i>📞</i><span>Gọi</span></button>`);
   h+=`<div class="tvbigs n${big.length}">${big.join("")}</div>`;
+  // Người tổ chức chỉnh trình tại chỗ (để ghép cặp cân)
+  if(!x.cancel)h+=`<span class="gmlb">Trình</span>${lvSeg("",lv,"xblv").replace(/data-k=""/g,`data-id="${esc(x.id)}"`)}`;
   if(pairRegOn(X)&&!x.cancel&&!capMate(x)){const S2=R.conf.filter(y=>y.id!==x.id&&!capMate(y));
     if(S2.length)h+=`<span class="gmlb">Ghép tay với</span><div class="g2fl">${S2.map(y=>`<button data-act="gmpairw" data-id="${esc(x.id)}" data-v="${esc(y.id)}">${esc(xbName(D,y))}</button>`).join("")}</div>`}
   h+=`<div class="gmlist">`;
@@ -221,19 +223,28 @@ function gmBulkPg(D,X){
     return `<small class="rule">Mở app ngân hàng đối chiếu. Bỏ tích người chưa thấy tiền.</small><div class="g2list">${L.map(x=>{const on=xbBulk.has(x.id);return `<button class="g2ck${on?" on":""}" data-act="xbbulkt" data-id="${esc(x.id)}" aria-pressed="${on}"><i aria-hidden="true">${on?"✓":""}</i><span class="t"><b>${esc(xbName(D,x))}</b><small>báo chuyển ${x.sentAt?hm(x.sentAt):x.paidAt?hm(x.paidAt):""}</small></span><b class="num">${fmtK(feeOf(x))}</b></button>`}).join("")||`<p class="rule">Chưa ai báo đã chuyển.</p>`}</div>
       <div class="hqcta"><button class="ball go" data-act="xbbulkok" ${sel.length?"":"disabled"}>✓ Duyệt ${sel.length} người · ${fmtK(tot)}</button></div>`});
 }
-// R5 · Thêm người vào giải (trang riêng)
+// R5 · Thêm khách không dùng app (canvas B06): tên + nam/nữ + trình → nhãn khách · chưa xác minh
 let g2Added=0;
 function gmAddPg(D,X){
-  return withX(X,()=>{const R=regList(D),inG=new Set(R.all.map(x=>x.pid).filter(Boolean)),q=noAcc(String(val("g2-q",""))).toLowerCase().trim();
-    mxDr({t:"Thêm người vào giải",back:"regadd",sub:esc(xName(X))});
-    const L=D.players.filter(p=>!p.guest&&p.active!==undefined).filter(p=>!q||noAcc(p.name||"").toLowerCase().includes(q)).sort((a,b)=>(inG.has(a.id)?1:0)-(inG.has(b.id)?1:0)||String(a.name).localeCompare(String(b.name),"vi")).slice(0,60);
-    return `<label class="srch"><span class="sr">Tìm tên</span><input id="g2-q" data-draft="g2-q" data-live="1" type="search" placeholder="🔍 Tìm tên…" value="${esc(val("g2-q",""))}"></label>
-      <div class="g2list">${L.map(p=>{const on=inG.has(p.id),lv=D.st.get(p.id)?.rating??+p.rating0??0;return `<div class="g2p">${av(p,"sm",1)}<span class="t"><b>${esc(p.name)}</b><small>${lvName(lv)} · ${on?"đã thêm":"chưa đăng ký"}</small></span>${on?g2Tag("✓ ĐÃ THÊM","g"):`<button class="btn-line sm" data-act="regaddp" data-id="${esc(p.id)}">＋ Thêm</button>`}</div>`}).join("")}</div>
-      <a class="g2new" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi">＋ Người mới chưa có trong CLB</a>
-      <div class="hqcta"><button class="ball" data-act="regadd">Xong${g2Added?` · đã thêm ${g2Added} người`:""}</button></div>`});
+  return withX(X,()=>{const R=regList(D),K=R.all.filter(x=>regKhach(x)&&!x.cancel);
+    mxDr({t:"Thêm khách",back:"regadd",sub:esc(xName(X))});
+    const g=val("g2-g","M"),lv=val("g2-lv","3.0");
+    return `<small class="rule">Cho người không dùng Zalo/app (khách vãng lai, người lớn tuổi). Người có Zalo nên tự đăng ký để có hồ sơ và thành tích.</small>
+      <label class="fld"><span class="lbl">Tên khách</span><input id="g2-nm" data-draft="g2-nm" maxlength="40" placeholder="VD: Chú Tư" value="${esc(val("g2-nm",""))}"></label>
+      <div class="fld"><span class="lbl">Nam / Nữ</span><span class="seg"><button data-act="g2set" data-k="g2-g" data-v="M" aria-pressed="${g==="M"}">Nam</button><button data-act="g2set" data-k="g2-g" data-v="F" aria-pressed="${g==="F"}">Nữ</button></span></div>
+      <div class="fld"><span class="lbl">Trình</span>${lvSeg("g2-lv",lv,"g2set")}</div>${errs.g2?`<p class="err">${esc(errs.g2)}</p>`:""}
+      <button class="primary wide" data-act="g2kh">＋ THÊM KHÁCH</button>
+      ${K.length?`<span class="gmlb">Khách đã thêm · ${K.length}</span><div class="g2list">${K.map(x=>`<div class="g2p">${av({name:x.name},"sm",1)}<span class="t"><b>${esc(x.name)}</b><small>${esc(lvName(x.lv))} · ${x.gender==="F"?"Nữ":"Nam"}</small></span><small class="khtag">KHÁCH · CHƯA XÁC MINH</small></div>`).join("")}</div>`:""}
+      <div class="hqcta"><button class="ball" data-act="regadd">Xong${g2Added?` · đã thêm ${g2Added} khách`:""}</button></div>`});
 }
 async function g2Act(act,b){
   const D=derive(),id=b.dataset.id,X=routeX?schedById(routeX):null;
+  if(act==="g2set"){drafts[b.dataset.k]=b.dataset.v;render();return true}
+  if(act==="g2kh"){if(!X)return true;const nm=String(val("g2-nm","")).trim().slice(0,40);if(nm.length<2){errs.g2="Nhập tên khách.";render();return true}delete errs.g2;
+    const r={sid:X.id,uid:"btc",name:nm,at:Date.now(),by:who(),addBy:who(),pay:"none",guest:true,gender:val("g2-g","M")==="F"?"F":"M",lv:lvSnap(val("g2-lv","3.0"))};
+    await write(()=>db.collection("regs").doc().set(r),`Đã thêm khách ${nm}`);g2Added++;delete drafts["g2-nm"];render();return true}
+  if(act==="xblv"){const x=(S.regs||[]).find(z=>z.id===id),v=lvSnap(b.dataset.v);if(!x)return true;
+    await write(async()=>{await db.collection("regs").doc(id).update({lv:v});if(x.pid)await db.collection("players").doc(x.pid).update({rating0:+v})},`Trình: ${lvName(v)}`);return true}
   if(act==="gmxe"){xbMenu=false;gmEdit=true;gmSec=null;render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="gmxs"){xbMenu=false;gmSw=true;render();return true}
   if(act==="gmxa"){xbMenu=false;regAddOpen=true;g2Added=0;delete drafts["g2-q"];render();try{scrollTo({top:0})}catch(e){}return true}
@@ -405,7 +416,7 @@ function kbQ3(D,q){
       <button class="gmli gsrow" data-act="gspg"><i>⚙</i><span class="t"><b>Tuỳ chọn thêm</b><small>Giải thưởng, trình độ, luật điểm…</small></span><em>${GS_KB.length} mục</em><span aria-hidden="true">›</span></button></div>`;
   return h+`${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}<div class="hqcta two"><button class="btn-line" data-act="xqgo" data-v="2">‹ Lại</button><button class="ball go" data-act="xsave" data-v="open">✓ Tạo giải</button></div>`+gsSheet(D,null);
 }
-const GS_KB=["gt","lv","guests","pay","dl","poster","note"];
+const GS_KB=["gt","lv","pay","dl","poster","note"];
 // Bảng Thể thức (K4): sơ đồ, số bảng, vào vòng trong, hạng ba, luật điểm từng vòng
 function kbKoBody(D){
   const v=k=>xv(D,k),n=Math.max(2,Math.round((+v("max")||16)/2)),N=+v("koN")||4,q=+v("koQ")||8,per=Math.max(1,Math.round(n/N));

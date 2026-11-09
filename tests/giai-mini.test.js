@@ -32,16 +32,23 @@ test("tạo giải: câu 2 không còn ô tên, Khác mở ô ngày; câu 3 có 
   await e.until(() => e.T().includes("Đã tạo giải")); expect(e.T()).toContain("Gửi vào nhóm Zalo");
 });
 
-test("đăng ký: 3 ô số, lọc, chạm người mở 3 nút to; ⋯ có Thêm người vào giải → trang riêng thêm được", async () => {
+test("đăng ký: 3 ô số, lọc, chạm người mở 3 nút to, chỉnh trình; ⋯ Thêm khách → khách · chưa xác minh", async () => {
   const e = await boot(base({ "clubs/q7/regs/s1_p_p1": { sid: "s1", pid: "p1", name: "An", at: 1, pay: "sent" } }));
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('class="g2st"'));
   expect(e.T()).toContain("Chưa trả 1"); expect(e.T()).toContain("BÁO CHUYỂN");
   await e.click("xbsel", { id: "s1_p_p1" }); await e.until(() => e.T().includes("Báo đã chuyển 60k"));
   expect(e.T()).toContain("Nhắn Zalo"); expect(e.T()).toContain("Huỷ chỗ");
+  expect(e.T()).toContain("Khách · chưa xác minh"); // An không đăng ký bằng Zalo của mình
+  await e.click("xblv", { id: "s1_p_p1", v: "3.5" });
+  await e.until(() => e.store.get("clubs/q7/regs/s1_p_p1").lv === "3.5"); expect(e.store.get("clubs/q7/players/p1").rating0).toBe(3.5);
   await e.click("xbselx");
   await e.click("xbmenu"); expect(e.T()).toContain("Duyệt tiền nhiều người");
-  await e.click("gmxa"); await e.until(() => e.T().includes("Thêm người vào giải"));
-  await e.click("regaddp", { id: "p2" }); await e.until(() => e.store.get("clubs/q7/regs/s1_p_p2"));
+  await e.click("gmxa"); await e.until(() => e.T().includes("Thêm khách"));
+  e.input("g2-nm", "Chú Tư"); await e.click("g2set", { k: "g2-lv", v: "2.5" }); await e.click("g2kh");
+  await e.until(() => [...e.store].some(([k, v]) => k.startsWith("clubs/q7/regs/") && v.name === "Chú Tư"));
+  const r = [...e.store].find(([k, v]) => k.startsWith("clubs/q7/regs/") && v.name === "Chú Tư")[1];
+  expect(r).toMatchObject({ sid: "s1", uid: "btc", guest: true, lv: "2.5", gender: "M" });
+  expect(e.T()).toContain("KHÁCH · CHƯA XÁC MINH");
   await e.click("regadd"); await e.until(() => e.V().includes('class="g2st"'));
 });
 

@@ -26,7 +26,7 @@ function gdCard(D,x){
   return withX(x,()=>{
     const s=xState(x),R=regList(D),mine=gdMine(x),n=R.conf.length,m=+x.max||0,fee=xFee(x),left=m?Math.max(0,m-n):null,ty=gdTy(x);
     const live=s==="live",href=live?pathOf("app",{tab:"san"}):pathOf("app",{tab:"dk",x:x.id}),go=live?`data-go="app" data-t="san"`:`data-go="app" data-t="dk" data-x="${esc(x.id)}"`;
-    const chips=[lvTxt(x)||"Mọi trình",`Chạm ${+x.target||11}`,pairRegOn(x)&&"🤝 Đăng ký theo cặp",x.guests&&"Nhận VĐV ngoài CLB"].filter(Boolean);
+    const chips=[lvTxt(x)||"Mọi trình",`Chạm ${+x.target||11}`,pairRegOn(x)&&"🤝 Đăng ký theo cặp"].filter(Boolean);
     const pz=gdPrize(x),price=fee?`<b class="gdpr">${fmtK(fee)}${x.fmt==="giai"?"":""}</b>`:"";
     let foot;
     if(live)foot=`<span class="gdst ok"><span class="dot"></span>Đang đánh</span><span class="gdcta">XEM TRỰC TIẾP</span>`;
@@ -146,17 +146,28 @@ const gdSteps=n=>`<div class="gdsteps">${["THÔNG TIN","THANH TOÁN","VÉ"].map(
 function gdReg1(D){
   const r=regCfg(),linked=S.link&&S.link.status==="ok",pend=S.link&&S.link.status==="pending",R=regList(D),full=R.conf.length>=R.max;
   const W=!MINI&&!linked,canPay=(payOn()||W)&&!!(BANK&&BANK.acc),req=regPayMode()==="req"||W;
-  if(W)gdOpt.who="guest";
+  // Mini App: ai cũng đăng ký bằng chính Zalo của mình (không còn thành viên / ngoài CLB)
+  if(W||(MINI&&!linked))gdOpt.who="guest";
+  if(MINI&&linked)gdOpt.who="mem";
+  if(MINI&&!gsPhoto&&zaloProf().p)gsPhoto=zaloProf().p;
   if(!gdOpt.who)gdOpt.who=linked?"mem":r.guests?"guest":"mem";
   if(!gdOpt.pay)gdOpt.pay=canPay?"now":"site";
   if(req&&canPay)gdOpt.pay="now";
   const who=gdOpt.who,me=linked?D.pmap.get(S.link.pid):null,pay=canPay&&!full?gdOpt.pay:"site",k=who==="guest"?feeGuest():mfPerk(me&&me.id,feeMem());
   const opt=(k2,v,title,sub,price,dis)=>`<button class="gdopt${gdOpt[k2]===v||(k2==="pay"&&pay===v)?" on":""}" data-act="gdopt" data-k="${k2}" data-v="${v}"${dis?" disabled":""}><span class="rd"></span><span class="t"><b>${title}</b><small>${sub}</small></span>${price!=null?`<b class="pr">${price}</b>`:""}</button>`;
-  let h=`<div class="gdtop2"><button class="gdback" data-act="gdback" aria-label="Quay lại">‹</button><b>Đăng ký · ${esc(xName(RX))}</b></div>`+gdSteps(1)+`<span class="xsec">Bạn đăng ký với tư cách</span>`;
-  if(!W)h+=opt("who","mem",linked?`Thành viên · ${esc(me?.name||"")}`:`Thành viên ${esc(CLUB?.name||"CLB")}`,linked?"Đã liên kết Zalo · giá thành viên":pend?"Đang chờ chủ CLB duyệt tên của bạn":"Chọn tên của bạn trong CLB, chủ CLB xác nhận một lần",feeMem()?fmtK(mfPerk(me&&me.id,feeMem())):null);
-  if(r.guests)h+=opt("who","guest","Vận động viên ngoài CLB",W?"Không cần tài khoản · cần ảnh của bạn":"Không cần chờ duyệt · cần ảnh của bạn",feeGuest()?fmtK(feeGuest()):null);
+  let h=`<div class="gdtop2"><button class="gdback" data-act="gdback" aria-label="Quay lại">‹</button><b>Đăng ký · ${esc(xName(RX))}</b></div>`+gdSteps(1)+(MINI?"":`<span class="xsec">Bạn đăng ký với tư cách</span>`);
+  if(!W&&!MINI)h+=opt("who","mem",linked?`Thành viên · ${esc(me?.name||"")}`:`Thành viên ${esc(CLUB?.name||"CLB")}`,linked?"Đã liên kết Zalo · giá thành viên":pend?"Đang chờ chủ CLB duyệt tên của bạn":"Chọn tên của bạn trong CLB, chủ CLB xác nhận một lần",feeMem()?fmtK(mfPerk(me&&me.id,feeMem())):null);
+  if(r.guests&&!MINI)h+=opt("who","guest","Vận động viên ngoài CLB",W?"Không cần tài khoản · cần ảnh của bạn":"Không cần chờ duyệt · cần ảnh của bạn",feeGuest()?fmtK(feeGuest()):null);
   if(W)h+=`<small class="rule">Thành viên ${esc(CLUB?.name||"CLB")}? <a href="${esc(miniLink(CID,RX.id))}">Đăng ký trong Zalo</a> để có giá thành viên.</small>`;
-  if(who==="guest"){const lv=val("gs-lv","3.0"),g=val("gs-g","M");
+  if(MINI&&who==="mem"&&linked){const P=zaloProf();h+=`<div class="gdbox gdme">${P.p?`<img class="gdmeav" src="${esc(P.p)}" alt="">`:av(me||{name:""},"md",1)}<span class="t"><b>${esc(me?.name||P.n||"")} <i class="vb">✓</i></b><small>Đăng ký bằng Zalo của bạn</small></span></div>`}
+  if(who==="guest"&&MINI){const g=val("gs-g","M"),P=zaloProf();
+    // Tên + ảnh lấy từ Zalo (đã xác minh), chỉ chọn nam/nữ và trình (canvas B01)
+    h+=`<div class="gdbox gdme">${gsPhoto?`<img class="gdmeav" src="${esc(gsPhoto)}" alt="">`:`<span class="gdmeav">${mxSvg("me")}</span>`}<span class="t"><b>${esc(val("gs-name",P.n||""))||"Tên Zalo của bạn"} <i class="vb">✓</i></b><small>Tên và ảnh từ Zalo của bạn</small></span></div>
+      ${P.n?"":`<label class="fld"><span class="lbl">Tên của bạn</span><input id="gs-name" data-draft="gs-name" maxlength="30" value="${esc(val("gs-name",""))}"></label>`}
+      ${gsPhoto?"":`<div class="gd2"><label class="line gdfile">📷 Thêm ảnh rõ mặt<input type="file" accept="image/*" capture="user" data-gsphoto="1"></label></div>${errs.gs?`<p class="err">${esc(errs.gs)}</p>`:""}`}
+      <div class="fld"><span class="lbl">Nam / Nữ</span><span class="seg"><button data-act="gsg" data-v="M" aria-pressed="${g==="M"}">Nam</button><button data-act="gsg" data-v="F" aria-pressed="${g==="F"}">Nữ</button></span></div>
+      ${lvPick()}${lvTxt(r)?`<span class="gdnote">${esc(lvTxt(r))} cho giải đấu này.</span>`:""}`}
+  else if(who==="guest"){const lv=val("gs-lv","3.0"),g=val("gs-g","M");
     h+=`<div class="gdbox gdphoto"><span class="xsec" style="margin:0">Ảnh của bạn · bắt buộc</span>
       <span class="gdpic">${gsPhoto?`<img src="${esc(gsPhoto)}" alt="Ảnh của bạn">`:mxSvg("me")}</span>
       <div class="gd2"><label class="primary gdfile">📷 Chụp ảnh<input type="file" accept="image/*" capture="user" data-gsphoto="1"></label><label class="line gdfile">Chọn từ máy<input type="file" accept="image/*" data-gsphoto="1"></label></div>
@@ -171,7 +182,7 @@ function gdReg1(D){
   if(k>0&&canPay&&!full){h+=`<span class="xsec">Cách thanh toán</span>`+opt("pay","now",`Chuyển khoản ngay <em class="gdtag">${W?"BẮT BUỘC":"GIỮ CHỖ CHẮC"}</em>`,W?"Chỗ của bạn được giữ 15 phút để chuyển khoản. Quá giờ chưa chuyển, chỗ được nhả cho người khác.":"Quét QR bằng app ngân hàng bất kỳ. BTC xác nhận là có vé.",null);
     if(!req)h+=opt("pay","site","Trả tại sân","Giữ chỗ tạm. Gần giờ đánh nếu đầy, người đã trả trước được ưu tiên.",null)}
   else if(full)h+=`<div class="gdwarn">Giải đấu đã đủ chỗ. Bạn vào danh sách chờ, có người hủy là bạn được vào và app báo cho bạn.</div>`;
-  h+=`<div class="gdbox"><h3>Tóm tắt</h3><div class="gdrow"><span>${esc(xName(RX))} · ${RX.at?dmy(RX.at):""}</span><span>${RX.at?hm(RX.at):""}</span></div>${k?`<div class="gdrow"><span>Lệ phí ${who==="guest"?"VĐV ngoài CLB":"thành viên"}</span><b>${kVND(k)}</b></div>`:""}<div class="gdrow tot"><b>Tổng</b><b>${k?kVND(k):RX.cp===false?"0đ":THU[RX.thu||"keo"]}</b></div></div>`;
+  h+=`<div class="gdbox"><h3>Tóm tắt</h3><div class="gdrow"><span>${esc(xName(RX))} · ${RX.at?dmy(RX.at):""}</span><span>${RX.at?hm(RX.at):""}</span></div>${k?`<div class="gdrow"><span>Lệ phí${MINI?"":who==="guest"?" VĐV ngoài CLB":" thành viên"}</span><b>${kVND(k)}</b></div>`:""}<div class="gdrow tot"><b>Tổng</b><b>${k?kVND(k):RX.cp===false?"0đ":THU[RX.thu||"keo"]}</b></div></div>`;
   const lk=regLockAt();
   h+=`<button class="gdagree${val("gd-ok","")==="1"?" on":""}" data-act="gdagree"><span class="ck">✓</span>Tôi đã đọc chính sách hủy${lk?`: hủy và hoàn 100% trước ${hm(lk)} ${dmy(lk)}`:""}</button>${errs.gdok?`<p class="err">${esc(errs.gdok)}</p>`:""}`;
   let cta;

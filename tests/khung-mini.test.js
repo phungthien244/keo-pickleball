@@ -14,17 +14,17 @@ const data = () => ({
 const ZU = { uid: "zalo_9", isAnonymous: false, displayName: "Zalo" };
 const H = () => globalThis.document.querySelector("#view").innerHTML;
 
-test("màn gốc: một dòng đầu (CLB ▾ + tên tab), không còn dải trạng thái; có thanh 4 tab", async () => {
+test("màn gốc quản lý: một dòng đầu (trang ▾ + tên tab), thanh dưới chỉ Lịch đánh · Thêm (bỏ Thành viên, Quỹ)", async () => {
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", search: "?clb=q7", user: ZU, data: data() }); globalThis.window.ZMINI = 1;
-  await e.boot(); await e.until(() => e.V().includes('class="mxnav n4"') && e.V().includes('data-act="mxsheet"'));
+  await e.boot(); await e.until(() => e.V().includes('class="mxnav n2"') && e.V().includes('data-act="mxsheet"'));
   expect(e.V()).not.toContain('class="mxstrip"');
   expect(e.V()).not.toContain('class="mxhd sub mxdr');
-  await e.nav("app", { t: "tien" }); await e.until(() => /<small>Quỹ<\/small>/.test(e.V()));
+  expect(e.T()).not.toContain("Thành viên"); expect(e.T()).toContain("Lịch đánh");
 });
 
 test("vào một giải: đầu trang ‹ tên ▾ + dòng phụ, ẩn tab dưới; ⋯ mở Sửa giải, Đổi sang giải khác", async () => {
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", search: "?clb=q7", user: ZU, data: data() }); globalThis.window.ZMINI = 1;
-  await e.boot(); await e.until(() => e.V().includes('class="mxnav n4"'));
+  await e.boot(); await e.until(() => e.V().includes('class="mxnav n2"'));
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes("mxdr"));
   expect(e.V()).toContain('data-act="gmsw"');
   expect(e.T()).toContain("Giao lưu tối thứ 5");
@@ -44,5 +44,5 @@ test("tạo giải: màn riêng ✕ Tạo giải · 1/3, chọn kiểu rồi Ti�
   expect(e.V()).not.toContain('class="mxnav');
   await e.click("xqsel", { v: "giai" }); expect(e.V()).toMatch(/gmopt on" data-act="xqsel" data-v="giai"/);
   await e.click("xqgo", { v: "2" }); await e.until(() => e.T().includes("Tạo giải · 2/3"));
-  await e.click("xclose"); await e.until(() => e.V().includes('class="mxnav n4"'));
+  await e.click("xclose"); await e.until(() => e.V().includes('class="mxnav n2"'));
 });

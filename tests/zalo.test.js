@@ -76,7 +76,8 @@ test("người chơi: Trang chủ Mini App liệt kê các giải đấu sắp t
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
   expect(e.T()).toContain("THỂ THỨC"); expect(e.T()).toContain("Hủy và hoàn phí"); expect(e.T()).toContain("Luật thi đấu");
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
-  expect(e.T()).toContain("Bạn đăng ký với tư cách");
+  // Không còn chọn "thành viên / ngoài CLB": đăng ký bằng chính Zalo của mình
+  expect(e.T()).not.toContain("Bạn đăng ký với tư cách"); expect(e.T()).toContain("Đăng ký bằng Zalo của bạn");
   e.input("ph", "0901234567"); await e.click("regin"); expect(e.T()).toContain("Đánh dấu đã đọc chính sách hủy");
   await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("regin");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.sid === "s1");
@@ -330,7 +331,8 @@ test("link mời quản lý mở bằng Zalo: nhận quyền trong Mini App, có
   expect(e.store.get("clubs/q7/members/zalo_9")).toMatchObject({ invite: "tk1", via: "zalo" });
   // Quản lý: đầu trang một dòng (không còn dải Chơi/Quản lý); chuyển sang Chơi ở tab Thêm
   await e.until(() => e.V().includes('data-go="caidat"'));
-  expect(e.T()).toContain("Thành viên");
+  // Thanh quản lý chỉ còn Lịch đánh · Thêm (bỏ Thành viên, Quỹ)
+  expect(e.V()).toContain('class="mxnav n2"'); expect(e.T()).not.toContain("Thành viên");
   expect(e.V()).not.toContain('class="mxstrip"');
   await e.click("mxmode", { v: "choi" });
   // Chế độ Chơi: trang tổ chức có nút Quản lý › để quay lại

@@ -176,7 +176,6 @@ function tnGBody(g,t){
     else if(t.fmt){h+=tnLb("Bao nhiêu cặp",N.has("pairs"))+tnCh("pairs",(t.fmt==="giai"?[4,6,8,10,12]:[8,12,16,24,32]).map(v=>[v,`${v} cặp`]),t.pairs)+tnIn("pairs","Số khác",t.pairs,'type="number" min="2" max="64" inputmode="numeric"');
       if(t.fmt==="bang")h+=tnLb("Số bảng",N.has("koN"))+tnCh("koN",[1,2,3,4,6,8].map(v=>[v,`${v} bảng`]),t.koN)+tnLb("Mỗi bảng lấy mấy cặp vào vòng trong")+tnCh("lay",[[1,"1 cặp"],[2,"2 cặp"]],t.lay||2)+tnLb("Tranh hạng ba")+tnCh("third",[["1","Có"],["0","Không · đồng hạng ba"]],t.third===false?"0":"1");
       h+=tnLb("Nội dung")+tnCh("dt",Object.entries(TN_DT),t.dt||"free")+tnLb("Cách đăng ký")+tnCh("pairReg",[["pair","Theo cặp"],["solo","Từng người, BTC ghép"]],t.pairReg||"pair")}
-    h+=tnLb("Ai được đăng ký")+tnCh("guests",[["0","Thành viên CLB"],["1","Mọi người"]],t.guests?"1":"0");
   }
   if(g==="gio"){
     h+=tnLb("Ngày",N.has("date"))+tnCh("date",tnDateOpts(),t.date)+tnIn("date","Ngày khác",t.date!=null?ymdIso(t.date):"",'type="date"');
@@ -190,7 +189,6 @@ function tnGBody(g,t){
     if(t.nds)h+=`<small class="rule">Lệ phí theo từng nội dung: ${t.nds.map(n=>`${esc(n.name)} ${n.fee?fmtK(n.fee):"miễn phí"}`).join(" · ")}</small>`;
     else if(t.thu!=="keo"&&t.thu!=="deu"||t.fmt!=="xoay")h+=tnLb("Lệ phí mỗi người",N.has("fee"))+tnCh("fee",[[0,"Miễn phí"],[50,"50k"],[100,"100k"],[150,"150k"],[200,"200k"],[300,"300k"]],t.fee)+tnIn("fee","Số khác (k)",t.fee,'type="number" min="0" inputmode="numeric"');
     h+=tnLb("Chuyển khoản khi đăng ký",N.has("pay"))+tnCh("pay",[["off","Không, trả tại sân"],["opt","Tuỳ chọn"],["req","Bắt buộc mới giữ chỗ"]],t.pay);
-    if(t.guests)h+=tnIn("feeG","Lệ phí VĐV ngoài CLB (k) · để trống là như thành viên",t.feeG,'type="number" min="0" inputmode="numeric"');
   }
   if(g==="thuong"){
     h+=tnLb("Có giải thưởng không",N.has("gton"))+tnCh("gton",[["1","Có"],["0","Không"]],t.gton==null?"":t.gton?"1":"0");
@@ -203,7 +201,7 @@ function tnGBody(g,t){
 }
 // Dòng tóm tắt của một nhóm trên thẻ xác nhận
 function tnGRows(g,t){const R=(l,v,k)=>`<div class="tnr"><span>${l}</span><b>${v}</b>${k&&[].concat(k).some(x=>t.guess.has(x))&&!t.ok.has(g)?`<em>ĐOÁN</em>`:""}</div>`,E=tnEst(t),at=tnAt(t);
-  if(g==="nguoi")return R("Thể thức",esc(TN_FMT[t.fmt]||"—"))+(t.nds?t.nds.map(n=>R("Nội dung",`${esc(n.name)} · ${n.max} cặp`)).join(""):t.fmt==="xoay"?R("Số người",t.people?`${t.people} người`:"—","people"):R("Số cặp",t.pairs?`${t.pairs} cặp · ${esc(TN_DT[t.dt||"free"].toLowerCase())}`:"—","pairs")+(t.fmt==="bang"?R("Bảng",`${t.koN||"—"} bảng · lấy ${t.lay||2}${t.third===false?"":" · tranh hạng 3"}`,"koN"):"")+R("Đăng ký",t.pairReg==="solo"?"Từng người, BTC ghép":"Theo cặp","pairReg"))+R("Ai đăng ký",t.guests?"Mọi người":"Thành viên CLB","guests");
+  if(g==="nguoi")return R("Thể thức",esc(TN_FMT[t.fmt]||"—"))+(t.nds?t.nds.map(n=>R("Nội dung",`${esc(n.name)} · ${n.max} cặp`)).join(""):t.fmt==="xoay"?R("Số người",t.people?`${t.people} người`:"—","people"):R("Số cặp",t.pairs?`${t.pairs} cặp · ${esc(TN_DT[t.dt||"free"].toLowerCase())}`:"—","pairs")+(t.fmt==="bang"?R("Bảng",`${t.koN||"—"} bảng · lấy ${t.lay||2}${t.third===false?"":" · tranh hạng 3"}`,"koN"):"")+R("Đăng ký",t.pairReg==="solo"?"Từng người, BTC ghép":"Theo cặp","pairReg"));
   if(g==="gio")return R("Ngày giờ",t.date!=null&&t.time?`${tnDow(at)} ${tnDm(at)} · ${t.time}${t.end?`–${t.end}`:""}`:"—",["date","time"])+R("Sân",`${t.courts||"—"} sân${t.place?` · ${esc(t.place)}`:""}`,["courts","place"])+R("Luật",`Chạm ${t.target||11}`,"target")+(E?R("Dự kiến",`${E.m} trận · xong ~${hm(E.end)}`):"");
   if(g==="tien")return (t.fmt==="xoay"?R("Cách thu",{phi:"Lệ phí cố định",deu:"Chia đều tiền sân",keo:"Ai thua góp"}[t.thu]||"—","thu"):"")+(t.nds?R("Lệ phí","Theo từng nội dung"):(t.thu==="keo"||t.thu==="deu")&&t.fmt==="xoay"?"":R("Lệ phí",t.fee==null?"—":t.fee?`${fmtK(t.fee)}/người`:"Miễn phí","fee"))+R("Chuyển khoản",{off:"Không, trả tại sân",opt:"Tuỳ chọn",req:"Bắt buộc mới giữ chỗ"}[t.pay]||"—","pay")+(t.guests&&t.feeG!=null&&t.feeG!==""?R("VĐV ngoài",`${fmtK(+t.feeG)}`,"feeG"):"");
   if(g==="thuong")return t.gton==null?R("Giải thưởng","—"):!t.gton?R("Giải thưởng","Không","gton"):(t.gt||"hang")==="hang"?R("Mức thưởng",[t.h1&&`Nhất ${tnK(+t.h1)}`,t.h2&&`Nhì ${tnK(+t.h2)}`,t.h3&&`Ba ${tnK(+t.h3)}`].filter(Boolean).join(" · ")||"—",["h1","h2","h3"]):R("Quỹ thưởng",t.gt==="trich"?`Trích ${t.gtv??"—"}% lệ phí`:t.gt==="gop"?`Mỗi người góp ${t.gtv!=null?fmtK(+t.gtv):"—"}`:`CLB bỏ ra ${t.gtv!=null?fmtK(+t.gtv):"—"}`,["gt","gtv"]);
@@ -288,8 +286,8 @@ async function tnCreate(D){
   const set=(k,v)=>{drafts["xf-"+k]=String(v)};
   const pairs=t.nds?t.nds.reduce((a,n)=>a+(+n.max||0),0):t.pairs||0;
   set("loai",t.loai||(fmt==="xoay"?"s":"g"));set("name",tnName(t));set("date",ymdIso(t.date));set("time",t.time);if(t.end)set("end",t.end);set("courts",t.courts||2);set("target",tnRu(t,"G").to);
-  if(t.place)set("place",t.place);set("guests",t.guests?"1":"0");set("reg","1");set("pay",t.pay||"off");
-  if(t.guests&&t.feeG!=null&&t.feeG!=="")set("feeG",t.feeG);
+  if(t.place)set("place",t.place);set("guests","1");set("reg","1");set("pay",t.pay||"off");
+  set("feeG","");
   const fee=t.nds?Math.min(...t.nds.map(n=>+n.fee||0)):+t.fee||0,thu=fmt==="xoay"?(t.thu||"phi"):"phi";
   set("thu",thu);set("phi",fee);set("fee",fee);set("cp",thu==="phi"&&!fee&&!(t.nds&&t.nds.some(n=>+n.fee))?"0":"1");
   if(fmt==="xoay")set("max",t.people||0);

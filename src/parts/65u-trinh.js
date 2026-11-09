@@ -32,3 +32,7 @@ function lvAch(D,id){
   for(const x of [...X.ses].reverse())if(x.medal===1||x.medal===2)T.push({m:x.medal,t:x.sname||(x.giai?`Giải #${x.sid}`:`Buổi #${x.sid}`),at:x.at});
   return {ses:X.ses.length,games:X.games,wins:X.winsAll,gold:X.ses.filter(x=>x.medal===1).length,T};
 }
+
+// Người tổ chức thêm tay (không đăng ký bằng Zalo của chính họ) → khách · chưa xác minh
+const regKhach=x=>!!x&&!/^zalo_/.test(String(x.uid||""));
+const khTag=x=>regKhach(x)?`<small class="khtag">KHÁCH · CHƯA XÁC MINH</small>`:"";

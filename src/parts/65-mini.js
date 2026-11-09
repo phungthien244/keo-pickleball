@@ -117,7 +117,7 @@ function mxHome(D){
     if(sum>0)h+=`<button class="mxcard warn" data-act="mxtien"><b>Bạn còn ${fmtK(sum)} chưa trả</b><span>${dt.length} giải đấu · bấm để chuyển khoản</span></button>`}
   const top=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating).slice(0,3);
   // Bỏ Top rating (canvas Bước 0): app không chấm điểm người chơi
-  h+=`<div class="mxtiles">${fundView()==="off"?"":`<a class="mxtile" href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"><small>Quỹ</small><b class="num">${(fundNow()<0?"−":"")+fmtK(Math.abs(fundNow()))}</b></a>`}<a class="mxtile" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><small>Thành viên</small><b class="num">${D.players.filter(x=>!x.guest).length}</b></a><a class="mxtile" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><small>Giới thiệu</small><b>Xem ›</b></a></div>`;
+  h+=`<a class="mxcard mxgt" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><b>Giới thiệu & quy định</b><span>Xem ›</span></a>`;
   const cta=!live&&!XC&&regOpen()?mxRegCta(D):"";
   return mxShell(D,h,cta);
 }
@@ -138,7 +138,7 @@ function mxIntroTeaser(D){
 // Thẻ buổi tới (dùng ở Trang chủ, Khám phá, Giới thiệu)
 function mxSessCard(D,link){
   const r=regCfg(),R=regList(D),c=RX?{...D.c,...RX,sname:xName(RX)}:D.c,pct=R.max<999?Math.min(100,Math.round(R.conf.length/R.max*100)):0,left=R.max<999?Math.max(0,R.max-R.conf.length):null;
-  const chips=[`${c.courts} sân`,fmtTxt(c),lvTxt(r),feeMem()?`${fmtK(feeMem())}/người`:"",r.guests?"Nhận VĐV ngoài CLB":""].filter(Boolean);
+  const chips=[`${c.courts} sân`,fmtTxt(c),lvTxt(r),feeMem()?`${fmtK(feeMem())}/người`:""].filter(Boolean);
   const faces=R.conf.slice(0,6).map(x=>av(D.pmap.get(x.pid)||{name:x.name},"xs",1)).join("");
   return `<${link?`a href="${pathOf("app",{tab:"dk",x:RX?RX.id:null})}" data-go="app" data-t="dk"${RX?` data-x="${esc(RX.id)}"`:""}`:"div"} class="mxcard sess">
     <div class="mxsess">${r.at?mxDate(r.at):`<span class="mxdate"><b>?</b></span>`}<span class="t"><b>${esc(c.sname||"Giải đấu tới")}</b><span>${r.at?`${hm(r.at)}${r.end?`–${r.end}`:""}`:"Chưa đặt giờ"}${r.place?` · ${esc(r.place)}`:""}</span>${r.map?`<span class="mxlink" data-act="openurl" data-v="${esc(r.map)}">Chỉ đường ↗</span>`:""}</span></div>
@@ -451,7 +451,8 @@ function mxMgrCur(){
 function mxMgrNav(){
   const cur=mxMgrCur(),it=(k,ic,attrs,href,lb,n)=>`<a class="${cur===k?"on":""}" href="${href}" ${attrs}>${mxSvg(ic)}<span>${lb}</span>${n?`<i class="mxbadge">${n}</i>`:""}</a>`;
   if(!canWrite)return `<nav class="mxnav">${it("san","court",`data-go="app" data-t="san"`,pathOf("app",{tab:"san"}),"Sân")}${it("bxh","rank",`data-go="app" data-t="bxh"`,pathOf("app",{tab:"bxh"}),"Xếp hạng")}</nav>`;
-  return `<nav class="mxnav n4">${it("buoi","reg",`data-go="app" data-t="dk"`,pathOf("app",{tab:"dk",x:null}),"Giải",ckPending().length)}${it("nguoi","ppl",`data-go="app" data-t="nguoi"`,pathOf("app",{tab:"nguoi"}),"Thành viên",pendCount())}${it("tien","money",`data-go="app" data-t="tien"`,pathOf("app",{tab:"tien"}),"Quỹ")}${it("them","more",`data-go="caidat"`,pathOf("caidat"),"Thêm")}</nav>`;
+  // Bỏ Thành viên, Quỹ (canvas Bước 0): người tổ chức chỉ còn Lịch đánh và Thêm
+  return `<nav class="mxnav n2">${it("buoi","reg",`data-go="app" data-t="dk"`,pathOf("app",{tab:"dk",x:null}),"Lịch đánh",ckPending().length)}${it("them","more",`data-go="caidat"`,pathOf("caidat"),"Thêm")}</nav>`;
 }
 function mxMore(D){return vCaiDat(D)}
 function mxMgrView(D){

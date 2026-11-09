@@ -82,7 +82,6 @@ const TC_Q=[
   {k:"cF",on:t=>t.capAsk==="F",q:()=>"Chung kết tối đa mấy điểm?",o:t=>tcCapOpts(tcRu(t,"F").to),star:t=>String(tcRu(t,"F").to+4),set:(t,v)=>{tcSet(t,"F",{w2:true,cap:+v});t.capAsk=null}},
   {k:"third",on:t=>t.fmt==="bang"&&tcQ(t)>=4,keys:["third"],q:()=>"Có đánh tranh hạng ba không?",o:()=>[["1","Có"],["0","Không, đồng hạng ba"]],star:()=>"1",set:(t,v)=>{t.third=v==="1"}},
   {k:"pairReg",on:t=>t.fmt&&t.fmt!=="xoay",keys:["pairReg"],q:()=>"Người chơi đăng ký thế nào?",o:()=>[["pair","Theo cặp"],["solo","Từng người, BTC ghép"]],star:()=>"pair",set:(t,v)=>{t.pairReg=v}},
-  {k:"guests",keys:["guests"],q:()=>"Ai được đăng ký?",o:()=>[["0","Thành viên CLB"],["1","Mọi người"]],star:t=>t.guests?"1":"0",set:(t,v)=>{t.guests=v==="1"}},
   {k:"ref",on:t=>t.fmt&&t.fmt!=="xoay",keys:["ref"],q:()=>"Ai nhập tỉ số?",o:()=>[["0","BTC nhập trên app"],["1","Mỗi sân 1 trọng tài (QR)"]],star:t=>t.fmt==="bang"&&(+t.courts||0)>=3?"1":"0",
     note:()=>"Trọng tài quét mã QR của sân, nhập từng pha, loa tự gọi điểm.",set:(t,v)=>{t.ref=v==="1"}},
   {k:"endX",on:t=>t.fmt==="xoay"&&t.time,keys:["end"],q:()=>"Đánh đến mấy giờ?",o:t=>{const [h,m]=t.time.split(":").map(Number);return [2,2.5,3].map(x=>{const a=h*60+m+x*60;return `${String(Math.floor(a/60)%24).padStart(2,"0")}:${String(a%60).padStart(2,"0")}`}).map(v=>[v,v]).concat([["","Không cố định"]])},
@@ -135,7 +134,6 @@ function tcRows(t){const R=[],at=tnAt(t),E=tnEst(t);
   if(t.fmt==="bang"&&tcQ(t)>=4)R.push([tcQ(t)>=8?"TK, BK":"Bán kết",tcRTx(tcRu(t,"K")),"pK"]);
   if(t.fmt==="bang")R.push(["Chung kết",tcRTx(tcRu(t,"F")),"pF"]);
   if(t.fmt!=="xoay")R.push(["Trọng tài",t.ref?"Mỗi sân 1 trọng tài (QR)":"BTC nhập trên app","ref"],["Đăng ký",t.pairReg==="solo"?"Từng người, BTC ghép":"Theo cặp","pairReg"]);
-  R.push(["Ai đăng ký",t.guests?"Mọi người":"Thành viên CLB","guests"]);
   R.push(["Ngày",t.date!=null?`${tnDow(at)} ${tnDm(at)}`:"—","date"],["Giờ",`${t.time||"—"}${t.fmt==="xoay"?(t.end?`–${t.end}`:""):E?` · dự kiến xong ~${tcHm(E.end)}`:""}`,"time"]);
   R.push(["Sân",`${t.courts||"—"} sân${t.place?` · ${esc(t.place)}`:""}`,"courts"]);
   if(t.fmt==="xoay")R.push(["Cách thu",{phi:"Lệ phí cố định",deu:"Chia đều tiền sân",keo:"Ai thua góp"}[t.thu]||"—","thu"]);
