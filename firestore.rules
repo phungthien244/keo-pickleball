@@ -54,6 +54,15 @@ service cloud.firestore {
 
     // ===== Nền tảng =====
     // Mỗi tài khoản (Google hoặc Zalo) một CLB: users/{uid} = { club, at }
+    // Hồ sơ chung theo tài khoản (Bước 0): trình 4 mức do người chơi tự chọn
+    match /prof/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if (zalo() || google()) && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['lv', 'at'])
+        && request.resource.data.lv in ['2.5', '3.0', '3.5', '4.0']
+        && request.resource.data.at is int;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
     match /users/{uid} {
       allow read: if (signedIn() && request.auth.uid == uid) || isPA();
       allow create: if (google() || zalo()) && request.auth.uid == uid

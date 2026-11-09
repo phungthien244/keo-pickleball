@@ -35,7 +35,7 @@ function xbTodo(D,X,R){
 }
 function xbRow(D,X,x,i){
   const p=x.pid&&D.pmap.get(x.pid),g=xbG(D,x),lv=xbLv(D,x),k=feeOf(x),pay=x.pay||"none";
-  const sub=[g==="F"?"Nữ":g==="M"?"Nam":"",lv?r2(lv):"",x.guest?"ngoài CLB":"thành viên",x.walkin?"vãng lai":"",x.at?hm(x.at):""].filter(Boolean).join(" · ");
+  const sub=[g==="F"?"Nữ":g==="M"?"Nam":"",lv?lvName(lv):"",x.guest?"ngoài CLB":"thành viên",x.walkin?"vãng lai":"",x.at?hm(x.at):""].filter(Boolean).join(" · ");
   const chip=x.cancel?`<span class="xbchip ${pay==="refund"?"ok":pay==="ok"||pay==="sent"?"no":""}">${pay==="refund"?"Đã hoàn":pay==="ok"||pay==="sent"?"Cần hoàn":"Đã huỷ"}</span>`
     :payOn()&&k?`<span class="xbchip ${pay==="ok"?"ok":pay==="sent"?"wa":"no"}">${pay==="ok"?"Đã nhận":pay==="sent"?"Báo chuyển":"Chưa trả"}</span>`:"";
   return `<button class="xbrow" data-act="xbsel" data-id="${esc(x.id)}"><span class="no num">${i==null?"":i+1}</span>${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}${x.arrived?` <small class="atag q">✓ đã đến</small>`:""}</b><small>${esc(sub)}${phOfUid(x.uid)?` · 📞 ${phFmt(phOfUid(x.uid))}`:""}${x.note?` · 📝 ${esc(String(x.note).slice(0,30))}`:""}</small>${capTag(D,x)}${(()=>{const dt=X.dt;if(!dt||dt==="free"||!pairRegOn(X))return "";const m=capMate(x);if(!m)return "";const gs=[xbG(D,x),xbG(D,m)].sort().join("");const ok=dt==="mix"?gs==="FM":dt==="MM"?gs==="MM":gs==="FF";return ok?"":`<small class="atag" style="background:#fee2e2;color:#991b1b">sai nội dung ${({mix:"đôi nam nữ",MM:"đôi nam",FF:"đôi nữ"})[dt]}</small>`})()}</span>${chip}</button>`;
@@ -109,7 +109,7 @@ const xbDim=x=>`<div class="mxdim" data-act="${x}"></div>`;
 function xbPerson(D,X,R,x){
   const p=x.pid&&D.pmap.get(x.pid),k=feeOf(x),pay=x.pay||"none",nm=xbName(D,x),pos=R.all.indexOf(x),wait=pos>=R.max,zid=zidOf(D,x),g=xbG(D,x),lv=xbLv(D,x);
   let h=xbDim("xbselx")+`<div class="mxsheet xbsh" role="dialog" aria-label="${esc(nm)}"><span class="grab"></span>
-    <div class="xbwho">${av(p||{name:nm},"md",1)}<span class="t"><b>${esc(nm)}</b><small>${esc([g==="F"?"Nữ":g==="M"?"Nam":"",lv?`trình ${r2(lv)}`:"",x.guest?"ngoài CLB":"thành viên",x.cancel?"đã huỷ":pos>=0?(wait?`chờ chỗ ${pos-R.max+1}`:`vé #${pos+1}`):"",x.at?`đăng ký ${hm(x.at)} ${dmy(x.at).slice(0,5)}`:""].filter(Boolean).join(" · "))}</small></span></div>`;
+    <div class="xbwho">${av(p||{name:nm},"md",1)}<span class="t"><b>${esc(nm)}</b><small>${esc([g==="F"?"Nữ":g==="M"?"Nam":"",lv?`trình ${lvName(lv).toLowerCase()}`:"",x.guest?"ngoài CLB":"thành viên",x.cancel?"đã huỷ":pos>=0?(wait?`chờ chỗ ${pos-R.max+1}`:`vé #${pos+1}`):"",x.at?`đăng ký ${hm(x.at)} ${dmy(x.at).slice(0,5)}`:""].filter(Boolean).join(" · "))}</small></span></div>`;
   if(payOn()&&k){
     if(x.cancel)h+=`<div class="xbmoney ${pay==="refund"?"ok":"no"}"><span class="l">${pay==="refund"?"Đã hoàn phí":pay==="ok"||pay==="sent"?"Đã huỷ · cần hoàn phí":"Đã huỷ · chưa trả"}</span><b>${kVND(k)}</b></div>${pay==="ok"||pay==="sent"?`<button class="primary wide" data-act="regrefund" data-id="${esc(x.id)}">Đã hoàn phí</button>`:""}`;
     else if(pay==="sent")h+=`<div class="xbmoney wa"><span class="l">Báo đã chuyển · chưa đối chiếu</span><b>${kVND(k)}</b><small>Tìm trong app ngân hàng nội dung: <b>${esc(payNoteX(X,nm))}</b></small></div><div class="two"><button class="primary win" data-act="regpayok" data-id="${esc(x.id)}">✓ Đã thấy tiền</button><button class="line" data-act="xbunsent" data-id="${esc(x.id)}">Chưa thấy · thu lại</button></div>`;

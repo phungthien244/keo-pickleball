@@ -145,7 +145,7 @@ function g2PayTag(x,k,po){
   if(!po||!k)return "";return x.pay==="ok"?g2Tag("ĐÃ TRẢ","g"):x.pay==="sent"?g2Tag("BÁO CHUYỂN","b"):g2Tag("CHƯA TRẢ","y");
 }
 function g2Row(D,X,x,wait){
-  const p=x.pid&&D.pmap.get(x.pid),lv=xbLv(D,x),sub=[x.guest?"ngoài CLB":"thành viên",lv?r2(lv):""].filter(Boolean).join(" · ");
+  const p=x.pid&&D.pmap.get(x.pid),lv=xbLv(D,x),sub=[x.guest?"ngoài CLB":"thành viên",lv?lvName(lv):""].filter(Boolean).join(" · ");
   return `<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>${esc(sub)}</small></span>${wait?g2Tag("CHỜ CHỖ","y"):g2PayTag(x,feeOf(x),payOn())}</button>`;
 }
 function gmRegV(D,X){
@@ -198,7 +198,7 @@ function g2Sheets(D,X,R){
 }
 function g2Person(D,X,R,x){
   const p=x.pid&&D.pmap.get(x.pid),k=feeOf(x),pay=x.pay||"none",nm=xbName(D,x),pos=R.all.indexOf(x),wait=pos>=R.max,zid=zidOf(D,x),lv=xbLv(D,x),ph=phOfUid(x.uid),po=payOn();
-  const sub=[x.guest?"Ngoài CLB":"Thành viên",lv?`trình ${r2(lv)}`:"",ph?`📞 ${phFmt(ph)}`:"",x.at?`đăng ký ${hm(x.at)} ${dowVN(x.at).toLowerCase()}`:""].filter(Boolean).join(" · ");
+  const sub=[x.guest?"Ngoài CLB":"Thành viên",lv?`trình ${lvName(lv).toLowerCase()}`:"",ph?`📞 ${phFmt(ph)}`:"",x.at?`đăng ký ${hm(x.at)} ${dowVN(x.at).toLowerCase()}`:""].filter(Boolean).join(" · ");
   let h=`<div class="mxdim" data-act="xbselx"></div><div class="mxsheet dhsh gmsh" role="dialog" aria-label="${esc(nm)}"><span class="grab"></span><div class="g2who">${av(p||{name:nm},"md",1)}<span class="t"><b>${esc(nm)}</b><small>${esc(sub)}</small></span></div>`;
   if(po&&k&&!x.cancel){if(pay==="sent")h+=gmNextBox({t:`Báo đã chuyển ${fmtK(k)}`,s:"Kiểm tra tài khoản rồi bấm Đã nhận"},false);else if(pay!=="ok")h+=gmNextBox({t:`Chưa trả ${fmtK(k)}`,s:"Thu tiền mặt hoặc nhắc chuyển khoản"},false)}
   const big=[];
@@ -228,7 +228,7 @@ function gmAddPg(D,X){
     mxDr({t:"Thêm người vào giải",back:"regadd",sub:esc(xName(X))});
     const L=D.players.filter(p=>!p.guest&&p.active!==undefined).filter(p=>!q||noAcc(p.name||"").toLowerCase().includes(q)).sort((a,b)=>(inG.has(a.id)?1:0)-(inG.has(b.id)?1:0)||String(a.name).localeCompare(String(b.name),"vi")).slice(0,60);
     return `<label class="srch"><span class="sr">Tìm tên</span><input id="g2-q" data-draft="g2-q" data-live="1" type="search" placeholder="🔍 Tìm tên…" value="${esc(val("g2-q",""))}"></label>
-      <div class="g2list">${L.map(p=>{const on=inG.has(p.id),lv=D.st.get(p.id)?.rating??+p.rating0??0;return `<div class="g2p">${av(p,"sm",1)}<span class="t"><b>${esc(p.name)}</b><small>${r2(lv)} · ${on?"đã thêm":"chưa đăng ký"}</small></span>${on?g2Tag("✓ ĐÃ THÊM","g"):`<button class="btn-line sm" data-act="regaddp" data-id="${esc(p.id)}">＋ Thêm</button>`}</div>`}).join("")}</div>
+      <div class="g2list">${L.map(p=>{const on=inG.has(p.id),lv=D.st.get(p.id)?.rating??+p.rating0??0;return `<div class="g2p">${av(p,"sm",1)}<span class="t"><b>${esc(p.name)}</b><small>${lvName(lv)} · ${on?"đã thêm":"chưa đăng ký"}</small></span>${on?g2Tag("✓ ĐÃ THÊM","g"):`<button class="btn-line sm" data-act="regaddp" data-id="${esc(p.id)}">＋ Thêm</button>`}</div>`}).join("")}</div>
       <a class="g2new" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi">＋ Người mới chưa có trong CLB</a>
       <div class="hqcta"><button class="ball" data-act="regadd">Xong${g2Added?` · đã thêm ${g2Added} người`:""}</button></div>`});
 }

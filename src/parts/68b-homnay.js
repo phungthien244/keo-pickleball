@@ -45,7 +45,7 @@ function hnLate(D){
   if(isNew)h+=`<span class="mxsec">Hoặc người mới (khách)</span>
     <label class="fld"><span class="lbl">Tên</span><input id="late-nm" data-draft="late-nm" maxlength="40" placeholder="Tên người chơi" value="${esc(val("late-nm",""))}"></label>
     <div class="two"><div class="fld"><span class="lbl">Giới tính</span><div class="mxseg sm">${seg("late-g","M","Nam")}${seg("late-g","F","Nữ")}</div></div>
-    <div class="fld"><span class="lbl">Trình (tự nhận)</span><div class="mxseg sm">${["2.5","3.0","3.5","4.0","4.5"].map(v=>seg("late-lv",v,v)).join("")}</div></div></div>`;
+    <div class="fld"><span class="lbl">Trình</span><div class="mxseg sm">${LV4.map(([v,t])=>seg("late-lv",v,t)).join("")}</div></div></div>`;
   h+=`<span class="mxsec">Lệ phí ${k>0?kVND(k):"· miễn phí"}</span>`;
   if(k>0)h+=`<div class="mxseg">${seg("late-pay","cash","Tiền mặt")}${seg("late-pay","ck","Chuyển khoản")}${seg("late-pay","no","Ghi nợ",pf)}</div>${pf?`<span class="t2">Khách ngoài CLB phải trả trước khi vào sân (tắt ở thẻ check-in).</span>`:""}`;
   if(errs.late)h+=`<p class="err">${esc(errs.late)}</p>`;
@@ -78,7 +78,7 @@ function wkSheet(D){
   if(me)h+=`<div class="mxcard muted"><b>${esc(me.name)}</b><span>Thành viên ${esc(CLUB?.name||"")}</span></div>`;
   else h+=`<label class="fld"><span class="lbl">Tên của bạn</span><input id="wk-nm" data-draft="wk-nm" maxlength="40" autocomplete="name" value="${esc(val("wk-nm",P.n||""))}"></label>
     <div class="two"><div class="fld"><span class="lbl">Giới tính</span><div class="mxseg sm">${seg("wk-g","M","Nam")}${seg("wk-g","F","Nữ")}</div></div>
-    <div class="fld"><span class="lbl">Trình (tự nhận)</span><div class="mxseg sm">${["2.5","3.0","3.5","4.0","4.5"].map(v=>seg("wk-lv",v,v)).join("")}</div></div></div>`;
+    <div class="fld"><span class="lbl">Trình</span><div class="mxseg sm">${LV4.map(([v,t])=>seg("wk-lv",v,t)).join("")}</div></div></div>`;
   h+=`<div class="mxkv"><span>Lệ phí</span><b>${k>0?kVND(k):"Miễn phí"}</b></div>${k>0&&!me&&hnPayFirst(X)?`<span class="t2">Trả trước khi vào sân: tiền mặt hoặc chuyển khoản tại bàn ban tổ chức.</span>`:""}
     <div class="mxkv"><span>Chỗ</span><b>${full?"Đã đủ người · bạn vào hàng chờ":R.max<999?`Còn ${R.max-present} chỗ`:"Còn chỗ"}</b></div>`;
   if(G)h+=`<span class="t2">Giải cặp đang chạy: bạn chỉ vào được khi có cặp vắng cần người thay.</span>`;

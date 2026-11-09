@@ -164,7 +164,7 @@ function gdReg1(D){
       <span class="gdnote">Ảnh rõ mặt, nhìn thẳng. Ban tổ chức dùng để nhận ra bạn lúc check-in. Chỉ ban tổ chức CLB xem được.</span>${errs.gs?`<p class="err">${esc(errs.gs)}</p>`:""}</div>
       <div class="gdform"><label class="fld"><span class="lbl">Tên hiển thị</span><input id="gs-name" data-draft="gs-name" maxlength="30" value="${esc(val("gs-name",zaloProf().n||""))}"></label>
       <div class="gd2"><div class="fld"><span class="lbl">Giới tính</span><span class="seg"><button data-act="gsg" data-v="M" aria-pressed="${g==="M"}">Nam</button><button data-act="gsg" data-v="F" aria-pressed="${g==="F"}">Nữ</button></span></div>
-      <label class="fld"><span class="lbl">Trình độ tự đánh giá</span><select id="gs-lv" data-draft="gs-lv">${["2.0","2.5","3.0","3.5","4.0","4.5","5.0"].map(v=>`<option ${v===lv?"selected":""}>${v}</option>`).join("")}</select></label></div>
+      </div>${lvPick()}
       ${lvTxt(r)?`<span class="gdnote">${esc(lvTxt(r))} cho giải đấu này. Ghi sai trình, BTC có thể xếp lại cặp.</span>`:""}</div>`}
   if(who==="guest"||linked)h+=`<div class="gdbox">${phBox()}</div>`;
   if(!W)h+=capReg1(D);
@@ -205,7 +205,7 @@ function gdTick(){if(gdTimer||typeof setInterval!=="function"||!document.querySe
 /* ----- Bước 3: vé ----- */
 function gdTicket(D,mine){
   const R=regList(D),pos=R.all.indexOf(mine),wait=pos>=R.max,k=feeOf(mine),me=mine.guest?null:D.pmap.get(mine.pid),nm=mine.guest?mine.name:me?.name||mine.name||"";
-  const lv=mine.guest?mine.lv:me?r2(D.st.get(me.id)?.rating||+me.rating0||0):"",lk=regLockAt(),locked=lk&&Date.now()>lk;
+  const lv=lvName(mine.guest?mine.lv:me?(D.st.get(me.id)?.rating||+me.rating0||0):""),lk=regLockAt(),locked=lk&&Date.now()>lk;
   const pay=mine.pay||"none",paySt=pay==="ok"?`<b class="win">✓ Đã trả</b>`:pay==="sent"?`<b class="warn">Chờ BTC xác nhận</b>`:k?`<b>Trả tại sân</b>`:`<b class="win">Miễn phí</b>`;
   const today=RX.at&&sameDay(RX.at,Date.now()),ty=gdTy(RX);
   let h=`<div class="gdtop2"><b>Vé của bạn</b></div>`+gdSteps(3);

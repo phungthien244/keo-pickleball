@@ -83,7 +83,7 @@ function guestForm(D){
   return `<section class="regcard"><b>Đăng ký làm vận động viên ngoài CLB</b><span class="rule">Không cần chờ duyệt. Giá VĐV ngoài CLB ${k?fmtK(k):"theo CLB"}.</span>
     <label class="fld"><span class="lbl">Tên của bạn</span><input id="gs-name" data-draft="gs-name" data-live="1" maxlength="30" value="${esc(val("gs-name",zaloProf().n||""))}"></label>
     <div class="fld"><span class="lbl">Giới tính</span><span class="seg"><button data-act="gsg" data-v="M" aria-pressed="${val("gs-g","M")==="M"}">Nam</button><button data-act="gsg" data-v="F" aria-pressed="${val("gs-g","M")==="F"}">Nữ</button></span></div>
-    <label class="fld"><span class="lbl">Trình độ tự đánh giá</span><select id="gs-lv" data-draft="gs-lv">${["2.0","2.5","3.0","3.5","4.0","4.5","5.0"].map(v=>`<option ${v===lv?"selected":""}>${v}</option>`).join("")}</select></label>
+    ${lvPick()}
     ${phBox()}
     ${payOn()&&k>0?payBox(D,val("gs-name",zaloProf().n||"KHACH"),k)+`<button class="primary wide" data-act="guestin" data-v="sent">Đăng ký và đã chuyển khoản</button><button class="line wide" data-act="guestin" data-v="none">${regPayMode()==="req"?"Giữ chỗ 30 phút, chuyển sau":"Đăng ký, trả phí tại sân"}</button>`:`<button class="primary wide" data-act="guestin" data-v="none">Đăng ký làm vận động viên ngoài CLB</button>`}
     <button class="ghost" data-act="guestopen">Quay lại</button></section>`;
@@ -173,7 +173,7 @@ function regForm(D){
 function regPeople(D){
   const R=regList(D),nm=x=>esc(x.guest?x.name:D.pmap.get(x.pid)?.name||x.name||"?"),po=payOn();
   const row=(x,i)=>{const pay=x.pay||"none",k=feeOf(x);
-    return `<div class="prer${i>=R.max?" done":""}"><b class="no num">${i+1}</b><span class="pm">${nm(x)}${x.arrived?` <small class="gtag" style="color:var(--win)">✓ đã đến</small>`:""}${x.guest?` <small class="gtag">VĐV ngoài ${esc(x.lv||"")}</small>`:""}${i>=R.max?` <small>· chờ</small>`:""}<small>${hm(x.at)} ${dmy(x.at)}${x.by?" · "+esc(x.by):""}${po&&k?` · ${kVND(k)} · <span class="paychip ${pay}">${PAYLB[pay]}</span>`:""}</small></span>
+    return `<div class="prer${i>=R.max?" done":""}"><b class="no num">${i+1}</b><span class="pm">${nm(x)}${x.arrived?` <small class="gtag" style="color:var(--win)">✓ đã đến</small>`:""}${x.guest?` <small class="gtag">VĐV ngoài${x.lv?" · "+esc(lvName(x.lv)):""}</small>`:""}${i>=R.max?` <small>· chờ</small>`:""}<small>${hm(x.at)} ${dmy(x.at)}${x.by?" · "+esc(x.by):""}${po&&k?` · ${kVND(k)} · <span class="paychip ${pay}">${PAYLB[pay]}</span>`:""}</small></span>
       <span class="pb">${po&&k&&pay!=="ok"?`<button class="line" data-act="regpayok" data-id="${x.id}">✓ Đã nhận</button>`:""}${po&&pay==="ok"?`<button class="ghost" data-act="regpayundo" data-id="${x.id}" aria-label="Bỏ xác nhận">↺</button>`:""}<button class="ghost danger" data-act="regdel" data-id="${x.id}" aria-label="Bỏ">${armed("regdel:"+x.id)?"Bỏ?":"✕"}</button></span></div>`};
   const got=R.all.filter(x=>x.pay==="ok").reduce((s,x)=>s+feeOf(x),0);
   let b=`<div class="lab" style="margin:0 0 4px"><span class="lbl">Đã đăng ký ${R.conf.length}${R.wait.length?` · chờ ${R.wait.length}`:""}${po?` · đã nhận ${kVND(got)}`:""}</span>${R.all.length&&(!RX||cfg().schedId===RX.id)?`<button class="lnk" data-act="regatt">${armed("regatt:x")?"Bấm lần nữa":"Điểm danh theo đăng ký"}</button>`:""}</div>`;
@@ -253,7 +253,7 @@ async function regAct(act,b,id){
     if(guest){const el=document.getElementById&&document.getElementById("gs-name"),nm=String((el&&el.value)||drafts["gs-name"]||zaloProf().n||"").trim().slice(0,30);
       if(!nm){toast("Nhập tên của bạn.");return true}
       if(step&&!gsPhoto){errs.gs="Thêm ảnh rõ mặt của bạn để ban tổ chức nhận ra lúc check-in.";render();return true}
-      d={...d,guest:true,name:nm,gender:drafts["gs-g"]==="F"?"F":"M",lv:String(val("gs-lv","3.0"))}}
+      d={...d,guest:true,name:nm,gender:drafts["gs-g"]==="F"?"F":"M",lv:lvOf()}}
     else d={...d,pid:L.pid,name:D.pmap.get(L.pid)?.name||""};
     if(step){if(gdJoin&&capRegs(d.sid,gdJoin).length>=2){toast("Cặp này đã đủ hai người.");gdJoin="";render();return true}d={...d,...capFields(rid)}}
     // Lần trước quá giờ giữ chỗ: xoá đăng ký cũ rồi đăng ký lại

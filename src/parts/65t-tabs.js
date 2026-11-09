@@ -136,7 +136,7 @@ function mtTin(D){
 }
 
 /* ----- Tab Tôi ----- */
-let mtRen=false;
+let mtRen=false,mtLvEd=false;
 function mtMyName(){const id=S.myClub;if(!id)return "";if(MODE==="club"&&CID===id&&CLUB)return CLUB.name||"";
   const c=(S.clubs||[]).find(z=>z.id===id)||myClubs().find(z=>z.id===id);if(c&&c.name)return c.name;
   if(!mtMyName.ld){mtMyName.ld=1;FB.getDoc(FB.doc(FB.fs,"clubs/"+id)).then(x=>{if(x.exists()){const L=myClubs().filter(z=>z.id!==id);L.unshift({id,name:x.data().name,role:"Chủ"});try{localStorage.setItem("pb-mini-clubs",JSON.stringify(L.slice(0,10)))}catch(e){}render()}}).catch(()=>{})}
@@ -155,10 +155,17 @@ function mtToi(D){
   const P=zaloProf(),nm=String(P.n||"").trim(),p=D&&MODE==="club"?mxMe(D):null,C=myClubs();
   if(S.myClub===undefined&&isZaloU(authUser))loadMyClub();
   let h=(typeof dbgCard==="function"?dbgCard():"");
-  h+=`<div class="mtme">${P.p?`<img class="mxav" src="${esc(P.p)}" alt="">`:`<span class="mxav">${nm?esc(nm.charAt(0).toUpperCase()):mxSvg("me")}</span>`}<span class="t"><b>${esc((p&&p.name)||nm||"Người dùng Zalo")}</b>${p?`<small>Rating <b>${r2(D.st.get(p.id).rating)}</b> ở ${esc((CLUB&&CLUB.name)||"")}</small>`:`<small>Tài khoản Zalo</small>`}</span></div>`;
+  h+=`<div class="mtme">${P.p?`<img class="mxav" src="${esc(P.p)}" alt="">`:`<span class="mxav">${nm?esc(nm.charAt(0).toUpperCase()):mxSvg("me")}</span>`}<span class="t"><b>${esc(nm||(p&&p.name)||"Người dùng Zalo")}</b><small>Tài khoản Zalo · đã xác minh ✓</small></span></div>`;
   const li=(a,i,t,s)=>`<${a.startsWith("href")?"a":"button"} class="mxli" ${a}><i aria-hidden="true">${i}</i><span class="t">${t}${s?`<small>${s}</small>`:""}</span><span>›</span></${a.startsWith("href")?"a":"button"}>`;
+  // Thành tích thật thay cho rating (canvas B04)
+  if(p){const A=lvAch(D,p.id);
+    h+=`<div class="mtst"><span><b>${A.ses}</b><small>buổi đã chơi</small></span><span><b>${A.games}</b><small>trận</small></span><span><b>${A.gold}</b><small>lần vô địch</small></span></div>`;
+    if(A.T.length)h+=`<span class="mxsec">Thành tích</span><div class="mxcard list">${A.T.slice(0,5).map(x=>`<div class="mxli"><i aria-hidden="true">${x.m===1?"🏆":"🥈"}</i><span class="t">${x.m===1?"Vô địch":"Á quân"} · ${esc(x.t)}<small>${esc((CLUB&&CLUB.name)||"")}${x.at?" · "+dmy(x.at):""}</small></span></div>`).join("")}</div>`}
+  const lv=myLv();
   h+=`<div class="mxcard list">`
-    +(p?li(`href="${pathOf("app",{tab:"bxh"})}" data-go="app" data-t="bxh"`,"🏅","Thứ hạng của tôi",esc((CLUB&&CLUB.name)||""))+li(`href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"`,"📜","Lịch sử trận",`${D.all.get(p.id).ses.size} lần chơi`)+li(`href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}"`,"👤","Hồ sơ, thành tích, sửa ảnh",""):"")
+    +(mtLvEd?`<div class="mtren">${lvPick("mt-lv")}<span class="two"><button class="ghost" data-act="mtlvx">Huỷ</button><button class="primary" data-act="mtlvok">✓ Lưu trình</button></span></div>`
+      :`<div class="mxli"><i aria-hidden="true">🎚</i><span class="t">Trình của tôi: ${lv?lvName(lv):"chưa chọn"}<small>Chỉ bạn thấy · dùng để ghép cặp cân sức</small></span><button class="mxsm" data-act="mtlv">${lv?"Sửa":"Chọn"}</button></div>`)
+    +(p?li(`href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"`,"📜","Lịch sử trận",`${D.all.get(p.id).g} trận`)+li(`href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}"`,"👤","Hồ sơ, sửa ảnh",""):"")
     +li(`data-act="mxsheet"`,"⭐","Trang tổ chức đã tham gia",C.length?`${C.length} trang`:"Chưa có")+`</div>`;
   h+=`<span class="mxsec">Tôi tổ chức</span><div class="mxcard list">`;
   if(S.myClub){const nm=mtMyName();
@@ -241,6 +248,9 @@ async function mtAct(act,b,id){
   if(act==="mtqlt"){if(!mtMgrHere())return true;mxSetMode("ql");MXT=null;mxTS=[];go("app",{tab:v||"dk"});return true}
   if(act==="mtqlc"){if(MODE==="club"&&id===CID&&mtMgrHere()){mxSetMode("ql");MXT=null;mxTS=[];go("app",{tab:"dk"});return true}
     try{localStorage.setItem("pb-mxm-"+id,"ql")}catch(e){}mtKeep("-");quickNext();setPath("/"+id);location.reload();return true}
+  if(act==="mtlv"){mtLvEd=true;delete drafts["mt-lv"];render();return true}
+  if(act==="mtlvx"){mtLvEd=false;delete drafts["mt-lv"];render();return true}
+  if(act==="mtlvok"){const v=lvSnap(drafts["mt-lv"]!=null?drafts["mt-lv"]:(myLv()||"3.0"));await saveMyLv(v);mtLvEd=false;delete drafts["mt-lv"];toast("Đã lưu trình: "+lvName(v));render();return true}
   if(act==="mtren"){mtRen=true;delete drafts["mt-nm"];delete errs.mtn;render();return true}
   if(act==="mtrenx"){mtRen=false;delete errs.mtn;render();return true}
   if(act==="mtrenok"){await mtRename();return true}

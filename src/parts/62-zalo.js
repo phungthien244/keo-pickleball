@@ -126,7 +126,7 @@ function vToi(D){
   const L=S.link,p=L&&L.status==="ok"&&D.pmap.get(L.pid),R=regList(D),mine=authUser&&R.all.find(x=>x.uid===authUser.uid);
   let h="";
   if(p){const s=D.st.get(p.id),A=D.all.get(p.id);
-    h+=`<a class="mebox" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">${av(p,"md",1)}<span class="t"><small>${esc(CLUB?.name||"")}</small><b>${esc(p.name)}</b><span class="st"><i>Rating ${r2(s.rating)}</i><i>${A.ses.size} giải đấu</i></span></span><span aria-hidden="true">›</span></a>`;
+    h+=`<a class="mebox" href="${pathOf("vdv",{pid:p.id})}" data-go="vdv" data-pid="${p.id}">${av(p,"md",1)}<span class="t"><small>${esc(CLUB?.name||"")}</small><b>${esc(p.name)}</b><span class="st"><i>${A.ses.size} buổi chơi</i><i>${A.g} trận</i></span></span><span aria-hidden="true">›</span></a>`;
     h+=`<section class="card2"><h2>Giải đấu tới</h2><div class="cb">${regOpen()?`<p class="rule">${esc(D.c.sname||"Giải đấu tới")} · ${esc(regWhen(regCfg().at))}</p><p><b>${mine?(R.all.indexOf(mine)<R.max?"✓ Bạn đã đăng ký":"Bạn đang trong danh sách chờ"):"Bạn chưa đăng ký"}</b></p>`:`<p class="rule">Chưa mở đăng ký giải đấu tới.</p>`}<a class="line wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">Mở trang đăng ký</a></div></section>`;
   }else h+=`<section class="card2"><div class="cb"><p class="rule">${L&&L.status==="pending"?"Bạn đang chờ chủ CLB duyệt.":mine&&mine.guest?"Bạn đã đăng ký làm vận động viên ngoài CLB giải đấu tới. Muốn thành thành viên CLB thì bấm Tham gia CLB.":"Bạn chưa tham gia CLB này."}</p><a class="primary wide" href="${pathOf("app",{tab:"dk"})}" data-go="app" data-t="dk">${L?"Xem trạng thái":"Tham gia CLB"}</a></div></section>`;
   const C=myClubs();

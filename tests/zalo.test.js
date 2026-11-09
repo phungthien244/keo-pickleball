@@ -258,16 +258,20 @@ test("vận động viên ngoài CLB đăng ký không cần duyệt, bắt đ�
   await e.boot(); await e.until(() => e.V().includes('data-act="mxsheetreg"'));
   await e.click("mxsheetreg"); await e.click("mxdk", { v: "guest" }); await e.until(() => e.V().includes('id="gs-name"'));
   e.input("gs-name", "Tuấn vận động viên ngoài CLB"); await e.click("gsg", { v: "M" });
+  // Trình 4 mức thay cho ô số 2.0–5.0; chọn Khá → lưu 3.5 vào đăng ký và hồ sơ chung
+  expect(e.T()).toContain("Mới chơi"); expect(e.T()).toContain("Giỏi"); expect(e.T()).toContain("Không ai thấy điểm số");
+  await e.click("lvpick", { k: "gs-lv", v: "3.5" });
   e.input("ph", "0901234567"); await e.click("guestin", { v: "none" });
   await e.until(() => e.store.get("clubs/q7/regs/1_zalo_9")?.guest === true);
-  expect(e.store.get("clubs/q7/regs/1_zalo_9").name).toBe("Tuấn vận động viên ngoài CLB");
+  expect(e.store.get("clubs/q7/regs/1_zalo_9")).toMatchObject({ name: "Tuấn vận động viên ngoài CLB", lv: "3.5" });
+  await e.until(() => e.store.get("prof/zalo_9")?.lv === "3.5");
   const o = setup({ host: "pikeco.app", path: "/q7/san", user: OWNER, data: Object.fromEntries(e.store) });
   await o.boot(); await o.until(() => o.V().includes('data-act="start"'));
   await o.ok("start");
   await o.until(() => o.store.get("clubs/q7/app/config").phase === "live");
   await o.until(() => o.store.get("clubs/q7/regs/1_zalo_9").pid);
   const pid = o.store.get("clubs/q7/regs/1_zalo_9").pid;
-  expect(o.store.get("clubs/q7/players/" + pid)).toMatchObject({ name: "Tuấn vận động viên ngoài CLB", guest: true, active: true, rating0: 3 });
+  expect(o.store.get("clubs/q7/players/" + pid)).toMatchObject({ name: "Tuấn vận động viên ngoài CLB", guest: true, active: true, rating0: 3.5 });
 });
 
 test("bắt buộc thu trước: giữ chỗ quá 30 phút chưa chuyển thì nhường chỗ (đăng ký cách cũ tự chuyển sang lịch giải đấu)", async () => {

@@ -82,7 +82,7 @@ function ckPopup(D){
   const P=ckPending();if(!P.length){ckSel=null;ckQR=null;return ""}
   const r=P.find(x=>x.id===ckSel)||P[0],X=schedById(r.sid);if(!X)return "";
   const k=withX(X,()=>feeOf(r)),paid=r.pay==="ok"||!k,sent=!paid&&r.pay==="sent",pos=withX(X,()=>regList(D).all.indexOf(r)),p=r.pid?D.pmap.get(r.pid):null;
-  const lv=r.guest?r.lv:p?r2(D.st.get(p.id)?.rating||+p.rating0||0):"",nm=ckName(D,r),note=payNoteX(X,nm||"KHACH");
+  const lv=lvName(r.guest?r.lv:p?(D.st.get(p.id)?.rating||+p.rating0||0):""),nm=ckName(D,r),note=payNoteX(X,nm||"KHACH");
   const rest=P.filter(x=>x!==r),id=esc(r.id),first=String(nm).trim().split(/\s+/).pop();
   // Vãng lai xin vào: khách ngoài CLB phải trả trước (nếu bật), cảnh báo đủ chỗ, giải cặp đang chạy chỉ thay cặp vắng
   const RL=withX(X,()=>regList(D)),present=RL.all.filter(x=>x.arrived).length,full=RL.max<999&&present>=RL.max&&pos>=RL.max;

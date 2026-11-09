@@ -138,7 +138,7 @@ function ckAll(D){
   const s=ckStats(D,X),L=s.L,q=String(val("ck-q","")).trim().toLowerCase();
   const P=L.filter(r=>r.ci&&!r.arrived),N=L.filter(r=>!r.arrived&&!r.ci),A=L.filter(r=>r.arrived).sort((a,b)=>(b.arrivedAt||0)-(a.arrivedAt||0));
   const f=ckAllF,mt=r=>!q||String(ckName(D,r)).toLowerCase().includes(q);
-  const sub=r=>{const p=r.pid?D.pmap.get(r.pid):null,g=(p?.gender||r.gender)==="F"?"Nữ":"Nam",lv=p?r2(D.st.get(p.id)?.rating??3):(r.lv||"");
+  const sub=r=>{const p=r.pid?D.pmap.get(r.pid):null,g=(p?.gender||r.gender)==="F"?"Nữ":"Nam",lv=lvName(p?(D.st.get(p.id)?.rating??3):r.lv);
     return `${g}${lv?` · ${lv}`:""} · ${r.guest?"ngoài CLB":"thành viên"}`};
   const pay=r=>`<span class="hqpay ${r.pay==="ok"?"ok":r.pay==="sent"?"sent":"no"}">${ckPayLb(r)}</span>`;
   const row=(r,right,extra="")=>`<div class="hqck big">${ckPic(D,r,"ckpic")}<span class="t"><b>${esc(ckName(D,r))}${r.walkin&&!r.arrived?` <i class="tag">XIN VÀO</i>`:""}</b><small>${sub(r)}${extra}</small>${pay(r)}</span>${right}</div>`;

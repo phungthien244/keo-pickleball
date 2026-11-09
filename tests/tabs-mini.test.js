@@ -81,3 +81,14 @@ test("Tôi: đổi tên trang tổ chức tại chỗ (tên tục bị chặn)",
   await e.until(() => e.store.get("clubs/q7").name === "Pickleball Q7 tối thứ 7");
   expect(e.V()).toContain('data-act="mtren"');
 });
+
+test("Tôi: không còn rating/thứ hạng; chọn trình 4 mức, lưu vào hồ sơ chung", async () => {
+  const e = await boot();
+  await e.until(() => e.T().includes("Lịch đánh của tôi"));
+  await e.click("mtab", { v: "toi" }); await e.until(() => e.V().includes('data-act="mtlv"'));
+  expect(e.T()).not.toContain("Rating"); expect(e.T()).not.toContain("Thứ hạng");
+  expect(e.T()).toContain("Trình của tôi: chưa chọn");
+  await e.click("mtlv"); await e.click("lvpick", { k: "mt-lv", v: "4.0" }); await e.click("mtlvok");
+  await e.until(() => e.store.get("prof/zalo_9")?.lv === "4.0");
+  expect(e.T()).toContain("Trình của tôi: Giỏi");
+});

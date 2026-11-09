@@ -161,7 +161,7 @@ function xPeople(D,X){
   const R=regList(D),po=payOn(),cancel=(S.regs||[]).filter(r=>r.sid===X.id&&r.cancel);
   const nm=x=>x.guest?x.name:(D.pmap.get(x.pid)?.name||x.name||"?");
   const row=(x,i,wait)=>{const p=D.pmap.get(x.pid),pay=x.pay||"none",k=feeOf(x),s=p&&D.st.get(p.id);
-    const sub=[x.guest?`VĐV ngoài CLB${x.lv?" · "+x.lv:""}`:s?`${r2(s.rating)} · thành viên`:"thành viên",x.by?`thêm bởi ${x.by}`:`${hm(x.at)} ${dmy(x.at).slice(0,5)}`].filter(Boolean).join(" · ");
+    const sub=[x.guest?`VĐV ngoài CLB${x.lv?" · "+lvName(x.lv):""}`:s?`${lvName(s.rating)} · thành viên`:"thành viên",x.by?`thêm bởi ${x.by}`:`${hm(x.at)} ${dmy(x.at).slice(0,5)}`].filter(Boolean).join(" · ");
     const chip=po&&k?`<span class="paychip ${pay}">${pay==="ok"?`Đã nhận ${kVND(k)}`:pay==="sent"?"Báo đã chuyển":"Chưa trả"}</span>`:"";
     return `<div class="xp${wait?" wt":""}"><span class="no num">${i+1}</span>${av(p||{name:nm(x)},"sm",1)}<span class="t"><b>${esc(nm(x))}${x.arrived?` <small class="atag q">✓ đã đến</small>`:""}</b><small>${esc(sub)}</small>${capTag(D,x)}${chip}</span>
       <span class="b">${MINI&&zidOf(D,x)?`<button class="ghost sm" data-act="zchat" data-v="${esc(zidOf(D,x))}" data-n="${esc(nm(x))}" aria-label="Nhắn Zalo cho ${esc(nm(x))}">💬</button>`:""}${po&&k&&pay!=="ok"?`<button class="${pay==="sent"?"primary":"line"} sm" data-act="regpayok" data-id="${x.id}">✓ Nhận</button>`:""}${po&&pay==="ok"?`<button class="ghost sm" data-act="regpayundo" data-id="${x.id}" aria-label="Bỏ xác nhận phí">↺</button>`:""}<button class="ghost danger sm" data-act="regdel" data-id="${x.id}" aria-label="Bỏ khỏi danh sách">${armed("regdel:"+x.id)?"Bỏ?":"✕"}</button></span></div>`};

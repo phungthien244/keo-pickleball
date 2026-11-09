@@ -436,3 +436,16 @@ describe("yêu cầu gọi BTC", () => {
     await assertSucceeds(updateDoc(doc(google("own"), "clubs/aep/calls/c3"), { wait: 99 }));
   });
 });
+
+describe("prof: trình 4 mức theo tài khoản", () => {
+  test("chính chủ Zalo ghi được trình hợp lệ, người khác không đọc/ghi được", async () => {
+    const zc = uid => env.authenticatedContext(uid, { firebase: { sign_in_provider: "custom" } }).firestore();
+    const me = zc("zalo_lv1"), other = zc("zalo_lv2");
+    await assertFails(anon("a1").doc("prof/a1").set({ lv: "3.0", at: 1 }));
+    await assertSucceeds(me.doc("prof/zalo_lv1").set({ lv: "3.5", at: 1 }));
+    await assertFails(me.doc("prof/zalo_lv1").set({ lv: "4.7", at: 1 }));
+    await assertFails(me.doc("prof/zalo_lv1").set({ lv: "3.0", at: 1, rating: 9 }));
+    await assertFails(other.doc("prof/zalo_lv1").get());
+    await assertFails(other.doc("prof/zalo_lv1").set({ lv: "3.0", at: 1 }));
+  });
+});

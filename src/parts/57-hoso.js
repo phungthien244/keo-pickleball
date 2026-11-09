@@ -49,15 +49,15 @@ function vHoSo(D,id){
   if(silver.length)titles.push(["2","Á quân",silver.length>1?`${silver.length} giải`:(silver[0].sname||`Giải giải đấu #${silver[0].sid}`),"s"]);
   if(bronze.length)titles.push(["3","Hạng ba",bronze.length>1?`${bronze.length} giải`:(bronze[0].sname||`Giải giải đấu #${bronze[0].sid}`),"b"]);
   if(mvp.length)titles.push(["★","MVP",`${mvp.length} giải đấu`,"m"]);
-  if(rank===1&&all.length>1)titles.push(["#1","Số 1 CLB","rating cao nhất hiện tại","n"]);
+  if(!MINI&&rank===1&&all.length>1)titles.push(["#1","Số 1 CLB","rating cao nhất hiện tại","n"]);
   const first=X.ses[0];
   let h=`<section class="phero"><span class="bk">Hồ sơ vận động viên</span>
-    <div class="pid">${av(p,"xl")}<div class="t"><h1>${esc(p.name)}</h1><span class="mt">${p.code?esc(p.code)+" · ":""}${p.gender==="F"?"Nữ":"Nam"}${first?` · đánh từ ${dmy(first.at).replace(/^\d+\//,"")}`:""}</span><span class="rkb">#${rank} CLB · Số ${rg} ${p.gender==="F"?"nữ":"nam"}</span></div></div>
-    <div class="prt"><div><span class="k">Rating</span><b class="num">${r2(s.rating)}</b></div>${last&&Number.isFinite(last.d)?`<div class="dd"><b class="${dCls(last.d)} num">${dTxt(last.d)}</b><small>${last.today?"hôm nay":`giải đấu #${last.sid}`}</small></div>`:""}</div>
+    <div class="pid">${av(p,"xl")}<div class="t"><h1>${esc(p.name)}</h1><span class="mt">${p.code?esc(p.code)+" · ":""}${p.gender==="F"?"Nữ":"Nam"}${first?` · đánh từ ${dmy(first.at).replace(/^\d+\//,"")}`:""}</span>${MINI?"":`<span class="rkb">#${rank} CLB · Số ${rg} ${p.gender==="F"?"nữ":"nam"}</span>`}</div></div>
+    ${MINI?"":`<div class="prt"><div><span class="k">Rating</span><b class="num">${r2(s.rating)}</b></div>${last&&Number.isFinite(last.d)?`<div class="dd"><b class="${dCls(last.d)} num">${dTxt(last.d)}</b><small>${last.today?"hôm nay":`giải đấu #${last.sid}`}</small></div>`:""}</div>`}
     ${proExtra(p)}<button class="pshare" data-act="pshare" data-id="${esc(id)}">Chia sẻ hồ sơ</button></section>${proEdit(D,id)}${isAdm()&&!legacy&&p.zuid&&!(MINI&&mxMode()==="choi")?`<div class="mxcard zlk"><span class="t"><b>Đã ghép tài khoản Zalo</b><small>Người này tự đăng ký giải đấu và sửa hồ sơ trong Zalo.</small></span><button class="ghost danger" data-act="unzalo" data-id="${esc(id)}">${armed("unzalo:"+id)?"Bấm lần nữa":"Bỏ ghép"}</button></div>`:""}
   <div class="pstats"><div><b class="num">${X.ses.length}</b><span>Giải đấu</span></div><div><b class="num">${X.games}</b><span>Trận</span></div><div><b class="num">${pc}%</b><span>Thắng</span></div><div><b class="num">${allM?X.best:"…"}</b><span>Chuỗi thắng</span></div></div>`;
   h+=tvMgr(D,p);
-  h+=card(`Rating qua các giải đấu<span class="meta">${X.ses.length} giải đấu</span>`,ratingChart(X.ses));
+  if(!MINI)h+=card(`Rating qua các giải đấu<span class="meta">${X.ses.length} giải đấu</span>`,ratingChart(X.ses));
   if(titles.length)h+=card("Danh hiệu",`<div class="ptit">${titles.map(([i,a,b,c])=>`<div class="bd ${c}"><i>${i}</i><span><b>${a}</b>${esc(b)}</span></div>`).join("")}</div>`);
   if(!allM)h+=`<p class="rule">Đang tải các trận…</p>`;
   else{
@@ -68,7 +68,7 @@ function vHoSo(D,id){
     if(X.rivals.length)h+=card(`Đối thủ khó nhất<span class="meta">gặp từ 3 lần</span>`,X.rivals.map(([q,x])=>pr(q,x,false)).join(""));
   }
   if(X.ses.length)h+=card(`Các giải đấu đã đánh<span class="meta">${X.ses.length} giải đấu</span>`,[...X.ses].reverse().slice(0,10).map(x=>{const tag=x.medal?`<span class="ptag m${x.medal}">${["","Nhất","Nhì","Ba"][x.medal]}</span>`:x.mvp?`<span class="ptag mv">MVP</span>`:"";
-    const inner=`<span class="sno num"><small>Giải đấu</small>${x.sid}</span><span class="t"><b>${x.today?"Hôm nay":dmy(x.at)}${x.sname?" · "+esc(x.sname):x.giai?" · Giải":""}${tag}</b><small class="num">${x.w+x.l} trận · ${x.w} thắng ${x.l} thua</small></span><span class="${dCls(x.d)} num dv">${Number.isFinite(x.d)?dTxt(x.d):""}</span>`;
+    const inner=`<span class="sno num"><small>Giải đấu</small>${x.sid}</span><span class="t"><b>${x.today?"Hôm nay":dmy(x.at)}${x.sname?" · "+esc(x.sname):x.giai?" · Giải":""}${tag}</b><small class="num">${x.w+x.l} trận · ${x.w} thắng ${x.l} thua</small></span><span class="${dCls(x.d)} num dv">${!MINI&&Number.isFinite(x.d)?dTxt(x.d):""}</span>`;
     return x.today?`<div class="psr">${inner}</div>`:`<a class="psr" href="${pathOf("buoi",{sid:x.sid})}" data-go="buoi" data-id="${x.sid}">${inner}</a>`}).join(""));
   if(allM&&X.res.length){const tn=ids=>ids.map(i=>esc(D.pmap.get(i)?.name||"?")).join(" &amp; ");
     h+=card("Trận gần đây",[...X.res].reverse().slice(0,5).map(r=>{const m=r.m,aw=m.sa>m.sb;return `<div class="pmc"><div class="h"><span>Giải đấu #${m.session||1} · Sân ${esc(m.cn||m.court||"?")} · Trận #${m.seq||"?"}</span><span>${m.doneAt?new Date(m.doneAt).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}):""}</span></div><div class="r${aw?" win":""}"><span>${tn(m.a)}</span><b class="num">${m.sa}</b></div><div class="r${!aw?" win":""}"><span>${tn(m.b)}</span><b class="num">${m.sb}</b></div></div>`}).join(""))}
@@ -77,5 +77,5 @@ function vHoSo(D,id){
 function profileShare(D,id){
   const p=D.pmap.get(id);if(!p)return "";const s=D.st.get(id),X=profileData(D,id),all=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating),rank=all.findIndex(x=>x.id===id)+1;
   const pc=X.games?Math.round(X.winsAll/X.games*100):0,gold=X.ses.filter(x=>x.medal===1).length;
-  return [`HỒ SƠ ${p.name.toUpperCase()} · ${clubNm(D)}`,`Rating ${r2(s.rating)} (#${rank} CLB) · ${X.ses.length} giải đấu · thắng ${pc}%`,gold?`Vô địch ${gold} giải`:""].filter(Boolean).join("\n");
+  return [`HỒ SƠ ${p.name.toUpperCase()} · ${clubNm(D)}`,MINI?`${X.ses.length} buổi chơi · thắng ${pc}%`:`Rating ${r2(s.rating)} (#${rank} CLB) · ${X.ses.length} giải đấu · thắng ${pc}%`,gold?`Vô địch ${gold} giải`:""].filter(Boolean).join("\n");
 }
