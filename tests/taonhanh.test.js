@@ -197,3 +197,22 @@ test("Social: hỏi tiền sân → gợi ý lệ phí hoà vốn → tạo lị
   expect(sched(e)[0]).toMatchObject({ san: 1200, thu: "phi", phi: 80 });
   await e.until(() => e.T().includes("Tài khoản nhận tiền"));
 });
+
+test("lỗi người dùng báo: Social chia đều tiền sân (không có lệ phí cố định) bấm Tạo phải tạo được", async () => {
+  const e = await boot(base());
+  await open(e);
+  e.input("tn-txt", "Social tối thứ 7 19h, 3 sân, 16 người, chia đều tiền sân, trả tại sân");
+  await e.click("tngo"); await e.until(() => e.T().includes("Mình đã hiểu"));
+  for (let i = 0; i < 12 && !e.T().includes("Xong rồi!"); i++) {
+    await e.until(() => e.V().includes('data-act="tca"') || e.V().includes('data-act="tcskip"') || e.T().includes("Xong rồi!"));
+    if (e.T().includes("Xong rồi!")) break;
+    if (e.V().includes('data-act="tcskip"')) { await e.click("tcskip"); continue; }
+    if (e.V().includes('data-k="san"')) { await e.click("tca", { k: "san", v: "1200" }); continue; }
+    if (e.V().includes('data-k="thu"')) { await e.click("tca", { k: "thu", v: "deu" }); continue; }
+    if (e.V().includes('data-k="gton"')) { await e.click("tca", { k: "gton", v: "0" }); continue; }
+    const m = e.V().match(/data-act="tca" data-k="([a-zA-Z0-9]+)" data-v="([^"]+)"/); await e.click("tca", { k: m[1], v: m[2] });
+  }
+  await e.until(() => e.T().includes("Xong rồi!"));
+  await e.click("tnmk"); await e.until(() => sched(e).length === 1);
+  expect(sched(e)[0]).toMatchObject({ fmt: "xoay", thu: "deu", san: 1200 });
+});

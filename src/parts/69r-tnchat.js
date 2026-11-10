@@ -49,7 +49,7 @@ const TC_Q=[
   {k:"time",need:t=>!t.time,keys:["time"],q:()=>"Mấy giờ bắt đầu?",o:()=>["06:30","07:00","08:00","17:00","18:30","19:00"].map(v=>[v,v]),set:(t,v)=>{t.time=v}},
   {k:"courts",need:t=>!t.courts,keys:["courts"],q:t=>`Dùng mấy sân?${t.courts&&t.guess.has("courts")?` (lần trước ${t.courts} sân)`:""}`,o:()=>[2,3,4,6,8].map(v=>[v,`${v} sân`]),star:t=>t.courts||null,set:(t,v)=>{t.courts=+v}},
   // Bước 3 · tiền sân & hoà vốn (canvas T01)
-  {k:"san",on:t=>t.fmt==="xoay",need:t=>t.fmt==="xoay"&&t.san==null&&!t.thu,keys:["san"],def:()=>0,q:()=>"Tiền sân cho buổi này bao nhiêu?",o:()=>[[800,"800k"],[1000,"1 triệu"],[1200,"1,2 triệu"],[1500,"1,5 triệu"],[0,"Không tính"]],star:t=>t.san!=null?t.san:null,
+  {k:"san",on:t=>t.fmt==="xoay",need:t=>t.fmt==="xoay"&&t.san==null&&(!t.thu||t.thu==="deu"),keys:["san"],def:()=>0,q:()=>"Tiền sân cho buổi này bao nhiêu?",o:()=>[[800,"800k"],[1000,"1 triệu"],[1200,"1,2 triệu"],[1500,"1,5 triệu"],[0,"Không tính"]],star:t=>t.san!=null?t.san:null,
     note:()=>"Số khác thì gõ, ví dụ “900k”. Sân nhà hoặc đã trả sẵn thì chọn Không tính.",set:(t,v)=>{t.san=+v}},
   {k:"thu",on:t=>t.fmt==="xoay",need:t=>!t.thu||t.thu==="keo",keys:["thu"],q:()=>"Thu tiền người chơi thế nào?",o:t=>[["phi",+t.san?`Giá cố định · ${fmtK(tcFeeHint(t))}/người (gợi ý)`:"Giá cố định mỗi người"],["deu","Chia đều tiền sân cuối buổi"]],star:t=>t.thu&&t.thu!=="keo"?t.thu:"phi",
     note:t=>+t.san?"Chia đều: cuối buổi app lấy tiền sân chia cho số người có mặt rồi gửi số tiền cho từng người.":"",set:(t,v)=>{t.thu=v;if(v==="phi"&&+t.san&&(t.fee==null||t.fee==="")){t.fee=tcFeeHint(t);t.ans.add("fee");t.log.push({b:tcHoaTx(t).replace(/(\d+ người)/,"<b>$1</b>")})}}},

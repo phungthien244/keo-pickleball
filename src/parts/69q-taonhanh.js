@@ -94,7 +94,8 @@ const TN_GK={nguoi:["fmt","people","pairs","koN","lay","dt","cap","pairReg","gue
 function tnNeed(t,g){const L=[],no=k=>t[k]==null||t[k]==="";
   if(g==="nguoi"){if(!t.fmt)L.push("fmt");else if(t.nds){if(!t.nds.length)L.push("nds")}else if(t.fmt==="xoay"){if(!t.people)L.push("people")}else{if(!t.pairs)L.push("pairs");if(t.fmt==="bang"&&!t.koN)L.push("koN")}}
   if(g==="gio"){if(t.date==null)L.push("date");if(!t.time)L.push("time");if(!t.courts)L.push("courts")}
-  if(g==="tien"){if(!t.nds&&no("fee"))L.push("fee");if(t.fmt==="xoay"&&no("thu"))L.push("thu");if(no("pay"))L.push("pay")}
+  // Xoay cặp chia đều tiền sân (hoặc kiểu cũ ai thua góp) không có lệ phí cố định: không bắt nhập lệ phí
+  if(g==="tien"){if(!t.nds&&no("fee")&&!(t.fmt==="xoay"&&(t.thu==="deu"||t.thu==="keo")))L.push("fee");if(t.fmt==="xoay"&&no("thu"))L.push("thu");if(no("pay"))L.push("pay")}
   if(g==="thuong"){if(t.gton==null)L.push("gton");else if(t.gton){if((t.gt||"hang")==="hang"){if(!t.h1)L.push("h1")}else if(no("gtv"))L.push("gtv")}}
   return L}
 function tnGSt(t,g){if(tnNeed(t,g).length)return "no";if(!t.ok.has(g)&&TN_GK[g].some(k=>t.guess.has(k)))return "chk";return "ok"}
@@ -281,7 +282,9 @@ function tnPage(D){
 
 /* ----- Tạo giải: điền form cũ rồi lưu ----- */
 async function tnCreate(D){
-  const t=tn,fmt=t.fmt;if(!fmt||TN_G.some(([g])=>tnGSt(t,g)==="no"))return;
+  const t=tn,fmt=t.fmt;
+  // Thiếu mục bắt buộc: báo rõ và đưa về câu còn thiếu, không im lặng
+  {const g=!fmt?"nguoi":tnNextG(t);if(g){const k=tnNeed(t,g)[0];toast("Còn thiếu: "+((TC_Q.find(q=>q.k===k||(q.keys||[]).includes(k))||{}).q?.(t)||"thông tin bắt buộc"));render();return}}
   const keepP=xfPoster;xNew=fmt;xEdit=null;xSEdit=null;xQ=false;xClearDraft();xfPoster=keepP;
   const set=(k,v)=>{drafts["xf-"+k]=String(v)};
   const pairs=t.nds?t.nds.reduce((a,n)=>a+(+n.max||0),0):t.pairs||0;
