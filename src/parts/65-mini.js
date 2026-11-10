@@ -476,7 +476,7 @@ function renderMini(D){
   if(!renderMini.r){renderMini.r=1;mtResume()}
   if(rfOn()&&MYCT.length&&REFQ&&!rfAway)return rfShell(D);
   if(MXT)return mtView(D);
-  if(mxMode()==="ql"&&!(route==="cmp"||(route==="app"&&(tab==="gt"||tab==="toi"))))return mxShell(D,mxMgrView(D));
+  if(mxMode()==="ql"&&!(route==="cmp"||(route==="app"&&(tab==="gt"||tab==="toi"))))return mxShell(D,mxMgrView(D))+mtBankSheet();
   // Quản lý đang ở chế độ Chơi: xem đúng như người chơi (không hiện nút nhập điểm, quản lý giải)
   if(mxMgr()){const cw=canWrite,rf=REF;mxAs={cw,rf};canWrite=false;REF=false;try{return renderMini(D)}finally{canWrite=cw;REF=rf;mxAs=null}}
   const v=route==="home"?mxHome:route==="vdv"?(D=>mxShell(D,vHoSo(D,routePid)+(mxPid()&&routePid!==mxPid()?`<button class="primary wide" data-act="mxcmp" data-id="${esc(routePid)}">⚔ So kè với tôi</button>`:""))):route==="cmp"?(D=>mxCompare(D,routePid)):route==="buoi"?(D=>mxShell(D,mxBack("app","Lịch sử").replace('data-go="app"','data-go="app" data-t="ls"')+vBuoi(D,routeSid)+mxAchBtn(D,routeSid))):

@@ -172,3 +172,28 @@ test("gõ luật điểm đúng vòng đang hỏi; sửa ngay trên thẻ tóm t
   await e.click("tnmk"); await e.until(() => sched(e).length === 1);
   expect(sched(e)[0]).toMatchObject({ fmt: "xoay", max: 20, courts: 6 });
 });
+
+test("Social: hỏi tiền sân → gợi ý lệ phí hoà vốn → tạo lịch có tiền sân; chưa có tài khoản thì hỏi nhận tiền (Bước 3)", async () => {
+  const e = await boot(base());
+  await open(e);
+  e.input("tn-txt", "Social tối thứ 7 19h, 3 sân, 16 người");
+  await e.click("tngo");
+  await e.until(() => e.T().includes("Tiền sân cho buổi này bao nhiêu?"));
+  e.input("tn-say", "1tr2"); await e.click("tnsay");
+  await e.until(() => e.T().includes("Thu tiền người chơi thế nào?"));
+  expect(e.T()).toContain("Đã ghi tiền sân");
+  expect(e.T()).not.toContain("Ai thua góp");
+  expect(e.T()).toContain("Giá cố định · 80k/người (gợi ý)");
+  await e.click("tca", { k: "thu", v: "phi" });
+  await e.until(() => e.T().includes("đủ 15 người là hoà vốn"));
+  for (let i = 0; i < 8 && !e.T().includes("Xong rồi!"); i++) {
+    if (e.V().includes('data-act="tcskip"')) { await e.click("tcskip"); break; }
+    const m = e.V().match(/data-act="tca" data-k="([a-z]+)" data-v="([^"]+)"/); if (!m) break;
+    await e.click("tca", { k: m[1], v: m[2] });
+  }
+  await e.until(() => e.T().includes("Xong rồi!"));
+  expect(e.T()).toContain("hoà vốn 15 người");
+  await e.click("tnmk"); await e.until(() => sched(e).length === 1);
+  expect(sched(e)[0]).toMatchObject({ san: 1200, thu: "phi", phi: 80 });
+  await e.until(() => e.T().includes("Tài khoản nhận tiền"));
+});

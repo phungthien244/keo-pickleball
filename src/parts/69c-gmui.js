@@ -48,11 +48,13 @@ function gsDefs(D,X){
         +gsLb("Mở đăng ký cho các giải lặp")+gsChips("auto",[["1","Tự mở"],["0","Tôi tự bấm mở"]],v("auto")==="0"?"0":"1",2)+(v("auto")!=="0"?gsStep(D,"openD","Tự mở trước giờ đánh","ngày",1,7):""))},
     poster:{i:"🖼",t:"Ảnh bìa",val:pst?"Đã có":"Chưa có",body:()=>xPosterField()},
     note:{i:"📝",t:"Ghi chú cho người chơi",val:String(v("note")||"").trim().slice(0,24)||"—",body:()=>`<label class="fld"><span class="sr">Ghi chú</span><textarea id="xf-note" data-draft="xf-note" maxlength="300" rows="3" placeholder="Mang giày đế bằng, CLB có bóng">${esc(v("note"))}</textarea></label>`},
-    fee:{i:"💵",t:"Lệ phí thành viên",val:fee?fmtK(fee):"Miễn phí",
+    fee:{i:"💵",t:"Lệ phí mỗi người",val:fee?fmtK(fee):"Miễn phí",
       body:()=>gsChips("",[["0","Miễn phí"],["50","50k"],["60","60k"],["100","100k"]],fc,4,"xqfee")+`<label class="fld gmsm"><span class="lbl">Số khác (k)</span><input id="xf-${thu==="phi"?"phi":"fee"}" data-draft="xf-${thu==="phi"?"phi":"fee"}" type="number" min="0" inputmode="numeric" value="${esc(fee||"")}"></label>`
         +(paidN?`<small class="rule">${paidN} người đã trả ${fmtK(X?xFee(X):fee)}. Đổi giá chỉ áp cho người đăng ký sau.</small>`:"")},
     feeG:{i:"🧑‍🤝‍🧑",t:"Lệ phí VĐV ngoài CLB",val:v("feeG")!==""?fmtK(+v("feeG")||0):"Như thành viên",body:()=>gsIn(D,"feeG","Lệ phí VĐV ngoài CLB (k) · để trống là như thành viên",'type="number" min="0" inputmode="numeric"')},
-    thu:{i:"🧮",t:"Cách thu",val:GS_THU[thu]||"Cố định",body:()=>gsChips("thu",(G?[["phi","Cố định"]]:[["phi","Cố định"],["deu","Chia đều sân"],["keo","Ai thua góp"]]),thu,G?1:3)},
+    thu:{i:"🧮",t:"Cách thu",val:GS_THU[thu]||"Cố định",body:()=>gsChips("thu",(G?[["phi","Cố định"]]:[["phi","Cố định"],["deu","Chia đều sân"]]),thu,G?1:2)},
+    san:{i:"🏟",t:"Tiền sân",val:+v("san")?fmtK(+v("san"))+(thu==="phi"&&fee?` · hoà vốn ${Math.ceil(+v("san")/fee)} người`:""):"Không tính",
+      body:()=>`<label class="fld gmsm"><span class="lbl">Tổng tiền thuê sân (k) · 0 là không tính</span><input id="xf-san" data-draft="xf-san" type="number" min="0" inputmode="numeric" value="${esc(v("san")||"")}"></label><small class="rule">Dùng để tính số người hoà vốn và tổng kết tiền lúc chốt buổi.</small>`},
     incl:{i:"🧾",t:"Lệ phí gồm",val:v("incl")||"—",body:()=>gsIn(D,"incl","Lệ phí gồm những gì",'maxlength="120" placeholder="Sân, bóng, nước"')},
     gmode:{i:"⚥",t:"Ưu tiên ghép",val:v("gmode")==="same"?"Cùng giới":"Khác giới",body:()=>gsChips("gmode",[["mix","Khác giới"],["same","Cùng giới"]],v("gmode")==="same"?"same":"mix",2)},
     dt:{i:"👫",t:"Nội dung",val:DT_LB[v("dt")||"free"],body:()=>gsChips("dt",[["free","Hỗn hợp"],["MM","Đôi nam"],["FF","Đôi nữ"],["mix","Nam nữ"]],v("dt")||"free",4)},
@@ -74,7 +76,7 @@ function gsNewPage(D){
     <div class="hqcta"><button class="ball" data-act="gspgx">Xong</button></div>`+gsSheet(D,null);
 }
 // S1–S4 · Sửa giải (Mini App, giải trong lịch)
-const GS_GRP={info:["name","when","place","max","dl","lv","poster","note"],nguoi:["dt","pairReg"],tien:["fee","thu","pay","gt","incl"],luat:["courts","luat","gmode"]};
+const GS_GRP={info:["name","when","place","max","dl","lv","poster","note"],nguoi:["dt","pairReg"],tien:["san","fee","thu","pay","gt","incl"],luat:["courts","luat","gmode"]};
 function gsEditVals(D,X){
   const T=gsDefs(D,X),v=k=>xv(D,k),G=X.fmt==="giai",fee=gsFee(D);
   return {info:`${X.at?`${DOW[new Date(X.at).getDay()]} ${hm(X.at)}`:""}${+v("max")?` · ${v("max")} chỗ`:""}`,nguoi:"Mọi người đăng ký bằng Zalo",
@@ -82,7 +84,7 @@ function gsEditVals(D,X){
 }
 /* Sửa giải (canvas N01): một danh sách mọi mục, bấm dòng mở chỗ sửa ngay dưới dòng đó · ✓ Lưu ghi ngay vào giải
    Giải đã bắt đầu: thể thức, số chỗ, nội dung, cách đăng ký khoá 🔒; luật điểm từng vòng (chia bảng + KO) sửa thẳng trên giải đang chạy */
-const GS_FLAT=[["Thông tin",["name","when","place","max","dl","lv","poster","note"]],["Người chơi",["dt","pairReg","gmode"]],["Thể thức, luật",["ko","kor","courts","luat","abs"]],["Tiền, giải thưởng",["fee","thu","pay","gt","incl"]]];
+const GS_FLAT=[["Thông tin",["name","when","place","max","dl","lv","poster","note"]],["Người chơi",["dt","pairReg","gmode"]],["Thể thức, luật",["ko","kor","courts","luat","abs"]],["Tiền, giải thưởng",["san","fee","thu","pay","gt","incl"]]];
 let gsFlatX=null;
 function gsFlat(D,X,cur){gsFlatX=X.id;
   const nm=xName(X),G=X.fmt==="giai",KO=G&&kOn(X),T=gsDefs(D,X),live=!!cur&&phaseOf(D)==="live",lock=new Set(live?["ko","max","dt","pairReg"]:[]),GD=live&&KO?gDerive(D):null;
@@ -155,6 +157,7 @@ function gmRegV(D,X){
     const paid=R.all.filter(x=>x.pay==="ok").length,unpaid=R.all.filter(x=>po&&feeOf(x)>0&&x.pay!=="ok");
     let h="",main="";
     const solo=cap?R.conf.filter(x=>!capMate(x)):[];
+    h+=hvBar(X,null,true);
     if(cap){const pairs=new Set(R.conf.filter(x=>capMate(x)).map(x=>x.team));h+=g2Stat([[pairs.size,"Cặp"],[solo.length,"Người lẻ",solo.length?"#b45309":""],[paid,"Đã trả","#15803d"]])}
     else h+=g2Stat([[`${R.conf.length}${R.max<999?`/${R.max}`:""}`,"Đăng ký"],[paid,"Đã trả","#15803d"],[R.wait.length,"Chờ chỗ","#b45309"]]);
     const n=gmNext(D,X);
@@ -371,7 +374,7 @@ function gmChotV(D,X){
       if(chotSeq==null)h+=`<button class="btn-line wide g5all" data-act="dhseq" data-v="go">🔊 Đọc lần lượt: ${order.map(i=>esc(R[i].label)).join(" → ")}</button>`}
     else h+=`<div class="gmempty"><b>Giải này không có giải thưởng</b><span>Bấm Tiếp để thu nốt tiền.</span></div>`}
   if(st===2){
-    if(R0.unpaid.length){h+=`<span class="gmlb">${R0.unpaid.length} người chưa trả</span><div class="g2list">${R0.unpaid.map(p=>`<div class="g2p">${av(p,"sm",1)}<span class="t"><b>${esc(p.name)}</b></span><b class="num">${fmtK(M0.payOf(p.id))}</b><button class="btn-line sm" data-act="lpaid" data-p="${esc(p.id)}">Đã nhận</button></div>`).join("")}</div>
+    if(R0.unpaid.length){h+=`<span class="gmlb">${R0.unpaid.length} người chưa trả</span><div class="g2list">${R0.unpaid.map(p=>`<div class="g2p">${av(p,"sm",1)}<span class="t"><b>${esc(p.name)}</b></span><b class="num">${fmtK(M0.payOf(p.id))}</b>${MINI&&chotZid(D,p)?`<button class="btn-line sm" data-act="chotz" data-p="${esc(p.id)}" data-k="${M0.payOf(p.id)}" aria-label="Nhắn Zalo ${esc(p.name)}">💬</button>`:""}<button class="btn-line sm" data-act="lpaid" data-p="${esc(p.id)}">Đã nhận</button></div>`).join("")}</div>
       <span class="gmlb">Không thu được thì</span><div class="gmchips c2"><button class="gmchip${!chotMien?" on":""}" data-act="chotm" data-v="0">Ghi vào còn nợ</button><button class="gmchip${chotMien?" on":""}" data-act="chotm" data-v="1">Miễn</button></div>`}
     else h+=`<div class="gmempty"><b>${R0.n?"Mọi người đã trả đủ":"Giải này không thu tiền theo người"}</b></div>`}
   if(st===3){const IC={court:"🏟",ball:"🎾",water:"💧",other:"＋"},LB={court:"Tiền sân",ball:"Bóng",water:"Nước",other:"Khác"};
@@ -379,16 +382,21 @@ function gmChotV(D,X){
     if(g5Cost)h+=`<div class="mxdim" data-act="g5cx"></div><div class="mxsheet gmsh gssh" role="dialog"><span class="grab"></span><b class="mxh">${LB[g5Cost]}</b>${cfIn(g5Cost,"Số tiền (k)",c.costs[g5Cost])}<button class="ball go wide" data-act="g5cx">✓ Lưu</button></div>`}
   if(st===4){const now=M.club-R.left,ts=D.done.map(m=>m.doneAt||m.createdAt||0).filter(Boolean),dur=ts.length>1?Math.round((Math.max(...ts)-Math.min(...ts))/36e5*10)/10:0;
     const per=M.att.length?Math.round(R.tot/M.att.length):0;
-    h+=`<section class="g5hero"><span class="cap">${now<0?"Quỹ bù":"Dư vào quỹ CLB"}</span><b class="num">${now<0?"−":"+"} ${fmtK(Math.abs(now))}</b><small>${M.att.length} người · ${D.done.length} trận${dur?` · ${String(dur).replace(".",",")} giờ`:""}</small></section>
+    h+=`<section class="g5hero"><span class="cap">${MINI?(now<0?"Thiếu so với tiền chi":"Dư sau khi trả tiền sân"):now<0?"Quỹ bù":"Dư vào quỹ CLB"}</span><b class="num">${now<0?"−":"+"} ${fmtK(Math.abs(now))}</b><small>${M.att.length} người · ${D.done.length} trận${dur?` · ${String(dur).replace(".",",")} giờ`:""}</small></section>
       <div class="g2list"><div class="g5s"><span><b>Thu</b><small>${M.att.length} × ${fmtK(per)}</small></span><b class="num">${fmtK(R.tot)}</b></div><div class="g5s"><span><b>Chi</b></span><b class="num">−${fmtK(M.cost)}</b></div>${R.left?`<div class="g5s"><span><b>Còn nợ</b><small>${R.unpaid.map(p=>esc(p.name)).join(", ")} · ghi sổ</small></span><b class="num">${fmtK(R.left)}</b></div>`:""}</div>
       <button class="g5ck${g5Send?" on":""}" data-act="g5send" aria-pressed="${g5Send}"><i>${g5Send?"✓":""}</i><span>Gửi kết quả vào nhóm Zalo</span></button>`}
   const prev=st>1?`<button class="btn-line gmdot" data-act="chotgo" data-v="${st-1}" aria-label="Quay lại">‹</button>`:"";
   const next=st<4?`<button class="ball go" data-act="chotgo" data-v="${st+1}">Tiếp: ${CHOT_ST[st]} ›</button>`
     :G?`<button class="ball go" data-act="gend" ${D.playing.length?"disabled":""}>${armed("gend:x")?"Bấm lần nữa để lưu giải":"✓ Xong giải · ghi sổ quỹ"}</button>`
-    :`<button class="ball go" data-act="g5done" ${D.playing.length?"disabled":""}>${armed("chot:x")?"Bấm lần nữa để chốt":"✓ Xong giải · ghi sổ quỹ"}</button>`;
+    :`<button class="ball go" data-act="g5done" ${D.playing.length?"disabled":""}>${armed("chot:x")?"Bấm lần nữa để chốt":MINI?"✓ Đóng buổi":"✓ Xong giải · ghi sổ quỹ"}</button>`;
   return h+`<div class="hqcta two">${prev}${next}</div>`;
 }
+// Zalo của người chơi trong buổi (đăng ký bằng Zalo của chính họ) để nhắn số tiền còn thiếu
+function chotZid(D,p){const sid=D.c.schedId;const r=(S.regs||[]).find(x=>!x.cancel&&x.zid&&(x.pid===p.id||(p.zuid&&x.uid===p.zuid))&&(!sid||String(x.sid).split("~")[0]===sid));return r?r.zid:(p.zid||"")}
 async function g5Act(act,b){
+  if(act==="chotz"){const D=derive(),p=D.pmap.get(b.dataset.p);if(!p)return true;const z=chotZid(D,p),k=+b.dataset.k||0;if(!z)return true;
+    const bk=BANK&&BANK.acc?` Chuyển khoản: ${BANK.name} ${BANK.acc} · ${BANK.holder}.`:"";
+    zChat(z,`${sessTitle(D.c,D.sid)}: phần tiền của ${p.name} là ${fmtK(k)}.${bk} Cảm ơn bạn!`);return true}
   if(act==="g5c"){g5Cost=b.dataset.v;render();return true}
   if(act==="g5cx"){const el=document.getElementById&&document.getElementById("cf-"+g5Cost);if(el&&typeof el.dispatchEvent==="function"&&typeof Event!=="undefined")el.dispatchEvent(new Event("change",{bubbles:true}));g5Cost=null;setTimeout(render,50);return true}
   if(act==="g5send"){g5Send=!g5Send;render();return true}

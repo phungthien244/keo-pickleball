@@ -34,7 +34,7 @@ function tnParse(txt){
   if(/theo cap|dang ky cap|di cap/.test(s))o.pairReg="pair";else if(/ghep cap|btc ghep|tu ghep|boc tham ghep/.test(s))o.pairReg="solo";
   if(/nhat nhi (moi bang |cac bang |bang )?(vao|di tiep|len)/.test(s))o.lay=2;else if(/(chi )?nhat (moi )?bang (vao|di tiep|len)/.test(s))o.lay=1;
   if(/khong (danh )?tranh (hang )?(ba|3)|khong tranh hang ba|khong tranh hang 3|dong hang ba/.test(s))o.third=false;else if(/tranh hang ba|tranh hang 3/.test(s))o.third=true;
-  if(/chia (\d+ )?bang|vong bang|\d+\s*bang\b|knock|loai truc tiep|danh loai|tu ket|ban ket|chung ket/.test(s))o.fmt="bang";else if(/vong tron/.test(s))o.fmt="giai";else if(/xoay|giao luu/.test(s))o.fmt="xoay";
+  if(/chia (\d+ )?bang|vong bang|\d+\s*bang\b|knock|loai truc tiep|danh loai|tu ket|ban ket|chung ket/.test(s))o.fmt="bang";else if(/vong tron/.test(s))o.fmt="giai";else if(/xoay|giao luu|\bsocial\b/.test(s))o.fmt="xoay";else if(/mini ?game/.test(s)){o.fmt="giai"}
   // Nhiều nội dung: mỗi đoạn có "đôi …"
   const seg=s.split(/[;,]|\s+va\s+/).map(x=>x.trim()).filter(x=>/\bdoi (open|nam nu|nam|nu)\b|\bnam nu\b/.test(x));
   const ndOfSeg=x=>{const dt=/nam nu|mix/.test(x)?"mix":/doi nam\b/.test(x)?"MM":/doi nu\b/.test(x)?"FF":"free",cap=(x.match(/\b(\d)[.,](\d)\b/)||[]),pr=x.match(/(\d+)\s*cap\b/),fe=x.match(/(\d+)\s*(?:k|nghin|ngan)\b/);
@@ -126,7 +126,7 @@ const ymdIso=t=>{const d=new Date(t);return `${d.getFullYear()}-${String(d.getMo
 const tnK=v=>v>=1000&&v%100===0?`${String(v/1000).replace(".",",")} triệu`:fmtK(v);
 
 /* ----- AI: đọc câu, sửa bằng lời (máy chủ /api/tao-giai). Lỗi hoặc quá 9 giây thì trả null ----- */
-const TN_KEYS=["rG","rK","rF","fmt","name","date","time","end","endBy","courts","place","target","pairs","people","koN","lay","third","dt","cap","pairReg","guests","feeG","fee","thu","pay","gton","gt","h1","h2","h3","gtv","trao","nds"];
+const TN_KEYS=["san","rG","rK","rF","fmt","name","date","time","end","endBy","courts","place","target","pairs","people","koN","lay","third","dt","cap","pairReg","guests","feeG","fee","thu","pay","gton","gt","h1","h2","h3","gtv","trao","nds"];
 function tnClean(a){
   if(!a||typeof a!=="object")return {};const o={},n=(v,mn,mx)=>{const x=+v;return Number.isFinite(x)&&x>=mn&&x<=mx?x:undefined},en=(v,L)=>L.includes(v)?v:undefined;
   const hm2=v=>/^\d{1,2}:\d{2}$/.test(String(v||""))?String(v).padStart(5,"0"):undefined;
@@ -137,7 +137,7 @@ function tnClean(a){
   set("courts",n(a.courts,1,30));if(typeof a.place==="string")set("place",a.place.trim().slice(0,60));set("target",n(a.target,5,31));
   set("pairs",n(a.pairs,2,64));set("people",n(a.people,4,120));set("koN",n(a.koN,1,16));set("lay",n(a.lay,1,4));if(typeof a.third==="boolean")o.third=a.third;
   set("dt",en(a.dt,["free","MM","FF","mix"]));set("cap",n(a.cap,1,16));set("pairReg",en(a.pairReg,["pair","solo"]));if(typeof a.guests==="boolean")o.guests=a.guests;
-  set("feeG",n(a.feeG,0,10000));set("fee",n(a.fee,0,10000));set("thu",en(a.thu,["phi","deu","keo"]));set("pay",en(a.pay,["off","opt","req"]));
+  set("feeG",n(a.feeG,0,10000));set("fee",n(a.fee,0,10000));if(a.san===0||n(a.san,1,100000))o.san=a.san===0?0:n(a.san,1,100000);set("thu",en(a.thu,["phi","deu"]));set("pay",en(a.pay,["off","opt","req"]));
   if(typeof a.gton==="boolean")o.gton=a.gton;set("gt",en(a.gt,["hang","trich","codinh","gop"]));for(const k of ["h1","h2","h3"])set(k,n(a[k],0,100000));set("gtv",n(a.gtv,0,100000));set("trao",en(a.trao,["namnu","top3"]));
   for(const X of ["rG","rK","rF"]){const r=a[X];if(r&&typeof r==="object"){const to=n(r.to,5,31);if(to){const w2=r.w2===true;let cap=w2?n(r.cap,0,51)||0:0;if(cap&&cap<=to)cap=to+2;const sets=[1,3,5].includes(+r.sets)?+r.sets:1;o[X]={to,w2,cap,sets:X!=="rF"&&sets===5?3:sets}}}}
   if(Array.isArray(a.nds)&&a.nds.length>=2)o.nds=a.nds.slice(0,8).map(x=>({dt:en(x&&x.dt,["free","MM","FF","mix"])||"free",cap:n(x&&x.cap,1,16)||0,max:n(x&&x.max,2,64)||16,fee:n(x&&x.fee,0,10000),koN:n(x&&x.koN,1,16),name:String((x&&x.name)||"").trim().slice(0,30)})).map(x=>({...x,name:x.name||`${TN_DT[x.dt]}${x.cap?" "+x.cap:""}`}));
@@ -185,7 +185,7 @@ function tnGBody(g,t){
     if(t.fmt!=="xoay")h+=tnIn("endBy","Phải xong trước (để trống nếu không cần)",t.endBy||"",'type="time"');
   }
   if(g==="tien"){
-    if(t.fmt==="xoay")h+=tnLb("Cách thu",N.has("thu"))+tnCh("thu",[["phi","Lệ phí cố định"],["deu","Chia đều tiền sân"],["keo","Ai thua góp"]],t.thu);
+    if(t.fmt==="xoay")h+=tnLb("Cách thu",N.has("thu"))+tnCh("thu",[["phi","Lệ phí cố định"],["deu","Chia đều tiền sân"]],t.thu);
     if(t.nds)h+=`<small class="rule">Lệ phí theo từng nội dung: ${t.nds.map(n=>`${esc(n.name)} ${n.fee?fmtK(n.fee):"miễn phí"}`).join(" · ")}</small>`;
     else if(t.thu!=="keo"&&t.thu!=="deu"||t.fmt!=="xoay")h+=tnLb("Lệ phí mỗi người",N.has("fee"))+tnCh("fee",[[0,"Miễn phí"],[50,"50k"],[100,"100k"],[150,"150k"],[200,"200k"],[300,"300k"]],t.fee)+tnIn("fee","Số khác (k)",t.fee,'type="number" min="0" inputmode="numeric"');
     h+=tnLb("Chuyển khoản khi đăng ký",N.has("pay"))+tnCh("pay",[["off","Không, trả tại sân"],["opt","Tuỳ chọn"],["req","Bắt buộc mới giữ chỗ"]],t.pay);
@@ -285,7 +285,7 @@ async function tnCreate(D){
   const keepP=xfPoster;xNew=fmt;xEdit=null;xSEdit=null;xQ=false;xClearDraft();xfPoster=keepP;
   const set=(k,v)=>{drafts["xf-"+k]=String(v)};
   const pairs=t.nds?t.nds.reduce((a,n)=>a+(+n.max||0),0):t.pairs||0;
-  set("loai",t.loai||(fmt==="xoay"?"s":"g"));set("name",tnName(t));set("date",ymdIso(t.date));set("time",t.time);if(t.end)set("end",t.end);set("courts",t.courts||2);set("target",tnRu(t,"G").to);
+  set("loai",t.loai||(fmt==="xoay"?"s":"g"));set("san",String(+t.san||0));if(t.bank==="now")mtBankWant=true;set("name",tnName(t));set("date",ymdIso(t.date));set("time",t.time);if(t.end)set("end",t.end);set("courts",t.courts||2);set("target",tnRu(t,"G").to);
   if(t.place)set("place",t.place);set("guests","1");set("reg","1");set("pay",t.pay||"off");
   set("feeG","");
   const fee=t.nds?Math.min(...t.nds.map(n=>+n.fee||0)):+t.fee||0,thu=fmt==="xoay"?(t.thu||"phi"):"phi";

@@ -36,3 +36,18 @@ function lvAch(D,id){
 // Người tổ chức thêm tay (không đăng ký bằng Zalo của chính họ) → khách · chưa xác minh
 const regKhach=x=>!!x&&!/^zalo_/.test(String(x.uid||""));
 const khTag=x=>regKhach(x)?`<small class="khtag">KHÁCH · CHƯA XÁC MINH</small>`:"";
+
+/* ----- Bước 3 · tiền sân & hoà vốn (canvas T03, T04) ----- */
+// Số liệu tiền của một lịch đánh: đã thu (đã xác nhận), chờ xác nhận, tiền sân, số người cần để hoà vốn
+function hvOf(X,regs){
+  const san=+X.san||0,f=xFee(X),R=(regs||(S.regs||[]).filter(r=>typeof r.sid==="string"&&(r.sid===X.id||r.sid.startsWith(X.id+"~"))&&!r.cancel)),n=R.length;
+  const per=r=>r.paidBy?0:r.payFor==="pair"?f*2:f,ok=R.filter(r=>r.pay==="ok"),sent=R.filter(r=>r.pay==="sent");
+  const thu=ok.reduce((a,r)=>a+per(r),0),cho=sent.reduce((a,r)=>a+per(r),0),un=f>0?R.filter(r=>!r.paidBy&&(r.pay||"none")==="none").length:0;
+  const deu=(X.thu||"phi")==="deu",need=!deu&&san&&f?Math.max(0,Math.ceil(san/f)-n):0,mx=+X.max||0,short=!deu&&mx&&f&&mx*f<san?san-mx*f:0;
+  return {san,f,n,thu,cho,un,deu,need,mx,short,pct:san?Math.min(100,Math.round(thu*100/san)):0,each:deu&&san&&n?Math.ceil(san/n):0};
+}
+function hvBar(X,regs,big){const h=hvOf(X,regs);if(!h.san)return "";
+  const st=h.deu?`Chia đều cuối buổi · hiện ~${fmtK(h.each)}/người`:h.short?`Đủ ${h.mx} người vẫn thiếu ${fmtK(h.short)} · nên tăng lệ phí hoặc thêm chỗ`:h.need?`Cần thêm ${h.need} người là hoà vốn`:"Đủ người hoà vốn ✓";
+  return `<div class="hvbox${big?" big":""}">${big?`<div class="hv3"><span><b class="num">${fmtK(h.thu)}</b><small>đã thu</small></span><span><b class="num">${fmtK(h.san)}</b><small>tiền sân</small></span><span><b class="num ${h.thu>=h.san?"ok":"w"}">${h.thu>=h.san?"+":"−"}${fmtK(Math.abs(h.san-h.thu))}</b><small>${h.thu>=h.san?"dư":"còn thiếu"}</small></span></div>`:""}
+    <span class="hvst ${h.need?"w":"ok"}">${st}</span><span class="hvbar"><i class="${h.thu>=h.san?"ok":""}" style="width:${h.pct}%"></i></span>
+    ${big?(h.cho?`<small class="rule">Đang chờ xác nhận ${fmtK(h.cho)} chuyển khoản.</small>`:""):`<small class="hvk"><span>Đã thu <b>${fmtK(h.thu)}</b> / tiền sân ${fmtK(h.san)}</span><em>${h.pct}%</em></small>`}</div>`}

@@ -178,7 +178,7 @@ function xPeople(D,X){
 }
 
 /* ----- Form tạo / sửa buổi ----- */
-const XF_KEYS=["koTouched","koN","koQ","koThird","koGt","koGw","koGc","koGs","koKt","koKw","koKc","koKs","koFt","koFw","koFc","koFs","pairReg","name","date","time","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","h1","h2","h3","rep","days","auto","openD","reg","cp","gton","gt","gtv","trao","c1","c2","c3","adv","win2","ptMax","gmode","refOn","preOn","noteOn","incl"];
+const XF_KEYS=["san","koTouched","koN","koQ","koThird","koGt","koGw","koGc","koGs","koKt","koKw","koKc","koKs","koFt","koFw","koFc","koFs","pairReg","name","date","time","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","h1","h2","h3","rep","days","auto","openD","reg","cp","gton","gt","gtv","trao","c1","c2","c3","adv","win2","ptMax","gmode","refOn","preOn","noteOn","incl"];
 // Các trường của buổi được chép từ buổi trước (Dùng lại) và lưu vào lịch lặp
 const XCOPY=["dt","ko","koN","koQ","koThird","koGt","koGw","koGc","koGs","koKt","koKw","koKc","koKs","koFt","koFw","koFc","koFs","pairReg","name","end","place","map","note","courts","target","max","lvMin","lvMax","guests","thu","fee","phi","feeG","pay","dlH","lockH","reg","cp","gton","gt","gtv","trao","adv","win2","ptMax","gmode","refOn","preOn","incl"];
 function xFmtLast(f,ko){return schedAll().filter(x=>x.fmt===f&&x.st!=="cancel"&&(f!=="giai"||!!x.ko===!!ko)).pop()||null}
@@ -334,6 +334,7 @@ function xRead(D){
     reg:b("reg"),cp:b("cp"),gton:b("gton"),gt:["hang","trich","codinh","gop"].includes(v("gt"))?v("gt"):"trich",gtv:Math.max(0,n("gtv",0)),trao:v("trao")==="top3"?"top3":"namnu",
     hang:[n("h1",0),n("h2",0),n("h3",0)],chia:[n("c1",50),n("c2",30),n("c3",20)],adv:b("adv"),win2:v("win2")==="1",ptMax:Math.max(0,n("ptMax",0)),gmode:v("gmode")==="same"?"same":"mix",refOn:b("refOn"),preOn:b("preOn"),incl:v("incl").slice(0,120)};
   {const l=v("loai");if(["s","m","g"].includes(l))f.loai=l}
+  {const sv=v("san");if(sv!==""&&sv!=null)f.san=Math.max(0,Math.round(+sv||0))}
   if(!f.cp){f.pay="off";f.fee=0;f.incl=""}
   const t=v("time"),d=v("date");
   return {f,t,d,rep:v("rep")==="1",days:String(xv(D,"days")).split(",").filter(Boolean).map(Number),auto:v("auto")!=="0",openD:Math.max(1,n("openD",2))};
@@ -427,6 +428,7 @@ function xNoSched(D){
 // Áp cài đặt buổi trong lịch vào buổi hiện tại (tab Sân), điểm danh theo đăng ký
 async function xApply(D,X,quiet){
   const p={schedId:X.id,sname:X.name||"",courts:+X.courts||D.c.courts,target:+X.target||D.c.target,thu:X.thu||D.c.thu||"keo"};
+  if(+X.san>0&&!(+D.c.costs.court))p.costs={...D.c.costs,court:+X.san};
   if(X.thu==="phi")p.phi=+X.phi||0;
   if(X.fmt==="giai"){p.fmt="giai";p.dt=X.dt||"free";p.giai=D.c.giai&&isG(D.c)?D.c.giai:{pairs:[],prizes:[0,0,0],out:{},locked:false};
     if(!p.giai.locked)p.giai={...p.giai,ko:X.ko?{...koDef(),...(p.giai.ko||{}),...(X.koN?koFromX(X):{})}:null};

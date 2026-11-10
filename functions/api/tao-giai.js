@@ -22,8 +22,9 @@ const SCHEMA = `Trả về MỘT đối tượng JSON, chỉ gồm các khoá d�
 - cap: tổng trình 2 người tối đa (ví dụ "đôi nam 5.5" → cap 5.5)
 - pairReg: "pair" đăng ký theo cặp, "solo" đăng ký từng người rồi BTC ghép
 - guests: true nếu nhận người ngoài CLB/vãng lai, false nếu chỉ thành viên; feeG: lệ phí người ngoài (nghìn đồng)
+- san: tổng tiền thuê sân cho buổi, ĐƠN VỊ NGHÌN ĐỒNG ("sân 1tr2" = 1200, "tiền sân 900k" = 900, "sân nhà"/"không tính tiền sân" = 0). Chỉ điền khi người dùng nói về tiền sân, KHÔNG nhầm với lệ phí mỗi người
 - fee: lệ phí mỗi người, ĐƠN VỊ NGHÌN ĐỒNG (200k = 200; "150 cành" = 150; "1 lít" = 100; "1 xị" = 100; "1 củ"/"1 triệu" = 1000; miễn phí = 0)
-- thu: "phi" lệ phí cố định, "deu" chia đều tiền sân, "keo" ai thua góp
+- thu: "phi" lệ phí cố định, "deu" chia đều tiền sân (app không còn kiểu "ai thua góp": gặp thì để trống thu)
 - pay: "req" phải chuyển khoản trước mới giữ chỗ, "opt" chuyển khoản tuỳ chọn, "off" trả tại sân/tiền mặt
 - gton: true có giải thưởng, false không có giải
 - gt: "hang" mức thưởng cố định từng hạng, "trich" trích % lệ phí, "codinh" CLB bỏ ra một khoản, "gop" mỗi người góp thêm
@@ -48,8 +49,9 @@ const EX = [
   ["giải vua sân tối thứ 6 nhé", { loai: "chuaco", tt: "vua", time: "19:00" }],
   ["bo3 là sao", { loai: "hoi", hoi: "bo" }],
   ["thuê giúp tôi 2 trọng tài với in áo", { loai: "ngoai" }],
-  ["tối t7 giao lưu xoay cặp 24 người, ai thua góp, không giải", { loai: "tao", fmt: "xoay", time: "19:00", people: 24, thu: "keo", gton: false }],
+  ["tối t7 giao lưu xoay cặp 24 người, chia đều tiền sân, không giải", { loai: "tao", fmt: "xoay", time: "19:00", people: 24, thu: "deu", gton: false }],
   ["8 đôi nam 5.5 đánh vòng tròn, 2 xị một người, trả tại sân", { fmt: "giai", pairs: 8, dt: "MM", cap: 5.5, fee: 200, pay: "off" }],
+  ["Social tối thứ 7 19h 3 sân, tiền sân 1tr2, 80k một người", { fmt: "xoay", time: "19:00", courts: 3, san: 1200, thu: "phi", fee: 80 }],
   ["đôi nữ 12 cặp 3 bảng nhất nhì vào bán kết, không đánh tranh 3, nhất 8 lít nhì 4 lít", { fmt: "bang", dt: "FF", pairs: 12, koN: 3, lay: 2, third: false, gton: true, gt: "hang", h1: 800, h2: 400 }]
 ];
 

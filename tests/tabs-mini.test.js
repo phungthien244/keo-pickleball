@@ -92,3 +92,15 @@ test("Tôi: không còn rating/thứ hạng; chọn trình 4 mức, lưu vào h�
   await e.until(() => e.store.get("prof/zalo_9")?.lv === "4.0");
   expect(e.T()).toContain("Trình của tôi: Giỏi");
 });
+
+test("Lịch · Tôi tổ chức: thanh hoà vốn theo tiền sân (Bước 3)", async () => {
+  const e = await boot();
+  const W = (k, v) => globalThis.window.FB.setDoc({ path: k }, v);
+  await e.until(() => e.T().includes("Lịch đánh của tôi"));
+  await W("clubs/q7/sched/s9", { name: "Social có tiền sân", fmt: "xoay", at: at(2), end: "21:30", courts: 3, target: 11, max: 18, guests: true, st: "open", openAt: 0, deadline: at(2), lockAt: at(2) - 7200e3, place: "Sân AEP", thu: "phi", phi: 80, fee: 80, cp: true, san: 1200 });
+  await W("clubs/q7/regs/s9_a", { sid: "s9", uid: "zalo_a", name: "A", at: 1, pay: "ok", guest: true });
+  await W("clubs/q7/regs/s9_b", { sid: "s9", uid: "zalo_b", name: "B", at: 2, pay: "none", guest: true });
+  await e.click("mtseg", { v: "tc" });
+  await e.until(() => e.T().includes("Cần thêm 13 người là hoà vốn"));
+  expect(e.T()).toContain("Đã thu 80k");
+});

@@ -3056,3 +3056,10 @@ small.tcel{text-transform:none;letter-spacing:normal;font-weight:500;font-size:1
 .mxcard.mxgt{display:flex;flex-direction:row;justify-content:space-between;align-items:center;text-decoration:none;color:inherit}.mxcard.mxgt span{color:#1f6fd1;font-weight:700;font-size:13px}
 .capinv .two{display:flex;gap:6px;flex:none}.capinv .two .ghost{min-height:36px}
 .capok2{display:block;font-size:12px;color:#15803d;font-weight:700}
+/* Bước 3 · hoà vốn */
+.hvbox{display:flex;flex-direction:column;gap:6px}.hvbox.big{background:#fff;border:1px solid #e3e8ee;padding:12px;margin-bottom:8px}
+.hv3{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}.hv3 b{font-size:17px;display:block}.hv3 b.w{color:#b45309}.hv3 b.ok{color:#15803d}.hv3 small{font-size:11px;color:#5f6f7f}
+.hvst{font-size:12.5px;font-weight:800}.hvst.w{color:#b45309}.hvst.ok{color:#15803d}
+.hvbar{display:block;height:10px;background:#eef1f4}.hvbar i{display:block;height:100%;background:#f59e0b}.hvbar i.ok{background:#16a34a}
+.hvk{display:flex;justify-content:space-between;font-size:12px;color:#5f6f7f}.hvk em{font-style:normal}.hvk b{color:var(--navy)}
+.bkok{font-size:12.5px;color:#15803d;font-weight:700}

@@ -57,10 +57,10 @@ test("sửa giải: 6 nhóm có giá trị; Tiền › Lệ phí thành viên �
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('class="g2st"'));
   await e.click("xbmenu"); await e.click("gmxe"); await e.until(() => e.T().includes("Tiền, giải thưởng"));
   expect(e.T()).toContain("60k");
-  await e.click("gmsec", { v: "tien" }); await e.until(() => e.T().includes("Lệ phí thành viên"));
+  await e.click("gmsec", { v: "tien" }); await e.until(() => e.T().includes("Lệ phí mỗi người"));
   await e.click("gsopt", { v: "fee" }); await e.click("xqfee", { v: "100" }); await e.click("gsok");
   await e.until(() => e.store.get("clubs/q7/sched/s1").phi === 100);
-  expect(e.T()).toContain("Lệ phí thành viên");
+  expect(e.T()).toContain("Lệ phí mỗi người");
 });
 
 test("ngày đánh (Mini App): chỉ check-in bằng mã, không còn bàn đón, check-in tay hay người đến muộn", async () => {
@@ -89,7 +89,7 @@ test("đang đánh: thẻ sân to → Nhập điểm (hai ô to, + −) → Lưu
   await e.until(() => e.V().includes('data-act="g4v" data-v="kq"'));
   await e.click("g4v", { v: "kq" }); await e.until(() => e.T().includes("Kết quả · 1 trận"));
   await e.click("g4x"); await e.click("gmst", { v: "3" }); await e.until(() => e.T().includes("Bước 1/4"));
-  await e.click("chotgo", { v: "4" }); await e.until(() => e.T().includes("Dư vào quỹ CLB") || e.T().includes("Quỹ bù"));
+  await e.click("chotgo", { v: "4" }); await e.until(() => e.T().includes("Dư sau khi trả tiền sân") || e.T().includes("Thiếu so với tiền chi"));
   expect(e.T()).toContain("Gửi kết quả vào nhóm Zalo");
 });
 
@@ -110,7 +110,7 @@ test("ngày đánh: ⋯ → BTC check-in giùm, tích chọn là check-in, bỏ 
 test("sửa giải một danh sách: mọi mục hiện ngay, bấm dòng sửa tại chỗ, ✓ Lưu ghi vào giải", async () => {
   const e = await boot(base());
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('class="g2st"'));
-  await e.click("xbmenu"); await e.click("gmxe"); await e.until(() => e.T().includes("Lệ phí thành viên"));
+  await e.click("xbmenu"); await e.click("gmxe"); await e.until(() => e.T().includes("Lệ phí mỗi người"));
   expect(e.T()).toContain("Tên giải"); expect(e.T()).toContain("Trọng tài, loa");
   await e.click("gsopt", { v: "fee" }); await e.until(() => e.V().includes('class="gsin"'));
   await e.click("xqfee", { v: "100" }); await e.click("gsok");

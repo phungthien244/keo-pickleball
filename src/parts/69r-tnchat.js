@@ -48,9 +48,14 @@ const TC_Q=[
   {k:"date",need:t=>t.date==null,keys:["date"],q:()=>"Đánh ngày nào?",o:()=>tnDateOpts(),set:(t,v)=>{t.date=+v}},
   {k:"time",need:t=>!t.time,keys:["time"],q:()=>"Mấy giờ bắt đầu?",o:()=>["06:30","07:00","08:00","17:00","18:30","19:00"].map(v=>[v,v]),set:(t,v)=>{t.time=v}},
   {k:"courts",need:t=>!t.courts,keys:["courts"],q:t=>`Dùng mấy sân?${t.courts&&t.guess.has("courts")?` (lần trước ${t.courts} sân)`:""}`,o:()=>[2,3,4,6,8].map(v=>[v,`${v} sân`]),star:t=>t.courts||null,set:(t,v)=>{t.courts=+v}},
-  {k:"thu",on:t=>t.fmt==="xoay",need:t=>!t.thu,keys:["thu"],q:()=>"Thu tiền thế nào?",o:()=>[["phi","Lệ phí cố định"],["deu","Chia đều tiền sân"],["keo","Ai thua góp"]],star:t=>t.thu||null,set:(t,v)=>{t.thu=v}},
+  // Bước 3 · tiền sân & hoà vốn (canvas T01)
+  {k:"san",on:t=>t.fmt==="xoay",need:t=>t.fmt==="xoay"&&t.san==null&&!t.thu,keys:["san"],def:()=>0,q:()=>"Tiền sân cho buổi này bao nhiêu?",o:()=>[[800,"800k"],[1000,"1 triệu"],[1200,"1,2 triệu"],[1500,"1,5 triệu"],[0,"Không tính"]],star:t=>t.san!=null?t.san:null,
+    note:()=>"Số khác thì gõ, ví dụ “900k”. Sân nhà hoặc đã trả sẵn thì chọn Không tính.",set:(t,v)=>{t.san=+v}},
+  {k:"thu",on:t=>t.fmt==="xoay",need:t=>!t.thu||t.thu==="keo",keys:["thu"],q:()=>"Thu tiền người chơi thế nào?",o:t=>[["phi",+t.san?`Giá cố định · ${fmtK(tcFeeHint(t))}/người (gợi ý)`:"Giá cố định mỗi người"],["deu","Chia đều tiền sân cuối buổi"]],star:t=>t.thu&&t.thu!=="keo"?t.thu:"phi",
+    note:t=>+t.san?"Chia đều: cuối buổi app lấy tiền sân chia cho số người có mặt rồi gửi số tiền cho từng người.":"",set:(t,v)=>{t.thu=v;if(v==="phi"&&+t.san&&(t.fee==null||t.fee==="")){t.fee=tcFeeHint(t);t.ans.add("fee");t.log.push({b:tcHoaTx(t).replace(/(\d+ người)/,"<b>$1</b>")})}}},
   {k:"fee",on:t=>!t.nds&&!(t.fmt==="xoay"&&(t.thu==="keo"||t.thu==="deu")),need:t=>t.fee==null||t.fee==="",keys:["fee"],q:()=>"Lệ phí mỗi người bao nhiêu?",
-    o:()=>[[0,"Miễn phí"],[50,"50k"],[100,"100k"],[150,"150k"],[200,"200k"],[300,"300k"]],star:t=>t.fee!=null&&t.fee!==""?t.fee:null,note:()=>"Số khác thì gõ bên dưới, ví dụ “250k”.",set:(t,v)=>{t.fee=+v}},
+    o:t=>{const h=+t.san?tcFeeHint(t):0,L=[[0,"Miễn phí"],[50,"50k"],[100,"100k"],[150,"150k"],[200,"200k"],[300,"300k"]];if(h&&!L.some(x=>x[0]===h))L.splice(1,0,[h,`${h}k`]);return L},
+    star:t=>t.fee!=null&&t.fee!==""?t.fee:+t.san?tcFeeHint(t):null,note:t=>tcHoaTx(t)||"Số khác thì gõ bên dưới, ví dụ “250k”.",set:(t,v)=>{t.fee=+v}},
   {k:"pay",need:t=>!t.pay,keys:["pay"],q:()=>"Có cần chuyển khoản khi đăng ký không?",o:()=>[["off","Không, trả tại sân"],["opt","Tuỳ chọn"],["req","Bắt buộc mới giữ chỗ"]],star:t=>t.pay||null,set:(t,v)=>{t.pay=v}},
   {k:"gton",need:t=>t.gton==null,keys:["gton","h1","gt"],q:()=>"Có giải thưởng không?",o:()=>[["1","Có"],["0","Không"]],star:t=>t.gton==null?null:t.gton?"1":"0",
     set:(t,v)=>{t.gton=v==="1";if(t.gton&&!t.gt)t.gt="hang"}},
@@ -84,6 +89,11 @@ const TC_Q=[
   {k:"pairReg",on:t=>t.fmt&&t.fmt!=="xoay",keys:["pairReg"],q:()=>"Người chơi đăng ký thế nào?",o:()=>[["pair","Theo cặp"],["solo","Từng người, BTC ghép"]],star:()=>"pair",set:(t,v)=>{t.pairReg=v}},
   {k:"ref",on:t=>t.fmt&&t.fmt!=="xoay",keys:["ref"],q:()=>"Ai nhập tỉ số?",o:()=>[["0","BTC nhập trên app"],["1","Mỗi sân 1 trọng tài (QR)"]],star:t=>t.fmt==="bang"&&(+t.courts||0)>=3?"1":"0",
     note:()=>"Trọng tài quét mã QR của sân, nhập từng pha, loa tự gọi điểm.",set:(t,v)=>{t.ref=v==="1"}},
+  {k:"san2",on:t=>t.fmt&&t.fmt!=="xoay",keys:["san"],def:()=>0,q:()=>"Tiền sân cho buổi này bao nhiêu?",o:()=>[[800,"800k"],[1000,"1 triệu"],[1200,"1,2 triệu"],[1500,"1,5 triệu"],[0,"Không tính"]],star:t=>t.san!=null?t.san:null,
+    note:()=>"Số khác thì gõ, ví dụ “900k”. Sân nhà hoặc đã trả sẵn thì chọn Không tính.",set:(t,v)=>{t.san=+v}},
+  // Lần đầu có thu tiền mà chưa có tài khoản nhận tiền (canvas T02): hỏi một lần
+  {k:"bank",on:t=>tcNeedBank(t),keys:["bank"],q:()=>"Người chơi chuyển khoản vào tài khoản nào? Mình hỏi một lần, lần sau dùng lại.",
+    o:()=>[["now","Nhập tài khoản nhận tiền"],["later","Để sau, thu tiền mặt tại sân"]],star:()=>"now",set:(t,v)=>{t.bank=v;if(v==="later")t.pay="off"}},
   {k:"endX",on:t=>t.fmt==="xoay"&&t.time,keys:["end"],q:()=>"Đánh đến mấy giờ?",o:t=>{const [h,m]=t.time.split(":").map(Number);return [2,2.5,3].map(x=>{const a=h*60+m+x*60;return `${String(Math.floor(a/60)%24).padStart(2,"0")}:${String(a%60).padStart(2,"0")}`}).map(v=>[v,v]).concat([["","Không cố định"]])},
     star:()=>"",set:(t,v)=>{t.end=v}},
 ];
@@ -113,6 +123,18 @@ function tcRe(t,k){t.sumOn=false;const L=TC_DEP[k]||[k];for(const x of L){t.ans.
 // Gõ chữ: các mục vừa đổi coi như đã trả lời câu tương ứng
 function tcTyped(t,keys){for(const Q of TC_Q)if((Q.keys||[]).some(k=>keys.includes(k))){t.ans.add(Q.k);if(t.reAsk===Q.k)t.reAsk=null}if(keys.includes("target")&&!keys.includes("rG"))tcSet(t,"G",{to:+t.target,w2:false,cap:0})}
 
+// Đọc số tiền gõ tay (đơn vị k): 900k · 900 · 1tr2 · 1,2 triệu · 1.200.000 · không
+function tcMoney(n){n=String(n).replace(/\s+/g," ").trim();if(/^(khong|ko|k co|0)( tinh)?$/.test(n)||/khong tinh|san nha|tra san/.test(n))return 0;
+  let m=n.match(/(\d+)[.,](\d+)\s*(tr|trieu)/);if(m)return Math.round(+(m[1]+"."+m[2])*1000);
+  m=n.match(/(\d+)\s*(tr|trieu)\s*(\d)?/);if(m)return +m[1]*1000+(m[3]?+m[3]*100:0);
+  m=n.match(/^(\d{1,3}(?:[.,]\d{3})+)\s*(d|dong|vnd)?$/);if(m)return Math.round(+m[1].replace(/[.,]/g,"")/1000);
+  m=n.match(/^(\d+)\s*(k|nghin|ngan)?$/);if(m){const v=+m[1];return v>=10000?Math.round(v/1000):v}
+  return null}
+// Gợi ý lệ phí để hoà vốn: tiền sân ÷ số người (tối đa hoặc sân × 5), làm tròn lên 10k
+function tcFeeHint(t){const n=+t.people||(+t.courts||2)*5,s=+t.san||0;return s&&n?Math.ceil(s/n/10)*10:0}
+const tcHoaN=t=>+t.san&&+t.fee?Math.ceil(+t.san/+t.fee):0;
+function tcHoaTx(t){const n=tcHoaN(t);if(!n)return "";return `Tiền sân ${fmtK(+t.san)}, mỗi người ${fmtK(+t.fee)} → đủ ${n} người là hoà vốn${+t.people?(n>+t.people?` (nhiều hơn tối đa ${t.people} người, nên tăng lệ phí)`:` · tối đa ${t.people} người`):""}.`}
+const tcNeedBank=t=>MINI&&!(BANK&&BANK.acc)&&!t.nds&&((t.thu==="deu"&&+t.san>0)||(+t.fee>0&&t.thu!=="keo"));
 /* ----- Giao diện ----- */
 const tcBot=(h,ex="")=>`<div class="tcb"><span class="tcav" aria-hidden="true">AI</span><div>${h}${ex}</div></div>`;
 const tcMe=h=>`<div class="tcm"><div>${h}</div></div>`;
@@ -136,6 +158,7 @@ function tcRows(t){const R=[],at=tnAt(t),E=tnEst(t);
   if(t.fmt!=="xoay")R.push(["Trọng tài",t.ref?"Mỗi sân 1 trọng tài (QR)":"BTC nhập trên app","ref"],["Đăng ký",t.pairReg==="solo"?"Từng người, BTC ghép":"Theo cặp","pairReg"]);
   R.push(["Ngày",t.date!=null?`${tnDow(at)} ${tnDm(at)}`:"—","date"],["Giờ",`${t.time||"—"}${t.fmt==="xoay"?(t.end?`–${t.end}`:""):E?` · dự kiến xong ~${tcHm(E.end)}`:""}`,"time"]);
   R.push(["Sân",`${t.courts||"—"} sân${t.place?` · ${esc(t.place)}`:""}`,"courts"]);
+  R.push(["Tiền sân",t.san==null?"—":+t.san?fmtK(+t.san)+(tcHoaN(t)?` · hoà vốn ${tcHoaN(t)} người`:""):"Không tính",t.fmt==="xoay"?"san":"san2"]);
   if(t.fmt==="xoay")R.push(["Cách thu",{phi:"Lệ phí cố định",deu:"Chia đều tiền sân",keo:"Ai thua góp"}[t.thu]||"—","thu"]);
   if(!t.nds&&!(t.fmt==="xoay"&&(t.thu==="keo"||t.thu==="deu")))R.push(["Lệ phí",t.fee==null||t.fee===""?"—":+t.fee?`${fmtK(+t.fee)}/người`:"Miễn phí","fee"]);
   R.push(["Chuyển khoản",{off:"Không, trả tại sân",opt:"Tuỳ chọn",req:"Bắt buộc mới giữ chỗ"}[t.pay]||"—","pay"]);
@@ -143,7 +166,7 @@ function tcRows(t){const R=[],at=tnAt(t),E=tnEst(t);
   R.push(["Ảnh bìa",xfPoster&&!xfPoster.del&&(xfPoster.out||xfPoster.src)?(xfPoster.out?"Đã chọn ảnh":"Đang xử lý ảnh…"):"Chưa có · app tự vẽ khi chia sẻ","poster"]);
   return R}
 /* ----- Sửa ngay trên thẻ tóm tắt: bấm dòng → mở nút chọn ngay dưới dòng đó, chọn là đổi, không hỏi lại từ đầu ----- */
-const TC_CV={fmt:t=>t.fmt==="bang"?`b:${t.koN}`:t.fmt,n:t=>t.fmt==="xoay"?t.people:t.pairs,dt:t=>t.dt||"free",date:t=>t.date,time:t=>t.time,courts:t=>t.courts,thu:t=>t.thu,fee:t=>t.fee,pay:t=>t.pay,
+const TC_CV={san:t=>t.san,san2:t=>t.san,bank:t=>t.bank,fmt:t=>t.fmt==="bang"?`b:${t.koN}`:t.fmt,n:t=>t.fmt==="xoay"?t.people:t.pairs,dt:t=>t.dt||"free",date:t=>t.date,time:t=>t.time,courts:t=>t.courts,thu:t=>t.thu,fee:t=>t.fee,pay:t=>t.pay,
   gton:t=>t.gton==null?"":t.gton?"1":"0",guests:t=>t.guests?"1":"0",ref:t=>t.ref?"1":"0",pairReg:t=>t.pairReg||"pair",endBy:t=>t.endBy||"",koN:t=>t.koN,third:t=>t.third===false?"0":"1"};
 const tcChips=(t,k,act="tce")=>{const Q=TC_Q.find(x=>x.k===k),cv=String(TC_CV[k]?TC_CV[k](t):"");return `<div class="tcq">${Q.o(t).filter(([v])=>v!=="?").map(([v,l])=>`<button class="tcbtn${String(v)===cv?" on":""}" data-act="${act}" data-k="${k}" data-v="${esc(String(v))}">${esc(l)}</button>`).join("")}</div>`};
 // Luật điểm một vòng: số ván · chạm · tới sát nút thì sao
@@ -255,6 +278,8 @@ async function tcSay(s){const t=tn,n=tnNorm(s),cur=t.ask||t.sumOn?null:tcPend(t)
   const merge=o=>{const k=Object.keys(o).filter(x=>x!=="wd");if(!k.length)return false;tnMerge(o);tcTyped(t,k);t.miss=0;t.ask=tcOdd(t);return true};
   const rules=()=>{const p=tnParse(s);delete p.wd;const k=Object.keys(p).filter(x=>!["date","time"].includes(x)||/ngay|gio|\dh|thu|chu nhat|mai|\//.test(n)),o={};for(const x of k)o[x]=p[x];return o};
   t.wasDone=!cur&&!t.ask;
+  // Đang hỏi tiền sân: "900k", "1tr2", "1,2 triệu", "không"
+  if((t.edit==="san"||t.edit==="san2"||(cur&&(cur.k==="san"||cur.k==="san2")))&&!tcAskQ(n)){const v=tcMoney(n);if(v!=null){t.san=v;t.ans.add("san");t.said.add("san");t.miss=0;t.log.push({b:v?`Đã ghi tiền sân <b>${fmtK(v)}</b>.`:"Không tính tiền sân."});return}}
   // 0. Đang hỏi (hoặc đang sửa) luật điểm một vòng: đọc "1 ván chạm 15", "thắng 2/3", "cách 2 tối đa 18" cho đúng vòng đó
   {const RX={sG:"G",wG:"G",cG:"G",pK:"K",sK:"K",wK:"K",cK:"K",pF:"F",sF:"F",wF:"F",cF:"F"},X=RX[t.edit]||(cur&&RX[cur.k]);
     if(X&&!tcAskQ(n)){const r=tcRuleTxt(t,X,n);if(r){t["r"+X]=r;if(X==="G")t.target=r.to;for(const k of Object.keys(RX))if(RX[k]===X)t.ans.add(k);if(t.cust)t.cust.delete(X);t.capAsk=null;t.miss=0;

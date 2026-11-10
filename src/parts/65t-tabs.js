@@ -1,7 +1,7 @@
 /* ---------- Mini App · khung 5 tab (Tìm · Lịch · ＋ · Tin · Tôi) — canvas trang "Hệ sinh thái · Lịch đánh" ----------
    MXT: tab đang mở (null = đang ở một trang tổ chức / trang con). Mở app không kèm link → Lịch (hoặc Tìm nếu chưa có gì).
    Mở bằng link trang tổ chức (?clb=) → vào thẳng trang đó như trước. */
-let MXT=null,mxTS=[],mxO="lich",mtSeg="tg",mtTyp="all",mtPlusWant=false,mtBusy=false;
+let mtBankWant=false,MXT=null,mxTS=[],mxO="lich",mtSeg="tg",mtTyp="all",mtPlusWant=false,mtBusy=false;
 const MT_T={tim:"Lịch đánh gần bạn",lich:"Lịch đánh của tôi",tin:"Tin",toi:"Tôi",tao:"Tạo lịch đánh"};
 const MT_LOAI={s:["SOCIAL","s"],m:["MINI GAME","m"],g:["GIẢI","g"]};
 // Loại lịch đánh: lưu ở sched.loai; lịch cũ suy ra từ thể thức
@@ -85,7 +85,7 @@ function mtOrg(D){
   const C=mtOrgClubs();let h="";
   if(mtMgrHere()){const U=schedUp();
     h+=U.length?U.map(x=>{const R=(S.regs||[]).filter(r=>r.sid===x.id&&!r.cancel),n=R.length,max=+x.max||0,un=mtFee(x)>0?R.filter(r=>(r.pay||"none")!=="ok").length:0,pct=max?Math.min(100,Math.round(n*100/max)):0;
-      return `<button class="mtorg" data-act="mtql" data-x="${esc(x.id)}"><span class="hd">${mtBadge(x)}<small>${x.st==="draft"?"Nháp · ":""}${esc(mtWhen(x.at))}</small></span><b>${esc(xName(x))}</b>${max?`<span class="mtbar"><i style="width:${pct}%"></i></span>`:""}<span class="kv"><b>${n}${max?`/${max}`:""} người</b><small>${max?(n>=max?"Đã đủ":`Còn ${max-n} chỗ`):"Không giới hạn"}</small></span>${un?`<span class="un">${un} người chưa trả tiền <b>Xem ›</b></span>`:""}</button>`}).join("")
+      return `<button class="mtorg" data-act="mtql" data-x="${esc(x.id)}"><span class="hd">${mtBadge(x)}<small>${x.st==="draft"?"Nháp · ":""}${esc(mtWhen(x.at))}</small></span><b>${esc(xName(x))}</b>${max&&!+x.san?`<span class="mtbar"><i style="width:${pct}%"></i></span>`:""}<span class="kv"><b>${n}${max?`/${max}`:""} người</b><small>${max?(n>=max?"Đã đủ":`Còn ${max-n} chỗ`):"Không giới hạn"}</small></span>${hvBar(x,R)}${un?`<span class="un">${un} người chưa trả tiền <b>Nhắc qua Zalo ›</b></span>`:""}</button>`}).join("")
       :`<div class="mtempty"><b>Chưa có lịch đánh sắp tới</b><span>Bấm ＋ ở giữa thanh dưới để tạo.</span></div>`;
     h+=`<button class="line wide" data-act="mtql">Quản lý ${esc((CLUB&&CLUB.name)||"")} ›</button>`}
   const others=C.filter(c=>!(mtMgrHere()&&c.id===CID));
@@ -253,6 +253,28 @@ async function mtAct(act,b,id){
   if(act==="mtren"){mtRen=true;delete drafts["mt-nm"];delete errs.mtn;render();return true}
   if(act==="mtrenx"){mtRen=false;delete errs.mtn;render();return true}
   if(act==="mtrenok"){await mtRename();return true}
+  if(act==="mtbank"){await mtBankSave();return true}
+  if(act==="mtbankx"){mtBankWant=false;render();return true}
   if(act==="mtexit"){mxSetMode("choi");mtTab(mxO||"lich");return true}
   return false;
+}
+
+/* ----- Tài khoản nhận tiền: hỏi một lần khi lịch đánh đầu tiên có thu tiền (canvas T02) ----- */
+function mtBankSheet(){
+  if(!mtBankWant||!canWrite||(BANK&&BANK.acc))return "";
+  const zn=noAcc(String(zaloProf().n||"")).toUpperCase().trim(),hd=noAcc(String(val("bk-holder",zn))).toUpperCase().trim(),same=zn&&hd&&hd===zn;
+  return `<div class="mxdim" data-act="mtbankx"></div><div class="mxsheet gmsh" role="dialog" aria-label="Tài khoản nhận tiền"><span class="grab"></span><b class="mxh">Tài khoản nhận tiền</b>
+    <small class="rule">Người chơi quét QR chuyển đúng số tiền, đúng nội dung vào tài khoản này. Hỏi một lần, lần sau dùng lại.</small>
+    <label class="fld"><span class="lbl">Ngân hàng</span><select id="bk-code" data-draft="bk-code">${BANKS.map(([c,,n])=>`<option value="${c}" ${val("bk-code","vcb")===c?"selected":""}>${esc(n)}</option>`).join("")}</select></label>
+    <label class="fld"><span class="lbl">Số tài khoản</span><input id="bk-acc" data-draft="bk-acc" inputmode="numeric" value="${esc(val("bk-acc",""))}"></label>
+    <label class="fld"><span class="lbl">Tên chủ tài khoản (không dấu)</span><input id="bk-holder" data-draft="bk-holder" data-live="1" value="${esc(val("bk-holder",zn))}"></label>
+    ${zn?`<small class="${same?"bkok":"rule"}">${same?`✓ Khớp tên Zalo · ${esc(zaloProf().n)}`:"Tên khác tên Zalo: vẫn lưu được, nhưng chưa có huy hiệu Nhận tiền đúng tên."}</small>`:""}
+    <div class="two"><button class="ghost" data-act="mtbankx">Để sau</button><button class="primary" data-act="mtbank">✓ Lưu tài khoản</button></div></div>`;
+}
+async function mtBankSave(){
+  const code=val("bk-code","vcb"),bk=BANKS.find(z=>z[0]===code)||BANKS[0],acc=String(val("bk-acc","")).replace(/\s/g,""),hd=noAcc(String(val("bk-holder",zaloProf().n||""))).toUpperCase().trim();
+  if(!/^\d{6,19}$/.test(acc)){toast("Số tài khoản chỉ gồm 6–19 chữ số.");return}if(!hd){toast("Nhập tên chủ tài khoản.");return}
+  const bank={code:bk[0],bin:bk[1],name:bk[2],acc,holder:hd};
+  try{await FB.updateDoc(FB.doc(FB.fs,"clubs/"+CID),{bank});if(CLUB)CLUB.bank=bank;BANK=bank;mtBankWant=false;["bk-code","bk-acc","bk-holder"].forEach(k=>delete drafts[k]);toast("Đã lưu tài khoản nhận tiền");render()}
+  catch(e){toast("Chưa lưu được, thử lại.")}
 }

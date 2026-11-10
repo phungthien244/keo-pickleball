@@ -29,7 +29,7 @@ store.set("clubs/aep/invites/demo-ql",{role:"admin",exp:Date.now()+3650*864e5,by
 store.set("clubs/aep/invites/demo-tt",{role:"scorer",exp:Date.now()+3650*864e5,by:"demo",at:Date.now()});
 {const T=new Date();T.setDate(T.getDate()+1);T.setHours(19,0,0,0);const at=T.getTime(),tpl={name:"Giải đấu tối",fmt:"xoay",end:"21:30",place:"Sân AEP, Q7",courts:2,target:11,max:16,guests:true,thu:"keo",fee:60,feeG:80,pay:"opt",lockH:2,dlH:0,note:"Mang nước, sân có bóng."};
 store.set("clubs/aep/series/w1",{days:[2,4],time:"19:00",end:"21:30",tpl,auto:true,openD:2,on:true,at:Date.now()});
-store.set("clubs/aep/sched/s-mai",{...tpl,at,deadline:at,lockAt:at-2*3600e3,st:"open",openAt:0,series:"w1",createdAt:Date.now()});
+store.set("clubs/aep/sched/s-mai",{...tpl,at,deadline:at,lockAt:at-2*3600e3,st:"open",openAt:0,series:"w1",san:1200,createdAt:Date.now()});
 ["d0","d2","d4","d6","d8"].forEach((pid,i)=>store.set("clubs/aep/regs/s-mai_p_"+pid,{sid:"s-mai",pid,name:store.get("clubs/aep/players/"+pid)?.name||"",at:Date.now()-(9-i)*36e5,pay:i<2?"ok":i===2?"sent":"none",by:"Bạn (demo)"}));
 const G=new Date();G.setDate(G.getDate()+4);G.setHours(8,0,0,0);
 {const O=new Date();O.setDate(O.getDate()+2);O.setHours(7,0,0,0);const at=O.getTime();
