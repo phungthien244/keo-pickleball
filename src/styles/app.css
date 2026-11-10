@@ -3054,3 +3054,5 @@ small.tcel{text-transform:none;letter-spacing:normal;font-weight:500;font-size:1
 .gdbox.gdme{display:flex;flex-direction:row;align-items:center;gap:12px;text-align:left}.gdmeav{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#e3e8ee;display:grid;place-items:center;flex:none}
 .gdme .t{display:flex;flex-direction:column}.gdme b{font-size:15px}.gdme small{font-size:12px;color:#5f6f7f}.gdme .vb{font-style:normal;display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:#1f6fd1;color:#fff;font-size:9px;vertical-align:1px}
 .mxcard.mxgt{display:flex;flex-direction:row;justify-content:space-between;align-items:center;text-decoration:none;color:inherit}.mxcard.mxgt span{color:#1f6fd1;font-weight:700;font-size:13px}
+.capinv .two{display:flex;gap:6px;flex:none}.capinv .two .ghost{min-height:36px}
+.capok2{display:block;font-size:12px;color:#15803d;font-weight:700}

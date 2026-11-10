@@ -208,6 +208,8 @@ function g2Person(D,X,R,x){
   big.push(ph?`<a class="tvbig" href="tel:${esc(ph)}"><i>📞</i><span>Gọi</span></a>`:`<button class="tvbig" disabled><i>📞</i><span>Gọi</span></button>`);
   h+=`<div class="tvbigs n${big.length}">${big.join("")}</div>`;
   // Người tổ chức chỉnh trình tại chỗ (để ghép cặp cân)
+  if(x.payFor==="pair"&&!x.cancel&&!capMate(x))h+=`<div class="capmgr"><span class="t"><b>${esc(xbName(D,x))} đã trả cả cặp ${fmtK(feeOf(x))}</b><small>Chưa có bạn cặp xác nhận. Không tìm được ai thì huỷ cặp và chuyển lại phần của bạn cặp.</small></span><button class="line" data-act="caprf" data-id="${esc(x.id)}">Huỷ cặp · hoàn ${fmtK(feeOf(x)/2)}</button></div>`;
+  if(x.hoan)h+=`<div class="gdwarn">Cần chuyển lại ${fmtK(x.hoan)} cho ${esc(xbName(D,x))} (phần bạn cặp).</div>`;
   if(!x.cancel)h+=`<span class="gmlb">Trình</span>${lvSeg("",lv,"xblv").replace(/data-k=""/g,`data-id="${esc(x.id)}"`)}`;
   if(pairRegOn(X)&&!x.cancel&&!capMate(x)){const S2=R.conf.filter(y=>y.id!==x.id&&!capMate(y));
     if(S2.length)h+=`<span class="gmlb">Ghép tay với</span><div class="g2fl">${S2.map(y=>`<button data-act="gmpairw" data-id="${esc(x.id)}" data-v="${esc(y.id)}">${esc(xbName(D,y))}</button>`).join("")}</div>`}

@@ -309,7 +309,12 @@ service cloud.firestore {
         allow read: if canRead();
         allow create: if canEdit() || (
           active() && player()
-          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv', 'hold', 'team', 'want', 'wantName', 'seek', 'zid'])
+          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv', 'hold', 'team', 'want', 'wantName', 'seek', 'zid', 'payFor', 'paidBy'])
+          // Cặp: người rủ trả cả cặp (payFor), bạn cặp được trả hộ (paidBy = mã cặp, người rủ phải đã chọn trả cả cặp)
+          && request.resource.data.get('payFor', '') in ['', 'pair']
+          && (!('paidBy' in request.resource.data) || (request.resource.data.paidBy is string
+              && request.resource.data.paidBy == request.resource.data.get('team', '')
+              && get(/databases/$(database)/documents/clubs/$(c)/regs/$(request.resource.data.paidBy)).data.get('payFor', '') == 'pair'))
           && request.resource.data.get('zid', '') is string && request.resource.data.get('zid', '').size() <= 64
           && request.resource.data.get('hold', false) is bool
           && request.resource.data.get('seek', false) is bool
@@ -384,6 +389,17 @@ service cloud.firestore {
         allow delete: if canEdit() || (
           player() && resource.data.uid == request.auth.uid && beforeLock()
         );
+      }
+      // Bạn cặp từ chối lời mời: {mã cặp}_{uid}
+      match /capno/{id} {
+        allow read: if canRead();
+        allow create: if active() && player()
+          && request.resource.data.keys().hasOnly(['host', 'uid', 'name', 'at'])
+          && request.resource.data.uid == request.auth.uid
+          && id == request.resource.data.host + '_' + request.auth.uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 40
+          && exists(/databases/$(database)/documents/clubs/$(c)/regs/$(request.resource.data.host));
+        allow delete: if canEdit();
       }
       // Mã check-in đang hiện trên máy ban tổ chức: chỉ ban tổ chức đọc, ghi
       match /ci/{sid} {

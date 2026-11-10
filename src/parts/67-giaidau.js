@@ -153,7 +153,10 @@ function gdReg1(D){
   if(!gdOpt.who)gdOpt.who=linked?"mem":r.guests?"guest":"mem";
   if(!gdOpt.pay)gdOpt.pay=canPay?"now":"site";
   if(req&&canPay)gdOpt.pay="now";
-  const who=gdOpt.who,me=linked?D.pmap.get(S.link.pid):null,pay=canPay&&!full?gdOpt.pay:"site",k=who==="guest"?feeGuest():mfPerk(me&&me.id,feeMem());
+  const who=gdOpt.who,me=linked?D.pmap.get(S.link.pid):null,pay=canPay&&!full?gdOpt.pay:"site";let k=who==="guest"?feeGuest():mfPerk(me&&me.id,feeMem());
+  // Cặp (canvas B02/B03): người rủ trả cả cặp → gấp đôi; được trả hộ → 0, chỉ cần xác nhận
+  const cHost=gdJoin?(S.regs||[]).find(r=>r.id===gdJoin):null,cPaid=MINI&&pairRegOn(RX)&&capPaid(cHost),cTwo=MINI&&pairRegOn(RX)&&!gdJoin&&gdOpt.mate!=="seek"&&gdOpt.pf!=="self"&&k>0;
+  if(cPaid)k=0;else if(cTwo)k*=2;
   const opt=(k2,v,title,sub,price,dis)=>`<button class="gdopt${gdOpt[k2]===v||(k2==="pay"&&pay===v)?" on":""}" data-act="gdopt" data-k="${k2}" data-v="${v}"${dis?" disabled":""}><span class="rd"></span><span class="t"><b>${title}</b><small>${sub}</small></span>${price!=null?`<b class="pr">${price}</b>`:""}</button>`;
   let h=`<div class="gdtop2"><button class="gdback" data-act="gdback" aria-label="Quay lại">‹</button><b>Đăng ký · ${esc(xName(RX))}</b></div>`+gdSteps(1)+(MINI?"":`<span class="xsec">Bạn đăng ký với tư cách</span>`);
   if(!W&&!MINI)h+=opt("who","mem",linked?`Thành viên · ${esc(me?.name||"")}`:`Thành viên ${esc(CLUB?.name||"CLB")}`,linked?"Đã liên kết Zalo · giá thành viên":pend?"Đang chờ chủ CLB duyệt tên của bạn":"Chọn tên của bạn trong CLB, chủ CLB xác nhận một lần",feeMem()?fmtK(mfPerk(me&&me.id,feeMem())):null);
@@ -182,13 +185,13 @@ function gdReg1(D){
   if(k>0&&canPay&&!full){h+=`<span class="xsec">Cách thanh toán</span>`+opt("pay","now",`Chuyển khoản ngay <em class="gdtag">${W?"BẮT BUỘC":"GIỮ CHỖ CHẮC"}</em>`,W?"Chỗ của bạn được giữ 15 phút để chuyển khoản. Quá giờ chưa chuyển, chỗ được nhả cho người khác.":"Quét QR bằng app ngân hàng bất kỳ. BTC xác nhận là có vé.",null);
     if(!req)h+=opt("pay","site","Trả tại sân","Giữ chỗ tạm. Gần giờ đánh nếu đầy, người đã trả trước được ưu tiên.",null)}
   else if(full)h+=`<div class="gdwarn">Giải đấu đã đủ chỗ. Bạn vào danh sách chờ, có người hủy là bạn được vào và app báo cho bạn.</div>`;
-  h+=`<div class="gdbox"><h3>Tóm tắt</h3><div class="gdrow"><span>${esc(xName(RX))} · ${RX.at?dmy(RX.at):""}</span><span>${RX.at?hm(RX.at):""}</span></div>${k?`<div class="gdrow"><span>Lệ phí${MINI?"":who==="guest"?" VĐV ngoài CLB":" thành viên"}</span><b>${kVND(k)}</b></div>`:""}<div class="gdrow tot"><b>Tổng</b><b>${k?kVND(k):RX.cp===false?"0đ":THU[RX.thu||"keo"]}</b></div></div>`;
+  h+=`<div class="gdbox"><h3>Tóm tắt</h3><div class="gdrow"><span>${esc(xName(RX))} · ${RX.at?dmy(RX.at):""}</span><span>${RX.at?hm(RX.at):""}</span></div>${k?`<div class="gdrow"><span>Lệ phí${cTwo?" cả cặp":MINI?"":who==="guest"?" VĐV ngoài CLB":" thành viên"}</span><b>${kVND(k)}</b></div>`:cPaid?`<div class="gdrow"><span>Lệ phí</span><b>Đã được ${esc(capName(D,cHost))} trả ✓</b></div>`:""}<div class="gdrow tot"><b>Tổng</b><b>${k?kVND(k):RX.cp===false||cPaid?"0đ":THU[RX.thu||"keo"]}</b></div></div>`;
   const lk=regLockAt();
   h+=`<button class="gdagree${val("gd-ok","")==="1"?" on":""}" data-act="gdagree"><span class="ck">✓</span>Tôi đã đọc chính sách hủy${lk?`: hủy và hoàn 100% trước ${hm(lk)} ${dmy(lk)}`:""}</button>${errs.gdok?`<p class="err">${esc(errs.gdok)}</p>`:""}`;
   let cta;
   if(who==="mem"&&!linked)cta=`<button class="primary wide" data-act="mxdk" data-v="pick">${pend?"Xem yêu cầu tham gia":"CHỌN TÊN CỦA BẠN TRONG CLB"}</button>`;
   else{const act=who==="guest"?"guestin":"regin",v=full||!k||!canPay?"none":pay==="now"?"hold":"none";
-    cta=`<button class="primary wide" data-act="${act}" data-v="${v}">${full?"VÀO DANH SÁCH CHỜ":v==="hold"?`TIẾP TỤC · THANH TOÁN ${kVND(k)}`:"ĐĂNG KÝ"}</button>`}
+    cta=`<button class="primary wide" data-act="${act}" data-v="${v}">${full?"VÀO DANH SÁCH CHỜ":v==="hold"?`TIẾP TỤC · THANH TOÁN ${kVND(k)}`:cPaid?"✓ XÁC NHẬN ĐÁNH CẶP":"ĐĂNG KÝ"}</button>`}
   return gdShell(D,h,cta);
 }
 
@@ -265,7 +268,7 @@ async function gdAct(act,b,id){
     if(by&&w!=="clb"){await zChat(by.z,msg);return true}
     if(zl){const u="https://zalo.me/"+zl;if(window.ZMP&&window.ZMP.openWebview){try{await window.ZMP.openWebview({url:u})}catch(e){location.href=u}}else window.open(u,"_blank");return true}
     toast("Ban tổ chức chưa để thông tin liên hệ.");return true}
-  if(act==="gdopt"){const k=b.dataset.k,v=b.dataset.v;if(k==="who"||k==="pay"||k==="mate")gdOpt[k]=v;if(k==="who"&&v==="guest")mxAskName();render();return true}
+  if(act==="gdopt"){const k=b.dataset.k,v=b.dataset.v;if(k==="who"||k==="pay"||k==="mate"||k==="pf")gdOpt[k]=v;if(k==="who"&&v==="guest")mxAskName();render();return true}
   if(act==="gdagree"){drafts["gd-ok"]=val("gd-ok","")==="1"?"":"1";delete errs.gdok;render();return true}
   if(act==="gdzav"){const p=zaloProf().p;if(p){gsPhoto=p;delete errs.gs;render()}return true}
   if(act==="gdinfo"){gdInfo=!gdInfo;render();try{window.scrollTo(0,0)}catch(e){}return true}

@@ -401,24 +401,60 @@ test("tạo giải đấu: tùy chọn bật/tắt (chi phí, giải thưởng h
   expect(e.store.get("clubs/q7/app/config")).toMatchObject({ gt: "hang", hang1: 300, win2: false, refOn: true, cphi: false });
 });
 
-test("giải đăng ký theo cặp: người rủ chọn đồng đội trong CLB, đồng đội thấy lời mời và nhận lời, thành một cặp", async () => {
-  const data = base({ "clubs/q7/sched/s1": sched({ fmt: "giai", pairReg: "pair", name: "Giải cặp" }), "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } });
-  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
+const BANK = { code: "mb", bin: "970422", name: "MB Bank", acc: "123456", holder: "A" };
+const capData = (extra = {}) => base({ "clubs/q7": { name: "Q7", public: true, owner: "own", createdAt: 1, bank: BANK },
+  "clubs/q7/sched/s1": sched({ fmt: "giai", pairReg: "pair", name: "Giải cặp", guests: true, thu: "phi", phi: 100, fee: 100, pay: "opt" }), ...extra });
+
+test("đăng ký theo cặp: người rủ gõ tên bạn cặp, trả luôn cho cả cặp (gấp đôi), rồi gửi link Zalo", async () => {
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data: capData({ "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } }) });
   MINI(e, "#/q7");
   await e.boot(); await e.until(() => e.T().includes("Lịch đánh sắp tới"));
   expect(e.T()).toContain("Đăng ký theo cặp");
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
-  expect(e.T()).toContain("Tôi rủ đồng đội");
-  const p2 = Object.keys(data).find(k => k.startsWith("clubs/q7/players/") && k !== "clubs/q7/players/p1").split("/").pop();
-  await e.click("gdmate", { v: p2 });
+  expect(e.T()).toContain("Tôi rủ đồng đội"); expect(e.T()).toContain("Ai trả lệ phí?");
+  expect(e.T()).toContain("Lệ phí cả cặp"); expect(e.T()).toContain("200.000");
+  e.input("gd-mn", "Minh Trần");
   await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("regin");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.team === "s1_zalo_9");
-  expect(e.store.get("clubs/q7/regs/s1_zalo_9").want).toBe(p2);
-  await e.until(() => e.T().includes("MỜI ĐỒNG ĐỘI QUA ZALO"));
-  // đồng đội nhận lời: đăng ký với cùng mã cặp
-  await globalThis.window.FB.setDoc({ path: "clubs/q7/regs/s1_zalo_8" }, { sid: "s1", uid: "zalo_8", pid: p2, name: "B", at: Date.now(), pay: "none", team: "s1_zalo_9" });
+  expect(e.store.get("clubs/q7/regs/s1_zalo_9")).toMatchObject({ wantName: "Minh Trần", payFor: "pair" });
+  // Chọn "Mỗi người tự trả" thì không gấp đôi
+  const e2 = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data: capData({ "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } }) });
+  MINI(e2, "#/q7"); await e2.boot(); await e2.nav("app", { t: "dk", x: "s1" }); await e2.until(() => e2.V().includes('data-act="gdreg"'));
+  await e2.click("gdreg"); await e2.until(() => e2.V().includes('data-act="regin"'));
+  await e2.click("gdopt", { k: "pf", v: "self" }); expect(e2.T()).not.toContain("Lệ phí cả cặp");
+});
+
+test("đăng ký theo cặp: bạn cặp được trả hộ chỉ cần Xác nhận, không có bước thanh toán", async () => {
+  const host = { sid: "s1", uid: "zalo_9", pid: "p1", name: "An", at: 1, pay: "ok", team: "s1_zalo_9", want: "p2", wantName: "Bình", payFor: "pair" };
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: { uid: "zalo_8", isAnonymous: false }, data: capData({ "clubs/q7/links/zalo_8": { status: "ok", pid: "p2" }, "clubs/q7/regs/s1_zalo_9": host }) });
+  MINI(e, "#/q7");
+  await e.boot(); await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdjoin"'));
+  expect(e.T()).toContain("An mời bạn đánh cặp"); expect(e.T()).toContain("đã trả lệ phí 100k cho bạn");
+  expect(e.V()).toContain('data-act="capno"');
+  await e.click("gdjoin", { v: "s1_zalo_9" });
+  await e.until(() => e.T().includes("XÁC NHẬN ĐÁNH CẶP"));
+  expect(e.T()).toContain("Đã được An trả"); expect(e.T()).not.toContain("Cách thanh toán");
+  await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("regin");
+  await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_8")?.team === "s1_zalo_9");
+  expect(e.store.get("clubs/q7/regs/s1_zalo_8")).toMatchObject({ paidBy: "s1_zalo_9", pay: "none" });
   await e.until(() => e.T().includes("CẶP CỦA BẠN"));
+});
+
+test("đăng ký theo cặp: người được mời bấm Từ chối thì ghi lại, không còn thấy lời mời", async () => {
+  const host = { sid: "s1", uid: "zalo_9", pid: "p1", name: "An", at: 1, pay: "ok", team: "s1_zalo_9", payFor: "pair" };
+  const f = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: { uid: "zalo_7", isAnonymous: false }, data: capData({ "clubs/q7/links/zalo_7": { status: "ok", pid: "p3" }, "clubs/q7/regs/s1_zalo_9": { ...host, want: "p3", wantName: "Chi" } }) });
+  MINI(f, "#/q7"); await f.boot(); await f.nav("app", { t: "dk", x: "s1" }); await f.until(() => f.V().includes('data-act="capno"'));
+  await f.click("capno", { v: "s1_zalo_9" }); await f.until(() => f.store.get("clubs/q7/capno/s1_zalo_9_zalo_7"));
+  await f.until(() => !f.V().includes('data-act="capno"'));
+});
+
+test("đăng ký theo cặp: máy ban tổ chức đồng bộ tiền của bạn cặp được trả hộ; huỷ cặp thì ghi nhớ hoàn phần bạn cặp", async () => {
+  const data = capData({ "clubs/q7/regs/s1_zalo_9": { sid: "s1", uid: "zalo_9", name: "An", guest: true, at: 1, pay: "ok", team: "s1_zalo_9", payFor: "pair" },
+    "clubs/q7/regs/s1_zalo_8": { sid: "s1", uid: "zalo_8", name: "Bình", guest: true, at: 2, pay: "none", team: "s1_zalo_9", paidBy: "s1_zalo_9" },
+    "clubs/q7/regs/s1_zalo_5": { sid: "s1", uid: "zalo_5", name: "Lan", guest: true, at: 3, pay: "ok", team: "s1_zalo_5", payFor: "pair", wantName: "Hoa" } });
+  const e = setup({ host: "pikeco.app", path: "/q7/dang-ky/s1", user: OWNER, data });
+  await e.boot(); await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_8").pay === "ok");
 });
 
 test("check-in: các nút đều hỏi xác nhận; check-in tay vào danh sách có mặt, hoàn tác thì ra lại", async () => {

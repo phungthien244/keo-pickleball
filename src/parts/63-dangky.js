@@ -10,7 +10,8 @@ const regPayMode=()=>{const m=regCfg().pay;return m==="opt"||m==="req"?m:"off"};
 // Phí: Lệ phí cố định dùng số của phần Chi phí; cách thu khác dùng "phí dự kiến" của buổi
 const feeMem=()=>{const c=RX||cfg(),r=regCfg();return Math.max(0,(c.thu||"keo")==="phi"?+c.phi||0:+r.fee||0)};
 const feeGuest=()=>{const r=regCfg();return Math.max(0,r.feeG!=null&&r.feeG!==""?+r.feeG:feeMem())};
-const feeOf=x=>x&&x.guest?feeGuest():mfPerk(x&&x.pid,feeMem());
+// Đăng ký theo cặp: người rủ trả luôn cho cả cặp (payFor) → gấp đôi; bạn cặp được trả hộ (paidBy) → 0
+const feeOf=x=>{if(x&&x.paidBy)return 0;const f=x&&x.guest?feeGuest():mfPerk(x&&x.pid,feeMem());return x&&x.payFor==="pair"?f*2:f};
 const payOn=()=>regPayMode()!=="off"&&(feeMem()>0||feeGuest()>0);
 const isHeldOut=x=>(regPayMode()==="req"||x.hold===true)&&(x.pay||"none")==="none"&&!x.arrived&&Date.now()-(x.at||0)>HOLD_MS;
 function regList(D){

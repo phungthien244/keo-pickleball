@@ -15,14 +15,30 @@ function capInvite(D){
   let code="";try{const p=JSON.parse(sessionStorage.getItem("pb-doi")||"null");if(p&&p.x===RX.id)code=p.d}catch(e){}
   const L=(S.regs||[]).filter(r=>r.sid===RX.id&&!r.cancel&&!isHeldOut(r)&&r.team===r.id&&capRegs(RX.id,r.id).length<2);
   const host=L.find(r=>r.id===code)||(me?L.find(r=>r.want===me):null);
+  if(host&&(capNo||[]).some(x=>x.host===host.id&&x.uid===(authUser&&authUser.uid)))return null;
   return host&&host.uid!==(authUser&&authUser.uid)?host:null;
 }
-const capBanner=(D,host)=>`<div class="capinv"><span class="ic">🤝</span><span class="t"><b>${esc(capName(D,host))} mời bạn đánh cặp</b><small>Nhận lời là hai bạn thành một cặp cố định ở giải này.</small></span><button class="primary" data-act="gdjoin" data-v="${esc(host.id)}">NHẬN LỜI</button></div>`;
+// Lời mời đánh cặp (canvas B03): người rủ đã trả cho cả cặp thì bạn cặp chỉ cần Xác nhận
+const capPaid=host=>!!(host&&host.payFor==="pair");
+const capBanner=(D,host)=>`<div class="capinv"><span class="ic">🤝</span><span class="t"><b>${esc(capName(D,host))} mời bạn đánh cặp</b><small>${capPaid(host)?`💚 ${esc(capName(D,host))} đã trả lệ phí ${fmtK(feeGuest())} cho bạn, bạn không cần chuyển khoản.`:"Nhận lời là hai bạn thành một cặp cố định ở giải này."}</small></span><span class="two"><button class="ghost" data-act="capno" data-v="${esc(host.id)}">Từ chối</button><button class="primary" data-act="gdjoin" data-v="${esc(host.id)}">${capPaid(host)?"XÁC NHẬN":"NHẬN LỜI"}</button></span></div>`;
+// Người được mời đã từ chối (clubs/c/capno/{mã cặp}_{uid})
+let capNo=null,capNoAt=0;
+function capNoLoad(){if(!window.FB||Date.now()-capNoAt<15e3)return;capNoAt=Date.now();
+  FB.getDocs(FB.collection(FB.fs,PFX+"capno")).then(q=>{capNo=q.docs.map(d=>({id:d.id,...d.data()}));render()}).catch(()=>{})}
+const capNos=code=>(capNo||[]).filter(x=>x.host===code);
 // Bước 1: chọn đồng đội
 function capReg1(D){
   if(!pairRegOn(RX))return "";
   if(gdJoin){const host=(S.regs||[]).find(r=>r.id===gdJoin);
-    if(host)return `<span class="xsec">Đồng đội</span><div class="capok"><span>🤝</span><span class="t"><b>Đánh cặp với ${esc(capName(D,host))}</b><small>Bạn nhận lời mời · đăng ký xong là thành cặp</small></span><button class="lnk" data-act="gdmate" data-v="x">Bỏ</button></div>`}
+    if(host)return `<span class="xsec">Đồng đội</span><div class="capok"><span>🤝</span><span class="t"><b>Đánh cặp với ${esc(capName(D,host))}</b><small>${capPaid(host)?`💚 ${esc(capName(D,host))} đã trả lệ phí cho bạn · chỉ cần xác nhận`:"Bạn nhận lời mời · đăng ký xong là thành cặp"}</small></span><button class="lnk" data-act="gdmate" data-v="x">Bỏ</button></div>`}
+  // Mini App: không còn danh sách thành viên; gõ tên bạn cặp, gửi link Zalo sau khi đăng ký; chọn ai trả lệ phí (canvas B02)
+  if(MINI){if(!gdOpt.mate)gdOpt.mate="inv";if(!gdOpt.pf)gdOpt.pf="pair";
+    const o=(k,v,t,s,pr)=>`<button class="gdopt${gdOpt[k]===v?" on":""}" data-act="gdopt" data-k="${k}" data-v="${v}"><span class="rd"></span><span class="t"><b>${t}</b><small>${s}</small></span>${pr?`<b class="pr">${pr}</b>`:""}</button>`,f=feeGuest();
+    let h=`<span class="xsec">Đồng đội · giải đăng ký theo cặp</span>`+o("mate","inv","Tôi rủ đồng đội","Đăng ký xong gửi link qua Zalo, bạn cặp bấm Xác nhận")+o("mate","seek","Chưa có đồng đội","Ban tổ chức ghép cặp (bốc thăm hoặc cân trình) lúc tới sân");
+    if(gdOpt.mate==="inv"){h+=`<label class="fld"><span class="lbl">Tên bạn đánh cặp</span><input id="gd-mn" data-draft="gd-mn" maxlength="40" placeholder="VD: Minh Trần" value="${esc(val("gd-mn",""))}"></label>`;
+      if(f>0)h+=`<span class="xsec">Ai trả lệ phí?</span>`+o("pf","pair","Tôi trả luôn cho cả cặp","Bạn cặp chỉ cần bấm Xác nhận, không phải chuyển khoản",fmtK(f*2))+o("pf","self","Mỗi người tự trả","Bạn cặp chuyển khoản phần của mình khi xác nhận",fmtK(f))
+        +`<span class="gdnote">Bạn cặp từ chối hoặc quá hạn: bạn gửi link cho người khác, tiền đã trả giữ nguyên cho người mới. Không tìm được ai thì ban tổ chức hoàn phần của bạn cặp.</span>`}
+    return h}
   const me=S.link&&S.link.status==="ok"?S.link.pid:null,taken=new Set((S.regs||[]).filter(r=>r.sid===RX.id&&!r.cancel&&!isHeldOut(r)&&r.pid).map(r=>r.pid));
   if(!gdOpt.mate)gdOpt.mate="inv";
   const o=(v,t,s)=>`<button class="gdopt${gdOpt.mate===v?" on":""}" data-act="gdopt" data-k="mate" data-v="${v}"><span class="rd"></span><span class="t"><b>${t}</b><small>${s}</small></span></button>`;
@@ -37,8 +53,9 @@ function capReg1(D){
 // Trường thêm vào đăng ký
 function capFields(rid){
   if(!pairRegOn(RX))return {};
-  if(gdJoin)return {team:gdJoin};
+  if(gdJoin){const host=(S.regs||[]).find(r=>r.id===gdJoin);return {team:gdJoin,...(capPaid(host)?{paidBy:gdJoin}:{})}}
   if(gdOpt.mate==="seek")return {seek:true};
+  if(MINI){const nm=String(val("gd-mn","")).trim().slice(0,40);return {team:rid,...(nm?{wantName:nm}:{}),...(gdOpt.pf!=="self"&&feeGuest()>0?{payFor:"pair"}:{})}}
   const w=gdOpt.want||"",p=w?derive().pmap.get(w):null;
   return {team:rid,...(p?{want:w,wantName:p.name}:{})};
 }
@@ -49,14 +66,19 @@ function capTicket(D,mine){
   if(m)return `<div class="capok big"><span>🤝</span><span class="t"><small>CẶP CỦA BẠN</small><b>${esc(capName(D,mine))} &amp; ${esc(capName(D,m))}</b></span></div>`;
   if(mine.seek)return `<div class="capwait"><b>Đang chờ ghép cặp</b><span>Ban tổ chức ghép cặp cho người chưa có đồng đội lúc tới sân.</span></div>`;
   if(mine.team&&mine.team!==mine.id)return `<div class="capwait"><b>Cặp chưa đủ</b><span>Người rủ bạn đã hủy đăng ký. Ban tổ chức sẽ ghép đồng đội mới cho bạn.</span></div>`;
-  return `<div class="capwait"><b>${mine.wantName?`Đang chờ ${esc(mine.wantName)} nhận lời`:"Chưa có đồng đội"}</b><span>Gửi link mời qua Zalo: đồng đội bấm vào, đăng ký là hai bạn thành một cặp.</span><button class="primary wide" data-act="capshare">🤝 MỜI ĐỒNG ĐỘI QUA ZALO</button></div>`;
+  capNoLoad();const no=capNos(mine.team||mine.id);
+  const paid=mine.payFor==="pair"?`<small class="capok2">Bạn đã trả ${fmtK(feeGuest())} cho bạn cặp${(mine.pay||"none")==="ok"?" ✓":(mine.pay==="sent"?" · chờ BTC xác nhận":"")}${no.length?" · tiền giữ cho người mới":""}</small>`:"";
+  if(no.length)return `<div class="capwait"><b>${esc(no[no.length-1].name||"Bạn cặp")} đã từ chối</b>${paid}<span>Gửi link cho người khác, ai bấm Xác nhận trước là thành cặp với bạn.</span><button class="primary wide" data-act="capshare">🤝 MỜI NGƯỜI KHÁC QUA ZALO</button></div>`;
+  return `<div class="capwait"><b>${mine.wantName?`Đang chờ ${esc(mine.wantName)} xác nhận`:"Chưa có đồng đội"}</b>${paid}<span>Gửi link mời qua Zalo: bạn cặp bấm vào, ${mine.payFor==="pair"?"bấm Xác nhận":"đăng ký"} là hai bạn thành một cặp.</span><button class="primary wide" data-act="capshare">🤝 MỜI ĐỒNG ĐỘI QUA ZALO</button></div>`;
 }
 // Quản lý: nhãn cặp trong danh sách đăng ký
 function capTag(D,r){
   if(!r||!r.sid||typeof r.sid!=="string")return "";const X=schedById(r.sid);if(!pairRegOn(X))return "";
-  const m=capMate(r);if(m)return `<small class="captag ok">🤝 cặp với ${esc(capName(D,m))}</small>`;
+  const m=capMate(r),pf=r.payFor==="pair"?" · trả cả cặp":r.paidBy?" · được trả hộ":"";
+  if(m)return `<small class="captag ok">🤝 cặp với ${esc(capName(D,m))}${pf}</small>`;
   if(r.seek)return `<small class="captag">tìm đồng đội</small>`;
-  return `<small class="captag w">chờ ${esc(r.wantName||"đồng đội")}</small>`;
+  capNoLoad();const no=capNos(r.team||r.id);
+  return `<small class="captag w">${no.length?`${esc(no[no.length-1].name||"bạn cặp")} đã từ chối`:`chờ ${esc(r.wantName||"đồng đội")} xác nhận`}${pf}</small>`;
 }
 // Quản lý: các cặp đăng ký sẵn đã có mặt, chưa vào danh sách cặp của giải
 function capReady(D){
@@ -78,9 +100,24 @@ async function capAct(act,b,id){
   if(act==="gdjoin"){if(!isPlayer(authUser)){zaloStart();return true}gdJoin=b.dataset.v||"";gdOpt.mate="";mxDk="reg1";render();try{window.scrollTo(0,0)}catch(e){}return true}
   if(act==="capshare"){const D=derive(),mine=gdMine(RX);if(!mine)return true;const txt=`🤝 ${capName(D,mine)} rủ bạn đánh cặp ở ${xName(RX)} · ${whenFull(RX)}. Bấm để nhận lời và đăng ký:`;
     await shareOut({title:"Mời đồng đội",text:txt,path:pathOf("app",{tab:"dk",x:RX.id}),q:"&buoi="+encodeURIComponent(RX.id)+"&doi="+encodeURIComponent(mine.team||mine.id),miniOnly:true});return true}
+  if(act==="capno"){const host=(S.regs||[]).find(r=>r.id===b.dataset.v);if(!host||!authUser)return true;
+    try{await FB.setDoc(FB.doc(FB.fs,PFX+"capno/"+host.id+"_"+authUser.uid),{host:host.id,uid:authUser.uid,name:String(zaloProf().n||"").slice(0,40)||"Bạn cặp",at:Date.now()});
+      (capNo=capNo||[]).push({host:host.id,uid:authUser.uid});try{sessionStorage.removeItem("pb-doi")}catch(e){}toast("Đã báo từ chối");render()}catch(e){toast("Chưa gửi được, thử lại.")}return true}
+  // Người tổ chức: người rủ đã trả cả cặp nhưng không có bạn cặp → huỷ cặp, ghi nhớ phải hoàn phần bạn cặp
+  if(act==="caprf"&&canWrite){const r=(S.regs||[]).find(x=>x.id===id);if(!r||r.payFor!=="pair"||capMate(r))return true;const f=feeGuest();
+    await write(()=>db.collection("regs").doc(id).update({payFor:"",hoan:f}),`Nhớ chuyển lại ${fmtK(f)} cho ${capName(derive(),r)}`);return true}
   if(act==="capadd"&&canWrite){const D=derive(),R=capReady(D),P=cfg().giai?.pairs||[],room=gMax(cfg().giai)-P.length;if(!R.length)return true;
     const t=Date.now().toString(36),add=R.slice(0,room).map(([a,bb],i)=>({id:"c"+t+"r"+i,a,b:bb,reg:1}));
     await write(()=>saveG({pairs:[...P,...add]}),`Đã thêm ${add.length} cặp đăng ký sẵn`);return true}
   return false;
 }
 if(MINI)capParam();
+
+// Người tổ chức: bạn cặp được trả hộ → trạng thái tiền theo người rủ (chạy trên máy ban tổ chức)
+const capSyncDone=new Set();
+function capPaySync(){
+  if(!canWrite||legacy||!window.FB)return;
+  for(const r of (S.regs||[]))if(r.paidBy&&!r.cancel){const h=(S.regs||[]).find(x=>x.id===r.paidBy);if(!h||h.payFor!=="pair")continue;
+    const want=h.pay||"none";if((r.pay||"none")===want||!["sent","ok"].includes(want))continue;const k=r.id+want;if(capSyncDone.has(k))continue;capSyncDone.add(k);
+    FB.updateDoc(FB.doc(FB.fs,PFX+"regs/"+r.id),{pay:want}).catch(()=>capSyncDone.delete(k))}
+}
