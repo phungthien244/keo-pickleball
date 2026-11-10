@@ -74,7 +74,7 @@ function tnFill(o){
   const L=tnLast(),last=L.find(x=>x.fmt==="giai"&&(o.fmt==="bang"?x.ko:o.fmt==="giai"?!x.ko:false))||L.find(x=>o.fmt==="xoay"?x.fmt==="xoay":true)||{},c=cfg(),g=o.guess instanceof Set?o.guess:new Set();
   const t={...o,guess:g,ok:o.ok instanceof Set?o.ok:new Set()};
   const take=(k,v)=>{if(t[k]==null&&v!=null&&v!==""){t[k]=v;g.add(k)}};
-  take("courts",+last.courts||+c.courts||2);take("target",+last.target||+c.target||11);take("place",last.place||"");if(last.end)take("end",last.end);
+  take("courts",+last.courts||+c.courts||2);if(+last.courts)t.lastC=1;take("target",+last.target||+c.target||11);take("place",last.place||"");if(last.end)take("end",last.end);
   if(!t.nds){if(t.fmt&&t.fmt!=="xoay")t.thu="phi";else take("thu",last.thu||null);
     take("fee",last.thu==="phi"?+last.phi||0:last.fee!=null?+last.fee||0:null)}
   take("pay",last.pay||null);take("guests",last.guests!=null?!!last.guests:null);if(t.guests&&last.feeG!==""&&last.feeG!=null)take("feeG",+last.feeG);
@@ -96,7 +96,7 @@ function tnNeed(t,g){const L=[],no=k=>t[k]==null||t[k]==="";
   if(g==="gio"){if(t.date==null)L.push("date");if(!t.time)L.push("time");if(!t.courts)L.push("courts")}
   // Xoay cặp chia đều tiền sân (hoặc kiểu cũ ai thua góp) không có lệ phí cố định: không bắt nhập lệ phí
   if(g==="tien"){if(!t.nds&&no("fee")&&!(t.fmt==="xoay"&&(t.thu==="deu"||t.thu==="keo")))L.push("fee");if(t.fmt==="xoay"&&no("thu"))L.push("thu");if(no("pay"))L.push("pay")}
-  if(g==="thuong"){if(t.gton==null)L.push("gton");else if(t.gton){if((t.gt||"hang")==="hang"){if(!t.h1)L.push("h1")}else if(no("gtv"))L.push("gtv")}}
+  if(g==="thuong"){if(t.gton==null&&t.fmt!=="xoay")L.push("gton");else if(t.gton){if((t.gt||"hang")==="hang"){if(!t.h1)L.push("h1")}else if(no("gtv"))L.push("gtv")}}
   return L}
 function tnGSt(t,g){if(tnNeed(t,g).length)return "no";if(!t.ok.has(g)&&TN_GK[g].some(k=>t.guess.has(k)))return "chk";return "ok"}
 const tnNextG=t=>(TN_G.find(([g])=>tnGSt(t,g)==="no")||[])[0]||null;
@@ -119,9 +119,12 @@ const tnAt=t=>{const [h,m]=String(t.time||"19:00").split(":").map(Number);const 
 const tnDow=t=>["CN","T2","T3","T4","T5","T6","T7"][new Date(t).getDay()];
 const tnDm=t=>{const d=new Date(t);return `${d.getDate()}/${d.getMonth()+1}`};
 function tnAutoName(t){const at=tnAt(t),h=new Date(at).getHours(),day=`${tnDow(at)} ${tnDm(at)}`;
-  if(t.fmt==="xoay")return `Giao lưu ${h<11?"sáng":h<17?"chiều":"tối"} ${day}`;
-  if(t.nds)return `Giải ${t.nds.length} nội dung ${day}`;
-  return `Giải ${t.dt&&t.dt!=="free"?TN_DT[t.dt].toLowerCase():"đôi"}${t.cap?" "+t.cap:""} ${day}`.slice(0,30)}
+  // Tên theo loại + buổi, không lặp ngày (ngày đã hiện riêng): "Social tối thứ 7", "Mini game sáng chủ nhật", "Giải đôi nam nữ"
+  const bu=h<11?"sáng":h<17?"chiều":"tối",dw=String(dowVN(at)).toLowerCase();
+  if(t.fmt==="xoay")return `Social ${bu} ${dw}`;
+  if(t.loai==="m"||(t.fmt==="giai"&&t.pick==="Mini game"))return `Mini game ${bu} ${dw}`;
+  if(t.nds)return `Giải ${t.nds.length} nội dung`;
+  return `Giải ${t.dt&&t.dt!=="free"?TN_DT[t.dt].toLowerCase():"đôi"}${t.cap?" "+t.cap:""}`.slice(0,30)}
 const tnName=t=>t.name||tnAutoName(t);
 const ymdIso=t=>{const d=new Date(t);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
 const tnK=v=>v>=1000&&v%100===0?`${String(v/1000).replace(".",",")} triệu`:fmtK(v);
@@ -255,7 +258,7 @@ function tnPage(D){
     let h=`<div class="tghead"><span>✦ TẠO NHANH BẰNG AI</span><button class="lnk" data-act="tnpg" data-v="help">❓ Cách dùng</button></div><b class="tgt">Tả lịch đánh bằng một câu, app soạn sẵn mọi mục</b>`
       +`<label class="fld tntxt"><span class="sr">Tả giải</span><textarea id="tn-txt" data-draft="tn-txt" data-live="1" rows="3" maxlength="400" placeholder="Ví dụ: Tối thứ 7 social 19h, 3 sân, 80k/người · hoặc: CN 7h giải 16 cặp chia 4 bảng, nhất 1 triệu"${tnBusy?" disabled":""}>${esc(txt)}</textarea></label>`;
     if(o){const C=tnCheck(o);
-      if(tnBusy)h+=`<section class="tgread"><span aria-hidden="true">✦</span><b>AI đang soạn giải…</b><i></i></section><section class="tgbox">${C.filter(x=>x[1]).map(x=>tnCkRow(x)).join("")}${tnCkRow(["Sân, luật, chuyển khoản…",false,""],true)}</section>`;
+      if(tnBusy)h+=`<section class="tgread"><span aria-hidden="true">✦</span><b>AI đang soạn…</b><i></i></section><section class="tgbox">${C.filter(x=>x[1]).map(x=>tnCkRow(x)).join("")}${tnCkRow(["Sân, luật, chuyển khoản…",false,""],true)}</section>`;
       else h+=`<section class="tgbox"><span class="cap">App đã nhận ra · ${C.filter(x=>x[1]).length}/7</span>${C.map(x=>tnCkRow(x)).join("")}</section><small class="rule">Thiếu vẫn bấm Soạn được, app sẽ hỏi bằng nút bấm. Xoá hết chữ thì các thể thức hiện lại.</small>`;
       return h+`<div class="hqcta"><button class="ball go" data-act="tngo"${tnBusy?" disabled":""}>${tnBusy?"Đang soạn…":"✦ Soạn giải"}</button></div>`}
     const seen=new Set(),L=tnLast().filter(x=>x.at&&!x.series&&!seen.has(xName(x))&&seen.add(xName(x))).concat(tnLast().filter(x=>x.at&&x.series)).filter((x,i,a)=>a.findIndex(y=>xName(y)===xName(x))===i).slice(0,2);
@@ -283,6 +286,8 @@ function tnPage(D){
 /* ----- Tạo giải: điền form cũ rồi lưu ----- */
 async function tnCreate(D){
   const t=tn,fmt=t.fmt;
+  // Giờ bắt đầu đã qua: không tạo, nhắc chọn lại
+  if(t.date!=null&&t.time&&tnAt(t)<Date.now()){toast("Giờ bắt đầu đã qua, chọn ngày giờ khác nhé.");if(typeof tcRe==="function"&&t.said)try{tcRe(t,"time")}catch(e){}render();return}
   // Thiếu mục bắt buộc: báo rõ và đưa về câu còn thiếu, không im lặng
   {const g=!fmt?"nguoi":tnNextG(t);if(g){const k=tnNeed(t,g)[0];toast("Còn thiếu: "+((TC_Q.find(q=>q.k===k||(q.keys||[]).includes(k))||{}).q?.(t)||"thông tin bắt buộc"));render();return}}
   const keepP=xfPoster;xNew=fmt;xEdit=null;xSEdit=null;xQ=false;xClearDraft();xfPoster=keepP;

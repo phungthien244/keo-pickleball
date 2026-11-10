@@ -48,7 +48,7 @@ const xChipTxt=x=>String(xChip(x)).replace(/<[^>]+>/g,"").trim();
 function gdFacts(D,R){
   const r=regCfg(),m=+r.max||0,n=R.conf.length,fee=feeMem(),fg=feeGuest(),c={...D.c,...RX},thu=RX.thu||"keo";
   const feeTxt=RX.cp===false?"Miễn phí":fee?kVND(fee):THU[thu]||"Theo CLB";
-  const fsub=RX.cp===false?"Không thu chi phí":r.guests&&fg!==fee&&fg?`VĐV ngoài CLB ${kVND(fg)}`:thu==="phi"?"Phí cố định":thu==="deu"?"Chia đều chi phí thật":"Đội thua góp";
+  const fsub=RX.cp===false?"Không thu chi phí":!MINI&&r.guests&&fg!==fee&&fg?`VĐV ngoài CLB ${kVND(fg)}`:thu==="phi"?"Phí cố định":thu==="deu"?"Chia đều tiền sân":MINI?"Phí cố định":"Đội thua góp";
   const cell=(l,v,s,cls="")=>`<div><small>${l}</small><b class="${cls}">${v}</b><span>${s}</span></div>`;
   return `<div class="gdfacts">${cell("THỂ THỨC",esc(xFmt(RX)),esc(gdTy(RX).d))}${cell("TRÌNH ĐỘ",esc(r.lvMin||r.lvMax?`${r.lvMin||"…"} – ${r.lvMax||"…"}`:"Mọi trình"),r.lvMin||r.lvMax?"Theo rating CLB":"Ai cũng đăng ký được")}
     ${cell("SỐ CHỖ",m?(n>=m?"Hết chỗ":`Còn ${m-n}/${m}`):`${n} đã đăng ký`,m?`${+c.courts||2} sân${R.wait.length?` · ${R.wait.length} người chờ`:""}`:`${+c.courts||2} sân · không giới hạn`,m&&n>=m?"lose":"win")}${cell("LỆ PHÍ",esc(feeTxt),esc(fsub))}</div>`;
@@ -60,7 +60,7 @@ function gdWho(D,R){
   const f=x=>{const p=D.pmap.get(x.pid);return `<span class="rgp">${av(p||{name:x.name},"sm",1)}<small>${esc(p?.name||x.name||"?")}${x.guest?" · ngoài CLB":""}</small></span>`};
   return `<div class="gdbox"><div class="gdhd"><h3>Ai đi · ${R.conf.length} người</h3><span>${M} nam · ${F} nữ</span></div>
     ${R.max<999?`<span class="gdbar"><i style="width:${Math.min(100,Math.round(R.conf.length/R.max*100))}%"></i></span>`:""}
-    <div class="rgl">${R.conf.map(f).join("")}</div>${avg?`<span class="gdnote">Trình trung bình ${r2(avg)}</span>`:""}
+    <div class="rgl">${R.conf.map(f).join("")}</div>${avg?`<span class="gdnote">Trình trung bình: ${MINI?lvName(avg):r2(avg)}</span>`:""}
     ${R.wait.length?`<span class="lbl">Danh sách chờ</span><div class="rgl wt">${R.wait.map(f).join("")}</div>`:""}</div>`;
 }
 function gdRules(D){
@@ -80,7 +80,7 @@ function gdMoney(D){
   if(RX.cp!==false&&(fee||RX.incl||thu!=="phi")){
     h+=`<div class="gdbox"><h3>Lệ phí gồm những gì</h3>${fee?`<div class="gdrow"><span>Lệ phí mỗi người</span><b>${kVND(fee)}</b></div>`:""}
       ${RX.incl?String(RX.incl).split(/[,;\n]+/).map(s=>s.trim()).filter(Boolean).map(s=>`<div class="gdrow"><span>· ${esc(s)}</span><span>Đã gồm</span></div>`).join(""):""}
-      ${thu==="keo"?`<span class="gdnote">Đội thua góp phần chi phí sân, bóng. Số tiền chốt sau giải đấu.</span>`:thu==="deu"?`<span class="gdnote">Chi phí thật chia đều sau giải đấu. Số trên là dự kiến.</span>`:""}</div>`}
+      ${thu==="keo"&&!MINI?`<span class="gdnote">Đội thua góp phần chi phí sân, bóng. Số tiền chốt sau giải đấu.</span>`:thu==="deu"?`<span class="gdnote">${MINI?`Tiền sân${+RX.san?" "+fmtK(+RX.san):""} chia đều cho người có mặt, chốt cuối buổi. Số trên là dự kiến.`:"Chi phí thật chia đều sau giải đấu. Số trên là dự kiến."}</span>`:""}</div>`}
   return h;
 }
 function gdPolicy(D){
@@ -103,7 +103,7 @@ function gdContact(){
   const by=gdBy(),zl=gdPhone();if(!by&&!zl)return "";
   let h=`<div class="gdbox gdct"><h3>Liên hệ ban tổ chức</h3>`;
   if(by)h+=`<div class="gdctr">${av({name:by.n},"md",1)}<span class="t"><b>${esc(by.n)}</b><span class="gdnote">Người tạo giải · hỏi về giải, ghép cặp, lệ phí</span></span><button class="gdcp" data-act="gdchat" data-v="by">💬 Nhắn tin</button></div>`;
-  if(zl)h+=`<div class="gdctr">${clubAv(CLUB||{id:CID},"s40")}<span class="t"><b>Ban tổ chức ${esc(CLUB?.name||"")}</b><span class="gdnote">Zalo liên hệ của CLB</span></span><button class="gdcp" data-act="gdchat" data-v="clb">💬 Nhắn Zalo</button></div>`;
+  if(zl)h+=`<div class="gdctr">${clubAv(CLUB||{id:CID},"s40")}<span class="t"><b>Ban tổ chức ${esc(CLUB?.name||"")}</b><span class="gdnote">${MINI?"Zalo liên hệ của người tổ chức":"Zalo liên hệ của CLB"}</span></span><button class="gdcp" data-act="gdchat" data-v="clb">💬 Nhắn Zalo</button></div>`;
   return h+`</div>`;
 }
 function gdHero(D){
@@ -167,7 +167,7 @@ function gdReg1(D){
     // Tên + ảnh lấy từ Zalo (đã xác minh), chỉ chọn nam/nữ và trình (canvas B01)
     h+=`<div class="gdbox gdme">${gsPhoto?`<img class="gdmeav" src="${esc(gsPhoto)}" alt="">`:`<span class="gdmeav">${mxSvg("me")}</span>`}<span class="t"><b>${esc(val("gs-name",P.n||""))||"Tên Zalo của bạn"} <i class="vb">✓</i></b><small>Tên và ảnh từ Zalo của bạn</small></span></div>
       ${P.n?"":`<label class="fld"><span class="lbl">Tên của bạn</span><input id="gs-name" data-draft="gs-name" maxlength="30" value="${esc(val("gs-name",""))}"></label>`}
-      ${gsPhoto?"":`<div class="gd2"><label class="line gdfile">📷 Thêm ảnh rõ mặt<input type="file" accept="image/*" capture="user" data-gsphoto="1"></label></div>${errs.gs?`<p class="err">${esc(errs.gs)}</p>`:""}`}
+      ${gsPhoto?"":`<div class="gd2"><label class="line gdfile">📷 Thêm ảnh rõ mặt (không bắt buộc)<input type="file" accept="image/*" capture="user" data-gsphoto="1"></label></div>${errs.gs?`<p class="err">${esc(errs.gs)}</p>`:""}`}
       <div class="fld"><span class="lbl">Nam / Nữ</span><span class="seg"><button data-act="gsg" data-v="M" aria-pressed="${g==="M"}">Nam</button><button data-act="gsg" data-v="F" aria-pressed="${g==="F"}">Nữ</button></span></div>
       ${lvPick()}${lvTxt(r)?`<span class="gdnote">${esc(lvTxt(r))} cho giải đấu này.</span>`:""}`}
   else if(who==="guest"){const lv=val("gs-lv","3.0"),g=val("gs-g","M");

@@ -46,8 +46,10 @@ const TC_Q=[
   {k:"dt",on:t=>t.fmt&&t.fmt!=="xoay"&&!t.nds,keys:["dt"],q:()=>"Nội dung đánh đôi gì?",o:()=>[["MM","Đôi nam"],["FF","Đôi nữ"],["mix","Đôi nam nữ"],["free","Đôi hỗn hợp"]],def:()=>"free",
     note:()=>"Đôi hỗn hợp: ai đánh với ai cũng được. Muốn giới hạn trình thì gõ, ví dụ “tổng trình 5.5”.",set:(t,v)=>{t.dt=v}},
   {k:"date",need:t=>t.date==null,keys:["date"],q:()=>"Đánh ngày nào?",o:()=>tnDateOpts(),set:(t,v)=>{t.date=+v}},
-  {k:"time",need:t=>!t.time,keys:["time"],q:()=>"Mấy giờ bắt đầu?",o:()=>["06:30","07:00","08:00","17:00","18:30","19:00"].map(v=>[v,v]),set:(t,v)=>{t.time=v}},
-  {k:"courts",need:t=>!t.courts,keys:["courts"],q:t=>`Dùng mấy sân?${t.courts&&t.guess.has("courts")?` (lần trước ${t.courts} sân)`:""}`,o:()=>[2,3,4,6,8].map(v=>[v,`${v} sân`]),star:t=>t.courts||null,set:(t,v)=>{t.courts=+v}},
+  {k:"time",need:t=>!t.time,keys:["time"],q:()=>"Mấy giờ bắt đầu?",
+    // Hôm nay thì chỉ gợi ý giờ còn kịp (sau ít nhất 1 tiếng)
+    o:t=>{const L=["06:30","07:00","08:00","17:00","18:30","19:00","20:00"],d0=tnDay0(Date.now());if(t.date!==d0)return L.slice(0,6).map(v=>[v,v]);const now=Date.now()+36e5,ok=L.filter(v=>{const [h,m]=v.split(":").map(Number);return d0+(h*60+m)*6e4>now});return (ok.length?ok:["21:00"]).map(v=>[v,v])},set:(t,v)=>{t.time=v}},
+  {k:"courts",need:t=>!t.courts||(t.fmt==="xoay"&&t.guess.has("courts")&&!t.ans.has("courts")),keys:["courts"],q:t=>`Dùng mấy sân?${t.courts&&t.guess.has("courts")&&t.lastC?` (lần trước ${t.courts} sân)`:""}`,o:()=>[2,3,4,6,8].map(v=>[v,`${v} sân`]),star:t=>t.courts||null,set:(t,v)=>{t.courts=+v}},
   // Bước 3 · tiền sân & hoà vốn (canvas T01)
   {k:"san",on:t=>t.fmt==="xoay",need:t=>t.fmt==="xoay"&&t.san==null&&(!t.thu||t.thu==="deu"),keys:["san"],def:()=>0,q:()=>"Tiền sân cho buổi này bao nhiêu?",o:()=>[[800,"800k"],[1000,"1 triệu"],[1200,"1,2 triệu"],[1500,"1,5 triệu"],[0,"Không tính"]],star:t=>t.san!=null?t.san:null,
     note:()=>"Số khác thì gõ, ví dụ “900k”. Sân nhà hoặc đã trả sẵn thì chọn Không tính.",set:(t,v)=>{t.san=+v}},
@@ -57,7 +59,7 @@ const TC_Q=[
     o:t=>{const h=+t.san?tcFeeHint(t):0,L=[[0,"Miễn phí"],[50,"50k"],[100,"100k"],[150,"150k"],[200,"200k"],[300,"300k"]];if(h&&!L.some(x=>x[0]===h))L.splice(1,0,[h,`${h}k`]);return L},
     star:t=>t.fee!=null&&t.fee!==""?t.fee:+t.san?tcFeeHint(t):null,note:t=>tcHoaTx(t)||"Số khác thì gõ bên dưới, ví dụ “250k”.",set:(t,v)=>{t.fee=+v}},
   {k:"pay",need:t=>!t.pay,keys:["pay"],q:()=>"Có cần chuyển khoản khi đăng ký không?",o:()=>[["off","Không, trả tại sân"],["opt","Tuỳ chọn"],["req","Bắt buộc mới giữ chỗ"]],star:t=>t.pay||null,set:(t,v)=>{t.pay=v}},
-  {k:"gton",need:t=>t.gton==null,keys:["gton","h1","gt"],q:()=>"Có giải thưởng không?",o:()=>[["1","Có"],["0","Không"]],star:t=>t.gton==null?null:t.gton?"1":"0",
+  {k:"gton",on:t=>t.fmt!=="xoay"||t.reAsk==="gton"||t.gton===true,need:t=>t.gton==null&&t.fmt!=="xoay",keys:["gton","h1","gt"],q:()=>"Có giải thưởng không?",o:()=>[["1","Có"],["0","Không"]],star:t=>t.gton==null?null:t.gton?"1":"0",
     set:(t,v)=>{t.gton=v==="1";if(t.gton&&!t.gt)t.gt="hang"}},
   {k:"prize",on:t=>t.gton,need:t=>tnNeed(t,"thuong").length>0,keys:["h1","gtv"],q:()=>"Thưởng bao nhiêu?",
     o:t=>{const n=t.nds?t.nds.reduce((a,x)=>a+(+x.max||0)*2*(+x.fee||0),0):(t.fmt==="xoay"?+t.people||0:(+t.pairs||0)*2)*(+t.fee||0),r=x=>Math.max(50,Math.round(n*x/50)*50),L=[];
@@ -66,10 +68,11 @@ const TC_Q=[
     note:()=>"Mức khác thì gõ bên dưới, ví dụ “nhất 1 triệu nhì 500 ba 200”.",
     set:(t,v)=>{const p=v.split(":");if(p[0]==="h"){t.gt="hang";t.h1=+p[1];t.h2=+p[2];t.h3=+p[3]}else{t.gt="trich";t.gtv=+p[1]}}},
   // Từ đây: mục có cách phổ biến, bỏ qua thì app chọn nút ★
-  {k:"sG",on:t=>t.fmt,keys:["target","rG"],q:t=>t.fmt==="bang"?"Vòng bảng mỗi trận đánh thế nào?":"Mỗi trận đánh thế nào?",
+  // Social: luật điểm mặc định chạm 11, không hỏi (sửa được trên thẻ tóm tắt)
+  {k:"sG",on:t=>t.fmt&&(t.fmt!=="xoay"||["sG","wG"].includes(t.reAsk)),keys:["target","rG"],q:t=>t.fmt==="bang"?"Vòng bảng mỗi trận đánh thế nào?":"Mỗi trận đánh thế nào?",
     o:t=>[["1:11","1 ván 11 điểm"],["1:15","1 ván 15 điểm"],["1:21","1 ván 21 điểm"],...(t.fmt==="bang"?[["3:11","Thắng 2/3 ván, mỗi ván 11 điểm"]]:[])],star:()=>"1:11",
     set:(t,v)=>{const [s,to]=v.split(":").map(Number);tcSet(t,"G",{sets:s,to,cap:tcRu(t,"G").cap?Math.max(to+2,tcRu(t,"G").cap):0})}},
-  {k:"wG",on:t=>t.fmt,keys:["rG"],q:t=>{const to=tcRu(t,"G").to;return `Tới ${to-1}–${to-1} thì sao?`},
+  {k:"wG",on:t=>t.fmt&&(t.fmt!=="xoay"||["sG","wG"].includes(t.reAsk)),keys:["rG"],q:t=>{const to=tcRu(t,"G").to;return `Tới ${to-1}–${to-1} thì sao?`},
     o:t=>{const to=tcRu(t,"G").to;return [["0",`Chạm ${to}, ai tới trước thắng`],[`c:${to+4}`,`${to} điểm cách 2, tối đa ${to+4}`],["c:0",`${to} điểm cách 2, không giới hạn`],["more","Cách 2, tối đa khác…"]]},star:()=>"0",
     note:t=>t.fmt==="bang"?"Vòng bảng nhiều trận nên chạm (ai tới trước thắng) cho nhanh.":"",set:(t,v)=>tcW(t,"G",v)},
   {k:"cG",on:t=>t.capAsk==="G",q:()=>"Tối đa mấy điểm?",o:t=>tcCapOpts(tcRu(t,"G").to),star:t=>String(tcRu(t,"G").to+4),set:(t,v)=>{tcSet(t,"G",{w2:true,cap:+v});t.capAsk=null}},
@@ -134,7 +137,7 @@ function tcMoney(n){n=String(n).replace(/\s+/g," ").trim();if(/^(khong|ko|k co|0
 function tcFeeHint(t){const n=+t.people||(+t.courts||2)*5,s=+t.san||0;return s&&n?Math.ceil(s/n/10)*10:0}
 const tcHoaN=t=>+t.san&&+t.fee?Math.ceil(+t.san/+t.fee):0;
 function tcHoaTx(t){const n=tcHoaN(t);if(!n)return "";return `Tiền sân ${fmtK(+t.san)}, mỗi người ${fmtK(+t.fee)} → đủ ${n} người là hoà vốn${+t.people?(n>+t.people?` (nhiều hơn tối đa ${t.people} người, nên tăng lệ phí)`:` · tối đa ${t.people} người`):""}.`}
-const tcNeedBank=t=>MINI&&!(BANK&&BANK.acc)&&!t.nds&&((t.thu==="deu"&&+t.san>0)||(+t.fee>0&&t.thu!=="keo"));
+const tcNeedBank=t=>MINI&&!(BANK&&BANK.acc)&&!t.nds&&(t.pay==="opt"||t.pay==="req")&&((t.thu==="deu"&&+t.san>0)||(+t.fee>0&&t.thu!=="keo"));
 /* ----- Giao diện ----- */
 const tcBot=(h,ex="")=>`<div class="tcb"><span class="tcav" aria-hidden="true">AI</span><div>${h}${ex}</div></div>`;
 const tcMe=h=>`<div class="tcm"><div>${h}</div></div>`;
@@ -162,7 +165,7 @@ function tcRows(t){const R=[],at=tnAt(t),E=tnEst(t);
   if(t.fmt==="xoay")R.push(["Cách thu",{phi:"Lệ phí cố định",deu:"Chia đều tiền sân",keo:"Ai thua góp"}[t.thu]||"—","thu"]);
   if(!t.nds&&!(t.fmt==="xoay"&&(t.thu==="keo"||t.thu==="deu")))R.push(["Lệ phí",t.fee==null||t.fee===""?"—":+t.fee?`${fmtK(+t.fee)}/người`:"Miễn phí","fee"]);
   R.push(["Chuyển khoản",{off:"Không, trả tại sân",opt:"Tuỳ chọn",req:"Bắt buộc mới giữ chỗ"}[t.pay]||"—","pay"]);
-  R.push(["Giải thưởng",t.gton==null?"—":!t.gton?"Không":(t.gt||"hang")==="hang"?[t.h1&&`Nhất ${tnK(+t.h1)}`,t.h2&&`Nhì ${tnK(+t.h2)}`,t.h3&&`Ba ${tnK(+t.h3)}`].filter(Boolean).join(" · ")||"—":t.gt==="trich"?`Trích ${t.gtv}% lệ phí`:t.gt==="gop"?`Mỗi người góp ${fmtK(+t.gtv||0)}`:`CLB bỏ ra ${fmtK(+t.gtv||0)}`,"gton"]);
+  R.push(["Giải thưởng",t.gton==null?(t.fmt==="xoay"?"Không":"—"):!t.gton?"Không":(t.gt||"hang")==="hang"?[t.h1&&`Nhất ${tnK(+t.h1)}`,t.h2&&`Nhì ${tnK(+t.h2)}`,t.h3&&`Ba ${tnK(+t.h3)}`].filter(Boolean).join(" · ")||"—":t.gt==="trich"?`Trích ${t.gtv}% lệ phí`:t.gt==="gop"?`Mỗi người góp ${fmtK(+t.gtv||0)}`:`CLB bỏ ra ${fmtK(+t.gtv||0)}`,"gton"]);
   R.push(["Ảnh bìa",xfPoster&&!xfPoster.del&&(xfPoster.out||xfPoster.src)?(xfPoster.out?"Đã chọn ảnh":"Đang xử lý ảnh…"):"Chưa có · app tự vẽ khi chia sẻ","poster"]);
   return R}
 /* ----- Sửa ngay trên thẻ tóm tắt: bấm dòng → mở nút chọn ngay dưới dòng đó, chọn là đổi, không hỏi lại từ đầu ----- */
@@ -200,7 +203,7 @@ function tcEdit(t,k,v){const Q=TC_Q.find(x=>x.k===k);if(!Q)return;Q.set(t,String
 function tcRuleSet(t,X,f,v){const r={...tcRu(t,X)};if(f==="sets")r.sets=+v;else if(f==="to"){r.to=+v;if(r.cap&&r.cap<=r.to)r.cap=r.to+4}else if(f==="cap")r.cap=+v;
   else if(f==="w"){r.w2=v!=="0";r.cap=v==="c"?(r.cap>r.to?r.cap:r.to+4):0}t["r"+X]=r;if(X==="G")t.target=r.to}
 function tcSum(t){const E=tnEst(t);
-  let h=`<div class="tcsum"><button class="tcrow" data-act="tned" data-v="name"><span>Tên giải</span><b>${esc(tnName(t))}</b><i>›</i></button>`
+  let h=`<div class="tcsum"><button class="tcrow" data-act="tned" data-v="name"><span>${t.fmt==="xoay"?"Tên lịch đánh":"Tên giải"}</span><b>${esc(tnName(t))}</b><i>›</i></button>`
     +tcRows(t).map(([l,v,k])=>{const on=t.edit===k;return `<button class="tcrow${on?" on":""}" data-act="${k==="nds"?"tngrp":"tced"}" data-v="${k==="nds"?"nguoi":on?"":k}" aria-expanded="${on}"><span>${l}</span><b>${v}</b><i>${on?"⌃":"›"}</i></button>${on?`<div class="tced">${tcEdBody(t,k)}</div>`:""}`}).join("")+`</div>`;
   if(E&&E.late){h+=`<div class="tnbad"><b>⚠ Không kịp · dự kiến xong ${tcHm(E.end)}</b><small>${E.m} trận trên ${t.courts} sân cần khoảng ${dur(E.mins)}, giải phải xong trước ${t.endBy}</small></div>`;
     const fx=[],tryE=p=>{const x=tnEst({...t,...p});return x?x.end:0};
@@ -296,7 +299,7 @@ async function tcSay(s){const t=tn,n=tnNorm(s),cur=t.ask||t.sumOn?null:tcPend(t)
   if(M.lim&&!t.noAI){t.noAI=1;t.log.push({b:"Hôm nay CLB đã dùng hết lượt AI. App vẫn đọc được số, ngày giờ, tiền; phần còn lại bạn bấm nút nhé."})}
   if(M.loai==="chuaco"&&M.tt){tcWant(M.tt);if(a){delete a.fmt;if(Object.keys(a).length){tnMerge(a);tcTyped(t,Object.keys(a))}}t.miss=0;t.ask=tcNoAsk(t,M.tt);return}
   if(M.loai==="hoi"){t.miss=0;t.log.push({b:(TC_GL[M.hoi]||[])[1]||"Câu này mình chưa giải thích được. Mình chỉ rành các luật dùng khi tạo giải: cách 2, điểm tối đa, thắng 2/3, hạt giống, tranh hạng ba…"});return}
-  if(M.loai==="ngoai"){t.miss=0;t.log.push({b:"Việc này app chưa làm, bạn tự lo giúp mình nhé. Mình tiếp tục tạo giải:"});return}
+  if(M.loai==="ngoai"){t.miss=0;t.log.push({b:"Việc này app chưa làm, bạn tự lo giúp mình nhé. Mình tiếp tục nhé:"});return}
   if(a&&merge(a))return;
   if(merge(rules()))return;
   miss()}
@@ -329,9 +332,9 @@ function tcAskAns(t,i){const A=t.ask,o=A&&A.o[+i];if(!o)return;t.log.push({q:A.q
 let tcWait=0,tcTm=null;
 function tcParts(t){const P=[],cur=t.ask||t.sumOn?null:tcPend(t)[0],req=tcReq(t).length,me=h=>P.push({me:1,h:tcMe(h)}),bot=(h,ex)=>P.push({h:tcBot(h,ex),n:(h+(ex||"")).replace(/<[^>]+>/g,"").length});
   if(t.from)bot(`Mình lấy lại cài đặt của <b>${esc(t.fromName||"")}</b>, ngày chuyển sang tuần gần nhất.`);
-  else if(t.pick){me(esc(t.pick));bot("Được. Mình hỏi vài câu để soạn giải nhé, câu nào chưa biết thì bấm “Để app chọn”.")}
+  else if(t.pick){me(esc(t.pick));bot(`Được. Mình hỏi vài câu để soạn ${t.fmt==="xoay"?"lịch đánh":"giải"} nhé, câu nào chưa biết thì bấm “Để app chọn”.`)}
   else{me(esc(t.txt));const s=t.seenH;bot(s?"Mình đã hiểu:":"Mình chưa đọc được nhiều từ câu này, mình hỏi từng mục nhé.",s);
-    if(cur||t.log.length||t.ask)bot(`Còn vài câu nữa cho giải chạy trơn tru.${req?"":" Câu nào bỏ qua thì app chọn theo cách phổ biến."}`)}
+    if(cur||t.log.length||t.ask)bot(`Còn vài câu nữa cho ${t.fmt==="xoay"?"buổi chơi":"giải"} chạy trơn tru.${req?"":" Câu nào bỏ qua thì app chọn theo cách phổ biến."}`)}
   for(const x of t.log){if(x.q)bot(`<b>${esc(x.q)}</b>`);if(x.a)me(esc(x.a));if(x.b)bot(x.b)}
   if(t.ask){const A=t.ask;bot(A.q);P.push({h:`<div class="tcq">${A.o.map((o,i)=>`<button class="tcbtn${o.star?" star":""}" data-act="${o.act||"tcx"}" data-v="${esc(o.act?o.v:String(i))}">${esc(o.l)}${o.star?" ★":""}</button>`).join("")}${(t.miss||0)>=2?`<button class="lnk tcdef" data-act="tnfull">Tạo bằng form đầy đủ ›</button>`:""}</div>`})}
   else if(cur){const st=cur.star?cur.star(t):null,nt=cur.note?cur.note(t):"",canDef=cur.def||st!=null;
@@ -340,14 +343,14 @@ function tcParts(t){const P=[],cur=t.ask||t.sumOn?null:tcPend(t)[0],req=tcReq(t)
   else{bot("Xong rồi! Bạn kiểm tra lại nhé. Muốn đổi dòng nào thì bấm vào dòng đó để chọn lại ngay.",tcSum(t));
     t.sumOn=true;const E=tnEst(t),R=tcReq(t);
     if(R.length)P.push({h:`<div class="tcq end"><button class="btn-line" data-act="tced" data-v="${TC_ROWK[R[0].k]||R[0].k}">Còn thiếu: ${esc(R[0].q(t).replace(/\?$/,""))}</button></div>`});
-    else P.push({h:`<div class="tcq end">${E&&E.late?`<button class="btn-line" data-act="tnmk" data-v="late">Tạo giải dù không kịp</button>`:`<button class="ball go" data-act="tnmk">✓ Tạo giải</button>`}</div>`})}
+    else P.push({h:`<div class="tcq end">${E&&E.late?`<button class="btn-line" data-act="tnmk" data-v="late">Tạo dù không kịp</button>`:`<button class="ball go" data-act="tnmk">✓ ${t.fmt==="xoay"?"Tạo lịch đánh":"Tạo giải"}</button>`}</div>`})}
   return P}
 // Lời app mới (sau câu của người dùng) chờ một nhịp rồi mới hiện
 function tcBeat(){const P=tcParts(tn);let i=P.length;while(i>0&&!P[i-1].me)i--;const n=P.slice(i).reduce((a,x)=>a+(x.n||0),0);
   const ms=typeof window!=="undefined"&&window.__PBTEST?0:Math.min(1500,500+n*9);clearTimeout(tcTm);
   if(!ms){tcWait=0;return}tcWait=Date.now()+ms;tcTm=setTimeout(()=>{tcWait=0;render();tcDown()},ms)}
 function tcPage(D){const t=tn,P=tcParts(t),wait=tcWait>Date.now();
-  mxDr({t:"Tạo nhanh",back:"tnback",sub:t.from?"Như giải lần trước":"Trò chuyện với AI tạo giải"});
+  mxDr({t:"Tạo nhanh",back:"tnback",sub:t.from?"Như lần trước":"Trò chuyện với AI tạo lịch đánh"});
   let L=P;if(wait){let i=P.length;while(i>0&&!P[i-1].me)i--;L=P.slice(0,i)}
   const seen=t.seenN||0;
   let h=`<div class="tcchat">${L.map((x,i)=>i>=seen&&!x.me?x.h.replace(/^<div class="(tcb|tcq)([^"]*)"/,`<div class="$1$2 tcnew" style="animation-delay:${Math.min(4,i-seen)*110}ms"`):x.h).join("")}${wait?`<div class="tcb tctyping"><span class="tcav" aria-hidden="true">AI</span><div aria-label="AI đang trả lời"><i></i><i></i><i></i></div></div>`:""}`;

@@ -187,6 +187,7 @@ test("Social: hỏi tiền sân → gợi ý lệ phí hoà vốn → tạo lị
   await e.click("tca", { k: "thu", v: "phi" });
   await e.until(() => e.T().includes("đủ 15 người là hoà vốn"));
   for (let i = 0; i < 8 && !e.T().includes("Xong rồi!"); i++) {
+    if (e.V().includes('data-k="pay"')) { await e.click("tca", { k: "pay", v: "opt" }); continue; }
     if (e.V().includes('data-act="tcskip"')) { await e.click("tcskip"); break; }
     const m = e.V().match(/data-act="tca" data-k="([a-z]+)" data-v="([^"]+)"/); if (!m) break;
     await e.click("tca", { k: m[1], v: m[2] });

@@ -46,7 +46,7 @@ const mxHeadP=(t,right="",back="")=>`<header class="mxhd${back?" sub":""}">${bac
 let MXD=null;
 function mxDr(o){MXD=o;return ""}
 const mxDrOn=()=>MINI&&canWrite&&!legacy&&mxMode()==="ql";
-const MX_TABN={buoi:"Giải",nguoi:"Thành viên",tien:"Quỹ",them:"Thêm",san:"Sân",bxh:"Xếp hạng"};
+const MX_TABN={buoi:"Lịch đánh",nguoi:"Thành viên",tien:"Quỹ",them:"Thêm",san:"Sân",bxh:"Xếp hạng"};
 function mxHeadQL(D,nm){
   if(MXD){const o=MXD,bk=o.go?`<a class="mxbk" ${o.go} aria-label="Quay lại">‹</a>`:`<button class="mxbk" data-act="${esc(o.back||"mxback")}"${o.id?` data-id="${esc(o.id)}"`:""}${o.v!=null?` data-v="${esc(o.v)}"`:""} aria-label="${o.x?"Đóng":"Quay lại"}">${o.x?"✕":"‹"}</button>`;
     const tt=`<b>${esc(o.t)}${o.tact?` <i aria-hidden="true">▾</i>`:""}</b>${o.sub?`<small>${o.sub}</small>`:""}`;
@@ -414,7 +414,8 @@ function mxCreate(){
 }
 /* Sau khi tạo: thẻ chào + 3 bước bắt đầu ở đầu trang quản lý */
 function mxOnboard(D){
-  if(ROLE!=="owner"||!CLUB)return "";
+  // Mini App: không còn "thêm thành viên, khai quỹ" — trang tổ chức trống thì danh sách lịch đánh tự gợi ý tạo
+  if(MINI||ROLE!=="owner"||!CLUB)return "";
   let fresh=false;try{fresh=sessionStorage.getItem("pb-newclub")===CID}catch(e){}
   const pend=clubSt(CLUB)==="pending",hasP=D.players.length>0,hasB=!!(CLUB.bank&&CLUB.bank.acc),hasS=(S.sched||[]).length>0||D.SM.length>0||(S.hist||[]).length>0;
   if(!fresh&&hasP&&hasB&&hasS)return "";

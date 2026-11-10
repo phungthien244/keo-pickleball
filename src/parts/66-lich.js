@@ -368,7 +368,7 @@ async function xSave(D,mode){
     await db.collection("sched").doc(rep?sid+"-"+ymd(at):id).set(xBuild({...f,at},{st:mode==="open"?"open":"draft",openAt:0,series:sid}));
     {const nid=rep?sid+"-"+ymd(at):id,pv=await posterCommit(nid);if(pv)await db.collection("sched").doc(nid).update({poster:pv})}
     if(rep)await xMaterialize({id:sid,days,time:t,end:f.end,tpl:f,auto,openD,from:dayStart(at)});
-  },mode==="open"?"Đã tạo giải đấu và mở đăng ký":"Đã lưu nháp");
+  },mode==="open"?(MINI?"Đã tạo và mở đăng ký":"Đã tạo giải đấu và mở đăng ký"):"Đã lưu nháp");
   gmMade=rep?sid+"-"+ymd(at):id;xQ=false;
   xNew=null;xClearDraft();go("app",{tab:"dk",x:rep?sid+"-"+ymd(at):id});
 }

@@ -29,7 +29,7 @@ test("tạo giải: câu 2 không còn ô tên, Khác mở ô ngày; câu 3 có 
   await e.until(() => [...e.store.keys()].filter(k => k.startsWith("clubs/q7/sched/")).length === 2);
   const X = [...e.store].filter(([k]) => k.startsWith("clubs/q7/sched/") && !k.endsWith("/s1"))[0][1];
   expect(X).toMatchObject({ target: 15, adv: true, st: "open" });
-  await e.until(() => e.T().includes("Đã tạo giải")); expect(e.T()).toContain("Gửi vào nhóm Zalo");
+  await e.until(() => e.T().includes("Đã tạo lịch đánh") || e.T().includes("Đã tạo giải")); expect(e.T()).toContain("Gửi vào nhóm Zalo");
 });
 
 test("đăng ký: 3 ô số, lọc, chạm người mở 3 nút to, chỉnh trình; ⋯ Thêm khách → khách · chưa xác minh", async () => {

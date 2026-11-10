@@ -9,7 +9,8 @@ const regOpen=()=>{if(RX)return xOpen(RX);const r=regCfg();return r.on===true&&(
 const regPayMode=()=>{const m=regCfg().pay;return m==="opt"||m==="req"?m:"off"};
 // Phí: Lệ phí cố định dùng số của phần Chi phí; cách thu khác dùng "phí dự kiến" của buổi
 const feeMem=()=>{const c=RX||cfg(),r=regCfg();return Math.max(0,(c.thu||"keo")==="phi"?+c.phi||0:+r.fee||0)};
-const feeGuest=()=>{const r=regCfg();return Math.max(0,r.feeG!=null&&r.feeG!==""?+r.feeG:feeMem())};
+// Mini App: một giá cho mọi người (không còn giá thành viên / ngoài CLB)
+const feeGuest=()=>{const r=regCfg();return Math.max(0,!MINI&&r.feeG!=null&&r.feeG!==""?+r.feeG:feeMem())};
 // Đăng ký theo cặp: người rủ trả luôn cho cả cặp (payFor) → gấp đôi; bạn cặp được trả hộ (paidBy) → 0
 const feeOf=x=>{if(x&&x.paidBy)return 0;const f=x&&x.guest?feeGuest():mfPerk(x&&x.pid,feeMem());return x&&x.payFor==="pair"?f*2:f};
 const payOn=()=>regPayMode()!=="off"&&(feeMem()>0||feeGuest()>0);
@@ -253,7 +254,8 @@ async function regAct(act,b,id){
     let d={sid:regKey(D),uid:u.uid,at:Date.now(),pay};if(hold)d.hold=true;if(myZid())d.zid=myZid();
     if(guest){const el=document.getElementById&&document.getElementById("gs-name"),nm=String((el&&el.value)||drafts["gs-name"]||zaloProf().n||"").trim().slice(0,30);
       if(!nm){toast("Nhập tên của bạn.");return true}
-      if(step&&!gsPhoto){errs.gs="Thêm ảnh rõ mặt của bạn để ban tổ chức nhận ra lúc check-in.";render();return true}
+      // Mini App: đã có tên Zalo + số điện thoại, ảnh không bắt buộc
+      if(step&&!gsPhoto&&!MINI){errs.gs="Thêm ảnh rõ mặt của bạn để ban tổ chức nhận ra lúc check-in.";render();return true}
       d={...d,guest:true,name:nm,gender:drafts["gs-g"]==="F"?"F":"M",lv:lvOf()}}
     else d={...d,pid:L.pid,name:D.pmap.get(L.pid)?.name||""};
     if(step){if(gdJoin&&capRegs(d.sid,gdJoin).length>=2){toast("Cặp này đã đủ hai người.");gdJoin="";render();return true}d={...d,...capFields(rid)}}
