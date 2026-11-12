@@ -32,7 +32,7 @@ test("mở app không kèm link: vào tab Lịch, thấy lịch đã đăng ký 
   await e.until(() => e.T().includes("Lịch đánh của tôi") && e.T().includes("Mini game CN"));
   expect(e.V()).toContain('class="mxnav n5"');
   expect(e.V()).toMatch(/class="on" href="#" data-act="mtab" data-v="lich"/);
-  expect(e.T()).toContain("MINI GAME"); expect(e.T()).toContain("Q8 Smash"); expect(e.T()).toContain("Chưa trả 100k");
+  expect(e.T()).toContain("Mini game"); expect(e.T()).toContain("Q8 Smash"); expect(e.T()).toContain("Chưa trả 100k");
   expect(e.V()).toContain('data-act="miniclub" data-id="q8" data-x="m1"');
 });
 
@@ -41,7 +41,7 @@ test("Lịch · Tôi tổ chức: thẻ từng lịch đánh có số người, 
   await e.until(() => e.T().includes("Tôi tổ chức · 2"));
   await e.click("mtseg", { v: "tc" });
   expect(e.T()).toContain("Social tối thứ 7"); expect(e.T()).toContain("2/8"); expect(e.T()).toContain("Còn 6 chỗ");
-  expect(e.T()).toContain("GIẢI");
+  expect(e.T()).toContain("Giải");
   await e.click("mtql", { x: "s1" }); await e.until(() => e.V().includes("mxdr"));
   expect(e.V()).not.toContain('class="mxnav n5"');
 });
@@ -65,7 +65,7 @@ test("＋ khi đã có trang tổ chức: vào thẳng Tạo lịch đánh với
   e.store.set("users/zalo_9", { club: "q7", at: 1 });
   await e.until(() => e.T().includes("Lịch đánh của tôi"));
   await e.click("mtplus"); await e.until(() => e.T().includes("Tả lịch đánh bằng một câu"));
-  expect(e.T()).toContain("HOẶC CHỌN LOẠI");
+  expect(e.T()).toContain("Hoặc chọn loại");
   expect(e.V()).toContain('class="tgfc s" data-act="tnfmt" data-v="xoay"');
   expect(e.V()).toContain('class="tgfc m" data-act="tnfmt" data-v="giai"');
 });

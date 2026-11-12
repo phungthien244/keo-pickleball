@@ -1,5 +1,5 @@
 /* ---------- Yêu cầu của trọng tài trên máy BTC (canvas Y1–Y6) ----------
-   Dải đỏ dưới đầu trang (màn gốc thay dải ĐANG ĐÁNH, trong giải nằm dưới thanh chặng), ô sân đỏ lên đầu,
+   Dải đỏ dưới đầu trang (màn gốc thay dải Đang đánh, trong giải nằm dưới thanh chặng), ô sân đỏ lên đầu,
    chạm vào mở bảng xử lý theo lý do; nhiều việc thì mở danh sách. Máy trọng tài thấy dòng "Đã gọi BTC" tới khi BTC xử lý. */
 let ycList=false;
 const ycBtc=()=>dhCalls("btc");
@@ -15,21 +15,21 @@ function ycSt(x){
 function ycHist(D){const sid=D.sid;
   return (S.calls||[]).filter(x=>(x.k==="loa"||x.k==="btc")&&(x.sid==null||x.sid===sid)).sort((a,b)=>(a.st==="new"?0:1)-(b.st==="new"?0:1)||(a.st==="new"&&b.st==="new"?(a.k==="btc"?0:1)-(b.k==="btc"?0:1):0)||(b.at||0)-(a.at||0))}
 const ycN=D=>{const L=ycHist(D),n=L.filter(x=>x.st==="new").length;return n?`${n} việc mới đang chờ`:L.length?`${L.length} yêu cầu · đã xử lý hết`:"Gọi tên, gọi BTC từ máy trọng tài"};
-// Dải đỏ: 1 sân → "SÂN n CẦN BTC · lý do · Tới ›"; nhiều việc → "n VIỆC CẦN BTC · Xem ›"
+// Dải đỏ: 1 sân → "Sân n Cần BTC · lý do · Tới ›"; nhiều việc → "n Việc cần BTC · Xem ›"
 function ycBan(D){
   if(!canWrite||legacy||REF||!MINI)return "";
   const A=ycAll();if(!A.length)return "";
   const B=ycBtc();
   if(A.length===1&&B.length===1){const x=B[0],w=x.wait&&x.wait>Date.now();
-    return `<button class="ycban" data-act="dhsc" data-id="${esc(x.id)}"><b>🔴 SÂN ${esc(cName(x.court))} CẦN BTC</b><span>${esc(x.why||"")}${w?` · chờ tới ${hm(x.wait)}`:""}</span><i>Tới ›</i></button>`}
-  if(!B.length&&A.length===1){const x=A[0];return `<button class="ycban" data-act="yclist"><b>📣 TRỌNG TÀI NHỜ GỌI TÊN</b><span>${esc(String(x.txt||"").slice(0,60))}</span><i>Xem ›</i></button>`}
+    return `<button class="ycban" data-act="dhsc" data-id="${esc(x.id)}"><b>🔴 Sân ${esc(cName(x.court))} Cần BTC</b><span>${esc(x.why||"")}${w?` · chờ tới ${hm(x.wait)}`:""}</span><i>Tới ›</i></button>`}
+  if(!B.length&&A.length===1){const x=A[0];return `<button class="ycban" data-act="yclist"><b>📣 Trọng tài nhờ gọi tên</b><span>${esc(String(x.txt||"").slice(0,60))}</span><i>Xem ›</i></button>`}
   const parts=[...new Set(B.map(x=>"Sân "+cName(x.court)))].concat(A.length>B.length?[`${A.length-B.length} nhờ gọi tên`]:[]);
-  return `<button class="ycban" data-act="yclist"><b>🔴 ${A.length} VIỆC CẦN BTC</b><span>${esc(parts.join(", "))}</span><i>Xem ›</i></button>`;
+  return `<button class="ycban" data-act="yclist"><b>🔴 ${A.length} Việc cần BTC</b><span>${esc(parts.join(", "))}</span><i>Xem ›</i></button>`;
 }
 // Thẻ sân đỏ (dùng trong Đang đánh)
 function ycCourt(D,m,x,lb){
   const R=m.ref&&m.ref.started?ttRun(D,m):null,sc=R?` · ${R.s.a}–${R.s.b}`:"";
-  return `<div class="g4c red"><span class="h"><b>SÂN ${esc(cName(m.court))} · CẦN BTC</b>${lb?`<em>${lb}</em>`:""}</span><span class="t"><b>${g4Nm(D,m.a)}</b> <span>gặp</span> <b>${g4Nm(D,m.b)}</b>${sc}</span>
+  return `<div class="g4c red"><span class="h"><b>Sân ${esc(cName(m.court))} · Cần BTC</b>${lb?`<em>${lb}</em>`:""}</span><span class="t"><b>${g4Nm(D,m.a)}</b> <span>gặp</span> <b>${g4Nm(D,m.b)}</b>${sc}</span>
     <small class="why">${esc(x.why||"Cần BTC")} · ${esc(x.by||"Trọng tài")} gọi ${x.at?hm(x.at):""}${x.wait&&x.wait>Date.now()?` · chờ tới ${hm(x.wait)}`:" · trận tạm dừng"}</small><button class="ball go" data-act="dhsc" data-id="${esc(x.id)}">Tới sân ${esc(cName(m.court))} · xem</button></div>`;
 }
 // Bảng xử lý theo lý do (Y3, Y4) và danh sách nhiều việc (Y5)

@@ -12,7 +12,7 @@ const base = (extra = {}) => ({
 const ZU = { uid: "zalo_9", isAnonymous: false, displayName: "Zalo" };
 const boot = async data => { const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", search: "?clb=q7", user: ZU, data }); globalThis.window.ZMINI = 1; await e.boot(); await e.until(() => e.V().includes('data-act="mxsheet"')); return e; };
 const sched = e => [...e.store.entries()].filter(([k]) => /^clubs\/q7\/sched\/[^/]+$/.test(k)).map(([, v]) => v);
-const open = async e => { await e.click("xnew"); await e.until(() => e.T().includes("Tả lịch đánh bằng một câu")); expect(e.T()).toContain("HOẶC CHỌN LOẠI"); };
+const open = async e => { await e.click("xnew"); await e.until(() => e.T().includes("Tả lịch đánh bằng một câu")); expect(e.T()).toContain("Hoặc chọn loại"); };
 const day0 = () => new Date().setHours(0, 0, 0, 0);
 
 test("câu đủ mọi mục (đọc bằng luật khi không có AI) → trò chuyện chỉ còn câu có sẵn cách phổ biến → bỏ qua hết → tạo giải đúng luật từng vòng", async () => {
@@ -20,7 +20,7 @@ test("câu đủ mọi mục (đọc bằng luật khi không có AI) → trò c
   await open(e);
   e.input("tn-txt", "Chủ nhật này 7h đến 11h30, 16 cặp đôi nam nữ, chia 4 bảng lấy 2 đánh loại trực tiếp, 4 sân, 200k/người, chuyển khoản trước, nhất 1 triệu nhì 500 ba 200k, thành viên clb");
   await e.until(() => e.T().includes("App đã nhận ra · 7/7"));
-  expect(e.T()).toContain("Nhất 1 triệu · Nhì 500k"); expect(e.T()).toContain("chuyển khoản trước"); expect(e.T()).not.toContain("HOẶC CHỌN LOẠI");
+  expect(e.T()).toContain("Nhất 1 triệu · Nhì 500k"); expect(e.T()).toContain("chuyển khoản trước"); expect(e.T()).not.toContain("Hoặc chọn loại");
   await e.click("tngo"); await e.until(() => e.T().includes("Mình đã hiểu"));
   // Mục đã nói không hỏi lại; câu đầu tiên là luật điểm vòng bảng, có Bỏ qua hết
   expect(e.T()).toContain("Vòng bảng mỗi trận đánh thế nào?"); expect(e.V()).toContain('data-act="tcskip"');

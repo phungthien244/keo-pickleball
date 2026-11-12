@@ -50,9 +50,9 @@ function dhBoard(D,o){
   let h=`<div class="dhgrid">`;
   for(let k=1;k<=n;k++){const m=o.live.find(x=>Number(x.court)===k),call=btc.find(x=>Number(x.court)===k),age=m&&typeof m.createdAt==="number"?Math.round((now-m.createdAt)/6e4):0;
     const st=call?"x":m?(!m.ref&&age>=20?"w":"g"):"e",ref=m&&m.ref?m.ref.byName||"Trọng tài":m?"BTC nhập":"trống";
-    const big=call?"CẦN BTC":m?(m.ref&&m.ref.started?ttLiveTx(D,m):`${age}′`):"—";
+    const big=call?"Cần BTC":m?(m.ref&&m.ref.started?ttLiveTx(D,m):`${age}′`):"—";
     const sub=call?esc(call.why||"gọi BTC"):m?`${tm(m.a)} · ${tm(m.b)}`:(o.fill?"Đưa trận kế ›":"chờ trận");
-    h+=`<button class="dhct ${st}${dhCt===k?" on":""}" data-act="dhct" data-v="${k}"><span class="h"><b>SÂN ${esc(cName(k))}</b><small>${esc(ref)}</small></span><b class="big num">${esc(big)}</b><small>${sub}${st==="w"?" · chưa nhập điểm":""}</small></button>`}
+    h+=`<button class="dhct ${st}${dhCt===k?" on":""}" data-act="dhct" data-v="${k}"><span class="h"><b>Sân ${esc(cName(k))}</b><small>${esc(ref)}</small></span><b class="big num">${esc(big)}</b><small>${sub}${st==="w"?" · chưa nhập điểm":""}</small></button>`}
   h+=`</div>`;
   // (bản test: hiện mọi thẻ sân như trước để kiểm tra nhập điểm)
   if(typeof window!=="undefined"&&window.__PBTEST&&!dhCt)h+=o.live.map(m=>o.card(m)).join("");
@@ -64,10 +64,10 @@ function dhBoard(D,o){
 // Hộp "Việc cần xử lý": gấp trước
 function dhInbox(D){
   const L=[],X=ckSched(),auto=loaAutoCalls()&&loaDev()===DEVID;
-  for(const x of dhCalls("btc"))L.push(`<div class="dhin"><span class="tg r">GẤP</span><span class="t"><b>Sân ${esc(cName(x.court))} cần BTC</b><small>${esc(x.why||"")} · ${esc(x.by||"")} ${x.at?hm(x.at):""}</small></span><button class="sm" data-act="dhsc" data-id="${esc(x.id)}">Tới</button></div>`);
+  for(const x of dhCalls("btc"))L.push(`<div class="dhin"><span class="tg r">Gấp</span><span class="t"><b>Sân ${esc(cName(x.court))} cần BTC</b><small>${esc(x.why||"")} · ${esc(x.by||"")} ${x.at?hm(x.at):""}</small></span><button class="sm" data-act="dhsc" data-id="${esc(x.id)}">Tới</button></div>`);
   if(!auto)for(const x of dhCalls("loa"))L.push(`<div class="dhin"><span class="tg y">LOA</span><span class="t"><b>${esc(String(x.txt).slice(0,70))}</b><small>${esc(x.by||"")} nhờ · ${x.at?hm(x.at):""}</small></span><span class="bb"><button class="sm" data-act="dhloa" data-id="${esc(x.id)}">Đọc</button><button class="sm ln" data-act="dhloax" data-id="${esc(x.id)}">Bỏ</button></span></div>`);
   if(X&&isAdm())for(const r of ckPending().filter(r=>r.sid===X.id))L.push(`<div class="dhin"><span class="tg b">CHECK-IN</span><span class="t"><b>${esc(ckName(D,r))}${r.walkin?" xin vào":" vừa quét"}</b><small>${esc(ckPayLb(r))}</small></span><button class="sm" data-act="ckview" data-id="${esc(r.id)}">Duyệt</button></div>`);
-  for(const m of D.playing)if(!m.ref&&typeof m.createdAt==="number"&&Date.now()-m.createdAt>20*6e4)L.push(`<div class="dhin"><span class="tg y">SÂN</span><span class="t"><b>Sân ${esc(cName(m.court))} · ${Math.round((Date.now()-m.createdAt)/6e4)}′ chưa nhập điểm</b><small>trận #${m.seq}</small></span><button class="sm" data-act="dhct" data-v="${Number(m.court)}">Xem</button></div>`);
+  for(const m of D.playing)if(!m.ref&&typeof m.createdAt==="number"&&Date.now()-m.createdAt>20*6e4)L.push(`<div class="dhin"><span class="tg y">Sân</span><span class="t"><b>Sân ${esc(cName(m.court))} · ${Math.round((Date.now()-m.createdAt)/6e4)}′ chưa nhập điểm</b><small>trận #${m.seq}</small></span><button class="sm" data-act="dhct" data-v="${Number(m.court)}">Xem</button></div>`);
   const q=auto?dhCalls("loa").length:0;
   return `<section class="dhbox"><span class="cap">Việc cần xử lý · ${L.length}${q?` · loa đang đọc ${q} yêu cầu`:""}</span>${L.join("")||`<small class="rule">Không có việc gì. Yêu cầu của trọng tài, check-in chờ duyệt, sân lâu chưa nhập điểm sẽ hiện ở đây.</small>`}</section>`;
 }
@@ -105,7 +105,7 @@ function dhSheets(D){
   if(dhQR){const n=Math.max(1,+D.c.courts||1),Q=S.refqr||{},k=Math.min(n,Math.max(1,+dhQR||1)),q=Q[k],R=(S.refsQ||[]).filter(r=>Number(r.court)===k);
     h+=dhDim("dhqrx")+`<div class="mxsheet dhsh" role="dialog" aria-label="QR trọng tài Sân ${esc(cName(k))}"><span class="grab"></span><b class="mxh">QR trọng tài</b><small class="rule">Chọn sân, đưa trọng tài sân đó quét bằng Zalo. Mỗi lần chỉ hiện một mã để không quét nhầm.</small>
       <div class="dhqrct" role="group" aria-label="Chọn sân">${Array.from({length:n},(_,i)=>i+1).map(c=>{const has=(S.refsQ||[]).some(r=>Number(r.court)===c);return `<button data-act="dhqrk" data-v="${c}" aria-pressed="${c===k}">Sân ${esc(cName(c))}${has?" ✓":""}</button>`}).join("")}</div>
-      <div class="dhqr one"><b>SÂN ${esc(cName(k))}</b>${q?qrSvgText(dhRefLink(k,q.code),230):`<span class="sk"></span>`}<small>${R.length?`Trọng tài: ${R.map(r=>esc(r.name||"?")).join(", ")}`:"Chưa có trọng tài nhận sân này"}</small></div>
+      <div class="dhqr one"><b>Sân ${esc(cName(k))}</b>${q?qrSvgText(dhRefLink(k,q.code),230):`<span class="sk"></span>`}<small>${R.length?`Trọng tài: ${R.map(r=>esc(r.name||"?")).join(", ")}`:"Chưa có trọng tài nhận sân này"}</small></div>
       ${R.map(r=>`<div class="srow"><span>${esc(r.name||"Trọng tài")}</span><button class="ghost" data-act="dhrefx" data-id="${esc(r.id)}">${armed("dhrefx:"+r.id)?"Bấm lần nữa":"Thu hồi"}</button></div>`).join("")}
       ${q?`<div class="two b"><button class="line" data-act="cplink" data-v="${esc(dhRefLink(k,q.code))}">Copy link</button><button class="primary" data-act="dhqrsh" data-v="${k}">↗ Chia sẻ Sân ${esc(cName(k))}</button></div>`:""}
       <div class="two b"><button class="line" data-act="dhqrx">Đóng</button><button class="line red" data-act="dhqrnew">${armed("dhqrnew:x")?"Bấm lần nữa":"Đổi mã · thu hồi tất cả"}</button></div></div>`}
@@ -166,7 +166,7 @@ function dhAward(D){
   if(!pz.length)return `<div class="empty"><strong>Giải này không có giải thưởng</strong>Bật Giải thưởng ở thẻ Tiền nếu muốn trao.</div>`;
   const pod=[1,0,2].filter(i=>pz[i]).map(i=>`<div class="pd p${i}"><span class="avs">${pz[i].ids.map(id=>av(D.pmap.get(id),"sm",1)).join("")}</span><small>${nmOf(pz[i])}</small><span class="bx"><b>${i+1}</b></span></div>`).join("");
   return `<section class="dhpod"><span class="cap">${nx!=null?"Trao giải":"✓ Đã trao xong"}</span><div class="pods">${pod}</div></section>
-    <section class="dhbox">${order.map(i=>{const p=pz[i],done=!!aw[i];return `<div class="dhin"><span class="tg ${done?"g":"y"}">${done?"ĐÃ TRAO":"CHƯA"}</span><span class="t"><b>${esc(p.label)} · ${fmtK(p.k)}</b><small>${nmOf(p)}</small></span>${spkBtn("aw:"+i,`<button class="sm${done?" ln":""}" data-act="dhaw" data-v="${i}">📣 ${done?"Đọc lại":"Gọi lên"}</button>`)}</div>`}).join("")}</section>`;
+    <section class="dhbox">${order.map(i=>{const p=pz[i],done=!!aw[i];return `<div class="dhin"><span class="tg ${done?"g":"y"}">${done?"Đã trao":"Chưa"}</span><span class="t"><b>${esc(p.label)} · ${fmtK(p.k)}</b><small>${nmOf(p)}</small></span>${spkBtn("aw:"+i,`<button class="sm${done?" ln":""}" data-act="dhaw" data-v="${i}">📣 ${done?"Đọc lại":"Gọi lên"}</button>`)}</div>`}).join("")}</section>`;
 }
 const dhAwText=(D,p)=>ltx("award",{"giải":p.label,"đội":p.ids.map(id=>D.pmap.get(id)?.name||"").filter(Boolean).join(" và ")},dhAwText0(D,p));
 const dhAwText0=(D,p)=>`${p.label}${p.k?`, trị giá ${fmtK(p.k).replace("tr"," triệu").replace("k"," nghìn")}`:""}, xin chúc mừng ${p.ids.map(id=>D.pmap.get(id)?.name||"").filter(Boolean).join(" và ")}. Xin mời lên nhận giải.`;
@@ -247,7 +247,7 @@ function dhTTBox(D){
   const n=Math.max(1,+D.c.courts||1),cov=hqRefCov(),Q=S.refsQ||[];
   let h=`<section class="hqbox"><span class="cap">Trọng tài từng sân</span>`;
   for(let k=1;k<=n;k++){const R=[...(S.members||[]).filter(m=>m.role==="scorer"&&(m.courts||[]).map(Number).includes(k)).map(m=>m.name||"Trọng tài"),...(S.editors||[]).filter(e=>(e.courts||[]).map(Number).includes(k)).map(e=>e.name||"Máy PIN")],q=Q.filter(r=>Number(r.court)===k);
-    h+=`<div class="dhin"><span class="tg ${R.length||q.length?"g":"y"}">SÂN ${esc(cName(k))}</span><span class="t"><b>${esc([...R,...q.map(r=>r.name||"Trọng tài")].join(", ")||"Chưa có · BTC tự nhập")}</b>${q.length?`<small>nhận qua QR ${q.map(r=>hm(r.at||0)).join(", ")}</small>`:""}</span>${q.map(r=>`<button class="sm ln" data-act="dhrefx" data-id="${esc(r.id)}">${armed("dhrefx:"+r.id)?"Chắc?":"Thu hồi"}</button>`).join("")}</div>`}
+    h+=`<div class="dhin"><span class="tg ${R.length||q.length?"g":"y"}">Sân ${esc(cName(k))}</span><span class="t"><b>${esc([...R,...q.map(r=>r.name||"Trọng tài")].join(", ")||"Chưa có · BTC tự nhập")}</b>${q.length?`<small>nhận qua QR ${q.map(r=>hm(r.at||0)).join(", ")}</small>`:""}</span>${q.map(r=>`<button class="sm ln" data-act="dhrefx" data-id="${esc(r.id)}">${armed("dhrefx:"+r.id)?"Chắc?":"Thu hồi"}</button>`).join("")}</div>`}
   h+=`<button class="line" data-act="dhqr">🖨 QR trọng tài từng sân</button></section>`;
   const me=loaDev()===DEVID;
   h+=`<section class="hqbox"><div class="dhsw"><span><b>Máy này nối loa</b><small>${loaDev()?(me?"Đang là máy loa của giải":"Máy loa là máy khác · máy này gửi yêu cầu"):"Chưa chọn · máy nào cũng tự đọc"}</small></span><button class="xsw${me?" on":""}" data-act="dhloadev" role="switch" aria-checked="${me}" aria-label="Máy này nối loa"><i></i></button></div>

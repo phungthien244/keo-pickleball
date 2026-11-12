@@ -24,14 +24,14 @@ function scCard(D,m,lb,nA,nB){
   if(pv)setTimeout(render,60e3-(Date.now()-pv.doneAt)+50);
   const btn=st&&st>=3?`<button class="btn-line" data-act="dhhist" data-id="${esc(m.id)}">Lịch sử từng pha</button>`
     :`<button class="btn-line" data-act="scinv" data-id="${esc(m.id)}">📣 Mời vào sân</button>${!m.ref&&canScore(m)?`<button class="ball go" data-act="g4m" data-id="${esc(m.id)}">Nhập điểm</button>`:""}`;
-  return `<div class="g4c sc${st?" s"+st:""}"><span class="h"><b>SÂN ${esc(cName(k))}</b>${lb?`<em>${lb}</em>`:""}<small class="live">${m.ref?`TT ${esc(m.ref.byName||"")} · `:""}● ${age}′</small></span>${scBar(st)}${body}
+  return `<div class="g4c sc${st?" s"+st:""}"><span class="h"><b>Sân ${esc(cName(k))}</b>${lb?`<em>${lb}</em>`:""}<small class="live">${m.ref?`TT ${esc(m.ref.byName||"")} · `:""}● ${age}′</small></span>${scBar(st)}${body}
     ${pv?`<div class="scprev"><span>Trận trước: ${g4Nm(D,pv.a)} ${pv.sa}–${pv.sb} ${g4Nm(D,pv.b)}</span><button class="btn-line sm" data-act="scread" data-id="${esc(pv.id)}" aria-label="Đọc kết quả">🔊</button></div>`:""}
     <div class="scbt"><button class="btn-line gmdot" data-act="scsh" data-v="${k}" aria-label="Thêm việc sân ${esc(cName(k))}">⋯</button>${btn}</div></div>`;
 }
 // Thẻ sân vừa kết thúc (sân đang trống)
 function scEnd(D,m,lb,nA,nB,canFill){
   const k=Number(m.court),aw=m.sa>m.sb,W=aw?nA:nB;
-  return `<div class="g4c sc end"><span class="h"><b>SÂN ${esc(cName(k))}</b>${lb?`<em>${lb}</em>`:""}<small>${m.ref?`TT ${esc(m.ref.byName||"")} · `:""}${m.doneAt?hm(m.doneAt):""}</small></span>${m.ref?scBar(4):""}
+  return `<div class="g4c sc end"><span class="h"><b>Sân ${esc(cName(k))}</b>${lb?`<em>${lb}</em>`:""}<small>${m.ref?`TT ${esc(m.ref.byName||"")} · `:""}${m.doneAt?hm(m.doneAt):""}</small></span>${m.ref?scBar(4):""}
     <b class="scend">✓ Kết thúc · ${W} thắng ${Math.max(m.sa,m.sb)}–${Math.min(m.sa,m.sb)}</b><small class="rule">${nA} <span>gặp</span> ${nB}</small>
     <div class="scbt"><button class="btn-line gmdot" data-act="scsh" data-v="${k}" aria-label="Thêm việc sân ${esc(cName(k))}">⋯</button><button class="btn-line" data-act="scread" data-id="${esc(m.id)}">🔊 Đọc kết quả</button>${canFill?`<button class="ball go" data-act="scfill" data-v="${k}">▶ Tạo trận mới</button>`:""}</div></div>`;
 }
@@ -101,7 +101,7 @@ async function scAct(act,b){
 }
 /* ----- Bố cục A: lọc theo trạng thái + lưới 2 cột tô màu (đỏ cần BTC · xanh lá kết thúc · xanh dương đang đánh · vàng chuẩn bị · xám trống) ----- */
 let scF="all",scO=null;
-const SC_LB={h:"HẾT GIỜ CHỜ",x:"CẦN BTC",o:"CHỜ CẶP VẮNG",k:"KẾT THÚC",d:"ĐANG ĐÁNH",c:"CHUẨN BỊ",n:"ĐÃ XẾP",e:"TRỐNG"},SC_ORD={h:0,x:0,o:1,k:1,d:2,c:3,n:4,e:5};
+const SC_LB={h:"Hết giờ chờ",x:"Cần BTC",o:"Chờ cặp vắng",k:"Kết thúc",d:"Đang đánh",c:"Chuẩn bị",n:"Đã xếp",e:"Trống"},SC_ORD={h:0,x:0,o:1,k:1,d:2,c:3,n:4,e:5};
 /* Gọi cặp vắng: m.abs = {s: "a"|"b" cặp vắng, at, until, r2: đã nhắc lần 2}. Loa đọc khi bấm, còn 1 phút nhắc lần 2,
    hết giờ ô sân đỏ, BTC chọn Chờ thêm 2 phút hoặc Xử thua (app không tự xử thua). */
 const absWait=()=>Math.max(1,Math.min(30,+cfg().absWait||5));
@@ -136,7 +136,7 @@ function scTile(D,t,o){
   else if(t.s==="c"){const ids=[...m.a,...m.b],miss=ids.filter(id=>!rfHere(m,id));big=SC_ST[t.st-1];sub=`${ids.length-miss.length}/${ids.length} có mặt${miss.length&&t.st===1?` · thiếu ${miss.map(id=>esc(ttPN(D,id))).join(", ")}`:""}`;meta=`TT ${esc(m.ref.byName||"")} · ${age}′`}
   else if(t.s==="k"){const aw=m.sa>m.sb;big=`${m.sa}–${m.sb}`;sub=`${aw?nA:nB} thắng`;meta=lb;if(o.fill)btn=`<button class="ball go" data-act="scfill" data-v="${k}">▶ Tạo trận mới</button>`}
   else{sub=t.p?"Tạm dừng":"Trống";if(o.fill&&!t.p)btn=`<button class="ball go" data-act="scfill" data-v="${k}">▶ Tạo trận</button>`}
-  return `<div class="sct ${t.s}" data-act="scsh" data-v="${k}" role="button" tabindex="0" aria-label="Sân ${esc(cName(k))} · ${SC_LB[t.s]}"><span class="h"><b>SÂN ${esc(cName(k))}</b><i>${SC_LB[t.s]}</i></span><span class="b"><b>${big}</b><small>${sub}</small>${meta?`<em>${meta}</em>`:""}</span>${btn?`<span class="f">${btn}</span>`:""}</div>`;
+  return `<div class="sct ${t.s}" data-act="scsh" data-v="${k}" role="button" tabindex="0" aria-label="Sân ${esc(cName(k))} · ${SC_LB[t.s]}"><span class="h"><b>Sân ${esc(cName(k))}</b><i>${SC_LB[t.s]}</i></span><span class="b"><b>${big}</b><small>${sub}</small>${meta?`<em>${meta}</em>`:""}</span>${btn?`<span class="f">${btn}</span>`:""}</div>`;
 }
 function scBoard(D,o){
   scO=o;const T=scTiles(D,o),cnt=s=>T.filter(t=>t.s===s).length;

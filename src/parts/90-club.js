@@ -101,22 +101,22 @@ function clubAdmin(D){
   const c=mfCfg(),cur=mfKey(),MM=mfMembers(D).filter(p=>!p.hold),np=MM.filter(p=>mfPaid(p.id,cur)).length,nEd=(S.editors||[]).length,nSc=mem.filter(m=>m.role==="scorer").length;
   const vc=(typeof VOICE_LIST!=="undefined"&&(VOICE_LIST.find(x=>x[0]===(cfg().voice||VOICE_LIST[0][0]))||VOICE_LIST[0]))||["",""];
   const G=[
-    ["CÂU LẠC BỘ",[
+    ["Câu lạc bộ",[
       ["info","🏠","Thông tin CLB",`${esc(CLUB?.name||"")} · ${CLUB?.public===false?"chỉ ban tổ chức xem":"ai có link đều xem"}`,0,sInfo],
       ["intro","📣","Trang giới thiệu",CLUB?.about?"Đã có giới thiệu, lịch đánh, sân":"Chưa viết giới thiệu cho người mới",!CLUB?.about,introCard()],
       ["fv","👁","Thành viên xem quỹ",FV[(CLUB&&CLUB.fundView)||"flow"],0,`<section class="card2"><div class="cb">${fvCard()}</div></section>`]]],
-    ["PHÍ & THANH TOÁN",[
+    ["Phí & thanh toán",[
       ["mf","💳","Phí thành viên cố định",mfOn()?`${fmtK(c.k)}/${c.per==="m"?"tháng":c.per==="q"?"quý":"năm"} · ${mfLb(cur)} ${np}/${MM.length} đã đóng`:"Đang tắt · bật để thu phí theo tháng/quý/năm",0,`<section class="card2"><div class="cb">${mfCard(D)}</div></section>`,`<button class="cdsw" data-act="mfon" aria-pressed="${mfOn()}" aria-label="Bật tắt phí thành viên">${gbSw(mfOn())}</button>`],
       ["bank","🏦","Ngân hàng nhận phí",CLUB?.bank?.acc?`${esc(bankName(CLUB.bank))} · ${esc(CLUB.bank.acc)}`:"Chưa khai: người chơi không quét QR được",!CLUB?.bank?.acc,sBank]]],
-    ["NGƯỜI & QUYỀN",[
+    ["Người & quyền",[
       ["team","👥","Ban tổ chức",`${mem.length} người · mời quản lý, trọng tài`,0,sTeam],
       ["pin","🔑","PIN trọng tài",CLUB?.pinAt?`Đã đặt · ${nEd} máy đang dùng`:"Chưa đặt PIN",!CLUB?.pinAt,sPin],
       ["ref","🎯","Giao sân cho trọng tài",`${nSc+nEd} trọng tài`,0,refCard()]]],
-    ["GIẢI & DỮ LIỆU",[
+    ["Giải & dữ liệu",[
       ["ls","📅","Lịch sử các giải đấu",`${S.hist.length} giải đã chốt`,0,"",0,`href="${pathOf("app",{tab:"ls"})}" data-go="app" data-t="ls"`],
       ["bxh","🏆","Bảng xếp hạng",`${D.players.filter(p=>!p.guest).length} thành viên`,0,"",0,`href="${pathOf("app",{tab:"bxh"})}" data-go="app" data-t="bxh"`],
       ...(ROLE==="owner"?[["del","🗑","Giải đấu đã xóa",delList&&delList.length?`${delList.length} giải khôi phục được`:"Khôi phục giải đấu lỡ tay xoá",0,delCard()]]:[])]],
-    ["LOA & ỨNG DỤNG",[["voice","🔊","Giọng đọc gọi vào sân",esc(vc[1]||""),0,voiceCard()],
+    ["Loa & ứng dụng",[["voice","🔊","Giọng đọc gọi vào sân",esc(vc[1]||""),0,voiceCard()],
       ["gt","🪪","Xem trang giới thiệu CLB","Như người mới nhìn thấy",0,"",0,`href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"`],
       ...(MINI?[["web","↗","Mở bản web đầy đủ","pikeco.app trên trình duyệt",0,"",0,`data-act="openweb" data-v="${esc(pathOf("caidat"))}"`]]:[])]]];
   const P=cdPage&&G.flatMap(x=>x[1]).find(r=>r[0]===cdPage&&r[5]);
@@ -136,7 +136,7 @@ function clubAdmin(D){
   let h=`<label class="tvq cdq"><span class="sr">Tìm cài đặt</span><input id="cdq" data-draft="cdq" data-live="1" type="search" placeholder="🔍 Tìm: “ngân hàng”, “PIN”, “loa”…" value="${esc(val("cdq",""))}" autocomplete="off"></label>`;
   if(q){const M=ALL.filter(r=>noAcc((r[2]+" "+String(r[3]).replace(/<[^>]*>/g,"")).toLowerCase()).includes(q));return h+(M.length?rows(M):`<p class="rule">Không thấy mục nào. Thử từ khác.</p>`)}
   return h+`<div class="gmlist">${GR.map(([k,i,t,s2,ks])=>{const w=ALL.some(r=>ks.includes(r[0])&&r[4]);
-    return `<button class="gmli" data-act="${k==="loa"?"cdo":"cdgrp"}" data-v="${k==="loa"?"voice":k}"><i>${i}</i><span class="t"><b>${t}</b><small>${s2}</small></span>${w?`<span class="gmtag y">THIẾU</span>`:`<span aria-hidden="true">›</span>`}</button>`}).join("")}</div>`;
+    return `<button class="gmli" data-act="${k==="loa"?"cdo":"cdgrp"}" data-v="${k==="loa"?"voice":k}"><i>${i}</i><span class="t"><b>${t}</b><small>${s2}</small></span>${w?`<span class="gmtag y">Thiếu</span>`:`<span aria-hidden="true">›</span>`}</button>`}).join("")}</div>`;
 }
 function cdHelp(){
   const Q=[["Tạo giải giao lưu thế nào?","Vào tab Giải › Tạo giải mới, trả lời 3 câu là xong. App gửi sẵn tin nhắn vào nhóm Zalo.",`data-act="xnew"`,"Tạo giải ngay"],

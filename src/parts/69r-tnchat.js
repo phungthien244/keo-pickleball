@@ -110,7 +110,7 @@ const tcSaid=(t,Q)=>(Q.keys||[]).some(k=>t.said.has(k));
 function tcPend(t){const nd=Q=>!!(Q.need&&Q.need(t)),A=TC_Q.filter(Q=>tcOn(t,Q)&&!t.ans.has(Q.k)&&(nd(Q)||!tcSaid(t,Q))),L=[...A.filter(nd),...A.filter(Q=>!nd(Q))];
   if(t.reAsk){const i=L.findIndex(Q=>Q.k===t.reAsk);if(i>0)L.unshift(L.splice(i,1)[0])}return L}
 const tcReq=t=>tcPend(t).filter(Q=>Q.need&&Q.need(t));
-// Bắt đầu trò chuyện từ bản nháp tn (sau khi đọc câu): mục nói trong câu (không phải ĐOÁN) coi như đã biết
+// Bắt đầu trò chuyện từ bản nháp tn (sau khi đọc câu): mục nói trong câu (không phải Đoán) coi như đã biết
 function tcStart(t,txt,said){t.endBy="";t.said=new Set((said||[]).filter(k=>t[k]!=null&&t[k]!==""&&!t.guess.has(k)));t.ans=new Set();t.log=[];t.txt=txt||"";t.reAsk=null;t.capAsk=null;t.cust=new Set();
   if(t.rG)t.said.add("rG");else if(t.target&&t.said.has("target")){const r=tcRuleTxt({},"G",tnNorm(txt||""))||tcR(+t.target,false,0,1);t.rG=r.cap<0?{...r,w2:false,cap:0}:r;if(r.cap>=0)t.said.add("rG")}for(const X of ["rK","rF"])if(t[X])t.said.add(X);t.seenH=tcSeen(t);return t}
 function tcAnswer(t,k,v){const Q=TC_Q.find(x=>x.k===k);if(!Q)return;

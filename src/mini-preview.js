@@ -39,12 +39,9 @@ import "../miniapp/src/mini.css";
   document.body.insertAdjacentHTML("beforeend", BODY);
   const st = document.createElement("style");
   st.textContent = `[hidden]{display:none!important}img{max-width:100%}
-  .zbar{position:fixed;top:8px;right:8px;z-index:60;pointer-events:none;font:600 16px system-ui;color:#fff}
-  .zcap{display:flex;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.35);border-radius:16px;overflow:hidden}.zcap i{font-style:normal;padding:2px 10px;font-size:13px}.zcap i+i{border-left:1px solid rgba(255,255,255,.35)}
+  .zbar{position:fixed;top:8px;right:8px;z-index:60;pointer-events:none;font:600 16px system-ui;color:#141415}
+  .zcap{display:flex;background:rgba(255,255,255,.92);border:1px solid #d6d9dc;border-radius:16px;overflow:hidden}.zcap i{font-style:normal;padding:2px 10px;font-size:13px}.zcap i+i{border-left:1px solid #d6d9dc}
   @media(min-width:520px){html.minipv body{max-width:400px;margin:0 auto;box-shadow:0 0 0 1px #ccd}html.minipv .mnav{max-width:400px;margin:0 auto}}`;
   document.head.appendChild(st);
-  const f = document.createElement("link"); f.rel = "stylesheet";
-  f.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600&display=swap";
-  document.head.appendChild(f);
 })();
 import("./firebase.js").then(() => import("virtual:app"));

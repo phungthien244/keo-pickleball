@@ -89,7 +89,7 @@ function hqSanSang(D){
 function hqNguoi(D){
   const c=D.c,G=isG(c),X=ckSched(),live=phaseOf(D)==="live";let h="";
   if(X&&isAdm()){const s=ckStats(D,X),P=s.L.filter(r=>r.ci&&!r.arrived).length,N=s.L.filter(r=>!r.arrived&&!r.ci).length;
-    h+=`<div class="hqtiles three"><span><b class="num">${s.arr}<small>/${s.L.length}</small></b><small>ĐÃ TỚI</small></span><span><b class="num y">${P}</b><small>CHỜ DUYỆT</small></span><span><b class="num">${N}</b><small>CHƯA TỚI</small></span></div>
+    h+=`<div class="hqtiles three"><span><b class="num">${s.arr}<small>/${s.L.length}</small></b><small>Đã tới</small></span><span><b class="num y">${P}</b><small>Chờ duyệt</small></span><span><b class="num">${N}</b><small>Chưa tới</small></span></div>
       <div class="two hqbt"><button class="nv" data-act="ckall">⌗ Mở bàn đón</button><button class="line" data-act="hnlate" data-id="${esc(X.id)}">＋ Đến muộn</button></div><div class="hqopts">${hnOpts(X)}</div>`;
     h+=`<div class="hqcks">${hqCkShort(D,X)}</div>`}
   h+=`<span class="xsec">Ai có mặt · bấm để cho vào hoặc nghỉ</span>`+attChips(D);
@@ -123,7 +123,7 @@ function hqLive(D){
   if(G&&(D.c.giai||{}).locked){const GD=gDerive(D),left=GD.total-GD.resolved,est=Math.ceil(left/Math.max(1,D.c.courts))*GSLOT;
     tx+=left?` · còn ${left} trận · xong ~${hm(Date.now()+est*6e4)}`:" · đã đánh hết"}
   else tx+=` · ${D.done.length} trận xong`;
-  let h=`<div class="hqlive"><span class="k"><i class="ldot"></i>TRỰC TIẾP</span><span class="v num">${tx}</span></div>`;
+  let h=`<div class="hqlive"><span class="k"><i class="ldot"></i>Trực tiếp</span><span class="v num">${tx}</span></div>`;
   const X=ckSched(),P=X&&isAdm()?ckPending().filter(r=>r.sid===X.id):[];
   if(P.length)h+=`<button class="hqban" data-act="ckview" data-id="${esc(P[0].id)}"><span><b>${P.length} người chờ duyệt check-in</b> · ${P.slice(0,3).map(r=>esc(ckName(D,r))).join(", ")}</span><span class="go">Duyệt ›</span></button>`;
   return h;
@@ -141,10 +141,10 @@ function ckAll(D){
   const sub=r=>{const p=r.pid?D.pmap.get(r.pid):null,g=(p?.gender||r.gender)==="F"?"Nữ":"Nam",lv=lvName(p?(D.st.get(p.id)?.rating??3):r.lv);
     return `${g}${lv?` · ${lv}`:""} · ${r.guest?"ngoài CLB":"thành viên"}`};
   const pay=r=>`<span class="hqpay ${r.pay==="ok"?"ok":r.pay==="sent"?"sent":"no"}">${ckPayLb(r)}</span>`;
-  const row=(r,right,extra="")=>`<div class="hqck big">${ckPic(D,r,"ckpic")}<span class="t"><b>${esc(ckName(D,r))}${r.walkin&&!r.arrived?` <i class="tag">XIN VÀO</i>`:""}</b><small>${sub(r)}${extra}</small>${pay(r)}</span>${right}</div>`;
+  const row=(r,right,extra="")=>`<div class="hqck big">${ckPic(D,r,"ckpic")}<span class="t"><b>${esc(ckName(D,r))}${r.walkin&&!r.arrived?` <i class="tag">Xin vào</i>`:""}</b><small>${sub(r)}${extra}</small>${pay(r)}</span>${right}</div>`;
   let h=`<div class="hqhd"><button data-act="ckallx" aria-label="Quay lại">‹</button><b>Bàn đón · ${esc(xName(X))}</b></div>
-    <div class="hqqr"><span class="ic" aria-hidden="true">⌗</span><span class="t"><b>QUÉT ĐỂ CHECK-IN</b><small>Mở mã toàn màn hình, quay về phía người tới · mã đổi mỗi 30 giây</small></span><button class="nv" data-act="ckopen" data-id="${esc(X.id)}">Mở mã</button></div>
-    <div class="hqtiles"><span><b class="num">${s.arr}<small>/${L.length}</small></b><small>ĐÃ TỚI</small></span><span><b class="num y">${P.length}</b><small>CHỜ DUYỆT</small></span><span><b class="num">${N.length}</b><small>CHƯA TỚI</small></span><span><b class="num">${fmtK(s.due)}</b><small>CẦN THU</small></span></div>
+    <div class="hqqr"><span class="ic" aria-hidden="true">⌗</span><span class="t"><b>Quét để check-in</b><small>Mở mã toàn màn hình, quay về phía người tới · mã đổi mỗi 30 giây</small></span><button class="nv" data-act="ckopen" data-id="${esc(X.id)}">Mở mã</button></div>
+    <div class="hqtiles"><span><b class="num">${s.arr}<small>/${L.length}</small></b><small>Đã tới</small></span><span><b class="num y">${P.length}</b><small>Chờ duyệt</small></span><span><b class="num">${N.length}</b><small>Chưa tới</small></span><span><b class="num">${fmtK(s.due)}</b><small>Cần thu</small></span></div>
     <div class="xbfl">${[["all","Tất cả",L.length],["pend","Chờ duyệt",P.length],["no","Chưa tới",N.length],["yes","Đã tới",A.length]].map(([k,l,n])=>`<button data-act="ckallf" data-v="${k}" aria-pressed="${f===k}">${l} ${n}</button>`).join("")}</div>`;
   if(L.length>10)h+=`<label class="srch xbq"><span class="sr">Tìm tên</span><input id="ck-q" data-draft="ck-q" data-live="1" type="search" placeholder="Tìm tên…" value="${esc(val("ck-q",""))}"></label>`;
   const sec=(k,t,R,fn)=>(f==="all"||f===k)&&R.filter(mt).length?`<span class="xsec">${t}</span><div class="hqcks">${R.filter(mt).map(fn).join("")}</div>`:"";

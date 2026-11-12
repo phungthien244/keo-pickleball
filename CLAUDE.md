@@ -12,6 +12,9 @@
 - Khi nhờ người dùng chạy lệnh: luôn đặt lệnh trong khối code riêng (```powershell … ```) để có nút copy, mỗi khối một lệnh chạy được ngay.
 - `zmp login` lưu ZMP_TOKEN vào `.env` của thư mục đang chạy: không commit file `.env` có token.
 
+## Giao diện
+- **Mọi màn Mini App theo chuẩn Zalo (ZaUI)** trong `docs/zalo-ui.md` (người dùng chốt 12/11/2026): màu xanh Zalo, font của máy, không IN HOA, nút bo tròn 48/40/32, thanh tiêu đề trắng 44, thanh tab 48, trang con ẩn thanh tab, xoá/huỷ bằng hộp thoại, việc nhỏ bằng bảng trượt. Vẽ phác trên canvas cũng theo chuẩn này. Bỏ qua giao diện web (sẽ thành trang giới thiệu).
+
 ## Mini App
 - `miniapp/` dùng chung code `src/parts`; `window.ZMINI` bật chế độ Mini App, đường dẫn sau dấu `#`.
 - Đăng nhập: `getUserID` → `/api/zalo-mini` → Firebase custom token `zalo_<HMAC>` (Zalo chặn máy chủ ngoài VN đọc thông tin người dùng).

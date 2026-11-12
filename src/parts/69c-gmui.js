@@ -143,12 +143,12 @@ async function gsAct(act,b){
 const g2Tag=(t,k)=>`<span class="g2tag ${k}">${t}</span>`;
 const g2Stat=L=>`<div class="g2st">${L.map(([v,l,c])=>`<span><b class="num"${c?` style="color:${c}"`:""}>${v}</b><small>${l}</small></span>`).join("")}</div>`;
 function g2PayTag(x,k,po){
-  if(x.cancel)return g2Tag(x.pay==="refund"?"ĐÃ HOÀN":x.pay==="ok"||x.pay==="sent"?"CẦN HOÀN":"ĐÃ HUỶ",x.pay==="ok"||x.pay==="sent"?"r":"");
-  if(!po||!k)return "";return x.pay==="ok"?g2Tag("ĐÃ TRẢ","g"):x.pay==="sent"?g2Tag("BÁO CHUYỂN","b"):g2Tag("CHƯA TRẢ","y");
+  if(x.cancel)return g2Tag(x.pay==="refund"?"Đã hoàn":x.pay==="ok"||x.pay==="sent"?"Cần hoàn":"Đã huỷ",x.pay==="ok"||x.pay==="sent"?"r":"");
+  if(!po||!k)return "";return x.pay==="ok"?g2Tag("Đã trả","g"):x.pay==="sent"?g2Tag("Báo chuyển","b"):g2Tag("Chưa trả","y");
 }
 function g2Row(D,X,x,wait){
   const p=x.pid&&D.pmap.get(x.pid),lv=xbLv(D,x),sub=[regKhach(x)?"khách · chưa xác minh":"",lv?lvName(lv):""].filter(Boolean).join(" · ");
-  return `<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>${esc(sub)}</small></span>${wait?g2Tag("CHỜ CHỖ","y"):g2PayTag(x,feeOf(x),payOn())}</button>`;
+  return `<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>${esc(sub)}</small></span>${wait?g2Tag("Chờ chỗ","y"):g2PayTag(x,feeOf(x),payOn())}</button>`;
 }
 function gmRegV(D,X){
   if(kOn(X))return ndOn(X)?ndRegV(D,X):kRegV(D,X);
@@ -167,8 +167,8 @@ function gmRegV(D,X){
       const seen=new Set();let L="";
       for(const x of R.conf){if(seen.has(x.id))continue;const m=capMate(x);seen.add(x.id);
         if(m){seen.add(m.id);const pa=x.pid&&D.pmap.get(x.pid),pb=m.pid&&D.pmap.get(m.pid);
-          L+=`<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}"><span class="g2av2">${av(pa||{name:xbName(D,x)},"sm",1)}${av(pb||{name:xbName(D,m)},"sm",1)}</span><span class="t"><b>${esc(xbName(D,x))} &amp; ${esc(xbName(D,m))}</b><small>${esc([DT_LB[X.dt||"free"].toLowerCase(),r2((xbLv(D,x)+xbLv(D,m))/2)].join(" · "))}</small></span>${po&&feeOf(x)?(x.pay==="ok"&&m.pay==="ok"?g2Tag("ĐÃ TRẢ","g"):g2Tag("CHƯA TRẢ","y")):""}</button>`}
-        else{const p=x.pid&&D.pmap.get(x.pid);L+=`<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>chưa có cặp</small></span>${g2Tag("LẺ","y")}</button>`}}
+          L+=`<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}"><span class="g2av2">${av(pa||{name:xbName(D,x)},"sm",1)}${av(pb||{name:xbName(D,m)},"sm",1)}</span><span class="t"><b>${esc(xbName(D,x))} &amp; ${esc(xbName(D,m))}</b><small>${esc([DT_LB[X.dt||"free"].toLowerCase(),r2((xbLv(D,x)+xbLv(D,m))/2)].join(" · "))}</small></span>${po&&feeOf(x)?(x.pay==="ok"&&m.pay==="ok"?g2Tag("Đã trả","g"):g2Tag("Chưa trả","y")):""}</button>`}
+        else{const p=x.pid&&D.pmap.get(x.pid);L+=`<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>chưa có cặp</small></span>${g2Tag("Lẻ","y")}</button>`}}
       h+=`<div class="g2list">${L||`<p class="rule">Chưa có ai đăng ký.</p>`}</div>`;
       if(solo.length>1&&s!=="cancel"&&s!=="done")main=`<button class="ball go" data-act="gmautopair" data-id="${esc(X.id)}">🔀 Ghép tự động ${solo.length} người lẻ</button>`;
     }else{
@@ -238,8 +238,8 @@ function gmAddPg(D,X){
       <label class="fld"><span class="lbl">Tên khách</span><input id="g2-nm" data-draft="g2-nm" maxlength="40" placeholder="VD: Chú Tư" value="${esc(val("g2-nm",""))}"></label>
       <div class="fld"><span class="lbl">Nam / Nữ</span><span class="seg"><button data-act="g2set" data-k="g2-g" data-v="M" aria-pressed="${g==="M"}">Nam</button><button data-act="g2set" data-k="g2-g" data-v="F" aria-pressed="${g==="F"}">Nữ</button></span></div>
       <div class="fld"><span class="lbl">Trình</span>${lvSeg("g2-lv",lv,"g2set")}</div>${errs.g2?`<p class="err">${esc(errs.g2)}</p>`:""}
-      <button class="primary wide" data-act="g2kh">＋ THÊM KHÁCH</button>
-      ${K.length?`<span class="gmlb">Khách đã thêm · ${K.length}</span><div class="g2list">${K.map(x=>`<div class="g2p">${av({name:x.name},"sm",1)}<span class="t"><b>${esc(x.name)}</b><small>${esc(lvName(x.lv))} · ${x.gender==="F"?"Nữ":"Nam"}</small></span><small class="khtag">KHÁCH · CHƯA XÁC MINH</small></div>`).join("")}</div>`:""}
+      <button class="primary wide" data-act="g2kh">＋ Thêm khách</button>
+      ${K.length?`<span class="gmlb">Khách đã thêm · ${K.length}</span><div class="g2list">${K.map(x=>`<div class="g2p">${av({name:x.name},"sm",1)}<span class="t"><b>${esc(x.name)}</b><small>${esc(lvName(x.lv))} · ${x.gender==="F"?"Nữ":"Nam"}</small></span><small class="khtag">Khách · chưa xác minh</small></div>`).join("")}</div>`:""}
       <div class="hqcta"><button class="ball" data-act="regadd">Xong${g2Added?` · đã thêm ${g2Added} khách`:""}</button></div>`});
 }
 async function g2Act(act,b){
@@ -277,8 +277,8 @@ function gmDayV(D,X){
   if(!L.length)for(const p of D.players.filter(p=>p.active!==false))cells.push([esc(p.name),2]);
   const cnt=cap?`${full}<small>/${tot} cặp</small>`:`${s.arr}<small>/${s.L.length}</small>`;
   let h=`<section class="g3ck"><span class="cap">Check-in${X.at?` · ${hm(X.at)}`:""}</span><b>${st}</b>
-    <div class="ckcnt"><span><b>${cnt}</b><small>ĐÃ TỚI</small></span><span><b class="y">${s.pend}</b><small>CHỜ DUYỆT</small></span><span><b>${fmtK(s.due)}</b><small>CẦN THU</small></span></div>
-    <button class="g3go" data-act="ckopen" data-id="${esc(X.id)}">⌗ MỞ MÃ CHECK-IN</button></section>`;
+    <div class="ckcnt"><span><b>${cnt}</b><small>Đã tới</small></span><span><b class="y">${s.pend}</b><small>Chờ duyệt</small></span><span><b>${fmtK(s.due)}</b><small>Cần thu</small></span></div>
+    <button class="g3go" data-act="ckopen" data-id="${esc(X.id)}">⌗ Mở mã check-in</button></section>`;
   h+=`<small class="rule">${cap?"Xanh: cặp đủ 2 người · Vàng: mới tới 1 người.":"Xanh: đã tới sân. Người chơi quét mã trên máy BTC để check-in."}</small>`;
   h+=cells.length?`<div class="g3grid${cap?" c2":""}">${cells.map(([n,k,code])=>KB&&code&&!live?`<button class="k${k}" data-act="k12" data-v="${esc(code)}">${k===2?"✓ ":k===1?"½ ":""}${n}</button>`:`<span class="k${k}">${k===2?"✓ ":k===1?"½ ":""}${n}</span>`).join("")}</div>`:`<p class="rule">Chưa có ai đăng ký.</p>`;
   const n=D.players.filter(p=>p.active!==false).length;

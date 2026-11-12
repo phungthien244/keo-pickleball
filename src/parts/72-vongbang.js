@@ -157,16 +157,16 @@ function koSeedSel(D,G,N){
 // Khung thiết lập vòng bảng ở bước Tùy chọn (quản lý)
 function koSetup(D,G){
   const K=koK(G),P=G.pairs||[],n=P.length,ok=koGroupsOk(G),stale=!ok&&K.groups&&K.groups.length,cnt=koCount(G),pm=new Map(P.map(p=>[p.id,p]));
-  let h=`<section class="kobox"><div class="koh"><span class="gdty vb">▦ VÒNG BẢNG → KNOCKOUT</span><small>${cnt.grp} trận vòng bảng + ${cnt.ko} trận knockout</small></div>
+  let h=`<section class="kobox"><div class="koh"><span class="gdty vb">▦ Vòng bảng → knockout</span><small>${cnt.grp} trận vòng bảng + ${cnt.ko} trận knockout</small></div>
     <div class="kobd">${koSegs(K,ok,G)}${ok?`<small class="rule">Đã chia bảng: bốc lại nếu muốn đổi số bảng.</small>`:""}</div>`;
   if(ok){const seeds=new Set(K.seeds||[]);
-    h+=`<div class="kogrid">${K.groups.map((g,gx)=>`<div class="kog"><b>BẢNG ${KOG[gx]}</b>${g.map(id=>{const p=pm.get(id);return p?`<div class="kop mfade">${seeds.has(id)?`<span class="hg">HG</span>`:""}${pair2(D,p)}<small class="num">${r2(pairR(D,p))}</small></div>`:""}).join("")}</div>`).join("")}</div>
+    h+=`<div class="kogrid">${K.groups.map((g,gx)=>`<div class="kog"><b>Bảng ${KOG[gx]}</b>${g.map(id=>{const p=pm.get(id);return p?`<div class="kop mfade">${seeds.has(id)?`<span class="hg">HG</span>`:""}${pair2(D,p)}<small class="num">${r2(pairR(D,p))}</small></div>`:""}).join("")}</div>`).join("")}</div>
       <div class="gbinfo"><span>🎲 Chia bảng lúc ${K.gat?hm(K.gat):""} · ${esc(K.gby||"BTC")}${K.gn>1?` · bốc lại lần ${K.gn}`:""} · HG = hạt giống</span><button class="lnk" data-act="koreplay">Xem lại</button>${canWrite&&!G.locked?`<button class="lnk" data-act="kodraw">Bốc lại</button>`:""}</div>`}
   else if(canWrite){const N=koNEff(G),need=Math.max(4,N*2);
     const dm=K.dm||"seed";
     h+=`${stale?`<div class="gbwarn">Danh sách cặp đã thay đổi sau khi chia bảng. Bốc chia bảng lại nhé.</div>`:""}<div class="kobd"><b class="lbl">Cách chia bảng</b><span class="seg segw">${[["rand","Ngẫu nhiên"],["seed","Có hạt giống"],["bal","Cân trình"]].map(([v,l])=>`<button data-act="kodm" data-v="${v}" aria-pressed="${dm===v}">${l}</button>`).join("")}</span>
       <small class="rule">${dm==="rand"?"Bốc hoàn toàn ngẫu nhiên, không tách cặp mạnh.":dm==="bal"?"Xếp rắn theo trình: tổng trình các bảng gần bằng nhau, không ngẫu nhiên.":"Mỗi bảng 1 hạt giống (cặp mạnh nhất), các cặp còn lại bốc theo nhóm trình."}</small>${n>=need&&dm==="seed"?koSeedSel(D,G,N):""}
-      <button class="gbbtn kodraw" data-act="kodraw" ${n<need?"disabled":""}>🎲 BỐC CHIA ${N} BẢNG</button>${n<need?`<small class="rule">Cần ít nhất ${need} cặp (đang có ${n}). Ghép thêm cặp ở trên.</small>`:""}</div>`}
+      <button class="gbbtn kodraw" data-act="kodraw" ${n<need?"disabled":""}>🎲 Bốc chia ${N} Bảng</button>${n<need?`<small class="rule">Cần ít nhất ${need} cặp (đang có ${n}). Ghép thêm cặp ở trên.</small>`:""}</div>`}
   if(ok&&koShow)h+=koShowScr(D,G,K,pm);
   h+=`<details class="kodet"${canWrite?" open":""}><summary>Luật điểm từng vòng</summary><div class="kobd">${canWrite?koRules(K):`<small class="rule">Vòng bảng: ${esc(ruleTx(koRule(K,"g")))} · Knockout: ${esc(ruleTx(koRule(K,"k")))} · Chung kết: ${esc(ruleTx(koRule(K,"f")))}</small>`}</div></details>`;
   return h+`</section>`;
@@ -174,7 +174,7 @@ function koSetup(D,G){
 /* ----- Bảng xếp hạng từng bảng ----- */
 function koTables(D,GD){
   return `<div class="kotbls">${GD.gt.map((t,gx)=>{const gs=GD.games.filter(g=>g.grp===gx),dn=gs.filter(g=>g.st==="done"||g.st==="wo").length;
-    return `<div class="kotb"><div class="kotbh"><b>BẢNG ${KOG[gx]}</b><small>${dn}/${gs.length} trận</small></div><table><thead><tr><th></th><th>Cặp</th><th>Tr</th><th>T-B</th><th>HS</th></tr></thead><tbody>${t.map((r,i)=>{const d=r.pf-r.pa,q=!r.out&&(GD.gDone?GD.ko[0].some(g=>g.x===r.p.id||g.y===r.p.id):i<Math.max(1,Math.floor(GD.size/GD.groups.length)));
+    return `<div class="kotb"><div class="kotbh"><b>Bảng ${KOG[gx]}</b><small>${dn}/${gs.length} trận</small></div><table><thead><tr><th></th><th>Cặp</th><th>Tr</th><th>T-B</th><th>HS</th></tr></thead><tbody>${t.map((r,i)=>{const d=r.pf-r.pa,q=!r.out&&(GD.gDone?GD.ko[0].some(g=>g.x===r.p.id||g.y===r.p.id):i<Math.max(1,Math.floor(GD.size/GD.groups.length)));
       return `<tr class="${q?"q":""}${r.out?" out":""}"><td class="num">${i+1}</td><td>${pairNm(D,r.p)}</td><td class="num">${r.gp}</td><td class="num"><b>${r.w}-${r.l}</b></td><td class="num">${d>0?"+":""}${d}</td></tr>`}).join("")}</tbody></table></div>`}).join("")}</div>
     <p class="rule"><i class="koq"></i> Vào vòng trong · bằng số trận thắng xét đối đầu trực tiếp, rồi hiệu số, rồi điểm ghi.</p>`;
 }
@@ -183,7 +183,7 @@ function koBox(D,GD,g){
   const nm=(id,lb)=>id?pairNm(D,GD.pm.get(id)):`<em>${esc(lb||"?")}</em>`,w=gWin(g);
   const sc=(id,v)=>g.st==="done"?`<b class="num">${v}</b>`:g.st==="wo"&&w===id?`<b>T</b>`:"";
   const row=(id,lb,v)=>`<span class="${w?w===id?"w":"l":""}">${nm(id,lb)}${sc(id,v)}</span>`;
-  return `<div class="kom ${g.st}">${g.st==="live"?`<small class="lv">● SÂN ${esc(cName(g.m.court))}</small>`:""}${row(g.x,g.lx,g.sx)}${row(g.y,g.ly,g.sy)}</div>`;
+  return `<div class="kom ${g.st}">${g.st==="live"?`<small class="lv">● Sân ${esc(cName(g.m.court))}</small>`:""}${row(g.x,g.lx,g.sx)}${row(g.y,g.ly,g.sy)}</div>`;
 }
 function koBracket(D,GD){
   let h=`<div class="kobr">`;
@@ -199,7 +199,7 @@ function koBang(D,GD){
 // Lịch theo bảng: trận từng bảng + knockout
 function koLich(D,GD){
   let h=`<div class="rnds">`;
-  GD.groups.forEach((ids,gx)=>{const gs=GD.games.filter(g=>g.grp===gx);h+=`<div class="rnd"><div class="rh"><span>BẢNG ${KOG[gx]}</span><span>${gs.filter(g=>g.st==="done"||g.st==="wo").length}/${gs.length} trận</span></div>${gs.map(g=>gRow(D,GD,g)).join("")}</div>`});
+  GD.groups.forEach((ids,gx)=>{const gs=GD.games.filter(g=>g.grp===gx);h+=`<div class="rnd"><div class="rh"><span>Bảng ${KOG[gx]}</span><span>${gs.filter(g=>g.st==="done"||g.st==="wo").length}/${gs.length} trận</span></div>${gs.map(g=>gRow(D,GD,g)).join("")}</div>`});
   return h+`</div><div class="shd"><h2>Knockout</h2><span class="meta">${esc(koSum(GD))}</span></div>`+koBracket(D,GD);
 }
 async function koAct(act,b,id){
@@ -248,10 +248,10 @@ function koShowScr(D,G,K,pm){
   const total=k*KO_STEP+1.2,tag=koShow;
   const potLb=r=>r===0?"Hạt giống":`Lượt ${r+1}`;
   return `<div class="koscr" role="dialog" aria-label="Bốc thăm chia bảng" data-k="${tag}"><div class="gbhd"><button class="ckx" data-act="koshowx" aria-label="Đóng">✕</button><span class="t"><b>Bốc thăm chia bảng</b><small>${(G.pairs||[]).length} cặp · ${N} bảng</small></span></div>
-    <b class="gbno">BỐC THĂM CHIA BẢNG</b>
+    <b class="gbno">Bốc thăm chia bảng</b>
     <div class="kopots">${pots.map((p,r)=>`<span class="kopot" style="animation-delay:${(at.get(p[0])||0)*KO_STEP}s">${potLb(r)}</span>`).join("")}</div>
-    <div class="koshg">${gs.map((g,gx)=>`<div class="koshb"><b>BẢNG ${KOG[gx]}</b>${g.map(id=>{const p=pm.get(id),d=(at.get(id)||0)*KO_STEP;return p?`<div class="koshp" style="animation-delay:${d}s">${pairAv(D,p,"xs")}${pair2(D,p,seeds.has(id))}</div>`:""}).join("")}</div>`).join("")}</div>
-    <div class="gbft"><button class="gbnext kodone" data-act="koshowx" style="animation-delay:${total}s">XONG · ĐÃ CHIA ${N} BẢNG</button></div></div>`;
+    <div class="koshg">${gs.map((g,gx)=>`<div class="koshb"><b>Bảng ${KOG[gx]}</b>${g.map(id=>{const p=pm.get(id),d=(at.get(id)||0)*KO_STEP;return p?`<div class="koshp" style="animation-delay:${d}s">${pairAv(D,p,"xs")}${pair2(D,p,seeds.has(id))}</div>`:""}).join("")}</div>`).join("")}</div>
+    <div class="gbft"><button class="gbnext kodone" data-act="koshowx" style="animation-delay:${total}s">Xong · đã chia ${N} Bảng</button></div></div>`;
 }
 // Nhiều bảng thì màn hình tự cuộn theo cặp đang được bốc
 let koFT=[];

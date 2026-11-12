@@ -1,15 +1,15 @@
 /* ---------- Luồng trọng tài · Mini App (canvas trang rf) ----------
    Quét mã → nhận sân (R1) → màn chính chỉ có sân của mình (R2), trận mới nổi bật (R3) →
-   chuẩn bị 3 bước (R4–R6, nút của bản cũ) → nhập điểm (màn cũ, đầu trang SÂN n · Trọng tài) → lưu → chờ trận tiếp (R11).
+   chuẩn bị 3 bước (R4–R6, nút của bản cũ) → nhập điểm (màn cũ, đầu trang Sân n · Trọng tài) → lưu → chờ trận tiếp (R11).
    Nhờ BTC gọi tên: hộp xác nhận + dải trạng thái (đã gửi / BTC đã đọc / lỗi) theo yêu cầu loa trong calls. */
 let rfLastM={},rfStep=1,rfAsk=null,rfErr={},rfSeen={},rfBye=null,rfNameEd=false;
 // Tên trọng tài: tự sửa > tên Zalo (xin phép một lần) > tên tài khoản
 const rfName=()=>String(val("rf-name","")||(MINI&&zaloProf().n)||who()).trim().slice(0,40)||who();
 const rfOn=()=>MINI&&REF&&!canWrite;
 const rfLb=(D,m)=>{if(!m.giai)return "";const GD=m.nd?gDeriveK(D,m.nd):gDerive(D);if(!GD)return "";if(m.ko)return koMName(GD,m.ko)||"";const g=(GD.games||[]).find(q=>q.m&&q.m.id===m.id);return g&&g.grp!=null?`Bảng ${KOG[g.grp]}`:""};
-const rfBadge=c=>`<span class="rfb">SÂN ${esc(cName(c))}</span>`;
+const rfBadge=c=>`<span class="rfb">Sân ${esc(cName(c))}</span>`;
 const rfGiaiNm=D=>{const X=xCur();return X?xName(X):(D.c.sname||"Giải đấu")};
-// Đầu trang trọng tài: ô vàng SÂN n · Trọng tài · dòng phụ
+// Đầu trang trọng tài: ô vàng Sân n · Trọng tài · dòng phụ
 function rfHead(c,sub,back){return `<div class="tthd rf">${back?`<button class="ttbk" data-act="${back}" aria-label="Quay lại">‹</button>`:""}${rfBadge(c)}<span class="t"><b>Trọng tài</b><small>${sub}</small></span></div>`}
 // Trận dự kiến ở sân này (giải cặp): theo lịch dự kiến từng sân
 function rfPlan(D,c){if(!isG(D.c))return [];const GD=gDerive(D);if(!GD||!GD.locked)return [];return (gPlan(D,GD).get(Number(c))||[])}
@@ -55,7 +55,7 @@ function rfPre(D,m,X){
     ft=`<button class="ttln" data-act="ttx" aria-label="Quay lại">‹</button><button class="ttgo" data-act="ttstep" data-v="2">Tiếp: bốc thăm ›</button>`}
   if(st===2){h+=rfSteps(2)+`<section class="ttbox"><span class="cap">Đội nào chọn mặt đồng xu?</span><div class="ttseg">${["a","b"].map(t=>`<button data-act="tttc" data-v="${t}" aria-pressed="${T.ch===t}">${ttAvs(D,t==="a"?m.a:m.b,"xs")}${tn(t)}</button>`).join("")}</div>
       ${T.ch?`<div class="ttseg">${[["S","Sấp"],["N","Ngửa"]].map(([v,l])=>`<button data-act="tttcall" data-v="${v}" aria-pressed="${T.call===v}">${l}</button>`).join("")}</div>`:""}</section>`;
-    if(T.ch&&T.call)h+=`<section class="ttbox ctr"><span class="coin${T.res?"":" off"}${ttCoin&&Date.now()-ttCoin<1200?" spin":""}">${T.res==="N"?"NGỬA":T.res==="S"?"SẤP":"?"}</span>${T.res?`<b>Ra ${T.res==="N"?"Ngửa":"Sấp"} · ${tn(T.w)} thắng bốc thăm</b>`:""}<button class="ttln" data-act="ttflip">${T.res?"↻ Tung lại":"🪙 Tung đồng xu"}</button></section>`;
+    if(T.ch&&T.call)h+=`<section class="ttbox ctr"><span class="coin${T.res?"":" off"}${ttCoin&&Date.now()-ttCoin<1200?" spin":""}">${T.res==="N"?"Ngửa":T.res==="S"?"Sấp":"?"}</span>${T.res?`<b>Ra ${T.res==="N"?"Ngửa":"Sấp"} · ${tn(T.w)} thắng bốc thăm</b>`:""}<button class="ttln" data-act="ttflip">${T.res?"↻ Tung lại":"🪙 Tung đồng xu"}</button></section>`;
     if(T.w){const pk=T.pk||[],cur=pk.length&&pk[pk.length-1].v==="defer"?ttO(T.w):T.w,sideBy=pk.find(p=>p.v==="side");
       const opts=[["serve","Giao trước"],["recv","Nhận trước"],["side","Chọn bên sân"],["defer","Nhường chọn"]].filter(([v])=>!(v==="defer"&&pk.some(p=>p.v==="defer")));
       h+=`<section class="ttbox"><span class="cap">${tn(cur)} chọn một · đội kia lấy phần còn lại</span><div class="ttopts">${opts.map(([v,l])=>`<button data-act="ttpick" data-v="${v}" aria-pressed="${pk.some(p=>p.t===cur&&p.v===v)}"><b>${l}</b><small>${v==="serve"||v==="recv"?`${tn(ttO(cur))} chọn bên sân`:v==="side"?`${tn(ttO(cur))} chọn giao/nhận`:`${tn(ttO(cur))} chọn trước`}</small></button>`).join("")}</div>
@@ -87,9 +87,9 @@ function rfMain(D){
       if(X){h+=`<section class="dhnew"><span class="cap">● Đang nhập · ${esc(X.call())}</span><span class="tm">${ttAvs(D,m.a)}<b>${esc(ttTN(D,m,"a"))}</b></span><small>gặp</small><span class="tm">${ttAvs(D,m.b)}<b>${esc(ttTN(D,m,"b"))}</b></span><button class="ttgo" data-act="tt" data-id="${esc(m.id)}">Tiếp tục nhập điểm ›</button></section>`;continue}
       const R=mRule(m)||{to:+D.c.target||11,w2:winBy2(D.c),sets:1},lb=rfLb(D,m);
       const team=(ids,c)=>`<div class="rfteam" style="--tc:${c}"><div class="h"><b>${esc(ttTN(D,m,ids===m.a?"a":"b"))}</b></div>${ids.map(id=>`<div class="p">${av(D.pmap.get(id),"md",1)}<span class="t"><b>${esc(ttPN(D,id))}</b></span></div>`).join("")}</div>`;
-      h+=`<section class="rfnew"><span class="cap">🔔 Máy đang rung · ${typeof m.createdAt==="number"?hm(m.createdAt):""}</span><b>TRẬN MỚI<br>VÀO SÂN ${esc(cName(k))}</b><span class="chips">${[lb.toUpperCase(),`Trận #${m.seq}`,`Chạm ${R.to}${R.w2?" · cách 2":""}`,R.sets>1?`${R.sets} set`:"1 ván"].filter(Boolean).map(t=>`<i>${esc(t)}</i>`).join("")}</span></section>`
+      h+=`<section class="rfnew"><span class="cap">🔔 Máy đang rung · ${typeof m.createdAt==="number"?hm(m.createdAt):""}</span><b>Trận mới<br>Vào sân ${esc(cName(k))}</b><span class="chips">${[lb.toUpperCase(),`Trận #${m.seq}`,`Chạm ${R.to}${R.w2?" · cách 2":""}`,R.sets>1?`${R.sets} set`:"1 ván"].filter(Boolean).map(t=>`<i>${esc(t)}</i>`).join("")}</span></section>`
         +rfSteps(0)+rfInvStrip(D,m)+team(m.a,"#1f6fd1")+`<div class="rfvs"><i></i><b>VS</b><i></i></div>`+team(m.b,"#d9480f");
-      h+=`<div class="ttft"><button class="ttln" data-act="dhcb" data-v="${k}">📣 Gọi BTC</button><button class="ttgo big" data-act="tt" data-id="${esc(m.id)}">ĐIỂM DANH ›</button></div>`;continue}
+      h+=`<div class="ttft"><button class="ttln" data-act="dhcb" data-v="${k}">📣 Gọi BTC</button><button class="ttgo big" data-act="tt" data-id="${esc(m.id)}">Điểm danh ›</button></div>`;continue}
     // Trận mình đang theo biến mất: BTC huỷ hoặc chuyển sang sân khác
     const pv=rfLastM[k];if(pv&&rfSeen[k]===pv.id&&!rfNote[k]){const x=(S.matches||[]).find(z=>z.id===pv.id);
       if(!x)rfNote[k]={k:"huy",at:Date.now(),...pv};else if(x.status!=="done"&&Number(x.court)!==k)rfNote[k]={k:"chuyen",at:Date.now(),to:x.court,...pv}}
@@ -120,7 +120,7 @@ function rfClaim(D){
   if(MINI&&!zaloProf().n&&typeof mxAskName==="function")setTimeout(()=>mxAskName(),0);
   const P=rfPlan(D,q.c);
   return `<div class="ttfs rfc" role="dialog" aria-label="Nhận vai trọng tài">${rfHead(q.c,"Mã của ban tổ chức")}
-    <div class="rfcb"><small>${esc(CLUB?.name||"")} · ${esc(rfGiaiNm(D))}</small><b class="big">SÂN ${esc(cName(q.c))}</b><span>Bạn được mời làm <b>trọng tài</b> sân này.</span>
+    <div class="rfcb"><small>${esc(CLUB?.name||"")} · ${esc(rfGiaiNm(D))}</small><b class="big">Sân ${esc(cName(q.c))}</b><span>Bạn được mời làm <b>trọng tài</b> sân này.</span>
       <section class="ttbox"><div class="ttrow">${MINI&&zaloProf().p?`<span class="av md rfzav"><img src="${esc(zaloProf().p)}" alt=""></span>`:""}<span class="grow">Tên hiện cho BTC${MINI&&zaloProf().n&&!val("rf-name","")?`<br><small class="okc">Lấy từ Zalo · sửa được</small>`:""}</span>${rfNameEd?`<input id="rf-name" data-draft="rf-name" maxlength="40" value="${esc(rfName())}">`:`<b>${esc(rfName())}</b><button class="lnk" data-act="ttname" aria-label="Sửa tên">✎</button>`}</div>${P.length?`<div class="ttrow"><span class="grow">Hôm nay</span><b>${P.length} trận dự kiến</b></div>`:""}</section></div>
     <div class="ttft"><button class="ttln" data-act="dhclaimx">Không phải tôi</button><button class="ttgo" data-act="dhclaimok">✓ Nhận sân ${esc(cName(q.c))}</button></div></div>`;
 }

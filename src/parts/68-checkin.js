@@ -34,7 +34,7 @@ function ckStats(D,X){
   const due=withX(X,()=>L.filter(r=>r.pay!=="ok"&&r.pay!=="sent").reduce((a,r)=>a+feeOf(r),0));
   return {L,arr,pend,due};
 }
-const ckCounts=(D,X)=>{const s=ckStats(D,X);return `<div class="ckcnt"><span><b>${s.arr}<small>/${s.L.length}</small></b><small>ĐÃ TỚI</small></span><span><b class="y">${s.pend}</b><small>CHỜ DUYỆT</small></span><span><b>${fmtK(s.due)}</b><small>CẦN THU</small></span></div>`};
+const ckCounts=(D,X)=>{const s=ckStats(D,X);return `<div class="ckcnt"><span><b>${s.arr}<small>/${s.L.length}</small></b><small>Đã tới</small></span><span><b class="y">${s.pend}</b><small>Chờ duyệt</small></span><span><b>${fmtK(s.due)}</b><small>Cần thu</small></span></div>`};
 
 /* ----- Thẻ check-in ở đầu tab Sân ----- */
 function ckCard(D){
@@ -44,8 +44,8 @@ function ckCard(D){
   const st=left>0?`Đang mở · bắt đầu sau ${left>=36e5?`${Math.floor(left/36e5)} giờ `:""}${Math.round(left%36e5/6e4)}′`:live?"Giải đấu đang diễn ra":"Đang mở";
   if(live)return `<button class="ckmini" data-act="ckopen" data-id="${esc(X.id)}"><b>Check-in · ${s.arr}/${s.L.length}</b><span>${P.length?`${P.length} chờ duyệt · `:""}Mở mã cho người tới muộn ›</span></button>${late}`;
   return `<div class="ckcard"><div class="h"><small>CHECK-IN · ${esc(xName(X)).toUpperCase()} · ${X.at?hm(X.at):""}</small><b>${st}</b></div>${ckCounts(D,X)}
-    <button class="ckgo" data-act="ckopen" data-id="${esc(X.id)}">⌗ MỞ MÃ CHECK-IN</button>${late}${hnOpts(X)}</div>`
-    +P.slice(0,2).map(r=>`<div class="ckrow">${ckPic(D,r,"ckpic s")}<span class="t"><b>${esc(ckName(D,r))}</b> vừa quét mã · chờ bạn duyệt</span><button class="ckbtn" data-act="ckview" data-id="${esc(r.id)}">DUYỆT</button></div>`).join("");
+    <button class="ckgo" data-act="ckopen" data-id="${esc(X.id)}">⌗ Mở mã check-in</button>${late}${hnOpts(X)}</div>`
+    +P.slice(0,2).map(r=>`<div class="ckrow">${ckPic(D,r,"ckpic s")}<span class="t"><b>${esc(ckName(D,r))}</b> vừa quét mã · chờ bạn duyệt</span><button class="ckbtn" data-act="ckview" data-id="${esc(r.id)}">Duyệt</button></div>`).join("");
 }
 
 /* ----- Màn mã QR toàn màn hình trên máy BTC ----- */
@@ -59,12 +59,12 @@ function ckScreen(D){
   const notYet=L.filter(r=>!r.arrived&&!r.ci),left=Math.max(0,ciEnd-Date.now());
   const bar=`<i style="animation:ckbar${ckRot%2} ${CI_MS}ms linear forwards;animation-delay:-${CI_MS-left}ms"></i>`;
   let h=`<div class="ckfs" role="dialog" aria-label="Mã check-in"><div class="ckfh"><button class="ckx" data-act="ckclose" aria-label="Đóng">✕</button><span class="t"><b>${esc(xName(X))}</b><small>${esc(CLUB?.name||"")}${X.at?` · ${hm(X.at)}`:""}</small></span></div>
-    <div class="ckfm"><b class="ckbig">QUÉT ĐỂ CHECK-IN</b><span class="hint">Mở <b>Zalo</b> → <b>Quét mã QR</b> → hướng vào đây</span>
+    <div class="ckfm"><b class="ckbig">Quét để check-in</b><span class="hint">Mở <b>Zalo</b> → <b>Quét mã QR</b> → hướng vào đây</span>
       <span class="box">${ciCode?`<img src="${esc(ckQrImg(ckLink(X.id,ciCode),600))}" alt="Mã check-in">`:`<span class="sk"></span>`}</span>
       <span class="ckbar">${ciCode?bar:""}</span><span class="cd"><span>Mã tự đổi sau <b data-cd="${ciEnd}">${gdMMSS(left)}</b> · chụp lại không dùng được</span><span>☀ luôn sáng</span></span></div>
-    <div class="ckff"><div class="ckcnt">${(()=>{if(!(MINI&&(pairRegOn(X)||kOn(X))))return `<span><b>${s.arr}<small>/${s.L.length}</small></b><small>ĐÃ TỚI</small></span>`;
+    <div class="ckff"><div class="ckcnt">${(()=>{if(!(MINI&&(pairRegOn(X)||kOn(X))))return `<span><b>${s.arr}<small>/${s.L.length}</small></b><small>Đã tới</small></span>`;
       const seen=new Set();let f=0,t=0;for(const r of L){if(seen.has(r.id))continue;const m=capMate(r);seen.add(r.id);if(m)seen.add(m.id);t++;if(r.arrived&&(!m||m.arrived))f++}
-      return `<span><b>${f}<small>/${t} cặp</small></b><small>ĐỦ NGƯỜI</small></span>`})()}<span><b class="y">${s.pend}</b><small>CHỜ DUYỆT</small></span><span><b>${fmtK(s.due)}</b><small>CÒN PHẢI THU</small></span></div>
+      return `<span><b>${f}<small>/${t} cặp</small></b><small>Đủ người</small></span>`})()}<span><b class="y">${s.pend}</b><small>Chờ duyệt</small></span><span><b>${fmtK(s.due)}</b><small>Còn phải thu</small></span></div>
       ${MINI?"":`<button class="ckmore" data-act="cklist">${ckListOpen?"Ẩn danh sách ⌄":"Danh sách · check-in tay ⌃"}</button>`}`;
   if(ckListOpen&&!MINI){h+=`<div class="ckls">`;
     if(notYet.length)h+=`<span class="xsec">Chưa tới · ${notYet.length}</span>${notYet.map(r=>`<div class="ckli">${ckPic(D,r,"ckpic s")}<span class="t"><b>${esc(ckName(D,r))}</b><small>${r.guest?"VĐV ngoài CLB":"Thành viên"} · ${ckPayLb(r)}</small></span><button class="ckbtn line" data-act="ckman" data-id="${esc(r.id)}">Check-in tay</button></div>`).join("")}`;
@@ -87,19 +87,19 @@ function ckPopup(D){
   // Vãng lai xin vào: khách ngoài CLB phải trả trước (nếu bật), cảnh báo đủ chỗ, giải cặp đang chạy chỉ thay cặp vắng
   const RL=withX(X,()=>regList(D)),present=RL.all.filter(x=>x.arrived).length,full=RL.max<999&&present>=RL.max&&pos>=RL.max;
   const mustPay=r.guest&&hnPayFirst(X)&&k>0,gRun=isG(cfg())&&cfg().schedId===X.id&&(cfg().giai||{}).locked;
-  const warn=(r.walkin?`<div class="ckwarn"><b>XIN VÀO · chưa đăng ký trước</b>${full?`<span>Đã đủ ${RL.max} người có mặt · nhận thêm sẽ vượt số chỗ.</span>`:""}${gRun?`<span>Giải cặp đang chạy: chỉ nhận để thay vào cặp vắng.</span>`:""}</div>`:full?`<div class="ckwarn"><span>Người chờ chỗ · đã đủ ${RL.max} người có mặt.</span></div>`:"");
+  const warn=(r.walkin?`<div class="ckwarn"><b>Xin vào · chưa đăng ký trước</b>${full?`<span>Đã đủ ${RL.max} người có mặt · nhận thêm sẽ vượt số chỗ.</span>`:""}${gRun?`<span>Giải cặp đang chạy: chỉ nhận để thay vào cặp vắng.</span>`:""}</div>`:full?`<div class="ckwarn"><span>Người chờ chỗ · đã đủ ${RL.max} người có mặt.</span></div>`:"");
   if(ckQR===r.id&&!paid)return `<div class="ckpf ckpq" role="dialog" aria-label="Mã chuyển khoản"><div class="ckqh"><button class="ckx" data-act="ckqrx" aria-label="Quay lại">‹</button>${ckPic(D,r,"ckpic s")}<b>${esc(nm)} · vé #${pos+1}</b></div>
-    <div class="ckqm"><small>QUÉT BẰNG APP NGÂN HÀNG</small><b class="ckamt">${kVND(k)}</b>${vqrSvg(Math.round(k*1000),note,320)}
+    <div class="ckqm"><small>Quét bằng app ngân hàng</small><b class="ckamt">${kVND(k)}</b>${vqrSvg(Math.round(k*1000),note,320)}
       <div class="ckqi"><span><span>Ngân hàng</span><b>${esc(BANK.name||"")} · ${esc(BANK.holder||"")}</b></span><span><span>Nội dung</span><b class="lose">${esc(note)}</b></span></div></div>
-    <div class="ckpa"><span class="gdnote">Quay màn hình về phía người chơi. Thấy tiền vào thì bấm:</span><button class="ckgo2" data-act="ckpaidok" data-id="${id}">✓ ĐÃ NHẬN TIỀN · CHECK-IN</button></div></div>`;
-  const band=paid?`<div class="ckband ok"><span class="ic">✓</span><span class="t"><b>${k?`ĐÃ TRẢ ${kVND(k)}`:"MIỄN PHÍ"}</b><small>${k?(r.okAt?`BTC xác nhận lúc ${hm(r.okAt)}`:"BTC đã xác nhận"):"Giải đấu này không thu phí"}</small></span></div><div class="ckask">Nhìn người trước mặt: <b>có đúng như ảnh?</b></div>`
-    :sent?`<div class="ckband sent"><small>⏳ ĐÃ BÁO CHUYỂN KHOẢN · CHƯA ĐỐI CHIẾU</small><b>${kVND(k)}</b><span>Mở app ngân hàng, tìm khoản có nội dung:</span><em>${esc(note)}</em></div>
-      <div class="ckchk"><button data-act="ckcash" data-id="${id}" class="w">✓ ĐÃ THẤY TIỀN</button><button data-act="ckunsent" data-id="${id}" class="l">CHƯA THẤY · THU LẠI</button></div>`
-    :`<div class="ckband due"><small>CHƯA THANH TOÁN</small><b>${kVND(k)}</b></div><div class="ckmsg">Chào ${esc(first)} 👋 Nhờ bạn gửi lệ phí <b>${kVND(k)}</b> trước khi vào sân nhé. Tiền mặt hoặc quét QR đều được. Cảm ơn bạn!</div>`;
-  const acts=(!paid&&!sent?`<div class="ckpay2"><button data-act="ckcash" data-id="${id}">💵 THU TIỀN MẶT</button><button class="b" data-act="ckqr" data-id="${id}">▦ HIỆN QR TRẢ</button></div>`:"")
-    +`<div class="ckbtns"><button class="ckno" data-act="ckno" data-id="${id}">✕ ${r.walkin?"TỪ CHỐI":"KHÔNG PHẢI"}</button>${!paid&&!sent&&mustPay?"":`<button class="ckok${!paid&&!sent?" later":""}" data-act="${!paid&&!sent?"cklater":"ckok"}" data-id="${id}">${!paid&&!sent?"✓ ĐÚNG · TRẢ SAU":r.walkin?"✓ NHẬN VÀO GIẢI":"✓ ĐÚNG NGƯỜI"}</button>`}</div>`;
+    <div class="ckpa"><span class="gdnote">Quay màn hình về phía người chơi. Thấy tiền vào thì bấm:</span><button class="ckgo2" data-act="ckpaidok" data-id="${id}">✓ Đã nhận tiền · check-in</button></div></div>`;
+  const band=paid?`<div class="ckband ok"><span class="ic">✓</span><span class="t"><b>${k?`Đã trả ${kVND(k)}`:"Miễn phí"}</b><small>${k?(r.okAt?`BTC xác nhận lúc ${hm(r.okAt)}`:"BTC đã xác nhận"):"Giải đấu này không thu phí"}</small></span></div><div class="ckask">Nhìn người trước mặt: <b>có đúng như ảnh?</b></div>`
+    :sent?`<div class="ckband sent"><small>⏳ Đã báo chuyển khoản · chưa đối chiếu</small><b>${kVND(k)}</b><span>Mở app ngân hàng, tìm khoản có nội dung:</span><em>${esc(note)}</em></div>
+      <div class="ckchk"><button data-act="ckcash" data-id="${id}" class="w">✓ Đã thấy tiền</button><button data-act="ckunsent" data-id="${id}" class="l">Chưa thấy · thu lại</button></div>`
+    :`<div class="ckband due"><small>Chưa thanh toán</small><b>${kVND(k)}</b></div><div class="ckmsg">Chào ${esc(first)} 👋 Nhờ bạn gửi lệ phí <b>${kVND(k)}</b> trước khi vào sân nhé. Tiền mặt hoặc quét QR đều được. Cảm ơn bạn!</div>`;
+  const acts=(!paid&&!sent?`<div class="ckpay2"><button data-act="ckcash" data-id="${id}">💵 Thu tiền mặt</button><button class="b" data-act="ckqr" data-id="${id}">▦ Hiện QR trả</button></div>`:"")
+    +`<div class="ckbtns"><button class="ckno" data-act="ckno" data-id="${id}">✕ ${r.walkin?"Từ chối":"Không phải"}</button>${!paid&&!sent&&mustPay?"":`<button class="ckok${!paid&&!sent?" later":""}" data-act="${!paid&&!sent?"cklater":"ckok"}" data-id="${id}">${!paid&&!sent?"✓ Đúng · trả sau":r.walkin?"✓ Nhận vào giải":"✓ Đúng người"}</button>`}</div>`;
   return `<div class="ckpf" role="dialog" aria-label="Duyệt check-in"><div class="ckimg">${ckPic(D,r,"ckpic fs")}<span class="ckgr"></span>
-      <span class="ckt"><span class="live">● VỪA QUÉT · ${r.ci?hm(r.ci):""}</span>${rest.length?`<button class="more" data-act="ckview" data-id="${esc(rest[0].id)}">+${rest.length} đang chờ ›</button>`:""}</span>
+      <span class="ckt"><span class="live">● Vừa quét · ${r.ci?hm(r.ci):""}</span>${rest.length?`<button class="more" data-act="ckview" data-id="${esc(rest[0].id)}">+${rest.length} đang chờ ›</button>`:""}</span>
       <span class="cknm"><b>${esc(nm)}</b><small>${r.guest?"VĐV ngoài CLB":"Thành viên"}${r.gender?` · ${r.gender==="F"?"Nữ":"Nam"}`:p?` · ${p.gender==="F"?"Nữ":"Nam"}`:""}${lv?` · ${esc(String(lv))}`:""} · Vé #${pos+1}${!paid&&!sent&&!r.guest?" · chọn trả tại sân":""}</small></span></div>
     ${warn}${(()=>{const m=capMate(r);if(!m)return "";const kd=kdOf(X),gx=(kd.groups||[]).findIndex(g=>g.includes(r.team));
       return `<div class="ckcap"><span>Cặp <b>${esc(nm)} &amp; ${esc(ckName(D,m))}</b>${gx>=0?` · Bảng ${KOG[gx]}`:""}</span><b class="${m.arrived?"ok":""}">${m.arrived?"đủ người":`còn chờ ${esc(ckName(D,m))}`}</b></div>`})()}${band}<div class="ckpa">${acts}</div></div>`;

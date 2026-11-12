@@ -13,9 +13,9 @@ const hnDays=t=>Math.round((new Date(t).setHours(0,0,0,0)-new Date().setHours(0,
 
 function hnPick(D){
   const L=hnList(),now=Date.now();
-  let h=`<section class="hnhd"><small>HÔM NAY · ${esc(dowVN(now)).toUpperCase()} ${dmy(now).slice(0,5)}</small><b>${L.length?"Chọn giải để điểm danh":"Chưa có giải theo lịch"}</b><span>${L.length?"Danh sách đăng ký, tiền và check-in đi theo giải bạn chọn.":"Tạo giải ở tab Tạo để mở đăng ký, hoặc đánh nhanh không cần đăng ký."}</span></section>`;
+  let h=`<section class="hnhd"><small>Hôm nay · ${esc(dowVN(now)).toUpperCase()} ${dmy(now).slice(0,5)}</small><b>${L.length?"Chọn giải để điểm danh":"Chưa có giải theo lịch"}</b><span>${L.length?"Danh sách đăng ký, tiền và check-in đi theo giải bạn chọn.":"Tạo giải ở tab Tạo để mở đăng ký, hoặc đánh nhanh không cần đăng ký."}</span></section>`;
   h+=L.map(X=>{const R=withX(X,()=>regList(D)),arr=R.all.filter(r=>r.arrived).length,dd=hnDays(X.at),td=dd<=0;
-    return `<div class="hncard${td?" td":""}">${mxDate(X.at)}<span class="t"><small>${td?"HÔM NAY":dd===1?"NGÀY MAI":`CÒN ${dd} NGÀY`} · ${esc(xTime(X))}</small><b>${esc(xName(X))}</b><span>${esc(xFmt(X))} · ${R.conf.length}${R.max<999?`/${R.max}`:""} đăng ký${R.wait.length?` · chờ ${R.wait.length}`:""}${arr?` · đã tới ${arr}`:""}</span></span><button class="${td?"primary":"line"}" data-act="xprep" data-id="${esc(X.id)}">${td?"Điểm danh":"Điểm danh sớm"}</button></div>`}).join("");
+    return `<div class="hncard${td?" td":""}">${mxDate(X.at)}<span class="t"><small>${td?"Hôm nay":dd===1?"Ngày mai":`Còn ${dd} Ngày`} · ${esc(xTime(X))}</small><b>${esc(xName(X))}</b><span>${esc(xFmt(X))} · ${R.conf.length}${R.max<999?`/${R.max}`:""} đăng ký${R.wait.length?` · chờ ${R.wait.length}`:""}${arr?` · đã tới ${arr}`:""}</span></span><button class="${td?"primary":"line"}" data-act="xprep" data-id="${esc(X.id)}">${td?"Điểm danh":"Điểm danh sớm"}</button></div>`}).join("");
   return h+`<button class="btn-line" data-act="hnquick">⚡ Đánh nhanh · không cần đăng ký</button>`;
 }
 // Chọn giải hiện ở tab Hôm nay thay cho form giải nhanh (chỉ khi chưa đánh trận nào)

@@ -19,13 +19,13 @@ test("giải cặp cố định: xếp lịch, kiểm tỉ số, rút lui, tổn
   expect(playing().length).toBe(2);
   // lịch theo sân: mỗi sân có trận đang đánh và các trận dự kiến, đủ hết số trận còn lại
   await e.click("lseg", { v: "lich" });
-  expect(e.T()).toContain("SÂN 1");
-  expect(e.T()).toContain("SÂN 2");
+  expect(e.T()).toContain("Sân 1");
+  expect(e.T()).toContain("Sân 2");
   expect(e.T()).toContain("Sắp tới · dự kiến");
   {const nx=(e.V().match(/data-l="\d+"/g)||[]).length;const tot=(e.V().match(/data-l="/g)||[]).length;expect(nx).toBeGreaterThan(0);expect(tot).toBeGreaterThanOrEqual(nx+2)}
   const vsSan = (e.V().match(/class="m vs"/g) || []).length;
   await e.click("gview", { v: "luot" });
-  expect(e.T()).toContain("LƯỢT 1");
+  expect(e.T()).toContain("Lượt 1");
   expect((e.V().match(/class="m vs"/g) || []).length).toBe(vsSan);
   await e.click("gview", { v: "san" });
   await e.click("lseg", { v: "san" });
@@ -160,7 +160,7 @@ test("vòng bảng → knockout: chọn hạt giống, chia bảng, luật đi�
   expect(groups.every(g => g.length === 4)).toBe(true);
   expect(groups[0][0]).toBe(last);
   expect(groups.every(g => g.filter(id => K.seeds.includes(id)).length === 1)).toBe(true);
-  expect(e.T()).toContain("BẢNG A");
+  expect(e.T()).toContain("Bảng A");
   await e.ok("gstart");
   const playing = () => e.docs("matches/", m => m.status === "playing");
   let k = 0;
@@ -182,7 +182,7 @@ test("vòng bảng → knockout: chọn hạt giống, chia bảng, luật đi�
   expect(done.filter(([, m]) => m.ko).map(([, m]) => m.ko).sort()).toEqual(["k0-0", "k0-1", "k1-0", "k3"]);
   const sf = done.filter(([, m]) => m.ko && m.ko.startsWith("k0")).map(([, m]) => [m.pa, m.pb]);
   for (const [x, y] of sf) expect(groups.some(g => g.includes(x) && g.includes(y))).toBe(false);
-  expect(e.T()).toContain("VÔ ĐỊCH");
+  expect(e.T()).toContain("Vô địch");
   await e.click("gend"); await e.click("gend"); await e.until(() => e.store.has("app/hist-1"));
   const h = e.store.get("app/hist-1");
   const fin = done.find(([, m]) => m.ko === "k1-0")[1];

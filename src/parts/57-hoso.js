@@ -77,5 +77,5 @@ function vHoSo(D,id){
 function profileShare(D,id){
   const p=D.pmap.get(id);if(!p)return "";const s=D.st.get(id),X=profileData(D,id),all=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating),rank=all.findIndex(x=>x.id===id)+1;
   const pc=X.games?Math.round(X.winsAll/X.games*100):0,gold=X.ses.filter(x=>x.medal===1).length;
-  return [`HỒ SƠ ${p.name.toUpperCase()} · ${clubNm(D)}`,MINI?`${X.ses.length} buổi chơi · thắng ${pc}%`:`Rating ${r2(s.rating)} (#${rank} CLB) · ${X.ses.length} giải đấu · thắng ${pc}%`,gold?`Vô địch ${gold} giải`:""].filter(Boolean).join("\n");
+  return [`Hồ sơ ${p.name.toUpperCase()} · ${clubNm(D)}`,MINI?`${X.ses.length} buổi chơi · thắng ${pc}%`:`Rating ${r2(s.rating)} (#${rank} CLB) · ${X.ses.length} giải đấu · thắng ${pc}%`,gold?`Vô địch ${gold} giải`:""].filter(Boolean).join("\n");
 }

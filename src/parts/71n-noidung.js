@@ -132,7 +132,7 @@ function ndRegV(D,X){
   const R=regsOfX(X);
   h+=g2Stat([[ndL(X).length,"Nội dung"],[ndL(X).reduce((a,n)=>a+kTeams(D,ndX(X,n.k)).length,0),"Cặp"],[new Set(R.map(r=>r.pid||r.uid)).size,"Người"]]);
   for(const n of ndL(X)){const Xk=ndX(X,n.k),T=kTeams(D,Xk),kd=kdOf(Xk),bad=T.filter(t=>ndBadCap(D,Xk,t)||kBadDt(D,Xk,t)).length,solo=kSolo(D,Xk).length,c=ndCol(X,n.k);
-    const st=kLocked(Xk)?["ĐANG ĐÁNH","b"]:kd.groups&&kd.groups.length?(kd.pub?["ĐÃ CÔNG BỐ","g"]:["ĐÃ CHIA BẢNG","g"]):["CHƯA CHIA BẢNG","y"];
+    const st=kLocked(Xk)?["Đang đánh","b"]:kd.groups&&kd.groups.length?(kd.pub?["Đã công bố","g"]:["Đã chia bảng","g"]):["Chưa chia bảng","y"];
     h+=`<button class="ndbox" data-act="ndrf" data-v="${esc(n.k)}" style="border-left-color:${c[0]}"><span class="h"><b style="color:${c[2]}">${esc(n.name)}</b>${g2Tag(st[0],st[1])}</span><small>${esc(ndSub(n))}</small><small>${T.length} cặp${solo?` · ${solo} người lẻ`:""}${bad?` · <b class="red">${bad} cặp sai nội dung</b>`:""}</small></button>`}
   const multi=new Map();for(const r of R){const key=r.pid||r.uid;if(!key)continue;multi.set(key,(multi.get(key)||[]).concat(ndOfReg(r)))}
   const two=[...multi.entries()].filter(([,L])=>L.length>1);
@@ -148,10 +148,10 @@ const ndBadCap=(D,X,t)=>!!(X&&X.ndCap&&t&&ndLv(D,t.A)+ndLv(D,t.B)>X.ndCap+1e-9);
 function ndDayV(D,X){
   const live=gmLive(D)||D.SM.length;
   let h=`<section class="g3ck"><span class="cap">Check-in${X.at?` · ${hm(X.at)}`:""}</span><b>${live?"Giải đang đánh":"Đang mở"}</b>
-    <div class="ckcnt"><span><b>${new Set(regsOfX(X).filter(r=>r.arrived).map(r=>r.pid||r.uid)).size}<small>/${new Set(regsOfX(X).map(r=>r.pid||r.uid)).size}</small></b><small>ĐÃ TỚI</small></span></div>
-    <button class="g3go" data-act="ckopen" data-id="${esc(X.id)}">⌗ MỞ MÃ CHECK-IN</button></section><small class="rule">Một mã cho cả giải · người đánh 2 nội dung check-in 1 lần.</small>`;
+    <div class="ckcnt"><span><b>${new Set(regsOfX(X).filter(r=>r.arrived).map(r=>r.pid||r.uid)).size}<small>/${new Set(regsOfX(X).map(r=>r.pid||r.uid)).size}</small></b><small>Đã tới</small></span></div>
+    <button class="g3go" data-act="ckopen" data-id="${esc(X.id)}">⌗ Mở mã check-in</button></section><small class="rule">Một mã cho cả giải · người đánh 2 nội dung check-in 1 lần.</small>`;
   for(const n of ndL(X)){const Xk=ndX(X,n.k),T=kTeams(D,Xk),c=ndCol(X,n.k),full=T.filter(t=>kArr(D,Xk,t).every(Boolean)).length,miss=T.filter(t=>!kArr(D,Xk,t).every(Boolean));
-    h+=`<div class="ndbox" style="border-left-color:${c[0]}"><span class="h"><b style="color:${c[2]}">${esc(n.name)}</b>${T.length&&full===T.length?g2Tag("SẴN SÀNG","g"):g2Tag(`${full}/${T.length}`,"y")}</span><small>${full}/${T.length} cặp đủ người${miss.length?` · thiếu ${miss.slice(0,3).map(t=>t.nm).join(", ")}${miss.length>3?"…":""}`:""}</small>
+    h+=`<div class="ndbox" style="border-left-color:${c[0]}"><span class="h"><b style="color:${c[2]}">${esc(n.name)}</b>${T.length&&full===T.length?g2Tag("Sẵn sàng","g"):g2Tag(`${full}/${T.length}`,"y")}</span><small>${full}/${T.length} cặp đủ người${miss.length?` · thiếu ${miss.slice(0,3).map(t=>t.nm).join(", ")}${miss.length>3?"…":""}`:""}</small>
       ${!live&&T.length?`<div class="g3grid c2">${T.map(t=>{const k=kArr(D,Xk,t).filter(Boolean).length;return `<span class="k${k}">${k===2?"✓ ":k===1?"½ ":""}${t.nm}</span>`}).join("")}</div>`:""}</div>`}
   if(live)return h+`<div class="hqcta two">${gmDot()}<button class="ball" data-act="gmst" data-v="2">Về Đang đánh ›</button></div>`;
   return h+`<div class="hqcta two">${gmDot()}<button class="ball go" data-act="ndstart" data-id="${esc(X.id)}">▶ Bắt đầu tất cả nội dung</button></div><small class="rule">Cặp chưa đủ người được cho nghỉ, đủ người thì tự vào lại.</small>`;
@@ -240,7 +240,7 @@ function ndTop(D,k){const GD=gDeriveK(D,k);if(!GD)return [];const T=GD.table.fil
 function ndPodium(D,X){
   const aw=cfg().award||{};
   return gNdKeys().map(k=>{const n=ndOf(X,k),c=ndCol(X,k),T=ndTop(D,k),GD=gDeriveK(D,k),on=!!aw["nd:"+k];if(!n)return "";
-    const st=T.length?(on?g2Tag("ĐÃ TRAO","g"):""):g2Tag(D.playing.some(m=>m.nd===k)?"ĐANG ĐÁNH":"CHƯA XONG","b");
+    const st=T.length?(on?g2Tag("Đã trao","g"):""):g2Tag(D.playing.some(m=>m.nd===k)?"Đang đánh":"Chưa xong","b");
     return `<div class="ndbox" style="border-left-color:${c[0]}"><span class="h"><b style="color:${c[2]}">${esc(n.name)}</b>${st}</span>${T.length?`<small>${T.map(o=>`${["🥇","🥈","🥉","🥉"][T.indexOf(o)]} ${pairNm(D,o.p)}`).join(" · ")}</small>
       <div class="two"><button class="btn-line" data-act="ndaw" data-v="${esc(k)}" data-r="1">🔊 Đọc</button><button class="ball go" data-act="ndaw" data-v="${esc(k)}">🏆 ${on?"Trao lại":"Trao giải"} ${esc(n.name)}</button></div>`:`<small>${GD?`${GD.resolved}/${GD.total} trận xong`:""}</small>`}</div>`}).join("")+`<small class="rule">Xong cả các nội dung thì bấm Tiếp để thu nốt tiền.</small>`;
 }

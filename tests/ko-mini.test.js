@@ -97,7 +97,7 @@ test("ngày đánh: cặp thiếu người (chờ thêm, thay người); bắt �
   await e.nav("app", { t: "dk", x: "s1" }); await e.click("gmst", { v: "2" }); await e.until(() => e.V().includes('class="kseg"'));
   expect(e.T()).toContain("Vòng bảng · 0/2 trận"); expect(e.V()).toContain('data-act="scfillall"');
   await e.click("scfillall"); await e.until(() => [...e.store.keys()].some(k => k.startsWith("clubs/q7/matches/")));
-  await e.click("kseg", { v: "bang" }); await e.until(() => e.T().includes("BẢNG A"));
+  await e.click("kseg", { v: "bang" }); await e.until(() => e.T().includes("Bảng A"));
   await e.click("ksh", { v: "m15" }); await e.ok("kforce");
   await e.until(() => e.store.get("clubs/q7/app/config").giai.koForce === true);
   await e.click("kseg", { v: "san" }); await e.until(() => e.T().includes("Xong vòng bảng"));
@@ -119,7 +119,7 @@ test("người chơi: hôm nay có giải → chỉ một nút quét mã; quét 
   await e.until(() => e.T().includes("Chờ ban tổ chức xác nhận"));
   await globalThis.window.FB.updateDoc({ path: "clubs/q7/regs/r1" }, { arrived: true, arrivedAt: Date.now() });
   await e.until(() => e.T().includes("Đang chờ N2"));
-  expect(e.T()).toContain("BẢNG A");
+  expect(e.T()).toContain("Bảng A");
 });
 
 test("trận nhiều set: nhập từng set, đủ 2 set thắng thì lưu kết quả 2–0", async () => {
@@ -137,7 +137,7 @@ test("trận nhiều set: nhập từng set, đủ 2 set thắng thì lưu kết
   expect(e.store.get("clubs/q7/matches/m1")).toMatchObject({ sa: 2, sb: 0 });
 });
 
-test("Đang đánh: vừa xếp là ĐÃ XẾP (khác ĐANG ĐÁNH khi trọng tài bắt đầu); cặp đang nghỉ chặn xếp trận thì báo rõ, Cho vào lại", async () => {
+test("Đang đánh: vừa xếp là Đã xếp (khác Đang đánh khi trọng tài bắt đầu); cặp đang nghỉ chặn xếp trận thì báo rõ, Cho vào lại", async () => {
   const at = Math.min(Date.now() + 600e3, new Date().setHours(23, 59, 30, 0)), arr = { arrived: true, arrivedAt: 1 };
   const R = (pid, team, a = true) => ({ sid: "s1", pid, name: pid, at: 1, pay: "ok", team, ...(a ? arr : {}) });
   const data = { "clubs/q7": { name: "Q7", public: true, owner: "zalo_9", createdAt: 1 }, "clubs/q7/members/zalo_9": { role: "owner", name: "Chủ" },
@@ -150,15 +150,15 @@ test("Đang đánh: vừa xếp là ĐÃ XẾP (khác ĐANG ĐÁNH khi trọng t
   await e.click("ksh", { v: "k13" }); await e.click("k13go"); await e.until(() => e.store.get("clubs/q7/app/config").phase === "live");
   await e.nav("app", { t: "dk", x: "s1" }); await e.click("gmst", { v: "2" }); await e.until(() => e.V().includes('data-act="scfillall"'));
   await e.click("scfillall"); await e.until(() => e.V().includes('class="sct n"'));
-  expect(e.T()).toContain("ĐÃ XẾP"); expect(e.T()).not.toContain("ĐANG ĐÁNH");
+  expect(e.T()).toContain("Đã xếp"); expect(e.T()).toContain("Sân 1 Đã xếp"); expect(e.T()).not.toContain("Sân 1 Đang đánh");
   // Bảng B chỉ còn trận có cặp đang nghỉ (chưa đủ người): báo rõ, cho vào lại
   await e.until(() => e.V().includes('class="kblock"'));
   expect(e.T()).toContain("chưa xếp được"); expect(e.T()).toContain("Cho vào lại");
   const [rid] = Object.keys(e.store.get("clubs/q7/app/config").giai.rest || {});
   await e.click("grest", { id: rid }); await e.until(() => !(e.store.get("clubs/q7/app/config").giai.rest || {})[rid]);
   await e.until(() => e.V().includes('data-act="scfillall"'));
-  // trọng tài bắt đầu → ĐANG ĐÁNH
+  // trọng tài bắt đầu → Đang đánh
   const [mid, m] = e.docs("clubs/q7/matches/", x => x.status === "playing")[0];
   await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/" + mid), { ref: { by: "r", byName: "Nam", at: Date.now(), pos: { a: m.a, b: m.b }, first: "a", left: "a", started: Date.now(), ev: [] } });
-  await e.until(() => e.T().includes("ĐANG ĐÁNH"));
+  await e.until(() => e.T().includes("Đang đánh"));
 });

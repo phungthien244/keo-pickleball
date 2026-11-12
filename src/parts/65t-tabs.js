@@ -3,7 +3,7 @@
    Mở bằng link trang tổ chức (?clb=) → vào thẳng trang đó như trước. */
 let mtBankWant=false,MXT=null,mxTS=[],mxO="lich",mtSeg="tg",mtTyp="all",mtPlusWant=false,mtBusy=false;
 const MT_T={tim:"Lịch đánh gần bạn",lich:"Lịch đánh của tôi",tin:"Tin",toi:"Tôi",tao:"Tạo lịch đánh"};
-const MT_LOAI={s:["SOCIAL","s"],m:["MINI GAME","m"],g:["GIẢI","g"]};
+const MT_LOAI={s:["Social","s"],m:["Mini game","m"],g:["Giải","g"]};
 // Loại lịch đánh: lưu ở sched.loai; lịch cũ suy ra từ thể thức
 const xLoai=x=>{x=x||{};if(MT_LOAI[x.loai])return x.loai;return !x.fmt||x.fmt==="xoay"?"s":"g"};
 const mtBadge=x=>{const [t,k]=MT_LOAI[xLoai(x)];return `<span class="mtty ${k}">${t}</span>`};
@@ -26,7 +26,7 @@ function mtTab(t){
 function mtNav(D){
   const cur=MXT||mxO,n=mtNew(D);
   const it=(k,ic,lb,b="")=>`<a class="${cur===k?"on":""}" href="#" data-act="mtab" data-v="${k}">${mxSvg(ic)}<span>${lb}</span>${b}</a>`;
-  return `<nav class="mxnav n5">${it("tim","find","Tìm")}${it("lich","hist","Lịch")}<a class="mtplus${cur==="tao"?" on":""}" href="#" data-act="mtplus" aria-label="Tạo lịch đánh"><i aria-hidden="true">＋</i><span>Tạo</span></a>${it("tin","bell","Tin",n?`<i class="mxbadge">${n>9?"9+":n}</i>`:"")}${it("toi","me","Tôi")}</nav>`;
+  return `<nav class="mxnav n5">${it("tim","find","Tìm")}${it("lich","hist","Lịch")}<a class="mtplus${cur==="tao"?" on":""}" href="#" data-act="mtplus" aria-label="Tạo lịch đánh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Tạo</span></a>${it("tin","bell","Tin",n?`<i class="mxbadge">${n>9?"9+":n}</i>`:"")}${it("toi","me","Tôi")}</nav>`;
 }
 const mtWrap=(t,body,right="",D=null)=>mxHeadP(esc(t),right)+`<div class="mxbody mt">${body}</div>`+mtNav(D)+mxSheetHtml();
 

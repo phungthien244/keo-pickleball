@@ -91,7 +91,7 @@ function ttPre(D,m,X){
   {const X0=ckSched(),reg=pid=>X0?(S.regs||[]).find(r=>r.sid===X0.id&&r.pid===pid&&!r.cancel):null;
     h+=`<section class="ttbox"><span class="cap">0 · Kiểm tra người · bấm ảnh để so mặt</span>${[...m.a,...m.b].map(pid=>{const r=reg(pid),ok=!X0||(r&&r.arrived);
       return `<div class="ttrow">${ttAv(D,pid,"sm")}<span class="grow"><b>${esc(ttPN(D,pid))}</b><br><small class="${ok?"okc":"wac"}">${!X0?"có mặt":r&&r.arrived?`đã check-in ${r.arrivedAt?hm(r.arrivedAt):""}`:"chưa check-in"}</small></span>${spkBtn("tt:"+pid,`<button class="ttln" data-act="ttcallp" data-v="${esc(pid)}">📣 Gọi</button>`)}</div>`}).join("")}<small>Ai chưa có mặt: bấm Gọi để nhờ máy loa mời vào sân.</small></section>`}
-  h+=`<section class="ttbox"><span class="cap">1 · Bốc thăm</span><div class="ttrow"><span class="coin sm${T.res?"":" off"}">${T.res==="N"?"NGỬA":T.res==="S"?"SẤP":"?"}</span><span class="grow">${tossTx}</span><button class="ttln" data-act="ttv" data-v="toss">${T.w?"Bốc lại":"🪙 Bốc thăm"}</button></div>
+  h+=`<section class="ttbox"><span class="cap">1 · Bốc thăm</span><div class="ttrow"><span class="coin sm${T.res?"":" off"}">${T.res==="N"?"Ngửa":T.res==="S"?"Sấp":"?"}</span><span class="grow">${tossTx}</span><button class="ttln" data-act="ttv" data-v="toss">${T.w?"Bốc lại":"🪙 Bốc thăm"}</button></div>
     <span class="cap">Đội giao trước</span><div class="ttseg">${["a","b"].map(t=>`<button data-act="ttfirst" data-v="${t}" aria-pressed="${X.st===t}">${ttAvs(D,t==="a"?m.a:m.b,"xs")}${tn(t)}</button>`).join("")}</div></section>`;
   h+=`<section class="ttbox"><span class="cap">2 · Vị trí đứng ban đầu · bấm ô để đổi chỗ</span>${ttCourt(D,m,X,{pre:true})}
     <div class="ttrow"><small class="grow">Bấm ảnh để xem to, so mặt. Người ở ô phải của đội giao trước giao bóng đầu tiên.</small><button class="ttln" data-act="ttside">⇄ Đổi bên sân</button></div></section>`;
@@ -107,7 +107,7 @@ function ttToss(D,m,X){
   if(T.ch)h+=`<span class="cap">${tn(T.ch)} chọn mặt</span><div class="ttseg">${[["S","Sấp"],["N","Ngửa"]].map(([v,l])=>`<button data-act="tttcall" data-v="${v}" aria-pressed="${T.call===v}">${l}</button>`).join("")}</div>`;
   h+=`</section>`;
   if(T.ch&&T.call){
-    h+=`<section class="ttbox ctr"><span class="cap">2 · Tung đồng xu</span><span class="coin${T.res?"":" off"}${ttCoin&&Date.now()-ttCoin<1200?" spin":""}">${T.res==="N"?"NGỬA":T.res==="S"?"SẤP":"?"}</span>
+    h+=`<section class="ttbox ctr"><span class="cap">2 · Tung đồng xu</span><span class="coin${T.res?"":" off"}${ttCoin&&Date.now()-ttCoin<1200?" spin":""}">${T.res==="N"?"Ngửa":T.res==="S"?"Sấp":"?"}</span>
       ${T.res?`<b>Ra ${T.res==="N"?"Ngửa":"Sấp"} · ${tn(T.w)} thắng bốc thăm</b><small>Tung lỗi thì bấm tung lại</small>`:""}<button class="ttln" data-act="ttflip">${T.res?"↻ Tung lại":"🪙 Tung đồng xu"}</button></section>`;
   }
   if(T.w){const pk=T.pk||[],cur=pk.length&&pk[pk.length-1].v==="defer"?ttO(T.w):T.w,done=T.first!=null;
@@ -127,14 +127,14 @@ function ttMain(D,m,X){
   const el=X.t0?Math.max(0,Math.round((Date.now()-X.t0)/6e4)):0,mate=id=>{const L=st==="a"?m.a:m.b;return L[0]===id?L[1]:L[0]};
   let h=ttHead(D,m,`Sân ${esc(cName(m.court))} · Ván ${X.g+1}${X.R.sets>1?` · ${X.gw.a}–${X.gw.b}`:""}`,rfOn()?"":"ttx")+ycMine();
   // bảng điểm nền đậm: ô đội đang giao bật sáng, vạch màu đội
-  const tile=t=>{const on=t===st;return `<div class="tttile t${t}${on?" on":""}"><span class="h">${ttAvs(D,t==="a"?m.a:m.b,"xs")}<span class="n">${esc(ttTN(D,m,t))}</span></span><b class="num">${X.s[t]}</b><span class="k">${on?(X.rally?"● ĐANG GIAO":`● ĐANG GIAO · TAY ${X.sn}`):"đang nhận"}</span></div>`};
+  const tile=t=>{const on=t===st;return `<div class="tttile t${t}${on?" on":""}"><span class="h">${ttAvs(D,t==="a"?m.a:m.b,"xs")}<span class="n">${esc(ttTN(D,m,t))}</span></span><b class="num">${X.s[t]}</b><span class="k">${on?(X.rally?"● Đang giao":`● Đang giao · tay ${X.sn}`):"đang nhận"}</span></div>`};
   h+=`<div class="ttsbd"><div class="tttiles">${tile(X.left)}${tile(ttO(X.left))}</div><span class="meta num">Chạm ${X.R.to}${X.R.w2?" · cách 2":""} · đổi bên ở ${X.half} · ⏱ <b data-ttel="${X.t0||Date.now()}">${el}</b>′</span></div>
     <div class="ttwhite"><div class="ttcall"><b class="num">${X.call()}</b><span><b>${esc(ttPN(D,X.sv))}</b> giao từ ô ${X.srvRight?"phải":"trái"} · ${esc(ttPN(D,X.rcv))} nhận</span></div>${ttCourt(D,m,X)}</div>`;
   h+=`<div class="tttools"><button data-act="tttoo">Timeout</button><button data-act="ttmt">✚ Y tế</button><button data-act="ttv" data-v="hist">Lịch sử</button><button data-act="dhcb" data-v="${Number(m.court)||1}">📣 Gọi BTC</button><button class="red" data-act="ttff">Bỏ cuộc</button></div>
     <div class="ttlast">${last?`Pha trước: ${esc(last.tx)} (${last.before} → ${last.after})`:"Chưa có pha nào · bấm nút dưới sau mỗi pha bóng"}</div>`;
   // đáy cố định: Hoàn tác trên; +1 nằm cùng phía đội đang giao, nút còn lại phía kia
-  const lose=X.rally?{c:"so",l:"ĐỘI NHẬN GHI ĐIỂM",s:`+1 cho ${esc(ttTN(D,m,rt))} · đổi giao`}:X.sn===1?{c:"t2",l:"TAY 2",s:`${esc(ttPN(D,mate(X.sv)))} giao`}:{c:"so",l:"ĐỔI GIAO",s:`sang ${esc(ttTN(D,m,rt))}`};
-  const bP=`<button class="p1 t${st}" data-act="ttp" data-v="${st}"><b>+1 ĐIỂM</b><small>${esc(ttTN(D,m,st))}</small></button>`,bL=`<button class="${lose.c}" data-act="ttp" data-v="${rt}"><b>${lose.l}</b><small>${lose.s}</small></button>`;
+  const lose=X.rally?{c:"so",l:"Đội nhận ghi điểm",s:`+1 cho ${esc(ttTN(D,m,rt))} · đổi giao`}:X.sn===1?{c:"t2",l:"TAY 2",s:`${esc(ttPN(D,mate(X.sv)))} giao`}:{c:"so",l:"Đổi giao",s:`sang ${esc(ttTN(D,m,rt))}`};
+  const bP=`<button class="p1 t${st}" data-act="ttp" data-v="${st}"><b>+1 Điểm</b><small>${esc(ttTN(D,m,st))}</small></button>`,bL=`<button class="${lose.c}" data-act="ttp" data-v="${rt}"><b>${lose.l}</b><small>${lose.s}</small></button>`;
   h+=`<div class="ttbar"><button class="ttun" data-act="ttundoask" ${(m.ref.ev||[]).length?"":"disabled"}>↶ Hoàn tác pha vừa nhập</button><div class="two">${st===X.left?bP+bL:bL+bP}</div></div>`;
   // hộp thoại xin timeout: chọn đội rồi mới bắt đầu bấm giờ
   if(ttTOD&&!X.toAct){const sel=ttTOD.t;
@@ -158,7 +158,7 @@ function ttHist(D,m,X){
   const t0=P.length?P[P.length-1].at:0,t1=P.length?P[0].at:0;
   let h=ttHead(D,m,`Lịch sử · Sân ${esc(cName(m.court))}`,"ttmain");
   h+=`<div class="ttseg tabs">${gs.map(i=>{const G=X.games[i];return `<button data-act="tthg" data-v="${i}" aria-pressed="${i===g}">Ván ${i+1} · ${G?`${G.a}–${G.b}`:"đang đánh"}</button>`}).join("")}</div>
-    <div class="hqtiles three"><span><b class="num">${P.length}</b><small>PHA BÓNG</small></span><span><b class="num">${sides}</b><small>ĐỔI GIAO</small></span><span><b class="num">${P.length>1?Math.max(1,Math.round((t1-t0)/6e4)):0}′</b><small>THỜI GIAN</small></span></div>
+    <div class="hqtiles three"><span><b class="num">${P.length}</b><small>Pha bóng</small></span><span><b class="num">${sides}</b><small>Đổi giao</small></span><span><b class="num">${P.length>1?Math.max(1,Math.round((t1-t0)/6e4)):0}′</b><small>Thời gian</small></span></div>
     <div class="tthist"><div class="hh"><span>Giờ</span><span>Gọi điểm</span><span>Diễn biến</span></div>${L.map(l=>`<div class="hr k${l.k}"><span class="num">${l.at?hm(l.at):""}</span><b class="num">${l.k==="p"?l.before:"—"}</b><span>${esc(l.tx)}${l.k==="p"?` → <b class="num">${l.after}</b>`:""}</span></div>`).join("")||`<p class="rule">Chưa có diễn biến.</p>`}</div>
     <small class="rule">Mỗi pha lưu giờ, người giao, điểm gọi. Hoàn tác chỉ gỡ pha mới nhất và cũng được ghi lại.</small>`;
   return h;

@@ -28,7 +28,7 @@ function mxIntro(D){
   let h=mxBack("home","Trang chủ");
   h+=`<section class="gthero${cov?" img":""}"${cov?` style="background-image:linear-gradient(180deg,rgba(8,33,58,.05),rgba(8,33,58,.85)),url('${cov}')"`:""}>
     <div class="gtid">${clubAv(c,"big")}<span class="t"><b>${esc(c.name||"")}</b><small>${esc(c.city||"CLB pickleball")}</small></span></div></section>
-    <div class="gtstat"><span><b class="num">${n}</b><small>THÀNH VIÊN</small></span><span><b class="num">${(S.hist||[]).length}</b><small>GIẢI ĐẤU</small></span><span><b class="num">${avg?r2(avg):"–"}</b><small>RATING TB</small></span></div>`;
+    <div class="gtstat"><span><b class="num">${n}</b><small>Thành viên</small></span><span><b class="num">${(S.hist||[]).length}</b><small>Giải đấu</small></span><span><b class="num">${avg?r2(avg):"–"}</b><small>RATING TB</small></span></div>`;
   if(n)h+=`<div class="gtfaces">${M.slice(0,8).map(p=>av(p,"sm",1)).join("")}${n>8?`<span class="more">+${n-8}</span>`:""}<small>đang chơi cùng nhau</small></div>`;
   if(c.about||tags.length)h+=`<div class="mxcard gtab">${c.about?`<p>${esc(c.about)}</p>`:""}${tags.length?`<div class="gttags">${tags.map(t=>`<span>${esc(t)}</span>`).join("")}</div>`:""}</div>`;
   // Lịch, sân, trình độ, chi phí

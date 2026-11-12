@@ -3,12 +3,12 @@ import BODY from "./body.html?raw";
 window.ZMINI = 1;
 window.ZMP = { getUserID, getUserInfo, getAccessToken, openShareSheet, openWebview, saveImageToGallery, scanQRCode, openOutApp, openChat, getPhoneNumber, openPhone, events, EventName, configAppView };
 document.documentElement.classList.add("mini");
-// Thanh trạng thái trong suốt: thanh đầu xanh / poster giải tràn lên tận mép trên như các app khác.
+// Thanh trạng thái trong suốt: thanh đầu trắng như Zalo / poster giải tràn lên tận mép trên.
 // Đo độ cao thanh trạng thái (Android: Zalo đặt --zaui-safe-area-inset-top; iOS: env()); đo không ra thì giữ thanh thường.
 (async () => {
   const root = document.documentElement;
   try {
-    await configAppView({ headerColor: "#0c2b44", headerTextColor: "white", statusBarType: "transparent", actionBar: { hide: true } });
+    await configAppView({ headerColor: "#ffffff", headerTextColor: "black", statusBarType: "transparent", actionBar: { hide: true } });
     await new Promise(r => setTimeout(r, 60));
     const pr = document.createElement("div");
     pr.style.cssText = "position:fixed;top:0;left:0;width:1px;height:0;visibility:hidden;padding-top:env(safe-area-inset-top,0px)";
@@ -30,10 +30,7 @@ if (!document.querySelector('meta[name="viewport"]')) {
 if (!document.getElementById("view")) {
   const host = document.getElementById("app") || document.body;
   host.insertAdjacentHTML("beforeend", BODY);
-  const f = document.createElement("link");
-  f.rel = "stylesheet";
-  f.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600&display=swap";
-  document.head.appendChild(f);
+  // Chuẩn Zalo: dùng font của máy (Roboto / SF), không tải font ngoài
   const st = document.createElement("style");
   st.textContent = "[hidden]{display:none!important}img{max-width:100%}";
   document.head.appendChild(st);

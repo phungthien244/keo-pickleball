@@ -6,7 +6,7 @@ function ckBtcPg(D,X){
   return `<small class="rule">Chạm tên người đã tới sân để check-in giùm. Bỏ tích phải bấm 2 lần.</small>
     <span class="gmlb">Đã tới ${n}/${L.length}</span>
     <div class="g2list">${L.map(r=>{const p=r.pid&&D.pmap.get(r.pid),m=capMate(r),ar=!!r.arrived,arm=armed("ckbtc:"+r.id);
-      return `<button class="g2p ckbtc${ar?" on":""}" data-act="ckbtct" data-id="${esc(r.id)}" role="checkbox" aria-checked="${ar}">${av(p||{name:ckName(D,r)},"sm",1)}<span class="t"><b>${esc(ckName(D,r))}</b><small>${ar?`đã tới ${r.arrivedAt?hm(r.arrivedAt):""} · ${r.arrBy==="btc"?"BTC check-in":"quét mã"}`:r.ci?"vừa quét · chờ duyệt":"chưa tới"}${m?` · cặp với ${esc(ckName(D,m))}`:""}</small></span>${arm?`<b class="g2on">BẤM LẦN NỮA ĐỂ BỎ</b>`:`<span class="ckbox" aria-hidden="true">${ar?"✓":""}</span>`}</button>`}).join("")||`<p class="rule">Chưa có ai đăng ký.</p>`}</div>
+      return `<button class="g2p ckbtc${ar?" on":""}" data-act="ckbtct" data-id="${esc(r.id)}" role="checkbox" aria-checked="${ar}">${av(p||{name:ckName(D,r)},"sm",1)}<span class="t"><b>${esc(ckName(D,r))}</b><small>${ar?`đã tới ${r.arrivedAt?hm(r.arrivedAt):""} · ${r.arrBy==="btc"?"BTC check-in":"quét mã"}`:r.ci?"vừa quét · chờ duyệt":"chưa tới"}${m?` · cặp với ${esc(ckName(D,m))}`:""}</small></span>${arm?`<b class="g2on">Bấm lần nữa để bỏ</b>`:`<span class="ckbox" aria-hidden="true">${ar?"✓":""}</span>`}</button>`}).join("")||`<p class="rule">Chưa có ai đăng ký.</p>`}</div>
     <div class="hqcta"><button class="ball go" data-act="ckbtcx">✓ Xong · ${n}/${L.length} đã tới</button></div>`;
 }
 async function ckBtcAct(act,b){

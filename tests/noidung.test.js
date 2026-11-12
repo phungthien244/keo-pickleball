@@ -48,8 +48,8 @@ test("đăng ký theo nội dung, ngày đánh, bắt đầu tất cả, xếp t
   expect(e.T()).toContain("Đôi open"); expect(e.T()).toContain("Nữ 4.2"); expect(e.T()).toContain("2/2 cặp đủ người");
   // Đăng ký: chip nội dung, tổng quan
   await e.click("gmst", { v: "0" }); await e.until(() => e.V().includes('class="ndchips"'));
-  expect(e.T()).toContain("ĐÃ CHIA BẢNG"); expect(e.T()).toContain("1 người đăng ký từ 2 nội dung");
-  await e.click("ndrf", { v: "f" }); await e.until(() => e.T().includes("BẢNG A"));
+  expect(e.T()).toContain("Đã chia bảng"); expect(e.T()).toContain("1 người đăng ký từ 2 nội dung");
+  await e.click("ndrf", { v: "f" }); await e.until(() => e.T().includes("Bảng A"));
   await e.click("gmst", { v: "1" }); await e.until(() => e.T().includes("Bắt đầu tất cả nội dung"));
   await e.click("ndstart"); await e.until(() => e.store.get("clubs/q7/app/config").phase === "live");
   const G = e.store.get("clubs/q7/app/config").giai;
@@ -65,9 +65,9 @@ test("đăng ký theo nội dung, ngày đánh, bắt đầu tất cả, xếp t
   await e.until(() => e.V().includes('class="ndtag"'));
   // Bảng: chọn nội dung
   await e.click("kseg", { v: "bang" }); await e.until(() => e.V().includes('data-act="ndf"'));
-  await e.click("ndf", { v: "f" }); await e.until(() => e.T().includes("BẢNG A"));
-  expect(e.T()).not.toContain("BẢNG B");
-  await e.click("ndf", { v: "o" }); await e.until(() => e.T().includes("BẢNG B"));
+  await e.click("ndf", { v: "f" }); await e.until(() => e.T().includes("Bảng A"));
+  expect(e.T()).not.toContain("Bảng B");
+  await e.click("ndf", { v: "o" }); await e.until(() => e.T().includes("Bảng B"));
   // Nữ xong vòng bảng: chỉ nội dung đó hiện Tạo nhánh, bấm thì chỉ nội dung đó sang knockout
   const [fid] = e.docs("clubs/q7/matches/", m => m.nd === "f").map(([k]) => k);
   await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/" + fid), { status: "done", sa: 11, sb: 5, doneAt: Date.now() });

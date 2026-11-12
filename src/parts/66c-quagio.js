@@ -2,7 +2,7 @@
    ① Hết giờ dự kiến + 1 tiếng (và 30′ không có trận mới): nhắc người tổ chức ở tab Lịch, Tin, trang Hôm nay → "Chốt ngay".
    ② Hết giờ + 3 tiếng (và 1 tiếng yên): với người chơi coi như đã kết thúc (không ghi gì, chỉ đổi cách hiện).
    ③ Qua nửa đêm, hết giờ + 3 tiếng và 3 tiếng yên: máy người tổ chức tự đóng buổi khi mở app.
-      Giữ kết quả các trận đã nhập, trận chưa có tỉ số bỏ đi; tiền KHÔNG tự chốt: ai chưa trả vào "Còn nợ",
+      Giữ kết quả các trận đã nhập, trận chưa có tỉ số bỏ đi; tiền không tự chốt: ai chưa trả vào "Còn nợ",
       buổi gắn nhãn "chưa chốt tiền" cho tới khi người tổ chức mở lại và lưu. */
 const OV_H=36e5;
 // Giờ kết thúc dự kiến của lịch đánh: ngày của X.at + X.end (qua nửa đêm thì sang ngày sau); không ghi thì +3 tiếng

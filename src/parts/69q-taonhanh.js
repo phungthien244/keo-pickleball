@@ -69,7 +69,7 @@ function tnParse(txt){
   {const m=String(txt||"").match(/"([^"]{3,40})"|“([^”]{3,40})”/);if(m)o.name=(m[1]||m[2]).trim()}
   return o;
 }
-// Đoán phần còn thiếu theo giải gần nhất cùng kiểu của CLB (đánh dấu ĐOÁN)
+// Đoán phần còn thiếu theo giải gần nhất cùng kiểu của CLB (đánh dấu Đoán)
 function tnFill(o){
   const L=tnLast(),last=L.find(x=>x.fmt==="giai"&&(o.fmt==="bang"?x.ko:o.fmt==="giai"?!x.ko:false))||L.find(x=>o.fmt==="xoay"?x.fmt==="xoay":true)||{},c=cfg(),g=o.guess instanceof Set?o.guess:new Set();
   const t={...o,guess:g,ok:o.ok instanceof Set?o.ok:new Set()};
@@ -204,7 +204,7 @@ function tnGBody(g,t){
   return h;
 }
 // Dòng tóm tắt của một nhóm trên thẻ xác nhận
-function tnGRows(g,t){const R=(l,v,k)=>`<div class="tnr"><span>${l}</span><b>${v}</b>${k&&[].concat(k).some(x=>t.guess.has(x))&&!t.ok.has(g)?`<em>ĐOÁN</em>`:""}</div>`,E=tnEst(t),at=tnAt(t);
+function tnGRows(g,t){const R=(l,v,k)=>`<div class="tnr"><span>${l}</span><b>${v}</b>${k&&[].concat(k).some(x=>t.guess.has(x))&&!t.ok.has(g)?`<em>Đoán</em>`:""}</div>`,E=tnEst(t),at=tnAt(t);
   if(g==="nguoi")return R("Thể thức",esc(TN_FMT[t.fmt]||"—"))+(t.nds?t.nds.map(n=>R("Nội dung",`${esc(n.name)} · ${n.max} cặp`)).join(""):t.fmt==="xoay"?R("Số người",t.people?`${t.people} người`:"—","people"):R("Số cặp",t.pairs?`${t.pairs} cặp · ${esc(TN_DT[t.dt||"free"].toLowerCase())}`:"—","pairs")+(t.fmt==="bang"?R("Bảng",`${t.koN||"—"} bảng · lấy ${t.lay||2}${t.third===false?"":" · tranh hạng 3"}`,"koN"):"")+R("Đăng ký",t.pairReg==="solo"?"Từng người, BTC ghép":"Theo cặp","pairReg"));
   if(g==="gio")return R("Ngày giờ",t.date!=null&&t.time?`${tnDow(at)} ${tnDm(at)} · ${t.time}${t.end?`–${t.end}`:""}`:"—",["date","time"])+R("Sân",`${t.courts||"—"} sân${t.place?` · ${esc(t.place)}`:""}`,["courts","place"])+R("Luật",`Chạm ${t.target||11}`,"target")+(E?R("Dự kiến",`${E.m} trận · xong ~${hm(E.end)}`):"");
   if(g==="tien")return (t.fmt==="xoay"?R("Cách thu",{phi:"Lệ phí cố định",deu:"Chia đều tiền sân",keo:"Ai thua góp"}[t.thu]||"—","thu"):"")+(t.nds?R("Lệ phí","Theo từng nội dung"):(t.thu==="keo"||t.thu==="deu")&&t.fmt==="xoay"?"":R("Lệ phí",t.fee==null?"—":t.fee?`${fmtK(t.fee)}/người`:"Miễn phí","fee"))+R("Chuyển khoản",{off:"Không, trả tại sân",opt:"Tuỳ chọn",req:"Bắt buộc mới giữ chỗ"}[t.pay]||"—","pay")+(t.guests&&t.feeG!=null&&t.feeG!==""?R("VĐV ngoài",`${fmtK(+t.feeG)}`,"feeG"):"");
@@ -255,14 +255,14 @@ function tnPage(D){
       <div class="hqcta"><button class="ball go" data-act="tnpg" data-v="pick">Đã hiểu, bắt đầu ›</button></div>`}
   if(tnPg==="pick"){const txt=String(val("tn-txt","")),o=txt.trim()?tnFill(tnParse(txt)):null;
     mxDr({t:"Tạo lịch đánh",back:"tnx",sub:tnBusy?"AI đang soạn…":o?"Đang tả lịch đánh":"Chọn cách tạo",x:true});
-    let h=`<div class="tghead"><span>✦ TẠO NHANH BẰNG AI</span><button class="lnk" data-act="tnpg" data-v="help">❓ Cách dùng</button></div><b class="tgt">Tả lịch đánh bằng một câu, app soạn sẵn mọi mục</b>`
+    let h=`<div class="tghead"><span>✦ Tạo nhanh bằng AI</span><button class="lnk" data-act="tnpg" data-v="help">❓ Cách dùng</button></div><b class="tgt">Tả lịch đánh bằng một câu, app soạn sẵn mọi mục</b>`
       +`<label class="fld tntxt"><span class="sr">Tả giải</span><textarea id="tn-txt" data-draft="tn-txt" data-live="1" rows="3" maxlength="400" placeholder="Ví dụ: Tối thứ 7 social 19h, 3 sân, 80k/người · hoặc: CN 7h giải 16 cặp chia 4 bảng, nhất 1 triệu"${tnBusy?" disabled":""}>${esc(txt)}</textarea></label>`;
     if(o){const C=tnCheck(o);
       if(tnBusy)h+=`<section class="tgread"><span aria-hidden="true">✦</span><b>AI đang soạn…</b><i></i></section><section class="tgbox">${C.filter(x=>x[1]).map(x=>tnCkRow(x)).join("")}${tnCkRow(["Sân, luật, chuyển khoản…",false,""],true)}</section>`;
       else h+=`<section class="tgbox"><span class="cap">App đã nhận ra · ${C.filter(x=>x[1]).length}/7</span>${C.map(x=>tnCkRow(x)).join("")}</section><small class="rule">Thiếu vẫn bấm Soạn được, app sẽ hỏi bằng nút bấm. Xoá hết chữ thì các thể thức hiện lại.</small>`;
       return h+`<div class="hqcta"><button class="ball go" data-act="tngo"${tnBusy?" disabled":""}>${tnBusy?"Đang soạn…":"✦ Soạn giải"}</button></div>`}
     const seen=new Set(),L=tnLast().filter(x=>x.at&&!x.series&&!seen.has(xName(x))&&seen.add(xName(x))).concat(tnLast().filter(x=>x.at&&x.series)).filter((x,i,a)=>a.findIndex(y=>xName(y)===xName(x))===i).slice(0,2);
-    return h+`<div class="tgor"><i></i><span>HOẶC CHỌN LOẠI</span><i></i></div>`
+    return h+`<div class="tgor"><i></i><span>Hoặc chọn loại</span><i></i></div>`
       +TN_FC.map(([k,ic,t,s,f,l])=>`<button class="tgfc ${l}" data-act="tnfmt" data-v="${k}"><i aria-hidden="true">${ic}</i><span><b>${t}</b><small>${s}</small><em>${f}</em></span><span aria-hidden="true">›</span></button>`).join("")
       +(L.length?`<section class="tnprev"><span class="cap">Như giải lần trước · 1 chạm</span>${L.map(x=>`<button data-act="tnprev" data-id="${esc(x.id)}"><span class="t"><b>${esc(xName(x))}</b><small>${esc([x.fmt==="giai"?(x.ko?"Chia bảng + KO":"Vòng tròn"):"Xoay cặp",ndL(x).length?`${ndL(x).length} nội dung`:x.max?`${x.fmt==="giai"?Math.round(x.max/2)+" cặp":x.max+" người"}`:"",`${x.courts||2} sân`,x.at?`${tnDow(x.at)} ${tnDm(x.at)}`:""].filter(Boolean).join(" · "))}</small></span><span class="go">Dùng lại ›</span></button>`).join("")}</section>`:"")
       +`<button class="lnk tgfull" data-act="tnfull">Tạo bằng form đầy đủ ›</button>`;
@@ -333,7 +333,7 @@ function tnRd(){
   const nm=v("name");if(nm!=null){const n=String(nm).trim().slice(0,30);tn.name=n&&n!==tnAutoName(tn)?n:""}
   for(const k of Object.keys(drafts))if(k.startsWith("tn-")&&k!=="tn-txt"&&k!=="tn-say")delete drafts[k];
 }
-// Gộp kết quả AI vào bản nháp: mục AI nêu thì thay, bỏ nhãn ĐOÁN
+// Gộp kết quả AI vào bản nháp: mục AI nêu thì thay, bỏ nhãn Đoán
 function tnMerge(a){if(!a)return;if(tn&&tn.ans)delete a.endBy;for(const [k,v] of Object.entries(a)){tn[k]=v;tn.guess.delete(k)}if(a.fmt==="bang"&&tn.pairs&&!tn.koN){tn.koN=Math.max(1,Math.round(tn.pairs/4));tn.lay=2}}
 async function tnAct(act,b){
   const v=b.dataset.v,D=derive();

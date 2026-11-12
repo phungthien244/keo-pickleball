@@ -195,7 +195,7 @@ function vqrSvg(amt,note,px=220){
 function vqrCard(amt,note){
   const q=vqrQ(amt,note),n=q.getModuleCount(),W=720,cv=document.createElement("canvas");cv.width=W;cv.height=1040;const g=cv.getContext("2d");if(!g)throw 0;
   g.fillStyle="#fff";g.fillRect(0,0,W,1040);g.fillStyle="#0c2b44";g.fillRect(0,0,W,110);
-  g.fillStyle="#fff";g.textAlign="center";g.font="bold 34px Arial, sans-serif";g.fillText("QUÉT MÃ ĐỂ CHUYỂN KHOẢN",W/2,68);
+  g.fillStyle="#fff";g.textAlign="center";g.font="bold 34px Arial, sans-serif";g.fillText("Quét mã để chuyển khoản",W/2,68);
   const sz=560,cell=Math.floor(sz/(n+6)),qs=cell*(n+6),x0=(W-qs)/2,y0=140;
   g.fillStyle="#000";for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))g.fillRect(x0+(c+3)*cell,y0+(r+3)*cell,cell,cell);
   let y=y0+qs+70;g.fillStyle="#0c2b44";g.font="bold 56px Arial, sans-serif";g.fillText(Math.round(amt).toLocaleString("vi-VN")+"đ",W/2,y);

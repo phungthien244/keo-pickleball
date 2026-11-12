@@ -39,7 +39,7 @@ function vStart(){
   h+=lab("Các CLB đang dùng");
   h+=!S.clubs?`<p class="rule">Đang tải…</p>`:list.length?`<div class="clist">${list.slice(0,6).map(clubCard).join("")}</div>${list.length>6?`<a class="btn-line" href="/clb" data-go="clb">Xem tất cả ${list.length} CLB</a>`:""}`:`<p class="rule">Chưa có CLB công khai nào. Hãy là CLB đầu tiên.</p>`;
   h+=lab("Có gì trong app")+`<div class="feat2">${F.map(([t,d],i)=>`<div><span class="no">${String(i+1).padStart(2,"0")}</span><span><b>${t}</b><span>${d}</span></span></div>`).join("")}</div>
-  <div class="steps3"><b>3 BƯỚC ĐỂ BẮT ĐẦU</b><ol><li>Đăng nhập Google, đặt tên và đường dẫn CLB.</li><li>Khai ngân hàng, đặt PIN trọng tài, thêm thành viên.</li><li>Gửi link pikeco.app/tên-clb vào nhóm Zalo.</li></ol><a class="cta b" href="/tao-clb" data-go="tao">Tạo CLB ngay</a></div>`;
+  <div class="steps3"><b>3 Bước để bắt đầu</b><ol><li>Đăng nhập Google, đặt tên và đường dẫn CLB.</li><li>Khai ngân hàng, đặt PIN trọng tài, thêm thành viên.</li><li>Gửi link pikeco.app/tên-clb vào nhóm Zalo.</li></ol><a class="cta b" href="/tao-clb" data-go="tao">Tạo CLB ngay</a></div>`;
   return h+pfoot();
 }
 function vClb(){

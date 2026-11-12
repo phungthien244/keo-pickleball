@@ -24,7 +24,7 @@ test("luồng giải đấu: chuẩn bị → đang đánh → chốt, quỹ gi�
   await e.ok("start");
   expect(e.store.get("app/config").phase).toBe("live");
   // ② Đang đánh: dải tóm tắt + nút Sửa, bảng sửa mở được
-  expect(e.T()).toContain("TRỰC TIẾP");
+  expect(e.T()).toContain("Trực tiếp");
   await e.click("sheet");
   await e.click("courts", { d: "1" }); expect(e.store.get("app/config").courts).toBe(3);
   await e.click("sheetx");
@@ -136,10 +136,10 @@ test("đổi thể thức trong bảng Sửa không đẩy về bước Chuẩn 
   e.input("bulk", "A\nB\nC | nữ\nD | nữ\nE\nF | nữ"); await e.click("add");
   await e.tab("san"); await e.ok("start"); await e.click("sheet");
   await e.click("cset", { k: "fmt", v: "giai" });
-  expect(e.T()).toContain("TRỰC TIẾP");
+  expect(e.T()).toContain("Trực tiếp");
   await e.click("cset", { k: "fmt", v: "xoay" });
   expect(e.store.get("app/config").phase).toBe("live");
-  expect(e.T()).toContain("TRỰC TIẾP");
+  expect(e.T()).toContain("Trực tiếp");
   expect(e.T()).not.toContain("· chuẩn bị");
 });
 

@@ -18,10 +18,10 @@ function gmStageOf(D,X){
 }
 const gmBar=(n,done)=>`<span class="gmbar" aria-hidden="true">${GM_ST.map((_,i)=>`<i class="${done||i<n?"ok":i===n?"on":""}"></i>`).join("")}</span>`;
 const gmTag=X=>{const s=xState(X),st=X?null:"live";
-  if(!X||s==="live")return `<span class="gmtag r">ĐANG ĐÁNH</span>`;
-  if(X.st==="done")return `<span class="gmtag">ĐÃ XONG</span>`;
-  if(X.at&&sameDay(X.at,Date.now()))return `<span class="gmtag b">HÔM NAY</span>`;
-  return {draft:`<span class="gmtag y">NHÁP</span>`,plan:`<span class="gmtag y">CHỜ MỞ</span>`,open:`<span class="gmtag g">ĐĂNG KÝ</span>`,cancel:`<span class="gmtag">ĐÃ HUỶ</span>`}[s]||"";
+  if(!X||s==="live")return `<span class="gmtag r">Đang đánh</span>`;
+  if(X.st==="done")return `<span class="gmtag">Đã xong</span>`;
+  if(X.at&&sameDay(X.at,Date.now()))return `<span class="gmtag b">Hôm nay</span>`;
+  return {draft:`<span class="gmtag y">Nháp</span>`,plan:`<span class="gmtag y">Chờ mở</span>`,open:`<span class="gmtag g">Đăng ký</span>`,cancel:`<span class="gmtag">Đã huỷ</span>`}[s]||"";
 };
 const gmLink=X=>X?`href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}"`:`href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san"`;
 // Việc tiếp theo của một giải: {t, s, b: nút}
@@ -41,13 +41,13 @@ function gmNext(D,X){
   return {t:left===0?"Đủ chỗ · gửi danh sách vào nhóm":left!=null?`Còn ${left} chỗ · gửi nhắc vào nhóm`:`${R.conf.length} người đã đăng ký · gửi nhắc vào nhóm`,
     s:X.deadline?`Hạn đăng ký ${hm(X.deadline)} ${dowVN(X.deadline)}`:"",b:`<button class="gmgo" data-act="regshare" data-id="${esc(X.id)}">📣 Gửi nhắc</button>`};
 }
-const gmNextBox=(n,btn)=>`<div class="gmnext"><span class="cap">👉 Việc tiếp theo</span><b>${n.t}</b>${n.s?`<small>${esc(n.s)}</small>`:""}${btn&&n.b?n.b:""}</div>`;
+const gmNextBox=(n,btn)=>`<div class="gmnext"><span class="cap">Việc tiếp theo</span><b>${n.t}</b>${n.s?`<small>${esc(n.s)}</small>`:""}${btn&&n.b?n.b:""}</div>`;
 // Dải đỏ: giải đang đánh, ghim ở các trang khác
 function gmLiveBan(D){
   {const y=ycBan(D);if(y)return y}
   if(!canWrite||legacy||REF||!(gmLive(D)||D.SM.length))return "";
   const X=xCur();
-  return `<a class="gmlive" ${gmLink(X)}><b>● ĐANG ĐÁNH</b><span>${esc(X?xName(X):(D.c.sname||"Giải đánh nhanh"))} · ${D.playing.length} sân · ${D.done.length} trận xong</span><i>Mở ›</i></a>`;
+  return `<a class="gmlive" ${gmLink(X)}><b>● Đang đánh</b><span>${esc(X?xName(X):(D.c.sname||"Giải đánh nhanh"))} · ${D.playing.length} sân · ${D.done.length} trận xong</span><i>Mở ›</i></a>`;
 }
 
 // Dòng tiêu đề màn đi sâu: Mini App (Quản lý) đưa lên đầu trang, web giữ trong thân trang
@@ -96,7 +96,7 @@ function vGiaiHub(D){
 function gmFirst(D){
   const nm=String((S.link&&S.link.status==="ok"&&D.pmap.get(S.link.pid)?.name)||zaloProf().n||"").trim().split(/\s+/).pop();
   return `<div class="gmhi"><b>Chào${nm?" "+esc(nm):""} 👋</b><span>Pikeco giúp mở giải, xếp sân, tính tiền. Bắt đầu bằng giải đầu tiên nhé.</span></div>
-    <button class="gmopt on" data-act="xqfmt" data-v="xoay"><i>🔄</i><span><b>Buổi giao lưu</b><small>Ai đến cũng đánh. App tự xếp cặp đổi liên tục, tính tiền sân cho từng người. Hợp buổi tập hằng tuần.</small></span><em>PHỔ BIẾN</em></button>
+    <button class="gmopt on" data-act="xqfmt" data-v="xoay"><i>🔄</i><span><b>Buổi giao lưu</b><small>Ai đến cũng đánh. App tự xếp cặp đổi liên tục, tính tiền sân cho từng người. Hợp buổi tập hằng tuần.</small></span><em>Phổ biến</em></button>
     <button class="gmopt" data-act="xqfmt" data-v="giai"><i>🏆</i><span><b>Giải có cặp cố định</b><small>Đăng ký theo cặp, chia bảng, có giải thưởng. Hợp giải tháng, giải giao hữu.</small></span></button>
     <button class="lnk gmquick" data-act="gmquick">⚡ Đánh nhanh ngay · không cần đăng ký trước</button><div class="hqcta"><button class="ball wide nv" data-act="xnew">＋ Tạo lịch đánh</button></div>`;
 }

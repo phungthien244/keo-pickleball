@@ -32,7 +32,7 @@ const kTeamOf=(T,code)=>T.find(t=>t.code===code);
 // Lưới bảng (dùng cho chia xong, bốc, tự xếp)
 function kGrid(T,groups,seeds,o={}){
   const ss=new Set(seeds||[]);
-  return `<div class="kbg">${groups.map((g,gx)=>`<div class="kbgb${o.drop&&kSel?" can":""}"${o.drop&&kSel?` data-act="k9cput" data-v="${gx}" role="button"`:""}><span class="h"><b>BẢNG ${KOG[gx]}</b>${o.cap?`<small>${g.length}/${o.cap}</small>`:""}</span>${g.map(c=>{const t=kTeamOf(T,c);if(!t)return "";const on=kSel===c;
+  return `<div class="kbg">${groups.map((g,gx)=>`<div class="kbgb${o.drop&&kSel?" can":""}"${o.drop&&kSel?` data-act="k9cput" data-v="${gx}" role="button"`:""}><span class="h"><b>Bảng ${KOG[gx]}</b>${o.cap?`<small>${g.length}/${o.cap}</small>`:""}</span>${g.map(c=>{const t=kTeamOf(T,c);if(!t)return "";const on=kSel===c;
     return `<button class="kbgp${on?" on":""}${o.hl===c?" hl":""}" data-act="${o.act||"k10sw"}" data-v="${esc(c)}">${ss.has(c)?"★ ":""}${t.nm}</button>`}).join("")}${o.drop&&kSel&&(!o.cap||g.length<o.cap)?`<span class="put">＋ Đưa vào đây</span>`:""}</div>`).join("")}</div>`;
 }
 // Chặng Đăng ký của giải chia bảng (K6 / K10)
@@ -59,8 +59,8 @@ function kRegV(D,X){
   if(!fl.some(f=>f[0]===xbFl))xbFl="cap";
   h+=`<div class="g2fl" role="group" aria-label="Lọc">${fl.map(([k,l])=>`<button data-act="xbfl" data-v="${k}" aria-pressed="${xbFl===k}">${l}</button>`).join("")}</div>`;
   const row=t=>{const pa=t.A.pid&&D.pmap.get(t.A.pid),pb=t.B.pid&&D.pmap.get(t.B.pid),gs=[xbG(D,t.A),xbG(D,t.B)].map(g=>g==="F"?"nữ":"nam").join(" "),pd=t.A.pay==="ok"&&t.B.pay==="ok";
-    return `<button class="g2p" data-act="xbsel" data-id="${esc(t.A.id)}"><span class="g2av2">${av(pa||{name:xbName(D,t.A)},"sm",1)}${av(pb||{name:xbName(D,t.B)},"sm",1)}</span><span class="t"><b>${t.nm}</b><small>${esc(gs)} · ${r2(t.r)}${po&&pd?" · đã trả":""}</small></span>${kBadDt(D,X,t)?g2Tag("SAI NỘI DUNG","r"):po&&!pd?g2Tag("CHƯA TRẢ","y"):""}</button>`};
-  const L=xbFl==="le"?solo.map(x=>{const p=x.pid&&D.pmap.get(x.pid);return `<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>${xbG(D,x)==="F"?"nữ":"nam"} · ${r2(xbLv(D,x))}</small></span>${g2Tag("LẺ","y")}</button>`})
+    return `<button class="g2p" data-act="xbsel" data-id="${esc(t.A.id)}"><span class="g2av2">${av(pa||{name:xbName(D,t.A)},"sm",1)}${av(pb||{name:xbName(D,t.B)},"sm",1)}</span><span class="t"><b>${t.nm}</b><small>${esc(gs)} · ${r2(t.r)}${po&&pd?" · đã trả":""}</small></span>${kBadDt(D,X,t)?g2Tag("Sai nội dung","r"):po&&!pd?g2Tag("Chưa trả","y"):""}</button>`};
+  const L=xbFl==="le"?solo.map(x=>{const p=x.pid&&D.pmap.get(x.pid);return `<button class="g2p" data-act="xbsel" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>${xbG(D,x)==="F"?"nữ":"nam"} · ${r2(xbLv(D,x))}</small></span>${g2Tag("Lẻ","y")}</button>`})
     :(xbFl==="chua"?unpaidT:xbFl==="sai"?bad:T).map(row);
   h+=`<div class="g2list">${L.join("")||`<p class="rule">Không có ai trong mục này.</p>`}</div>`;
   let main="";
@@ -95,7 +95,7 @@ function kPage(D,X){
   if(kPg==="k7b"){sub({t:"Tự ghép cặp",back:"kpgx"});const S0=kSolo(D,X);
     return `<small class="rule">Chạm 2 người để thành một cặp. Chạm ✕ để tách.</small>`
       +(T.length?gsLb("Đã ghép")+`<div class="g2list">${T.map(t=>`<div class="g2p"><span class="t"><b>${t.nm}</b><small>${r2(xbLv(D,t.A))} + ${r2(xbLv(D,t.B))}</small></span><button class="btn-line sm" data-act="k7bx" data-id="${esc(t.A.id)}" aria-label="Tách">✕</button></div>`).join("")}</div>`:"")
-      +gsLb(`Chưa có cặp · ${S0.length} người`)+`<div class="g2list">${S0.map(x=>{const p=x.pid&&D.pmap.get(x.pid),on=kSel===x.id;return `<button class="g2p${on?" sel":""}" data-act="k7bp" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>${xbG(D,x)==="F"?"nữ":"nam"} · ${r2(xbLv(D,x))}</small></span>${on?`<b class="g2on">ĐANG CHỌN</b>`:""}</button>`}).join("")||`<p class="rule">Ai cũng đã có cặp.</p>`}</div>`
+      +gsLb(`Chưa có cặp · ${S0.length} người`)+`<div class="g2list">${S0.map(x=>{const p=x.pid&&D.pmap.get(x.pid),on=kSel===x.id;return `<button class="g2p${on?" sel":""}" data-act="k7bp" data-id="${esc(x.id)}">${av(p||{name:xbName(D,x)},"sm",1)}<span class="t"><b>${esc(xbName(D,x))}</b><small>${xbG(D,x)==="F"?"nữ":"nam"} · ${r2(xbLv(D,x))}</small></span>${on?`<b class="g2on">Đang chọn</b>`:""}</button>`}).join("")||`<p class="rule">Ai cũng đã có cặp.</p>`}</div>`
       +`<button class="g2new" data-act="gmxa">＋ Thêm khách</button><div class="hqcta"><button class="ball go" data-act="kpgx">✓ Xong · ${T.length} cặp</button></div>`}
   if(kPg==="k8"){sub({t:"Hạt giống",back:"kpgx"});const N=kN(X),kd=kdOf(X),L=T.slice().sort((a,b)=>b.r-a.r),sel=kd.noSeed?[]:(kd.seedSel&&kd.seedSel.length?kd.seedSel:L.slice(0,N).map(t=>t.code));
     const rank=new Map(L.filter(t=>sel.includes(t.code)).map((t,i)=>[t.code,i+1]));
@@ -103,7 +103,7 @@ function kPage(D,X){
       <div class="hqcta two"><button class="btn-line" data-act="k8no">Không dùng hạt giống</button><button class="ball go" data-act="k8go">Tiếp: bốc chia bảng ›</button></div>`}
   if(kPg==="k9d"){mxDr({t:"Bốc chia bảng",back:"kpgx",sub:"Loa đọc tên từng cặp"});if(!kDraw)kDraw=kDrawMake(D,X,T);
     const k=kDraw.k,G=kDraw.groups.map(()=>[]);kDraw.order.slice(0,k).forEach(o=>G[o.g].push(o.c));const cur=k?kDraw.order[k-1]:null,ct=cur&&kTeamOf(T,cur.c);
-    return `<section class="kbdraw"><span class="cap">Lượt ${k}/${kDraw.order.length}</span>${ct?`<b class="n">${ct.nm}</b><span>vào</span><b class="g">BẢNG ${KOG[cur.g]}</b>`:`<b class="n">Bấm Bốc tiếp để bắt đầu</b>`}</section>`+kGrid(T,G,kDraw.seeds,{act:"kx",hl:cur&&cur.c})
+    return `<section class="kbdraw"><span class="cap">Lượt ${k}/${kDraw.order.length}</span>${ct?`<b class="n">${ct.nm}</b><span>vào</span><b class="g">Bảng ${KOG[cur.g]}</b>`:`<b class="n">Bấm Bốc tiếp để bắt đầu</b>`}</section>`+kGrid(T,G,kDraw.seeds,{act:"kx",hl:cur&&cur.c})
       +`<div class="hqcta two"><button class="btn-line" data-act="k9all">⏩ Bốc hết</button><button class="ball go" data-act="k9next">${k<kDraw.order.length?"🎲 Bốc tiếp":"✓ Xong"}</button></div>`}
   if(kPg==="k9c"){sub({t:"Tự xếp bảng",back:"kpgx"});const N=kN(X),cap=Math.ceil(T.length/N);if(!kFix){const kd=kdOf(X);kFix=kd.groups&&kd.groups.length===N?kd.groups.map(g=>g.slice()):Array.from({length:N},()=>[]);
       if(!kFix.flat().length){const sd=(kd.seedSel&&kd.seedSel.length?kd.seedSel:T.slice().sort((a,b)=>b.r-a.r).slice(0,N).map(t=>t.code));sd.slice(0,N).forEach((c,i)=>kFix[i].push(c))}}
@@ -133,7 +133,7 @@ function kDrawMake(D,X,T){
   return {groups:G,order,seeds,k:0};
 }
 function kBal(D,X,T){const N=kN(X),L=T.slice().sort((a,b)=>b.r-a.r),G=Array.from({length:N},()=>[]);L.forEach((t,i)=>{const r=Math.floor(i/N),k=i%N;G[r%2?N-1-k:k].push(t.code)});return G}
-const kGroupText=(D,X,T,groups)=>[`🏆 ${xName(X)} · chia bảng`,...groups.map((g,gx)=>`BẢNG ${KOG[gx]}: ${g.map(c=>{const t=kTeamOf(T,c);return t?t.nm.replace(/&amp;/g,"&"):""}).filter(Boolean).join(" · ")}`),`Xem lịch từng trận trong Mini App: ${miniLink(CID,X.id)}`].join("\n");
+const kGroupText=(D,X,T,groups)=>[`🏆 ${xName(X)} · chia bảng`,...groups.map((g,gx)=>`Bảng ${KOG[gx]}: ${g.map(c=>{const t=kTeamOf(T,c);return t?t.nm.replace(/&amp;/g,"&"):""}).filter(Boolean).join(" · ")}`),`Xem lịch từng trận trong Mini App: ${miniLink(CID,X.id)}`].join("\n");
 async function kAct(act,b){
   const D=derive(),v=b.dataset.v,id=b.dataset.id,X=kXR();if(!X)return false;
   const T=()=>kTeams(D,X),top=()=>{try{scrollTo({top:0})}catch(e){}};
@@ -225,7 +225,7 @@ async function kDayAct(act,b){
 }
 
 /* ----- Đang đánh (K14–K19): Sân · Bảng · Nhánh ----- */
-const kGrpOf=(GD,m)=>{const g=GD.games.find(q=>q.m&&q.m.id===m.id);return g&&!g.ko&&g.grp!=null?`BẢNG ${KOG[g.grp]}`:m.ko?koMName(GD,m.ko).toUpperCase():""};
+const kGrpOf=(GD,m)=>{const g=GD.games.find(q=>q.m&&q.m.id===m.id);return g&&!g.ko&&g.grp!=null?`Bảng ${KOG[g.grp]}`:m.ko?koMName(GD,m.ko).toUpperCase():""};
 const kPN=(D,GD,id)=>{const p=GD.pm.get(id);return p?pairNm(D,p):"?"};
 function kNext(D,GD,k=2){const busy=new Set(D.playing.filter(m=>m.giai).flatMap(m=>[m.pa,m.pb])),L=[];for(let i=0;i<k;i++){const g=gPick(D,GD,busy,new Set());if(!g)break;busy.add(g.x);busy.add(g.y);L.push(g)}return L}
 // Cặp được cho nghỉ vì chưa đủ người: đủ người rồi thì tự vào lại (trừ cặp BTC chọn "Chờ thêm")
@@ -263,7 +263,7 @@ function kPlayV(D,X,GD){
     if(G.locked)h+=`<div class="klock">🔒 <b>Bảng đã chốt</b> lúc bắt đầu vòng bảng${G.startedAt?` ${hm(G.startedAt)}`:""} · không đổi được nữa</div>`;
     const per=Math.max(1,Math.round(GD.size/Math.max(1,GD.groups.length)));
     h+=GD.gt.map((t,gx)=>{const gs=GD.games.filter(g=>g.grp===gx&&g.st!=="hold"),left=gs.filter(g=>g.st!=="done"&&g.st!=="wo").length;
-      return `<div class="ktb"><div class="h"><b>BẢNG ${KOG[gx]}</b><small>${left?`● còn ${left} trận`:"xong"}</small></div><div class="r hd"><span>#</span><span>CẶP</span><span>T</span><span>B</span><span>HS</span></div>${t.map((r,i)=>{const d=r.pf-r.pa;return `<div class="r${i<per&&!r.out?" q":""}${r.out?" out":""}"><b>${i+1}</b><span>${pairNm(D,r.p)}</span><span>${r.w}</span><span>${r.l}</span><span>${d>0?"+":d<0?"−":""}${Math.abs(d)}</span></div>`}).join("")}</div>`}).join("");
+      return `<div class="ktb"><div class="h"><b>Bảng ${KOG[gx]}</b><small>${left?`● còn ${left} trận`:"xong"}</small></div><div class="r hd"><span>#</span><span>Cặp</span><span>T</span><span>B</span><span>HS</span></div>${t.map((r,i)=>{const d=r.pf-r.pa;return `<div class="r${i<per&&!r.out?" q":""}${r.out?" out":""}"><b>${i+1}</b><span>${pairNm(D,r.p)}</span><span>${r.w}</span><span>${r.l}</span><span>${d>0?"+":d<0?"−":""}${Math.abs(d)}</span></div>`}).join("")}</div>`}).join("");
     h+=`<small class="rule">Bằng thắng thì xét: đối đầu → hiệu số → điểm ghi được. T: thắng · B: thua · HS: hiệu số.</small>
       <div class="hqcta two"><button class="btn-line gmdot" data-act="ksh" data-v="m15" aria-label="Thêm việc">⋯</button><button class="ball go" data-act="k15send">📣 Gửi bảng vào nhóm</button></div>`;
   }
@@ -301,10 +301,10 @@ function kPlaySheets(D,X,GD){
   if(kSh==="rule")return sh("Luật điểm",`<div class="kobd">${koRules(GD.K)}</div>`);
   if(kSh==="up"){const W=GD.games.filter(g=>g.st==="wait").slice(0,20);return sh("Đưa trận nào lên trước?",`<div class="g2list">${W.map(g=>`<button class="g2p" data-act="kup" data-v="${esc(g.x)}|${esc(g.y)}"><span class="t"><b>${kPN(D,GD,g.x)} – ${kPN(D,GD,g.y)}</b><small>${g.ko?esc(g.rn):`Bảng ${KOG[g.grp]}`}</small></span></button>`).join("")||`<p class="rule">Không còn trận chờ.</p>`}</div>`)}
   if(kSh==="cp"){const cp=G.cpause||{};return sh("Tạm dừng sân",`<div class="g2fl wrap">${Array.from({length:Math.max(1,+D.c.courts||1)},(_,i)=>i+1).map(c=>`<button data-act="kcp" data-v="${c}" aria-pressed="${!!cp[c]}">Sân ${esc(cName(c))}${cp[c]?" · đang dừng":""}</button>`).join("")}</div><small class="rule">Sân tạm dừng không nhận trận mới. Bấm lại để mở.</small>`)}
-  if(kSh==="ff")return sh("Xử thua cặp nào?",`<div class="g2list">${GD.pairs.filter(p=>!GD.out[p.id]).map(p=>`<button class="g2p" data-act="gout" data-id="${esc(p.id)}"><span class="t"><b>${pairNm(D,p)}</b></span><span class="g2tag r">${armed("gout:"+p.id)?"BẤM LẦN NỮA":"XỬ THUA"}</span></button>`).join("")}</div><small class="rule">Các trận còn lại của cặp này tính thua.</small>`);
+  if(kSh==="ff")return sh("Xử thua cặp nào?",`<div class="g2list">${GD.pairs.filter(p=>!GD.out[p.id]).map(p=>`<button class="g2p" data-act="gout" data-id="${esc(p.id)}"><span class="t"><b>${pairNm(D,p)}</b></span><span class="g2tag r">${armed("gout:"+p.id)?"Bấm lần nữa":"Xử thua"}</span></button>`).join("")}</div><small class="rule">Các trận còn lại của cặp này tính thua.</small>`);
   return "";
 }
-const kBangText=(D,GD,X)=>[`🏆 ${X?xName(X):""} · bảng xếp hạng`,...GD.gt.map((t,gx)=>`BẢNG ${KOG[gx]}: ${t.map((r,i)=>`${i+1}. ${pairNm(D,r.p).replace(/&amp;/g,"&")} (${r.w}-${r.l})`).join(" · ")}`)].join("\n");
+const kBangText=(D,GD,X)=>[`🏆 ${X?xName(X):""} · bảng xếp hạng`,...GD.gt.map((t,gx)=>`Bảng ${KOG[gx]}: ${t.map((r,i)=>`${i+1}. ${pairNm(D,r.p).replace(/&amp;/g,"&")} (${r.w}-${r.l})`).join(" · ")}`)].join("\n");
 const kNhanhText=(D,GD,X)=>[`🏆 ${X?xName(X):""} · nhánh đấu`,...GD.ko.flatMap(L=>L.map(g=>`${g.ab}: ${g.x?kPN(D,GD,g.x).replace(/&amp;/g,"&"):g.lx} – ${g.y?kPN(D,GD,g.y).replace(/&amp;/g,"&"):g.ly}${g.st==="done"?` (${g.sx}–${g.sy})`:""}`))].join("\n");
 async function kPlayAct(act,b){
   if(act==="kgo"&&b.dataset.v&&gMulti())gNdF=b.dataset.v;
@@ -317,7 +317,7 @@ async function kPlayAct(act,b){
     await write(()=>saveCfg({kqPub:{...(cfg().kqPub||{}),[String(D.sid)]:Date.now()}}));
     if(kqLoa)speak(kqText(D,GD),"","kq:"+D.sid);
     if(kqZ)await shareOut({title:"Gửi kết quả vào nhóm",cardTitle:`🏆 Kết quả ${nm} · ${CLUB?.name||""}`,cardDesc:T.slice(0,3).map(o=>`${o.lb}: ${pairTx(D,o.p)}`).join(" · "),
-      text:[`🏆 KẾT QUẢ ${String(nm).toUpperCase()}`,...T.map(o=>`${o.lb}: ${pairTx(D,o.p)}`),"👉 Xem nhánh đấu và kết quả từng trận:"].join("\n"),path:pathOf("app",{tab:"san"}),thp:"/"+CID+"/kq"});
+      text:[`🏆 Kết quả ${String(nm).toUpperCase()}`,...T.map(o=>`${o.lb}: ${pairTx(D,o.p)}`),"👉 Xem nhánh đấu và kết quả từng trận:"].join("\n"),path:pathOf("app",{tab:"san"}),thp:"/"+CID+"/kq"});
     else render();return true}
   if(act==="kgo"){await write(()=>saveG({koGo:true}),"Đã tạo nhánh");kSeg="san";if(autoNext())await gFill();return true}
   if(act==="kforce"){if(!armOr("kforce:x"))return true;kSh=null;await write(()=>saveG({koForce:true}),"Vòng bảng dừng ở đây");return true}
@@ -367,8 +367,8 @@ function mxCkCard(D,X){
   if(!mine.arrived)return `<div class="mxkst y"><span class="cap">⏳ Đã quét · ${hm(mine.ci)}</span><b>Chờ ban tổ chức xác nhận</b><span>Đưa mặt cho BTC nhìn, trả lệ phí nếu chưa trả.</span></div>`;
   let h=`<div class="mxkst g"><span class="cap">✓ Đã check-in ${mine.arrivedAt?hm(mine.arrivedAt):""}</span><b>${m?m.arrived?"Cặp đã đủ người":`Đang chờ ${esc(xbName(D,m))}`:"Chờ ban tổ chức xếp sân"}</b>${m&&!m.arrived?`<span>Cặp chưa đủ người thì chưa xếp sân</span>`:""}</div>`;
   if(gx>=0){const T=kTeams(D,X),g=kd.groups[gx],opp=g.filter(c=>c!==mine.team).map(c=>kTeamOf(T,c)).filter(Boolean);
-    if(opp[0])h+=`<div class="mxcard"><span class="t2">TRẬN ĐẦU CỦA BẠN</span><b>${pn} gặp ${opp[0].nm}</b><span class="t2">Bảng ${KOG[gx]} · loa sẽ gọi</span></div>`;
-    h+=`<div class="mxcard"><span class="t2">BẢNG ${KOG[gx]}</span>${g.map(c=>{const t=kTeamOf(T,c);return t?`<span>${(kd.seeds||[]).includes(c)?"★ ":""}${c===mine.team?pn:t.nm}</span>`:""}).join("")}</div>`}
+    if(opp[0])h+=`<div class="mxcard"><span class="t2">Trận đầu của bạn</span><b>${pn} gặp ${opp[0].nm}</b><span class="t2">Bảng ${KOG[gx]} · loa sẽ gọi</span></div>`;
+    h+=`<div class="mxcard"><span class="t2">Bảng ${KOG[gx]}</span>${g.map(c=>{const t=kTeamOf(T,c);return t?`<span>${(kd.seeds||[]).includes(c)?"★ ":""}${c===mine.team?pn:t.nm}</span>`:""}).join("")}</div>`}
   const zid=m&&!m.arrived&&zidOf(D,m);if(zid)h+=`<button class="btn-line wide" data-act="zchat" data-v="${esc(zid)}" data-n="${esc(xbName(D,m))}">💬 Nhắn ${esc(xbName(D,m))}</button>`;
   return h;
 }
@@ -386,7 +386,7 @@ function mxLiveKO(D,GD){
   if(seg==="san")return h+`<div class="mxlivewrap">${vGiaiSan(D)}</div>`;
   if(seg==="bang"){const gx=P?GD.groups.findIndex(g=>g.includes(P.id)):-1,L=gx>=0?[gx]:GD.gt.map((_,i)=>i),per=Math.max(1,Math.round(GD.size/Math.max(1,GD.groups.length)));
     h+=L.map(gx=>{const t=GD.gt[gx],left=GD.games.filter(g=>g.grp===gx&&g.st!=="done"&&g.st!=="wo"&&g.st!=="hold").length;
-      return `<div class="ktb"><div class="h"><b>BẢNG ${KOG[gx]}</b><small>${left?`● còn ${left} trận`:"xong"}</small></div><div class="r hd"><span>#</span><span>CẶP</span><span>T</span><span>B</span><span>HS</span></div>${t.map((r,i)=>{const d=r.pf-r.pa,mine=P&&r.p.id===P.id;return `<div class="r${i<per?" q":""}"><b>${i+1}</b><span>${mine?`<b>${nmMe(P)}</b>`:pairNm(D,r.p)}</span><span>${r.w}</span><span>${r.l}</span><span>${d>0?"+":d<0?"−":""}${Math.abs(d)}</span></div>`}).join("")}</div>`}).join("");
+      return `<div class="ktb"><div class="h"><b>Bảng ${KOG[gx]}</b><small>${left?`● còn ${left} trận`:"xong"}</small></div><div class="r hd"><span>#</span><span>Cặp</span><span>T</span><span>B</span><span>HS</span></div>${t.map((r,i)=>{const d=r.pf-r.pa,mine=P&&r.p.id===P.id;return `<div class="r${i<per?" q":""}"><b>${i+1}</b><span>${mine?`<b>${nmMe(P)}</b>`:pairNm(D,r.p)}</span><span>${r.w}</span><span>${r.l}</span><span>${d>0?"+":d<0?"−":""}${Math.abs(d)}</span></div>`}).join("")}</div>`}).join("");
     if(P&&gx>=0){const pos=GD.gt[gx].findIndex(r=>r.p.id===P.id);h+=`<small class="rule">${per===2?"Nhất, nhì":per===1?"Nhất bảng":`Top ${per}`} vào ${esc(GD.ko[0][0].rn.toLowerCase())}. Bạn đang ${POS[pos]?POS[pos].toLowerCase():"hạng "+(pos+1)} bảng.</small>`}
     return h}
   const box=g=>{const w=gWin(g),n2=(id,lb)=>id?(P&&id===P.id?`<b>${nmMe(P)}</b>`:kPN(D,GD,id)):`<em>${esc(lb||"…")}</em>`,sc=(id,v)=>g.st==="done"?`<b>${v}</b>`:"";

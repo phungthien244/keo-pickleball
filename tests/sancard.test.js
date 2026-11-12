@@ -73,10 +73,10 @@ test("gọi cặp vắng: chạm ô sân → loa gọi, ô cam đếm ngược; 
   await e.click("scsh", { v: "1" }); await e.until(() => e.T().includes("Gọi cặp vắng"));
   await e.click("scabs", { id: "m1", v: "b" }); await e.until(() => (e.store.get("clubs/q7/matches/m1").abs || {}).s === "b");
   await e.until(() => calls(e).some(c => /Mời Bình và Dũng vào sân 1\. Sau 5 phút/.test(c.txt || "")));
-  await e.until(() => e.V().includes('class="sct o"')); expect(e.T()).toContain("CHỜ CẶP VẮNG");
+  await e.until(() => e.V().includes('class="sct o"')); expect(e.T()).toContain("Chờ cặp vắng");
   // hết giờ
   await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m1"), { abs: { ...e.store.get("clubs/q7/matches/m1").abs, until: Date.now() - 1000 } });
-  await e.until(() => e.V().includes('class="sct h"')); expect(e.T()).toContain("HẾT GIỜ CHỜ");
+  await e.until(() => e.V().includes('class="sct h"')); expect(e.T()).toContain("Hết giờ chờ");
   await e.click("scsh", { v: "1" }); await e.until(() => e.T().includes("Hết 5 phút"));
   await e.click("scabsw", { id: "m1" }); await e.until(() => e.store.get("clubs/q7/matches/m1").abs.until > Date.now());
   await e.FB.updateDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m1"), { abs: { ...e.store.get("clubs/q7/matches/m1").abs, until: Date.now() - 1000 } });

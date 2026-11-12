@@ -10,7 +10,7 @@ function vTien(D){
   }
   const bal=fundNow(),r=qReport(0),DB=debts(),MF=mfDebts(D),nD=new Set([...DB,...MF].map(x=>x.id)).size,sD=DB.reduce((a,x)=>a+x.k,0)+MF.reduce((a,x)=>a+x.k,0);
   let h=`<section class="qhero"><span class="cap">Quỹ CLB đang có</span><b class="num">${bal<0?"−":""}${fmtK(Math.abs(bal))}</b><small>Tháng ${r.m}: thu ${fmtK(r.tin)} · chi ${fmtK(r.tout)}</small></section>`;
-  if(nD)h+=`<button class="gmnext qnext" data-act="qv" data-v="no"><span class="cap">👉 Việc tiếp theo</span><b>${nD} người còn nợ · ${fmtK(sD)}</b><small>Chạm để nhắc qua Zalo hoặc đánh dấu đã nhận</small></button>`;
+  if(nD)h+=`<button class="gmnext qnext" data-act="qv" data-v="no"><span class="cap">Việc tiếp theo</span><b>${nD} người còn nợ · ${fmtK(sD)}</b><small>Chạm để nhắc qua Zalo hoặc đánh dấu đã nhận</small></button>`;
   const X=xCur(),live=phaseOf(D)==="live";
   if(live||D.done.length){const R=recv(D,money(D));h+=`<button class="qcur" data-act="qv" data-v="nay"><span class="t"><b>${esc(X?xName(X):(D.c.sname||"Giải đang đánh"))}</b><small>${R.tot?`Đã thu ${fmtK(R.got)}/${fmtK(R.tot)}${R.left>0?` · còn ${fmtK(R.left)}`:" · đủ"}`:"Tiền tự tính khi lưu tỉ số"}</small></span><span aria-hidden="true">›</span></button>`}
   const E=qEntries().slice(0,4);

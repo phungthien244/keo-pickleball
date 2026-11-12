@@ -6,7 +6,7 @@ const mxMe=D=>{const id=mxPid();return id?D.pmap.get(id):null};
 const mxIco={home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',live:'<circle cx="12" cy="12" r="3"/><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/>',rank:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/>',hist:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',me:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',find:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
   reg:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h4"/>',court:'<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M12 5v14M3 12h18"/>',money:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',ppl:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0"/>',more:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>'};
 const mxSvg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${mxIco[k]}</svg>`;
-const mxDate=t=>{const d=new Date(t);return `<span class="mxdate"><small>${["CN","T2","T3","T4","T5","T6","T7"][d.getDay()]}</small><b>${d.getDate()}</b><small>THG ${d.getMonth()+1}</small></span>`};
+const mxDate=t=>{const d=new Date(t);return `<span class="mxdate"><small>${["CN","T2","T3","T4","T5","T6","T7"][d.getDay()]}</small><b>${d.getDate()}</b><small>Th${d.getMonth()+1}</small></span>`};
 // Thanh tiêu đề Zalo đã có nút quay lại: không vẽ nút quay lại trong trang
 const mxBack=()=>"";
 
@@ -58,8 +58,10 @@ function mxShell(D,body,cta=""){
   const R0=mxAs||{cw:canWrite,rf:REF},ql=mxMode()==="ql",sw=!legacy&&(R0.cw||R0.rf);
   const nh=ql&&canWrite,dr=nh&&!!MXD;
   let h=(nh?mxHeadQL(D,nm):mxHead(D,ql,sw,p,nm))+`<div class="mxbody${dr?" dr":""}">${rfAwayBar(D)}${body}</div>`;
-  if(cta)h+=`<div class="mxcta">${cta}</div>`;
-  h+=dr?"":ql?mxMgrNav():mxNav(D);
+  // Chuẩn Zalo: trang con của người chơi không có thanh tab (quay lại bằng ‹), nút chính dính đáy
+  const sub=!ql&&MINI;
+  if(cta)h+=`<div class="mxcta${sub?" nonav":""}">${cta}</div>`;
+  h+=dr||sub?"":ql?mxMgrNav():mxNav(D);
   return h+mxSheetHtml()+(ql?ycSheets(D)+ckPopup(D):wkSheet(D));
 }
 // Thanh dưới người chơi: 5 tab chung (65t-tabs)

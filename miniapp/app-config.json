@@ -1,8 +1,8 @@
 {
   "app": {
     "title": "pikeco.app",
-    "headerColor": "#0c2b44",
-    "textColor": "white",
+    "headerColor": "#ffffff",
+    "textColor": "black",
     "statusBar": "normal",
     "leftButton": "back",
     "actionBarHidden": true,

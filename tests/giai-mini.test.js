@@ -35,7 +35,7 @@ test("tạo giải: câu 2 không còn ô tên, Khác mở ô ngày; câu 3 có 
 test("đăng ký: 3 ô số, lọc, chạm người mở 3 nút to, chỉnh trình; ⋯ Thêm khách → khách · chưa xác minh", async () => {
   const e = await boot(base({ "clubs/q7/regs/s1_p_p1": { sid: "s1", pid: "p1", name: "An", at: 1, pay: "sent" } }));
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('class="g2st"'));
-  expect(e.T()).toContain("Chưa trả 1"); expect(e.T()).toContain("BÁO CHUYỂN");
+  expect(e.T()).toContain("Chưa trả 1"); expect(e.T()).toContain("Báo chuyển");
   await e.click("xbsel", { id: "s1_p_p1" }); await e.until(() => e.T().includes("Báo đã chuyển 60k"));
   expect(e.T()).toContain("Nhắn Zalo"); expect(e.T()).toContain("Huỷ chỗ");
   expect(e.T()).toContain("Khách · chưa xác minh"); // An không đăng ký bằng Zalo của mình
@@ -48,7 +48,7 @@ test("đăng ký: 3 ô số, lọc, chạm người mở 3 nút to, chỉnh trì
   await e.until(() => [...e.store].some(([k, v]) => k.startsWith("clubs/q7/regs/") && v.name === "Chú Tư"));
   const r = [...e.store].find(([k, v]) => k.startsWith("clubs/q7/regs/") && v.name === "Chú Tư")[1];
   expect(r).toMatchObject({ sid: "s1", uid: "btc", guest: true, lv: "2.5", gender: "M" });
-  expect(e.T()).toContain("KHÁCH · CHƯA XÁC MINH");
+  expect(e.T()).toContain("Khách · chưa xác minh");
   await e.click("regadd"); await e.until(() => e.V().includes('class="g2st"'));
 });
 
@@ -66,7 +66,7 @@ test("sửa giải: 6 nhóm có giá trị; Tiền › Lệ phí thành viên �
 test("ngày đánh (Mini App): chỉ check-in bằng mã, không còn bàn đón, check-in tay hay người đến muộn", async () => {
   const at = Math.min(Date.now() + 3600e3, new Date().setHours(23, 59, 30, 0));
   const e = await boot(base({ "clubs/q7/sched/s1": { name: "Hôm nay", fmt: "xoay", at, courts: 2, target: 11, max: 8, st: "open", openAt: 0, deadline: at }, "clubs/q7/regs/s1_p_p1": { sid: "s1", pid: "p1", name: "An", at: 1, arrived: true } }));
-  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes("MỞ MÃ CHECK-IN"));
+  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes("Mở mã check-in"));
   expect(e.V()).toContain('data-act="ckopen"'); expect(e.T()).toContain("✓ An");
   await e.click("gmmore"); expect(e.T()).toContain("Mã QR check-in");
   expect(e.V()).not.toContain('data-a="ckall"'); expect(e.V()).not.toContain('data-a="hnlate"');
@@ -78,7 +78,7 @@ test("đang đánh: thẻ sân to → Nhập điểm (hai ô to, + −) → Lưu
     "clubs/q7/players/p1": P("An"), "clubs/q7/players/p2": P("Bình"), "clubs/q7/players/p3": P("Chi"), "clubs/q7/players/p4": P("Dũng"),
     "clubs/q7/matches/m1": { session: 1, seq: 1, court: 1, a: ["p1", "p3"], b: ["p2", "p4"], status: "playing", createdAt: Date.now() - 6e5 } }));
   await e.nav("app", { t: "san" }); await e.until(() => e.V().includes('class="sct'));
-  expect(e.T()).toContain("SÂN 1"); expect(e.T()).toContain("TRỐNG"); expect(e.T()).toContain("Hết giờ · sang chốt");
+  expect(e.T()).toContain("Sân 1"); expect(e.T()).toContain("Trống"); expect(e.T()).toContain("Hết giờ · sang chốt");
   await e.click("g4m", { id: "m1" }); await e.until(() => e.T().includes("Sân 1 · nhập điểm"));
   expect(e.V()).toContain('data-act="g4n" data-k="sa-m1" data-v="15"'); expect(e.V()).not.toContain('data-act="g4n" data-k="sa-m1" data-v="0"');
   await e.click("g4n", { k: "sa-m1", v: "9" }); await e.click("g4d", { k: "sa-m1", d: "1" }); await e.click("g4d", { k: "sa-m1", d: "1" });
@@ -96,7 +96,7 @@ test("đang đánh: thẻ sân to → Nhập điểm (hai ô to, + −) → Lưu
 test("ngày đánh: ⋯ → BTC check-in giùm, tích chọn là check-in, bỏ tích bấm 2 lần", async () => {
   const at = Date.now() + 60e3;
   const e = await boot(base({ "clubs/q7/sched/s1": { name: "Hôm nay", fmt: "xoay", at, courts: 2, target: 11, max: 8, st: "open", openAt: 0, deadline: at }, "clubs/q7/regs/s1_p_p1": { sid: "s1", pid: "p1", name: "An", at: 1, arrived: true }, "clubs/q7/regs/s1_p_p2": { sid: "s1", pid: "p2", name: "Bình", at: 2 } }));
-  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes("MỞ MÃ CHECK-IN"));
+  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes("Mở mã check-in"));
   await e.click("gmmore"); expect(e.V()).toContain('data-a="ckbtc"');
   await e.click("gmdo", { a: "ckbtc", id: "s1" }); await e.until(() => e.T().includes("BTC check-in giùm"));
   expect(e.T()).toContain("Đã tới 1/2");
@@ -104,7 +104,7 @@ test("ngày đánh: ⋯ → BTC check-in giùm, tích chọn là check-in, bỏ 
   expect(e.store.get("clubs/q7/regs/s1_p_p2").arrBy).toBe("btc");
   await e.click("ckbtct", { id: "s1_p_p1" }); expect(e.store.get("clubs/q7/regs/s1_p_p1").arrived).toBe(true);
   await e.click("ckbtct", { id: "s1_p_p1" }); await e.until(() => e.store.get("clubs/q7/regs/s1_p_p1").arrived === false);
-  await e.click("ckbtcx"); await e.until(() => e.V().includes("MỞ MÃ CHECK-IN"));
+  await e.click("ckbtcx"); await e.until(() => e.V().includes("Mở mã check-in"));
 });
 
 test("sửa giải một danh sách: mọi mục hiện ngay, bấm dòng sửa tại chỗ, ✓ Lưu ghi vào giải", async () => {
@@ -130,7 +130,7 @@ test("tổng kết giải chia bảng + KO: công khai, vô địch, đường t
   }));
   await e.nav("buoi", { id: "5" }); await e.until(() => e.T().includes("Tổng kết giải"));
   expect(e.T()).toContain("Vô địch"); expect(e.T()).toContain("An & Bình"); expect(e.T()).toContain("Đường tới chức vô địch");
-  expect(e.T()).toContain("Chung kết"); expect(e.T()).toContain("BẢNG A"); expect(e.T()).toContain("Tranh hạng ba");
+  expect(e.T()).toContain("Chung kết"); expect(e.T()).toContain("Bảng A"); expect(e.T()).toContain("Tranh hạng ba");
   expect(e.T()).not.toContain("Dư vào quỹ"); expect(e.T()).not.toContain("Rating sau giải");
 });
 

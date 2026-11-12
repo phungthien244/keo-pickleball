@@ -24,7 +24,7 @@ test("quét mã: màn nhận sân (R1) → sửa tên → Nhận sân → chỉ 
   expect(e.store.get("clubs/q7/refs/zalo_5")).toMatchObject({ court: 1, name: "Nam" });
   await e.until(() => e.V().includes('class="rfsh"'));
   expect(e.V()).not.toContain('class="mxnav"');
-  expect(e.T()).toContain("TRẬN MỚI VÀO SÂN 1"); expect(e.T()).toContain("ĐIỂM DANH ›"); expect(e.T()).not.toContain("check-in");
+  expect(e.T()).toContain("Trận mới Vào sân 1"); expect(e.T()).toContain("Điểm danh ›"); expect(e.T()).not.toContain("check-in");
   expect(e.T()).not.toContain("Bàn giao sân");
 });
 
@@ -66,7 +66,7 @@ test("đã lưu, BTC bấm: Chờ BTC tạo trận mới + dải BTC đã đọc
   await e.until(() => e.T().includes("Chờ BTC tạo trận mới"));
   expect(e.T()).toContain("BTC đã đọc kết quả"); expect(e.T()).toContain("Đã lưu vào giải");
   await e.FB.setDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m2"), { session: 1, seq: 2, court: 1, a: ["p1", "p2"], b: ["p3", "p4"], status: "playing", createdAt: Date.now() });
-  await e.until(() => e.T().includes("TRẬN MỚI"));
+  await e.until(() => e.T().includes("Trận mới"));
   await e.FB.deleteDoc(e.FB.doc(e.FB.fs, "clubs/q7/matches/m2"));
   await e.until(() => e.T().includes("BTC đã huỷ trận sân 1"));
 });

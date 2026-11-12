@@ -8,7 +8,7 @@ function vlCourt(D,m,me,fol){
   const X=m.ref&&m.ref.started?ttRun(D,m):null,mine=[...m.a,...m.b].includes(me),age=typeof m.createdAt==="number"?Math.round((Date.now()-m.createdAt)/6e4):0;
   const row=t=>{const ids=t==="a"?m.a:m.b,sv=X&&!X.done&&X.st===t;
     return `<div class="vlt${X&&X.done&&X.win===t?" w":""}">${ttAvs(D,ids,"sm")}<b>${ids.map(id=>nm(D,id)).join(" &amp; ")}${sv?` <i class="sv" aria-label="đang giao">●</i>`:""}</b>${X&&X.R.sets>1?`<span class="g num">${X.gw[t]}</span>`:""}<span class="p num">${X?X.s[t]:""}</span></div>`};
-  return `<article class="vlc${mine?" me":""}"><div class="vlh"><b>Sân ${esc(cName(m.court))}</b><span>${X?(X.done?"vừa xong":`ván ${X.g+1}`):`${age}′`}</span>${X&&!X.done?`<span class="lv">● TRỰC TIẾP</span>`:""}<button class="fol${fol?" on":""}" data-act="vlfol" data-v="${Number(m.court)}" aria-pressed="${fol}" aria-label="Theo dõi sân">${fol?"★":"☆"}</button></div>
+  return `<article class="vlc${mine?" me":""}"><div class="vlh"><b>Sân ${esc(cName(m.court))}</b><span>${X?(X.done?"vừa xong":`ván ${X.g+1}`):`${age}′`}</span>${X&&!X.done?`<span class="lv">● Trực tiếp</span>`:""}<button class="fol${fol?" on":""}" data-act="vlfol" data-v="${Number(m.court)}" aria-pressed="${fol}" aria-label="Theo dõi sân">${fol?"★":"☆"}</button></div>
     ${row("a")}${row("b")}${X?`<button class="vlmore" data-act="vlmatch" data-id="${esc(m.id)}">Xem từng pha · ${esc(X.call())} ›</button>`:`<small class="vlno">Điểm cập nhật khi lưu tỉ số${mine?" · trận của bạn":""}</small>`}</article>`;
 }
 function vlSan(D){
@@ -30,7 +30,7 @@ function vlKetQua(D){
   if(!L.length)return h+`<div class="mxcard muted"><b>Chưa có kết quả</b><span>Trận nào lưu tỉ số sẽ hiện ở đây.</span></div>`;
   return h+L.map(m=>{const i=D.info.get(m.id)||{},inA=m.a.includes(me),mine=inA||m.b.includes(me),won=mine&&(inA===!!i.aWin),d=mine&&i.dA!=null?(inA?i.dA:-i.dA):null;
     const t=(ids,s,w)=>`<div class="vlt${w?" w":""}">${ttAvs(D,ids,"sm")}<b>${ids.map(id=>nm(D,id)).join(" &amp; ")}</b><span class="p num">${s}</span></div>`;
-    return `<article class="vlc${mine?" me":""}"><div class="vlh"><b>Sân ${esc(cName(m.court))}</b><span>${m.doneAt?hm(m.doneAt):""}</span>${mine?`<span class="res ${won?"w":"l"}">${won?"THẮNG":"THUA"}${d!=null?` · rating ${d>=0?"+":"−"}${Math.abs(d).toFixed(2)}`:""}</span>`:""}</div>
+    return `<article class="vlc${mine?" me":""}"><div class="vlh"><b>Sân ${esc(cName(m.court))}</b><span>${m.doneAt?hm(m.doneAt):""}</span>${mine?`<span class="res ${won?"w":"l"}">${won?"Thắng":"THUA"}${d!=null?` · rating ${d>=0?"+":"−"}${Math.abs(d).toFixed(2)}`:""}</span>`:""}</div>
       ${t(m.a,m.sa,i.aWin)}${t(m.b,m.sb,!i.aWin)}${m.ref&&m.ref.ev&&m.ref.ev.length?`<button class="vlmore" data-act="vlmatch" data-id="${esc(m.id)}">Xem từng pha ›</button>`:""}</article>`}).join("");
 }
 // Xem trận trực tiếp: điểm gọi, sơ đồ sân, diễn biến từng pha (mới nhất trên)

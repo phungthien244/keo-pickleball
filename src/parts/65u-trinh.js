@@ -35,7 +35,7 @@ function lvAch(D,id){
 
 // Người tổ chức thêm tay (không đăng ký bằng Zalo của chính họ) → khách · chưa xác minh
 const regKhach=x=>!!x&&!/^zalo_/.test(String(x.uid||""));
-const khTag=x=>regKhach(x)?`<small class="khtag">KHÁCH · CHƯA XÁC MINH</small>`:"";
+const khTag=x=>regKhach(x)?`<small class="khtag">Khách · chưa xác minh</small>`:"";
 
 /* ----- Bước 3 · tiền sân & hoà vốn (canvas T03, T04) ----- */
 // Số liệu tiền của một lịch đánh: đã thu (đã xác nhận), chờ xác nhận, tiền sân, số người cần để hoà vốn

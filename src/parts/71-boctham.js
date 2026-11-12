@@ -36,8 +36,8 @@ function gbSheet(D){
     <div class="gsh"><b>🎲 Bốc thăm cặp · nhóm A/B</b><button class="lnk" data-act="gbx">Đóng</button></div>
     <small class="rule">Mỗi cặp = 1 người nhóm A + 1 người nhóm B, bốc ngẫu nhiên. Chạm một người để chuyển sang nhóm kia.</small>
     <div class="seg gbseg">${Object.entries(GBM).map(([v,l])=>`<button data-act="gbmode" data-v="${v}" aria-pressed="${gbMode===v}">${l}</button>`).join("")}</div>
-    <div class="gbcols"><div class="gbcol"><div class="gbh a"><b>NHÓM A</b><small>${A.length} · TB ${avg(A)}</small></div>${col(A,"A")}</div>
-      <div class="gbcol"><div class="gbh b"><b>NHÓM B</b><small>${B.length} · TB ${avg(B)}</small></div>${col(B,"B")}</div></div>`;
+    <div class="gbcols"><div class="gbcol"><div class="gbh a"><b>Nhóm a</b><small>${A.length} · TB ${avg(A)}</small></div>${col(A,"A")}</div>
+      <div class="gbcol"><div class="gbh b"><b>Nhóm b</b><small>${B.length} · TB ${avg(B)}</small></div>${col(B,"B")}</div></div>`;
   if(diff!==0&&Ai.length&&Bi.length){const m=Math.abs(diff);
     h+=`<div class="gbwarn"><b>Lẻ ${m} người ở nhóm ${diff>0?"A":"B"}.</b> Chọn ${m>1?`${m} người`:"người"} ngồi ngoài, hoặc chuyển người sang nhóm kia. Muốn ghép với người của BTC: thêm người đó ở mục Điểm danh rồi xếp vào nhóm ${diff>0?"B":"A"}.
       <span class="gbouts">${big.concat(big===Ai?A.filter(p=>gbOut.has(p.id)):B.filter(p=>gbOut.has(p.id))).map(p=>`<button class="chip${gbOut.has(p.id)?" on":""}" data-act="gbout" data-id="${p.id}" aria-pressed="${gbOut.has(p.id)}">${esc(p.name)}</button>`).join("")}</span></div>`}
@@ -46,7 +46,7 @@ function gbSheet(D){
   const last=gbLastPairs();
   h+=`<div class="gbopts">${last.size?`<button class="gbopt" data-act="gbavoid" aria-pressed="${gbAvoid}"><span>Tránh trùng cặp giải trước</span>${gbSw(gbAvoid)}</button>`:""}
     <button class="gbopt" data-act="gblive" aria-pressed="${gbLive}"><span>Bốc từng cặp (chiếu cho mọi người xem)</span>${gbSw(gbLive)}</button></div>
-    <div class="gsf"><button class="primary gbgo" data-act="gbgo" ${k<1||diff!==0?"disabled":""}>🎲 BỐC THĂM ${k} CẶP</button></div>
+    <div class="gsf"><button class="primary gbgo" data-act="gbgo" ${k<1||diff!==0?"disabled":""}>🎲 Bốc thăm ${k} Cặp</button></div>
     <small class="rule" style="text-align:center">Kết quả lưu kèm giờ bốc và người bấm, ai cũng xem được.</small></div>`;
   return h;
 }
@@ -56,16 +56,16 @@ function gbScreen(D){
   const k=Math.min(gbShow.k,N),cur=P[k],nm=id=>esc(D.pmap.get(id)?.name||"?");
   const card=(id,g,spin)=>{const p=D.pmap.get(id);
     if(spin){const pool=gbShuffle(P.map(x=>x.b)).filter(x=>x!==id).slice(0,7).concat([id]);
-      return `<div class="gbc ${g}"><small>NHÓM ${g.toUpperCase()}</small><span class="gbreel"><span class="gbroll">${pool.map(x=>`<span>${av(D.pmap.get(x),"lg",1)}<b>${nm(x)}</b></span>`).join("")}</span></span><small class="gbsp">đang quay…</small></div>`}
-    return `<div class="gbc ${g} in">${`<small>NHÓM ${g.toUpperCase()}</small>`}${av(p,"lg",1)}<b>${nm(id)}</b><small>${r2(gbRt(D,id))}</small></div>`};
+      return `<div class="gbc ${g}"><small>Nhóm ${g.toUpperCase()}</small><span class="gbreel"><span class="gbroll">${pool.map(x=>`<span>${av(D.pmap.get(x),"lg",1)}<b>${nm(x)}</b></span>`).join("")}</span></span><small class="gbsp">đang quay…</small></div>`}
+    return `<div class="gbc ${g} in">${`<small>Nhóm ${g.toUpperCase()}</small>`}${av(p,"lg",1)}<b>${nm(id)}</b><small>${r2(gbRt(D,id))}</small></div>`};
   let h=`<div class="gbscr" role="dialog" aria-label="Bốc thăm cặp"><div class="gbhd"><button class="ckx" data-act="gbclose" aria-label="Đóng">✕</button><span class="t"><b>Bốc thăm cặp · ${esc(D.c.sname||D.c.title||"Giải cặp")}</b><small>${k<N?`Cặp ${k+1} / ${N}`:`Đã bốc xong ${N} cặp`}</small></span></div>`;
   const rev=!!gbShow.rev&&k<N;
-  if(k<N)h+=`<b class="gbno">CẶP SỐ ${k+1}</b><div class="gbpair">${card(cur.a,"a",false)}<b class="plus">+</b>${rev?card(cur.b,"b",false):gbSpin?card(cur.b,"b",true):`<div class="gbc b q"><small>NHÓM B</small><span class="qm">?</span><small>bấm để bốc</small></div>`}</div>`;
-  else h+=`<b class="gbno">XONG · ${N} CẶP</b>`;
+  if(k<N)h+=`<b class="gbno">Cặp số ${k+1}</b><div class="gbpair">${card(cur.a,"a",false)}<b class="plus">+</b>${rev?card(cur.b,"b",false):gbSpin?card(cur.b,"b",true):`<div class="gbc b q"><small>Nhóm b</small><span class="qm">?</span><small>bấm để bốc</small></div>`}</div>`;
+  else h+=`<b class="gbno">XONG · ${N} Cặp</b>`;
   const done=P.slice(0,rev?k+1:k);
-  if(done.length)h+=`<span class="gbsec">ĐÃ BỐC · ${done.length}</span><div class="gblist">${done.map((p,i)=>`<div class="gbli mfade"><b class="num">${i+1}</b>${av(D.pmap.get(p.a),"sm",1)}<span class="n">${nm(p.a)}</span><i>+</i>${av(D.pmap.get(p.b),"sm",1)}<span class="n">${nm(p.b)}</span></div>`).join("")}</div>`;
+  if(done.length)h+=`<span class="gbsec">Đã bốc · ${done.length}</span><div class="gblist">${done.map((p,i)=>`<div class="gbli mfade"><b class="num">${i+1}</b>${av(D.pmap.get(p.a),"sm",1)}<span class="n">${nm(p.a)}</span><i>+</i>${av(D.pmap.get(p.b),"sm",1)}<span class="n">${nm(p.b)}</span></div>`).join("")}</div>`;
   const nx=rev?k+2:k+1,last=rev&&k+1>=N;
-  h+=`<div class="gbft">${k<N&&!last?`<button class="line" data-act="gball" ${gbSpin?"disabled":""}>BỐC HẾT</button><button class="gbnext" data-act="gbnext" ${gbSpin?"disabled":""}>🎲 BỐC CẶP ${nx}</button>`:`<button class="gbnext" data-act="gbclose">XONG · VỀ DANH SÁCH CẶP</button>`}</div></div>`;
+  h+=`<div class="gbft">${k<N&&!last?`<button class="line" data-act="gball" ${gbSpin?"disabled":""}>Bốc hết</button><button class="gbnext" data-act="gbnext" ${gbSpin?"disabled":""}>🎲 Bốc cặp ${nx}</button>`:`<button class="gbnext" data-act="gbclose">Xong · về danh sách cặp</button>`}</div></div>`;
   return h;
 }
 // Dòng thông tin bốc thăm trong danh sách cặp
