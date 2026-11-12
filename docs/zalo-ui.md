@@ -54,3 +54,9 @@ Màu nhãn loại (nền nhạt + chữ đậm cùng tông): Social xanh lá `#e
 6. Biểu tượng nét mảnh (SVG), không dùng emoji làm biểu tượng.
 7. Chia sẻ dùng bảng chia sẻ của Zalo; nhắn tin mở thẳng khung chat Zalo.
 8. Người quản lý dùng chung 5 tab với người chơi.
+
+## Cách làm (bắt buộc)
+- Dựng màn bằng bộ thành phần chung `src/parts/10z-zui.js`: `zSec` (khối trắng có tiêu đề), `zRow` (hàng danh sách), `zTag`, `zDate`, `zPill`, `zIco` (biểu tượng nét mảnh), `zBar`; lựa chọn một trong nhiều dùng `zOpt` (67-giaidau.js), ô tick dùng `.zcheck`, chọn nhanh dùng viên `.gmchip`/`.zchips`. Không tự vẽ thẻ, viền màu, emoji riêng cho từng màn.
+- Chỉ đổi màu/CSS là chưa đủ: bố cục cũ (bảng kẻ ô, thẻ viền màu, chữ in hoa, emoji) phải viết lại bằng các mảnh trên.
+- Trước khi báo xong: build bản demo giả (`npm run build:mock`), chụp từng màn bằng Playwright cỡ 390×844, đặt cạnh bản vẽ trên canvas và tự soát: khoảng trắng thừa, chữ bị che, nút lệch kiểu, emoji sót, màu ngoài bảng. Thấy lỗi thì sửa rồi mới gửi ảnh cho người dùng.
+- Màn mới hoặc đổi luồng: vẽ phác trên canvas theo chuẩn này, người dùng duyệt rồi mới làm.

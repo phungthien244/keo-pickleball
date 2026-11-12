@@ -22,7 +22,7 @@ const boot = async data => { const e = setup({ host: "h5.zdn.vn", path: "/zapps/
 
 test("tạo giải chia bảng: câu 3 hỏi cặp, nội dung, cách đăng ký; Thể thức có 32/64, lưu vào giải", async () => {
   const e = await boot(base());
-  await e.click("xnew"); if (e.V().includes(`data-act="tnfull"`)) await e.click("tnfull"); await e.click("xqsel", { v: "bang" }); await e.click("xqgo", { v: "2" });
+  await e.click("xnew"); await e.click("tnfull"); await e.click("xqsel", { v: "bang" }); await e.click("xqgo", { v: "2" });
   await e.until(() => e.T().includes("Giải chia bảng nên có 3–4 sân"));
   await e.click("xqgo", { v: "3" }); await e.until(() => e.T().includes("Bao nhiêu cặp, đánh nội dung gì?"));
   expect(e.T()).toContain("Tối đa bao nhiêu cặp?"); expect(e.T()).toContain("Từng người, BTC ghép");

@@ -17,7 +17,7 @@ const boot = async (data) => { const e = setup({ host: "h5.zdn.vn", path: "/zapp
 
 test("tạo giải: câu 2 không còn ô tên, Khác mở ô ngày; câu 3 có Tuỳ chọn thêm → bảng Luật điểm → Lưu, tạo giải giữ luật", async () => {
   const e = await boot(base());
-  await e.click("xnew"); if (e.V().includes(`data-act="tnfull"`)) await e.click("tnfull"); await e.click("xqgo", { v: "2" }); await e.until(() => e.T().includes("Đánh khi nào, ở đâu?"));
+  await e.click("xnew"); await e.click("tnfull"); await e.click("xqgo", { v: "2" }); await e.until(() => e.T().includes("Đánh khi nào, ở đâu?"));
   expect(e.V()).not.toContain('id="xf-name"');
   await e.click("gsk", { v: "d" }); expect(e.V()).toContain('id="xf-date"');
   await e.click("xqgo", { v: "3" }); await e.until(() => e.V().includes('data-act="gspg"'));

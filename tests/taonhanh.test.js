@@ -12,15 +12,15 @@ const base = (extra = {}) => ({
 const ZU = { uid: "zalo_9", isAnonymous: false, displayName: "Zalo" };
 const boot = async data => { const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", search: "?clb=q7", user: ZU, data }); globalThis.window.ZMINI = 1; await e.boot(); await e.until(() => e.V().includes('data-act="mxsheet"')); return e; };
 const sched = e => [...e.store.entries()].filter(([k]) => /^clubs\/q7\/sched\/[^/]+$/.test(k)).map(([, v]) => v);
-const open = async e => { await e.click("xnew"); await e.until(() => e.T().includes("Tả lịch đánh bằng một câu")); expect(e.T()).toContain("Hoặc chọn loại"); };
+const open = async e => { await e.click("xnew"); await e.until(() => e.V().includes('data-act="tnfmt"')); };
+// Trang một bước: bấm Tạo, còn thiếu thì app mở bảng của mục thiếu, chọn nút đầu tiên, lặp tới khi tạo xong
+const fill = async (e, n0 = 0) => { for (let i = 0; i < 15 && sched(e).length <= n0; i++) { await e.click("tqgo"); if (sched(e).length > n0) break; const m = e.V().match(/data-act="tce" data-k="([a-zA-Z0-9]+)" data-v="([^"]+)"/); if (!m) { await e.until(() => sched(e).length > n0); break; } await e.click("tce", { k: m[1], v: m[1] === "gton" ? "0" : m[2] }); } await e.until(() => sched(e).length > n0); };
 const day0 = () => new Date().setHours(0, 0, 0, 0);
 
 test("câu đủ mọi mục (đọc bằng luật khi không có AI) → trò chuyện chỉ còn câu có sẵn cách phổ biến → bỏ qua hết → tạo giải đúng luật từng vòng", async () => {
   const e = await boot(base());
   await open(e);
   e.input("tn-txt", "Chủ nhật này 7h đến 11h30, 16 cặp đôi nam nữ, chia 4 bảng lấy 2 đánh loại trực tiếp, 4 sân, 200k/người, chuyển khoản trước, nhất 1 triệu nhì 500 ba 200k, thành viên clb");
-  await e.until(() => e.T().includes("App đã nhận ra · 7/7"));
-  expect(e.T()).toContain("Nhất 1 triệu · Nhì 500k"); expect(e.T()).toContain("chuyển khoản trước"); expect(e.T()).not.toContain("Hoặc chọn loại");
   await e.click("tngo"); await e.until(() => e.T().includes("Mình đã hiểu"));
   // Mục đã nói không hỏi lại; câu đầu tiên là luật điểm vòng bảng, có Bỏ qua hết
   expect(e.T()).toContain("Vòng bảng mỗi trận đánh thế nào?"); expect(e.V()).toContain('data-act="tcskip"');
@@ -98,24 +98,40 @@ test("nhiều nội dung trong một câu → giải có nội dung", async () =
   expect(X.nds[1]).toMatchObject({ dt: "FF", cap: 4.2, max: 8, fee: 200 });
 });
 
-test("như giải lần trước: dùng lại cả tiền và giải thưởng, ngày sang tuần sau", async () => {
+test("như lần trước: một trang đủ thông số, dùng lại cả tiền và giải thưởng, ngày sang tuần sau", async () => {
   const old = Date.now() - 6 * 864e5;
   const e = await boot(base({ "clubs/q7/sched/s0": { name: "Giải tối", fmt: "xoay", at: old, courts: 3, target: 11, max: 20, st: "done", place: "Sân A", thu: "keo", pay: "off", gton: true, gt: "codinh", gtv: 300, trao: "namnu", createdAt: 1 } }));
   await e.click("xnew"); await e.until(() => e.T().includes("Như lần trước"));
-  await e.click("tnprev", { id: "s0" }); await e.until(() => e.T().includes("Mình lấy lại cài đặt"));
-  expect(e.T()).toContain("Xong rồi!");
-  expect(e.T()).toContain("20 người"); expect(e.T()).toContain("Ai thua góp"); expect(e.T()).toContain("CLB bỏ ra 300k");
-  await e.click("tnmk"); await e.until(() => sched(e).length === 2);
+  await e.click("tnprev", { id: "s0" }); await e.until(() => e.V().includes('data-act="tqgo"'));
+  expect(e.T()).toContain("Tối đa 20 người"); expect(e.T()).toContain("Ai thua góp"); expect(e.T()).toContain("CLB bỏ ra 300k"); expect(e.T()).toContain("Sân A");
+  expect(e.T()).not.toContain("Cần chọn");
+  await e.click("tqgo"); await e.until(() => sched(e).length === 2);
   const X = sched(e).find(x => x.at > Date.now());
   expect(X).toMatchObject({ fmt: "xoay", courts: 3, max: 20, place: "Sân A", thu: "keo", gton: true, gt: "codinh", gtv: 300 });
 });
 
-test("trang đầu: chạm thể thức (không gõ) → trò chuyện hỏi từ số cặp", async () => {
+test("bước 1 chỉ chọn loại → một trang đủ thông số; mục thiếu hiện Cần chọn, bấm Tạo thì mở đúng mục thiếu; bấm dòng mở bảng trượt", async () => {
   const e = await boot(base());
   await open(e);
-  await e.click("tnfmt", { v: "giai" }); await e.until(() => e.T().includes("Bao nhiêu cặp?"));
-  expect(e.T()).toContain("Mini game"); expect(e.T()).not.toContain("Giải đánh theo thể thức nào?");
-  await e.click("tca", { k: "n", v: "6" }); await e.until(() => e.T().includes("Đánh ngày nào?"));
+  await e.click("tnfmt", { v: "giai" }); await e.until(() => e.V().includes('data-act="tqgo"'));
+  expect(e.T()).toContain("Mini game"); expect(e.T()).toContain("Khi nào, ở đâu"); expect(e.T()).toContain("Người và tiền");
+  expect(e.T()).toContain("Cần chọn"); expect(e.T()).toMatch(/Còn \d+ mục cần chọn/);
+  await e.click("tqgo"); expect(e.V()).toContain('class="mxsheet gmsh tqsh"');
+  await e.click("tqedx"); await e.click("tqed", { v: "courts" }); expect(e.V()).toContain('data-act="tce" data-k="courts"');
+  await e.click("tce", { k: "courts", v: "3" }); expect(e.T()).toContain("3 sân");
+  await e.click("tqed", { v: "place" }); e.input("tn-place", "Sân Kỳ Hòa"); await e.click("tqplace"); expect(e.T()).toContain("Sân Kỳ Hòa");
+  await fill(e);
+  expect(sched(e)[0]).toMatchObject({ fmt: "giai", courts: 3, place: "Sân Kỳ Hòa", st: "open" });
+});
+
+test("ô sửa nhanh: gõ một câu sửa nhiều mục, dòng vừa đổi được tô, Hoàn tác trả lại như cũ", async () => {
+  const e = await boot(base());
+  await open(e);
+  await e.click("tnfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-act="tqsay"'));
+  e.input("tq-say", "4 sân, 80k/người"); await e.click("tqsay");
+  await e.until(() => e.T().includes("Đã sửa"));
+  expect(e.T()).toContain("4 sân"); expect(e.T()).toContain("80k/người"); expect(e.V()).toContain('class="zset hl"');
+  await e.click("tqundo"); expect(e.T()).toContain("Đã hoàn tác"); expect(e.T()).not.toContain("80k/người");
 });
 
 test("gõ sai: vô nghĩa (2 lần thì có form đầy đủ), hỏi luật, thể thức chưa có (ghi lại), số vô lý, mâu thuẫn, tên tục", async () => {
@@ -173,28 +189,13 @@ test("gõ luật điểm đúng vòng đang hỏi; sửa ngay trên thẻ tóm t
   expect(sched(e)[0]).toMatchObject({ fmt: "xoay", max: 20, courts: 6 });
 });
 
-test("Social: hỏi tiền sân → gợi ý lệ phí hoà vốn → tạo lịch có tiền sân; chưa có tài khoản thì hỏi nhận tiền (Bước 3)", async () => {
+test("Social có tiền sân: gợi ý hoà vốn, tạo lịch có tiền sân; chưa có tài khoản thì hỏi nhận tiền (Bước 3)", async () => {
   const e = await boot(base());
   await open(e);
-  e.input("tn-txt", "Social tối thứ 7 19h, 3 sân, 16 người");
-  await e.click("tngo");
-  await e.until(() => e.T().includes("Tiền sân cho buổi này bao nhiêu?"));
-  e.input("tn-say", "1tr2"); await e.click("tnsay");
-  await e.until(() => e.T().includes("Thu tiền người chơi thế nào?"));
-  expect(e.T()).toContain("Đã ghi tiền sân");
-  expect(e.T()).not.toContain("Ai thua góp");
-  expect(e.T()).toContain("Giá cố định · 80k/người (gợi ý)");
-  await e.click("tca", { k: "thu", v: "phi" });
-  await e.until(() => e.T().includes("đủ 15 người là hoà vốn"));
-  for (let i = 0; i < 8 && !e.T().includes("Xong rồi!"); i++) {
-    if (e.V().includes('data-k="pay"')) { await e.click("tca", { k: "pay", v: "opt" }); continue; }
-    if (e.V().includes('data-act="tcskip"')) { await e.click("tcskip"); break; }
-    const m = e.V().match(/data-act="tca" data-k="([a-z]+)" data-v="([^"]+)"/); if (!m) break;
-    await e.click("tca", { k: m[1], v: m[2] });
-  }
-  await e.until(() => e.T().includes("Xong rồi!"));
+  await e.click("tnfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-act="tqgo"'));
+  await e.click("tce", { k: "n", v: "16" }); await e.click("tce", { k: "san", v: "1200" }); await e.click("tce", { k: "thu", v: "phi" }); await e.click("tce", { k: "fee", v: "80" }); await e.click("tce", { k: "pay", v: "opt" });
   expect(e.T()).toContain("hoà vốn 15 người");
-  await e.click("tnmk"); await e.until(() => sched(e).length === 1);
+  await fill(e);
   expect(sched(e)[0]).toMatchObject({ san: 1200, thu: "phi", phi: 80 });
   await e.until(() => e.T().includes("Tài khoản nhận tiền"));
 });
@@ -202,18 +203,9 @@ test("Social: hỏi tiền sân → gợi ý lệ phí hoà vốn → tạo lị
 test("lỗi người dùng báo: Social chia đều tiền sân (không có lệ phí cố định) bấm Tạo phải tạo được", async () => {
   const e = await boot(base());
   await open(e);
-  e.input("tn-txt", "Social tối thứ 7 19h, 3 sân, 16 người, chia đều tiền sân, trả tại sân");
-  await e.click("tngo"); await e.until(() => e.T().includes("Mình đã hiểu"));
-  for (let i = 0; i < 12 && !e.T().includes("Xong rồi!"); i++) {
-    await e.until(() => e.V().includes('data-act="tca"') || e.V().includes('data-act="tcskip"') || e.T().includes("Xong rồi!"));
-    if (e.T().includes("Xong rồi!")) break;
-    if (e.V().includes('data-act="tcskip"')) { await e.click("tcskip"); continue; }
-    if (e.V().includes('data-k="san"')) { await e.click("tca", { k: "san", v: "1200" }); continue; }
-    if (e.V().includes('data-k="thu"')) { await e.click("tca", { k: "thu", v: "deu" }); continue; }
-    if (e.V().includes('data-k="gton"')) { await e.click("tca", { k: "gton", v: "0" }); continue; }
-    const m = e.V().match(/data-act="tca" data-k="([a-zA-Z0-9]+)" data-v="([^"]+)"/); await e.click("tca", { k: m[1], v: m[2] });
-  }
-  await e.until(() => e.T().includes("Xong rồi!"));
-  await e.click("tnmk"); await e.until(() => sched(e).length === 1);
+  await e.click("tnfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-act="tqgo"'));
+  await e.click("tce", { k: "san", v: "1200" }); await e.click("tce", { k: "thu", v: "deu" }); await e.click("tce", { k: "pay", v: "off" });
+  expect(e.T()).not.toContain("Lệ phí");
+  await fill(e);
   expect(sched(e)[0]).toMatchObject({ fmt: "xoay", thu: "deu", san: 1200 });
 });

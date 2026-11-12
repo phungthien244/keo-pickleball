@@ -160,6 +160,7 @@ document.addEventListener("click",onAct=async e=>{
     const txt=(x.snap?.type==="giai"?giaiShare(D,x):shareText(D,x))+"\n"+shLink(pathOf("buoi",{sid:x.sid}));try{await navigator.clipboard.writeText(txt);toast("Đã copy tin nhắn, dán vào nhóm Zalo nhé.")}catch(e){toast("Không copy được trên trình duyệt này.")}return}
   if(await platformAct(act,id,b))return;
   if((act==="xnew"||act.startsWith("tn"))&&await tnAct(act,b))return;
+  if(act.startsWith("tq")&&await tqAct(act,b))return;
   if(act.startsWith("tc")&&await tcAct(act,b))return;
   if(await zaloAct(act,b,id))return;
   if(!legacy&&MODE==="club"&&await hnAct(act,b,id))return;

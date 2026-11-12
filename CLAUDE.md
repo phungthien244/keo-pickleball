@@ -14,6 +14,7 @@
 
 ## Giao diện
 - **Mọi màn Mini App theo chuẩn Zalo (ZaUI)** trong `docs/zalo-ui.md` (người dùng chốt 12/11/2026): màu xanh Zalo, font của máy, không IN HOA, nút bo tròn 48/40/32, thanh tiêu đề trắng 44, thanh tab 48, trang con ẩn thanh tab, xoá/huỷ bằng hộp thoại, việc nhỏ bằng bảng trượt. Vẽ phác trên canvas cũng theo chuẩn này. Bỏ qua giao diện web (sẽ thành trang giới thiệu).
+- Dựng màn bằng bộ thành phần chung `src/parts/10z-zui.js` (zSec, zRow, zTag, zDate, zPill, zIco…), không tự chế kiểu riêng; xem mục "Cách làm" trong `docs/zalo-ui.md`. Trước khi báo xong phải tự chụp màn (Playwright 390×844, bản demo giả) và soát lỗi trình bày.
 
 ## Mini App
 - `miniapp/` dùng chung code `src/parts`; `window.ZMINI` bật chế độ Mini App, đường dẫn sau dấu `#`.

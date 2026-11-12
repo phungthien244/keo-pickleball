@@ -64,8 +64,8 @@ test("＋ khi đã có trang tổ chức: vào thẳng Tạo lịch đánh với
   const e = await boot();
   e.store.set("users/zalo_9", { club: "q7", at: 1 });
   await e.until(() => e.T().includes("Lịch đánh của tôi"));
-  await e.click("mtplus"); await e.until(() => e.T().includes("Tả lịch đánh bằng một câu"));
-  expect(e.T()).toContain("Hoặc chọn loại");
+  await e.click("mtplus"); await e.until(() => e.V().includes('data-act="tnfmt"'));
+  expect(e.T()).toContain("Social"); expect(e.T()).toContain("Mini game");
   expect(e.V()).toContain('data-act="tnfmt" data-v="xoay"');
   expect(e.V()).toContain('data-act="tnfmt" data-v="giai"');
 });
