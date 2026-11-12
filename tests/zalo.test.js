@@ -99,32 +99,23 @@ test("bắt đầu giải đấu: tự điểm danh người đã đăng ký và
   expect(e.store.get("clubs/q7/app/config").reg.on).toBe(false);
 });
 
-test("Mini App: người chơi xin tham gia CLB, chờ duyệt, đăng ký, vào danh sách chờ, hủy", async () => {
+test("Mini App: người chưa có trong danh sách đăng ký thẳng bằng Zalo (không còn xin vào CLB), vào danh sách chờ, hủy", async () => {
   const data = base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep", reg: { on: true, max: 1, lockH: 2 } },
     "clubs/q7/regs/1_p_p2": { sid: 1, pid: "p2", name: "Bình", at: 1 } });
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
   MINI(e, "#/q7/dang-ky");
-  await e.boot(); await e.until(() => e.V().includes('data-act="mxsheetreg"'));
+  await e.boot(); await e.until(() => e.V().includes('data-act="mxdk" data-v="guest"'));
   expect(e.V()).toContain('class="mxnav n5"');
-  expect(e.V()).not.toContain('data-act="regin"');
-  await e.click("mxsheetreg"); await e.until(() => e.V().includes('data-act="mxdk" data-v="pick"'));
-  await e.click("mxdk", { v: "pick" }); await e.until(() => e.T().includes("Gửi yêu cầu tham gia"));
-  expect(e.V()).not.toContain('data-act="lnkpick"');
-  e.input("lnk-name", "An"); e.input("ph", "0901234567"); await e.click("lnksend");
-  await e.until(() => e.store.get("clubs/q7/links/zalo_9")?.status === "pending");
-  expect(e.store.get("clubs/q7/links/zalo_9")).toMatchObject({ newName: "An" });
-  expect(e.store.get("clubs/q7/links/zalo_9").pid).toBeUndefined();
-  await e.until(() => e.T().includes("Đã gửi yêu cầu tham gia"));
-  await e.FB.setDoc(e.FB.doc(e.FB.fs, "clubs/q7/links/zalo_9"), { status: "ok", pid: "p1" });
-  await e.until(() => e.V().includes('data-act="regin"'));
+  expect(e.V()).not.toContain('data-act="mxsheetreg"'); expect(e.T()).not.toContain("Tôi là thành viên");
   expect(e.T()).toContain("Vào danh sách chờ");
-  e.input("ph", "0901234567"); await e.click("regin");
-  await e.until(() => e.store.get("clubs/q7/regs/1_zalo_9"));
+  await e.click("mxdk", { v: "guest" }); await e.until(() => e.V().includes('id="gs-name"'));
+  expect(e.T()).not.toContain("Gửi yêu cầu tham gia");
+  e.input("gs-name", "An"); e.input("ph", "0901234567"); await e.click("guestin", { v: "none" });
+  await e.until(() => e.store.get("clubs/q7/regs/1_zalo_9")?.guest === true);
+  expect(e.store.get("clubs/q7/links/zalo_9")).toBeUndefined();
   await e.until(() => e.T().includes("Bạn đang chờ"));
   await e.click("regout"); await e.click("regout");
   await e.until(() => !e.store.get("clubs/q7/regs/1_zalo_9"));
-  await e.nav("app", { t: "toi" }); await e.until(() => e.T().includes("CLB của tôi"));
-  expect(e.T()).toContain("An");
 });
 
 test("chủ CLB duyệt người mới ở trang Đăng ký: tạo hồ sơ gắn tài khoản Zalo, có số chờ trên tab", async () => {
@@ -136,18 +127,6 @@ test("chủ CLB duyệt người mới ở trang Đăng ký: tạo hồ sơ gắ
   await e.until(() => e.store.get("clubs/q7/links/zalo_5").status === "ok");
   const pid = e.store.get("clubs/q7/links/zalo_5").pid;
   expect(e.store.get("clubs/q7/players/" + pid)).toMatchObject({ name: "Dũng", zuid: "zalo_5" });
-});
-
-test("Mini App không có Zalo SDK (bản thử): vào bằng máy mình, chọn tên, chờ duyệt", async () => {
-  const e = setup({ host: "pikeco.app", path: "/", data: base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep", reg: { on: true, sid: 1 } } }) });
-  MINI(e, "#/q7/dang-ky");
-  await e.boot(); await e.until(() => e.V().includes('data-act="zlogin"'));
-  await e.click("zlogin");
-  await e.until(() => e.V().includes('data-act="mxsheetreg"'));
-  await e.click("mxsheetreg"); await e.click("mxdk", { v: "pick" });
-  await e.until(() => e.T().includes("Gửi yêu cầu tham gia"));
-  e.input("lnk-name", "Bình"); e.input("ph", "0901234567"); await e.click("lnksend");
-  await e.until(() => e.store.get("clubs/q7/links/anon")?.newName === "Bình");
 });
 
 test("bản web: người xem thấy nút mở Mini App để đăng ký, không đăng ký trên web", async () => {
@@ -200,18 +179,25 @@ test("Mini App: bấm ＋ chọn Social, app tự lập trang tổ chức (khôn
   delete globalThis.window.ZMP;
 });
 
-test("Zalo Mini App: tự vào bằng ID Zalo, mở thẳng CLB, xin tham gia bằng tên Zalo", async () => {
-  const e = setup({ host: "h5.zdn.vn", path: "/zapps/180913816434821856/", search: "?clb=q7", data: base() });
+test("Zalo Mini App: tự vào bằng ID Zalo, mở thẳng trang, đăng ký bằng tên và ảnh Zalo (không xin vào CLB)", async () => {
+  const e = setup({ host: "h5.zdn.vn", path: "/zapps/180913816434821856/", search: "?clb=q7", data: base({ "clubs/q7/sched/s1": sched({ guests: false }) }) });
   let sent = null;
   MINI(e);
-  globalThis.window.ZMP = { getUserID: async () => "5550001112", getAccessToken: async () => "AT", getUserInfo: async () => ({ userInfo: { name: "Lan Zalo", avatar: "" } }) };
+  globalThis.window.ZMP = { getUserID: async () => "5550001112", getAccessToken: async () => "AT", getUserInfo: async () => ({ userInfo: { name: "Lan Zalo", avatar: "https://s120-ava-talk.zadn.vn/a/b/c.jpg" } }) };
   globalThis.fetch = async (u, o) => { sent = { u, body: JSON.parse(o.body) }; return { json: async () => ({ token: "9" }) }; };
   await e.boot(); await e.until(() => e.T().includes("Chào mừng tới Q7"));
   expect(sent.u).toBe("https://pikeco.app/api/zalo-mini");
-  await e.click("mxdk", { v: "pick" }); await e.until(() => e.T().includes("Gửi yêu cầu tham gia"));
   expect(sent.body).toEqual({ id: "5550001112", at: "AT" });
-  e.input("lnk-name", "Lan"); e.input("ph", "0901234567"); await e.click("lnksend");
-  await e.until(() => e.store.get("clubs/q7/links/zalo_9")?.newName === "Lan");
+  // Lịch cũ đặt "chỉ thành viên" vẫn đăng ký được bằng Zalo
+  await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
+  await e.click("gdreg"); await e.until(() => e.V().includes('data-act="guestin"'));
+  expect(e.T()).not.toContain("CHỌN TÊN CỦA BẠN TRONG CLB");
+  if (e.V().includes('id="gs-name"')) e.input("gs-name", "Lan Zalo");
+  await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("guestin");
+  await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.guest === true);
+  expect(e.store.get("clubs/q7/links/zalo_9")).toBeUndefined();
+  // Ảnh Zalo lưu kèm đăng ký → hiện ở danh sách "Ai đi"
+  expect(e.store.get("clubs/q7/regs/s1_zalo_9").av).toBe("https://s120-ava-talk.zadn.vn/a/b/c.jpg");
   delete globalThis.window.ZMP;
 });
 
@@ -256,8 +242,8 @@ test("vận động viên ngoài CLB đăng ký không cần duyệt, bắt đ�
   const data = base({ "clubs/q7/app/config": { title: "Q7", courts: 2, session: 1, phase: "prep", reg: { on: true, sid: 1, max: 8, guests: true, feeG: 80 } } });
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data });
   MINI(e, "#/q7/dang-ky");
-  await e.boot(); await e.until(() => e.V().includes('data-act="mxsheetreg"'));
-  await e.click("mxsheetreg"); await e.click("mxdk", { v: "guest" }); await e.until(() => e.V().includes('id="gs-name"'));
+  await e.boot(); await e.until(() => e.V().includes('data-act="mxdk" data-v="guest"'));
+  await e.click("mxdk", { v: "guest" }); await e.until(() => e.V().includes('id="gs-name"'));
   e.input("gs-name", "Tuấn vận động viên ngoài CLB"); await e.click("gsg", { v: "M" });
   // Trình 4 mức thay cho ô số 2.0–5.0; chọn Khá → lưu 3.5 vào đăng ký và hồ sơ chung
   expect(e.T()).toContain("Mới chơi"); expect(e.T()).toContain("Giỏi"); expect(e.T()).toContain("Không ai thấy điểm số");

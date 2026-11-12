@@ -57,7 +57,7 @@ function gdWho(D,R){
   if(!R.all.length)return `<div class="gdbox"><h3>Ai đi</h3><span class="gdnote">Chưa có ai đăng ký. Bạn là người đầu tiên!</span></div>`;
   const ppl=R.conf.map(r=>({r,p:D.pmap.get(r.pid)})),F=ppl.filter(x=>(x.p?x.p.gender:x.r.gender)==="F").length,M=ppl.length-F;
   const rt=ppl.map(x=>x.p?D.st.get(x.p.id)?.rating:+x.r.lv).filter(v=>Number.isFinite(v)&&v>0),avg=rt.length?rt.reduce((a,b)=>a+b,0)/rt.length:0;
-  const f=x=>{const p=D.pmap.get(x.pid);return `<span class="rgp">${av(p||{name:x.name},"sm",1)}<small>${esc(p?.name||x.name||"?")}${x.guest?" · ngoài CLB":""}</small></span>`};
+  const f=x=>{const p=D.pmap.get(x.pid);return `<span class="rgp">${av(p||{name:x.name,photo:x.av},"sm",1)}<small>${esc(p?.name||x.name||"?")}${x.guest?" · ngoài CLB":""}</small></span>`};
   return `<div class="gdbox"><div class="gdhd"><h3>Ai đi · ${R.conf.length} người</h3><span>${M} nam · ${F} nữ</span></div>
     ${R.max<999?`<span class="gdbar"><i style="width:${Math.min(100,Math.round(R.conf.length/R.max*100))}%"></i></span>`:""}
     <div class="rgl">${R.conf.map(f).join("")}</div>${avg?`<span class="gdnote">Trình trung bình: ${MINI?lvName(avg):r2(avg)}</span>`:""}
@@ -278,6 +278,6 @@ async function gdAct(act,b,id){
 }
 // Ảnh VĐV ngoài CLB: lưu riêng, chỉ ban tổ chức xem
 async function gdSavePic(regId){
-  if(!gsPhoto)return;
+  if(!gsPhoto||!/^data:image\//.test(gsPhoto))return;
   try{await FB.setDoc(FB.doc(FB.fs,PFX+"regpics/"+regId),{img:gsPhoto,uid:authUser.uid,at:Date.now()})}catch(e){}
 }

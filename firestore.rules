@@ -309,7 +309,10 @@ service cloud.firestore {
         allow read: if canRead();
         allow create: if canEdit() || (
           active() && player()
-          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv', 'hold', 'team', 'want', 'wantName', 'seek', 'zid', 'payFor', 'paidBy'])
+          && request.resource.data.keys().hasOnly(['sid', 'uid', 'pid', 'name', 'at', 'pay', 'guest', 'gender', 'lv', 'hold', 'team', 'want', 'wantName', 'seek', 'zid', 'payFor', 'paidBy', 'av'])
+          // Ảnh đại diện Zalo của chính người đăng ký
+          && (!('av' in request.resource.data) || (request.resource.data.av is string && request.resource.data.av.size() < 400
+              && request.resource.data.av.matches('^https://[a-zA-Z0-9.-]+[.](zadn[.]vn|zdn[.]vn|zalo[.]me|zaloapp[.]com)/.*')))
           // Cặp: người rủ trả cả cặp (payFor), bạn cặp được trả hộ (paidBy = mã cặp, người rủ phải đã chọn trả cả cặp)
           && request.resource.data.get('payFor', '') in ['', 'pair']
           && (!('paidBy' in request.resource.data) || (request.resource.data.paidBy is string
@@ -337,7 +340,8 @@ service cloud.firestore {
           && (
             (myLink().status == 'ok' && myLink().pid == request.resource.data.pid
               && request.resource.data.get('guest', false) == false)
-            || (regRules().get('guests', false) == true
+            // Zalo đã xác minh danh tính: đăng ký được mọi lịch đánh (kể cả lịch cũ đặt 'chỉ thành viên')
+            || ((regRules().get('guests', false) == true || zalo())
               && request.resource.data.get('guest', false) == true
               && request.resource.data.get('pid', null) == null
               && request.resource.data.name is string && request.resource.data.name.size() > 0)

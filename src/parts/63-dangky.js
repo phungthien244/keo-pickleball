@@ -3,7 +3,8 @@ const MINI_APP_ID="180913816434821856";
 const miniLink=(cid=CID,x)=>`https://zalo.me/s/${MINI_APP_ID}/?clb=${encodeURIComponent(cid)}${x?"&buoi="+encodeURIComponent(x):""}${zEnvQ()}`;
 const HOLD_MS=15*60e3; // Chọn chuyển khoản ngay (hoặc bắt buộc thu trước): giữ chỗ 15 phút cho người chưa chuyển
 // RX: buổi trong lịch đang xem (66-lich.js). Không có RX: buổi hiện tại theo cách cũ (app/config.reg)
-const regCfg=()=>RX||cfg().reg||{};
+// Mini App: ai cũng đăng ký bằng Zalo của mình → lịch nào cũng nhận mọi người (lịch cũ có guests:false vẫn đăng ký được)
+const regCfg=()=>{const r=RX||cfg().reg||{};return MINI&&!r.guests?{...r,guests:true}:r};
 // Mỗi CLB mở đăng ký cho 1 buổi sắp tới (buổi hiện tại đang chuẩn bị)
 const regOpen=()=>{if(RX)return xOpen(RX);const r=regCfg();return r.on===true&&(r.sid==null||r.sid===(cfg().session||1))};
 const regPayMode=()=>{const m=regCfg().pay;return m==="opt"||m==="req"?m:"off"};
@@ -43,7 +44,7 @@ function sessBox(D,R){
     ${r.note?`<p class="rgnote">${esc(r.note)}</p>`:""}`;
 }
 function regFaces(D,R){
-  const face=x=>{const p=D.pmap.get(x.pid);return `<span class="rgp">${av(p||{name:x.name},"sm",1)}<small>${esc(p?.name||x.name||"?")}${x.guest?" · VĐV ngoài CLB":""}</small></span>`};
+  const face=x=>{const p=D.pmap.get(x.pid);return `<span class="rgp">${av(p||{name:x.name,photo:x.av},"sm",1)}<small>${esc(p?.name||x.name||"?")}${x.guest?" · VĐV ngoài CLB":""}</small></span>`};
   return `${R.conf.length?`<div class="rgl">${R.conf.map(face).join("")}</div>`:""}${R.wait.length?`<span class="lbl" style="margin-top:6px">Danh sách chờ</span><div class="rgl wt">${R.wait.map(face).join("")}</div>`:""}`;
 }
 // Khung chuyển khoản: QR điền sẵn số tiền và nội dung
@@ -251,7 +252,7 @@ async function regAct(act,b,id){
     if(mustPay&&!(BANK&&BANK.acc)){toast("CLB chưa khai ngân hàng. Đăng ký trong Zalo nhé.");return true}
     const pay=mustPay?"none":b.dataset.v==="sent"?"sent":"none",hold=mustPay||b.dataset.v==="hold",rid=regKey(D)+"_"+u.uid;
     if(isPlayer(u)&&!canWrite&&!phTake())return true;
-    let d={sid:regKey(D),uid:u.uid,at:Date.now(),pay};if(hold)d.hold=true;if(myZid())d.zid=myZid();
+    let d={sid:regKey(D),uid:u.uid,at:Date.now(),pay};if(hold)d.hold=true;if(myZid())d.zid=myZid();if(zavOk(zaloProf().p))d.av=zaloProf().p;
     if(guest){const el=document.getElementById&&document.getElementById("gs-name"),nm=String((el&&el.value)||drafts["gs-name"]||zaloProf().n||"").trim().slice(0,30);
       if(!nm){toast("Nhập tên của bạn.");return true}
       // Mini App: đã có tên Zalo + số điện thoại, ảnh không bắt buộc

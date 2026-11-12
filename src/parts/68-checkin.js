@@ -108,7 +108,7 @@ function ckPopup(D){
 async function ckAttend(D,r){
   let pid=r.pid;
   if(r.guest&&!pid){const ref=db.collection("players").doc();pid=ref.id;
-    await ref.set({name:r.name||"Vận động viên",gender:r.gender==="F"?"F":"M",rating0:Math.min(8,Math.max(1,+r.lv||2.5)),active:true,guest:true,createdAt:Date.now(),code:"PB-"+String(nextCode()).padStart(3,"0")});
+    await ref.set({name:r.name||"Vận động viên",gender:r.gender==="F"?"F":"M",rating0:Math.min(8,Math.max(1,+r.lv||2.5)),active:true,guest:true,createdAt:Date.now(),code:"PB-"+String(nextCode()).padStart(3,"0"),...(r.zid?{zid:r.zid}:{}),...(r.uid&&/^zalo_/.test(r.uid)?{zuid:r.uid}:{}),...(zavOk(r.av)?{photo:r.av}:{})});
     await db.collection("regs").doc(r.id).update({pid})}
   else if(pid){const p=D.pmap.get(pid);if(p&&p.active===false)await db.collection("players").doc(pid).update({active:true})}
   return pid;

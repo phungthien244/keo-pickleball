@@ -10,11 +10,14 @@ function loadMyPhone(){
 }
 const phOfUid=uid=>uid&&S.contacts?S.contacts[uid]||"":"";
 const phTag=uid=>{const p=phOfUid(uid);return p?`<a class="phtag" href="tel:${p}" data-act="phcall" data-v="${p}">📞 ${phFmt(p)}</a>`:""};
+let phEd=false,phFail=false;
 function phBox(){
   loadMyPhone();
   const Z=window.ZMP,cur=val("ph",myPhone());
+  // Đã có số (lấy từ Zalo hoặc đã lưu): chỉ hiện một dòng, không cần nút lấy số nữa
+  if(phNorm(cur)&&!phEd&&!errs.ph)return `<div class="phbox one"><span>📞 Số điện thoại <b>${esc(phFmt(cur))}</b><small> · chỉ ban tổ chức thấy</small></span><button class="ghost" data-act="phed">Sửa</button></div>`;
   return `<div class="phbox"><span class="lbl">Số điện thoại <small>· chỉ ban tổ chức thấy</small></span>
-    ${Z&&Z.getPhoneNumber?`<button class="zalobtn" data-act="phzalo" ${phBusy?"disabled":""}><b>Z</b>${phBusy?"Đang lấy số…":"Dùng số điện thoại Zalo"}</button>`:""}
+    ${Z&&Z.getPhoneNumber&&!phFail?`<button class="zalobtn" data-act="phzalo" ${phBusy?"disabled":""}><b>Z</b>${phBusy?"Đang lấy số…":"Dùng số điện thoại Zalo"}</button>`:""}
     <label class="fld"><span class="sr">Số điện thoại</span><input id="ph" data-draft="ph" type="tel" inputmode="tel" maxlength="14" autocomplete="tel" placeholder="${Z?"Hoặc tự nhập: 09xx xxx xxx":"09xx xxx xxx"}" value="${esc(cur)}"></label>
     ${errs.ph?`<p class="err">${esc(errs.ph)}</p>`:""}<small class="rule">Ban tổ chức gọi khi đổi giờ, đổi sân hoặc cần xác nhận phí. Không hiện cho người khác.</small></div>`;
 }
@@ -28,6 +31,7 @@ function phTake(){
 }
 async function phAct(act,b){
   if(act==="phcall"){const Z=window.ZMP;if(Z&&Z.openPhone){try{await Z.openPhone({phoneNumber:b.dataset.v});return true}catch(e){}}location.href="tel:"+b.dataset.v;return true}
+  if(act==="phed"){phEd=true;render();return true}
   if(act!=="phzalo")return false;
   const Z=window.ZMP;if(!Z||!Z.getPhoneNumber)return true;
   phBusy=true;render();
@@ -39,7 +43,7 @@ async function phAct(act,b){
         const j=await fetch(API+"/api/zalo-phone",{method:"POST",headers:{"content-type":"text/plain"},body:JSON.stringify({code,at})}).then(x=>x.json()).catch(()=>({}));
         num=phNorm(j.number);if(!num&&j.error)console.warn("zalo-phone",j.error)}}
     if(num){drafts.ph=num;phSrc="zalo";delete errs.ph;toast("Đã điền số điện thoại Zalo")}
-    else toast("Zalo chưa trả số điện thoại. Bạn nhập tay giúp nhé.");
-  }catch(e){toast("Chưa lấy được số từ Zalo. Bạn nhập tay giúp nhé.")}
+    else{phFail=true;toast("Zalo chưa trả số điện thoại. Bạn nhập tay giúp nhé.")}
+  }catch(e){phFail=true;toast("Chưa lấy được số từ Zalo. Bạn nhập tay giúp nhé.")}
   phBusy=false;render();return true;
 }
