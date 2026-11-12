@@ -15,6 +15,7 @@ function phBox(){
   loadMyPhone();
   const Z=window.ZMP,cur=val("ph",myPhone());
   // Đã có số (lấy từ Zalo hoặc đã lưu): chỉ hiện một dòng, không cần nút lấy số nữa
+  if(MINI&&phNorm(cur)&&!phEd&&!errs.ph)return `<div class="phbox one zph">${zIco("chat",24)}<span class="zt"><b>${esc(phFmt(cur))}</b><small>Số điện thoại · chỉ ban tổ chức thấy</small></span><button class="sm" data-act="phed">Sửa</button></div>`;
   if(phNorm(cur)&&!phEd&&!errs.ph)return `<div class="phbox one"><span>📞 Số điện thoại <b>${esc(phFmt(cur))}</b><small> · chỉ ban tổ chức thấy</small></span><button class="ghost" data-act="phed">Sửa</button></div>`;
   return `<div class="phbox"><span class="lbl">Số điện thoại <small>· chỉ ban tổ chức thấy</small></span>
     ${Z&&Z.getPhoneNumber&&!phFail?`<button class="zalobtn" data-act="phzalo" ${phBusy?"disabled":""}><b>Z</b>${phBusy?"Đang lấy số…":"Dùng số điện thoại Zalo"}</button>`:""}

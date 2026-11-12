@@ -77,7 +77,7 @@ test("người chơi: Trang chủ Mini App liệt kê các giải đấu sắp t
   expect(e.T()).toContain("Thể thức"); expect(e.T()).toContain("Hủy và hoàn phí"); expect(e.T()).toContain("Luật thi đấu");
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
   // Không còn chọn "thành viên / ngoài CLB": đăng ký bằng chính Zalo của mình
-  expect(e.T()).not.toContain("Bạn đăng ký với tư cách"); expect(e.T()).toContain("Đăng ký bằng Zalo của bạn");
+  expect(e.T()).not.toContain("Bạn đăng ký với tư cách"); expect(e.T()).toContain("Tên và ảnh từ Zalo của bạn");
   e.input("ph", "0901234567"); await e.click("regin"); expect(e.T()).toContain("Đánh dấu đã đọc chính sách hủy");
   await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("regin");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.sid === "s1");
@@ -213,7 +213,7 @@ test("thu phí trước: người chơi chuyển khoản lúc đăng ký, chủ 
   await e.boot();
   await e.until(() => e.V().includes('data-act="gdreg"'));
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin" data-v="hold"'));
-  expect(e.T()).toContain("Giữ chỗ chắc"); expect(e.T()).toContain("Trả tại sân");
+  expect(e.T()).toContain("giữ chỗ chắc"); expect(e.T()).toContain("Trả tại sân");
   await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("regin", { v: "hold" });
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.hold === true);
   await e.until(() => e.V().includes("class=\"vqr\""));
@@ -221,7 +221,7 @@ test("thu phí trước: người chơi chuyển khoản lúc đăng ký, chủ 
   await e.click("regpaid"); expect(e.store.get("clubs/q7/regs/s1_zalo_9").pay).toBe("none");
   await e.ok("regpaid");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.pay === "sent");
-  await e.until(() => e.T().includes("Chờ BTC xác nhận"));
+  await e.until(() => e.T().includes("Chờ xác nhận"));
   delete globalThis.window.ZMINI; await new Promise(r => setTimeout(r, 700));
   // chủ CLB xác nhận ở trang buổi
   const o = setup({ host: "pikeco.app", path: "/q7/dang-ky/s1", user: OWNER, data: Object.fromEntries(e.store) });

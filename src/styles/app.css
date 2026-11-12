@@ -3248,3 +3248,60 @@ section.zsec{padding:0;gap:0;margin:0}
 .ovban{background:#fff;border:0;border-radius:8px;color:var(--ink)}.ovban small{color:var(--muted)}.ovban .go{color:var(--blue)}
 .znext{position:relative;z-index:1}
 .znext.sm{margin:-4px 16px 12px 80px;padding:0}
+/* Đăng ký · thanh toán · vé (chuẩn Zalo) */
+.zfld{padding:4px 16px 12px}
+.zfld .fld{display:flex;flex-direction:column;gap:4px}.zfld .lbl{font-size:14px;color:var(--ink);font-weight:400}
+.zerr{margin:0 16px 8px}
+.zok{color:#1c7a3f;display:flex}
+label.zrow{cursor:pointer}
+.zseg{display:inline-flex;border-radius:8px;background:#f1f3f5;padding:2px;flex:none}
+.zseg button{min-height:32px;height:32px;padding:0 16px;border:0;border-radius:6px;background:transparent;color:var(--muted);font-size:14px;font-weight:500}
+.zseg button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(20,20,21,.12)}
+.zopt{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:12px 16px;background:#fff;border:0;border-radius:0;min-height:56px;text-align:left;color:var(--ink);font:inherit;font-size:15px;position:relative}
+.zopt+.zopt::before{content:"";position:absolute;top:0;left:48px;right:0;height:1px;background:var(--line)}
+.zopt .rd{width:20px;height:20px;border-radius:50%;border:2px solid #b9bdc1;flex:none;box-sizing:border-box}
+.zopt.on .rd{border:6px solid var(--blue)}
+.zopt .zt>b{font-weight:400}.zopt .pr{font-weight:500;font-size:15px}
+.zopt:active{background:#f1f3f5}
+.zkv{padding:4px 16px 12px;display:flex;flex-direction:column;gap:6px}
+.zkv .gdrow.tot{border-top:1px solid var(--line);padding-top:10px;margin-top:4px}.zkv .gdrow.tot span{color:var(--ink);font-weight:500}.zkv .gdrow.tot b{font-size:18px;font-weight:500}
+.zcheck{display:flex;align-items:flex-start;gap:12px;width:100%;box-sizing:border-box;padding:12px 16px;background:#fff;border:0;border-radius:8px;text-align:left;font:inherit;font-size:15px;line-height:20px;color:var(--ink);min-height:0}
+.zcheck .bx{width:20px;height:20px;flex:none;border-radius:4px;border:2px solid #b9bdc1;box-sizing:border-box;display:grid;place-items:center;color:#fff;margin-top:0}
+.zcheck.on .bx{background:var(--blue);border-color:var(--blue)}
+/* Ô chọn trình: lưới 2 cột */
+.mini .lvpick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mini .lvpick .lbl{grid-column:1/-1;font-size:14px;color:var(--ink)}.mini .lvpick .rule{grid-column:1/-1;font-size:13px;color:var(--muted)}
+.mini .lvo{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border:1px solid #d6d9dc;border-radius:8px;background:#fff;text-align:left;min-height:0}
+.mini .lvo .rd{display:none}.mini .lvo .t{display:flex;flex-direction:column;gap:2px}.mini .lvo b{font-size:15px;font-weight:500}.mini .lvo small{font-size:12px;line-height:16px;color:var(--muted)}
+.mini .lvo.on{border-color:var(--blue);background:var(--blue-s)}.mini .lvo.on b{color:var(--blue-p)}
+.mini .lvone{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px}
+/* Số điện thoại */
+.mini .phbox{display:flex;flex-direction:column;gap:8px;background:none;border:0;padding:0}
+.mini .phbox .lbl{font-size:14px;color:var(--ink)}.mini .phbox .rule{font-size:13px;color:var(--muted)}
+.mini .phbox.zph{flex-direction:row;align-items:center;gap:16px;color:var(--muted);margin:0 -16px -12px;padding:12px 16px;border-top:1px solid var(--line)}
+.mini .phbox.zph .zt b{color:var(--ink)}
+.mini button.zalobtn{min-height:44px;border-radius:48px;background:var(--blue);border:0;font-size:15px}
+/* Thanh bước */
+.mini .gdsteps{display:flex;background:#fff;border-radius:8px;overflow:hidden;border:0;margin:0}
+.mini .gdsteps span{flex:1;text-align:center;padding:10px 4px;font-size:14px;color:var(--muted);border-bottom:2px solid transparent}
+.mini .gdsteps span.on{color:var(--blue);font-weight:500;border-bottom-color:var(--blue)}.mini .gdsteps span.ok{color:#1c7a3f}
+.zcd{font-size:20px;font-weight:500;color:#a64b00;font-variant-numeric:tabular-nums}
+.zqr{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;text-align:center}
+.zqr>small{font-size:14px;color:var(--muted)}.zqr>b{font-size:28px;line-height:34px;font-weight:500}
+.zqr svg{width:220px;height:220px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.zqr .line{min-height:40px;margin-top:4px}
+.ztk .zgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;padding:4px 16px 12px 80px}
+.ztk .zgrid span{display:flex;flex-direction:column;gap:2px}.ztk .zgrid small{font-size:13px;color:var(--muted)}.ztk .zgrid b{font-size:15px;font-weight:500}
+.zst{display:flex;flex-direction:column;gap:4px;margin:0 16px 16px;padding:12px;border-radius:8px;background:var(--blue-s)}
+.zst b{font-size:15px;font-weight:500}.zst small{font-size:14px;color:var(--ink)}
+.zst .primary,.zst a.primary{margin-top:8px;min-height:40px;display:flex;align-items:center;justify-content:center;border-radius:48px;background:var(--blue);color:#fff;text-decoration:none;font-size:15px;font-weight:500}
+.zst.ok{background:#e3f6ea}
+.mini .capok,.mini .capwait{background:#fff;border:0;border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;gap:4px}
+.mini .capok.big{flex-direction:row;align-items:center}
+.mini .capwait b{font-size:16px;font-weight:500}.mini .capwait span,.mini .capwait small{font-size:14px;color:var(--muted)}
+.mini .capwait .primary{margin-top:8px}
+.mini button.ghost.danger{color:#c4170f;min-height:44px}
+.mini button.ghost.wide{min-height:40px;font-size:15px}
+/* Thông báo kiểu Zalo: nền tối, bo 8, dưới đáy trên thanh tab */
+.mini .toast{top:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px));left:12px;right:12px;background:#252627;color:#fff;border-radius:8px;padding:12px 16px;font-size:15px;line-height:20px;font-weight:400;box-shadow:none;animation:zToast .15s ease-out}
+@keyframes zToast{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}

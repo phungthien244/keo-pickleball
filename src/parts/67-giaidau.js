@@ -193,8 +193,9 @@ function gdReg1(D){
   // Cặp (canvas B02/B03): người rủ trả cả cặp → gấp đôi; được trả hộ → 0, chỉ cần xác nhận
   const cHost=gdJoin?(S.regs||[]).find(r=>r.id===gdJoin):null,cPaid=MINI&&pairRegOn(RX)&&capPaid(cHost),cTwo=MINI&&pairRegOn(RX)&&!gdJoin&&gdOpt.mate!=="seek"&&gdOpt.pf!=="self"&&k>0;
   if(cPaid)k=0;else if(cTwo)k*=2;
+  if(MINI)return zReg1(D,{r,linked,R,full,canPay,req,who,me,pay,k,cHost,cPaid,cTwo});
   const opt=(k2,v,title,sub,price,dis)=>`<button class="gdopt${gdOpt[k2]===v||(k2==="pay"&&pay===v)?" on":""}" data-act="gdopt" data-k="${k2}" data-v="${v}"${dis?" disabled":""}><span class="rd"></span><span class="t"><b>${title}</b><small>${sub}</small></span>${price!=null?`<b class="pr">${price}</b>`:""}</button>`;
-  let h=`<div class="gdtop2"><button class="gdback" data-act="gdback" aria-label="Quay lại">‹</button><b>Đăng ký · ${esc(xName(RX))}</b></div>`+gdSteps(1)+(MINI?"":`<span class="xsec">Bạn đăng ký với tư cách</span>`);
+  let h=(MINI?"":`<div class="gdtop2"><button class="gdback" data-act="gdback" aria-label="Quay lại">‹</button><b>Đăng ký · ${esc(xName(RX))}</b></div>`)+gdSteps(1)+(MINI?"":`<span class="xsec">Bạn đăng ký với tư cách</span>`);
   if(!W&&!MINI)h+=opt("who","mem",linked?`Thành viên · ${esc(me?.name||"")}`:`Thành viên ${esc(CLUB?.name||"CLB")}`,linked?"Đã liên kết Zalo · giá thành viên":pend?"Đang chờ chủ CLB duyệt tên của bạn":"Chọn tên của bạn trong CLB, chủ CLB xác nhận một lần",feeMem()?fmtK(mfPerk(me&&me.id,feeMem())):null);
   if(r.guests&&!MINI)h+=opt("who","guest","Vận động viên ngoài CLB",W?"Không cần tài khoản · cần ảnh của bạn":"Không cần chờ duyệt · cần ảnh của bạn",feeGuest()?fmtK(feeGuest()):null);
   if(W)h+=`<small class="rule">Thành viên ${esc(CLUB?.name||"CLB")}? <a href="${esc(miniLink(CID,RX.id))}">Đăng ký trong Zalo</a> để có giá thành viên.</small>`;
@@ -231,11 +232,46 @@ function gdReg1(D){
   return gdShell(D,h,cta);
 }
 
+// Mini App (chuẩn Zalo): đăng ký trên một trang, chia khối: Người đăng ký · Đồng đội · Thanh toán · Tóm tắt
+const zOpt=(k2,v,on,title,sub,price,dis)=>`<button class="zopt${on?" on":""}" data-act="gdopt" data-k="${k2}" data-v="${v}" aria-pressed="${!!on}"${dis?" disabled":""}><span class="rd" aria-hidden="true"></span><span class="zt"><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span>${price!=null?`<b class="pr">${price}</b>`:""}</button>`;
+function zReg1(D,o){
+  const {r,linked,full,canPay,req,who,me,pay,k,cHost,cPaid,cTwo}=o,P=zaloProf(),g=val("gs-g","M");
+  let h=gdSteps(1);
+  // Người đăng ký: tên + ảnh Zalo (đã xác minh), nam/nữ, trình, số điện thoại
+  const nm=who==="mem"&&linked?(me?.name||P.n||""):(val("gs-name",P.n||"")||"Tên Zalo của bạn"),ph=gsPhoto||(who==="mem"&&P.p)||"";
+  let s1=zRow({lead:ph?`<img class="zav" src="${esc(ph)}" alt="">`:`<span class="zav">${zIco("user")}</span>`,t:esc(nm),s:"Tên và ảnh từ Zalo của bạn",right:`<span class="zok">${zIco("check",20)}</span>`,cls:"b"});
+  if(who==="guest"){
+    if(!P.n)s1+=`<div class="zfld"><label class="fld"><span class="lbl">Tên của bạn</span><input id="gs-name" data-draft="gs-name" maxlength="30" value="${esc(val("gs-name",""))}"></label></div>`;
+    if(!gsPhoto)s1+=`<label class="zrow">${zIco("user")}<span class="zt"><b>Thêm ảnh rõ mặt</b><small>Không bắt buộc · giúp ban tổ chức nhận ra bạn</small></span>${zPill("Chọn ảnh")}<input class="sr" type="file" accept="image/*" capture="user" data-gsphoto="1"></label>${errs.gs?`<p class="err zerr">${esc(errs.gs)}</p>`:""}`;
+    s1+=zRow({lead:zIco("users"),t:"Giới tính",right:`<span class="zseg"><button data-act="gsg" data-v="M" aria-pressed="${g==="M"}">Nam</button><button data-act="gsg" data-v="F" aria-pressed="${g==="F"}">Nữ</button></span>`});
+    s1+=`<div class="zfld">${lvPick()}${lvTxt(r)?`<span class="gdnote">${esc(lvTxt(r))} cho lịch đánh này.</span>`:""}</div>`}
+  s1+=`<div class="zfld">${phBox()}</div>`;
+  h+=zSec("Người đăng ký",s1);
+  h+=capReg1(D);
+  if(k>0&&canPay&&!full)h+=zSec("Cách thanh toán",zOpt("pay","now",pay==="now","Chuyển khoản ngay","Quét QR bằng app ngân hàng bất kỳ · giữ chỗ chắc",null)+(req?"":zOpt("pay","site",pay==="site","Trả tại sân","Giữ chỗ tạm · gần giờ đánh nếu đầy, người đã trả trước được ưu tiên",null)));
+  else if(full)h+=zSec("",zRow({lead:zIco("clock"),t:"Lịch đánh đã đủ chỗ",s:"Bạn vào danh sách chờ, có người huỷ là bạn được vào và app báo cho bạn."}));
+  const row=(a,b2)=>`<div class="gdrow"><span>${a}</span><b>${b2}</b></div>`;
+  h+=zSec("Tóm tắt",`<div class="zkv">${row(esc(xName(RX)),RX.at?`${hm(RX.at)} · ${dmy(RX.at).slice(0,5)}`:"")}${k?row(`Lệ phí${cTwo?" cả cặp":""}`,kVND(k)):cPaid?row("Lệ phí",`Đã được ${esc(capName(D,cHost))} trả`):""}<div class="gdrow tot"><span>Tổng</span><b>${k?kVND(k):RX.cp===false||cPaid?"0đ":THU[RX.thu||"keo"]}</b></div></div>`);
+  const lk=regLockAt(),on=val("gd-ok","")==="1";
+  h+=`<button class="zcheck${on?" on":""}" data-act="gdagree" aria-pressed="${on}"><span class="bx" aria-hidden="true">${on?zIco("check",16):""}</span><span>Tôi đã đọc chính sách huỷ${lk?`: huỷ và hoàn 100% trước ${hm(lk)} ${dmy(lk).slice(0,5)}`:""}</span></button>${errs.gdok?`<p class="err zerr">${esc(errs.gdok)}</p>`:""}`;
+  const act=who==="guest"?"guestin":"regin",v=full||!k||!canPay?"none":pay==="now"?"hold":"none";
+  const cta=`<button class="primary wide" data-act="${act}" data-v="${v}">${full?"Vào danh sách chờ":v==="hold"?`Tiếp tục · thanh toán ${kVND(k)}`:cPaid?"Xác nhận đánh cặp":"Đăng ký"}</button>`;
+  return gdShell(D,h,cta);
+}
+
 /* ----- Bước 2: thanh toán (giữ chỗ 15 phút) ----- */
 function gdPay(D,mine){
   const k=feeOf(mine),nm=mine.guest?mine.name:D.pmap.get(mine.pid)?.name,note=payNoteX(RX,nm||"KHACH"),amt=Math.round(k*1000),end=(mine.at||0)+HOLD_MS,R=regList(D),pos=R.all.indexOf(mine);
   const cp=v=>`<button class="gdcp" data-act="cp" data-v="${esc(v)}">Chép</button>`;
-  let h=`<div class="gdtop2"><b>Thanh toán · ${esc(xName(RX))}</b></div>`+gdSteps(2);
+  if(MINI){gdTick();
+    const kv=(a,b2,c)=>zRow({t:b2,s:a,right:c?`<button class="sm" data-act="cp" data-v="${esc(c)}">Chép</button>`:"",cls:"np"});
+    let z=gdSteps(2);
+    z+=zSec("",zRow({lead:zIco("clock"),t:`Đang giữ chỗ #${pos+1} cho bạn`,s:"Chuyển khoản trong 15 phút để chắc chỗ",right:`<b class="zcd" data-cd="${end}">${gdMMSS(end-Date.now())}</b>`,cls:"b"}));
+    z+=zSec("",`<div class="zqr"><small>Số tiền</small><b>${kVND(k)}</b>${vqrSvg(amt,note,220)}<small>Quét bằng app ngân hàng bất kỳ · số tiền và nội dung đã điền sẵn</small><button class="line" data-act="saveqr" data-a="${amt}" data-n="${esc(note)}">Lưu mã QR vào máy</button></div>`);
+    z+=zSec("Hoặc chuyển khoản thủ công",kv("Ngân hàng",esc(BANK.name||""))+kv("Số tài khoản",esc(BANK.acc),BANK.acc)+kv("Chủ tài khoản",esc(BANK.holder||""))+kv("Nội dung chuyển khoản",`<span style="color:#c4170f">${esc(note)}</span>`,note)+`<p class="gdnote zfld">Ghi đúng nội dung để ban tổ chức đối chiếu nhanh.</p>`);
+    const cta=`<button class="primary wide" data-act="regpaid">Tôi đã chuyển khoản</button>${regPayMode()!=="req"?`<button class="ghost wide" data-act="gdsite">Chưa chuyển được? Đổi sang trả tại sân</button>`:""}`;
+    return gdShell(D,z,cta)}
+  let h=(MINI?"":`<div class="gdtop2"><b>Thanh toán · ${esc(xName(RX))}</b></div>`)+gdSteps(2);
   h+=`<div class="gdhold"><b data-cd="${end}">${gdMMSS(end-Date.now())}</b><span>Đang giữ chỗ #${pos+1} cho bạn. Chuyển khoản trong 15 phút để chắc chỗ.</span></div>`;
   h+=`<div class="gdbox gdqr"><span class="gdnote">Số tiền</span><b class="gdamt">${kVND(k)}</b>${vqrSvg(amt,note,220)}
     <span class="gdnote">Quét bằng app ngân hàng bất kỳ · số tiền và nội dung đã điền sẵn</span><button class="line wide" data-act="saveqr" data-a="${amt}" data-n="${esc(note)}">Lưu mã QR vào máy</button></div>`;
@@ -258,7 +294,27 @@ function gdTicket(D,mine){
   const lv=lvName(mine.guest?mine.lv:me?(D.st.get(me.id)?.rating||+me.rating0||0):""),lk=regLockAt(),locked=lk&&Date.now()>lk;
   const pay=mine.pay||"none",paySt=pay==="ok"?`<b class="win">✓ Đã trả</b>`:pay==="sent"?`<b class="warn">Chờ BTC xác nhận</b>`:k?`<b>Trả tại sân</b>`:`<b class="win">Miễn phí</b>`;
   const today=RX.at&&sameDay(RX.at,Date.now()),ty=gdTy(RX);
-  let h=`<div class="gdtop2"><b>Vé của bạn</b></div>`+gdSteps(3);
+  if(MINI){
+    let ci;
+    if(mine.arrived)ci=`<div class="zst ok"><b>Đã vào lịch đánh</b><small>Bạn ở hàng chờ sân. App sẽ gọi tên khi tới lượt.</small><a class="primary" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Xem sân trực tiếp</a></div>`;
+    else if(mine.ci)ci=`<div class="zst"><b>Đã check-in · chờ ban tổ chức xác nhận</b><small>Đứng trước bàn ban tổ chức vài giây để họ nhìn thẻ của bạn.</small></div>`;
+    else if(wait)ci=`<div class="zst"><b>Bạn đang chờ chỗ · thứ ${pos-R.max+1}</b><small>Có người huỷ là bạn được vào, app báo cho bạn.</small></div>`;
+    else ci=`<div class="zst"><b>Check-in tại sân</b><small>Tới sân, mở Zalo quét mã trên máy ban tổ chức.${today?"":" Mã check-in chỉ có vào ngày đánh."}</small><button class="primary" data-act="mxscan">Quét mã check-in</button></div>`;
+    const pst=pay==="ok"?`<span style="color:#1c7a3f">Đã trả</span>`:pay==="sent"?`<span style="color:#a64b00">Chờ xác nhận</span>`:k?"Trả tại sân":`<span style="color:#1c7a3f">Miễn phí</span>`;
+    let z=gdSteps(3);
+    z+=`<section class="zsec ztk">${zRow({lead:zDate(RX.at,today),top:zTag(ty.sh,{x:"s",g:"g",vb:"m"}[ty.c]||"b"),t:esc(xName(RX)),s:`${RX.at?xTime(RX):""}${RX.place?` · ${esc(RX.place)}`:""}`,cls:"ev"})}
+      <div class="zgrid"><span><small>Người chơi</small><b>${esc(nm)}${lv?` · ${esc(String(lv))}`:""}</b></span><span><small>Số thứ tự</small><b>${wait?`Chờ ${pos-R.max+1}`:`#${pos+1}`}</b></span><span><small>Lệ phí</small><b>${k?kVND(k):"0đ"}</b></span><span><small>Trạng thái</small><b>${pst}</b></span></div>${ci}</section>`;
+    z+=String(capTicket(D,mine)).replace(/🤝 ?|💚 ?/g,"");
+    let a="";
+    if(gdBy()||gdPhone())a+=zRow({lead:zIco("chat"),t:gdBy()?`Nhắn ${esc(gdBy().n)}`:"Nhắn ban tổ chức",s:"Hỏi về lịch đánh, ghép cặp, lệ phí",chev:true,attrs:`data-act="gdchat" data-v="${gdBy()?"by":"clb"}"`});
+    if(RX.map)a+=zRow({lead:zIco("pin"),t:"Chỉ đường tới sân",s:esc(RX.place||""),chev:true,attrs:`data-act="openurl" data-v="${esc(RX.map)}"`});
+    a+=zRow({lead:zIco("share"),t:"Rủ bạn cùng đi",s:"Gửi lịch đánh vào nhóm Zalo",chev:true,attrs:`data-act="mxinvite"`});
+    a+=zRow({lead:zIco("info"),t:"Xem chi tiết lịch đánh",chev:true,attrs:`data-act="gdinfo"`});
+    z+=zSec("",a);
+    if(RX.at)z+=zSec("",zRow({lead:zIco("clock"),t:`Đến lúc ${hm(RX.at-15*6e4)} để check-in`,s:"App tự gọi bạn vào sân, xem ở tab Trực tiếp."}));
+    if(!mine.arrived)z+=locked?`<p class="gdnote" style="text-align:center">Đã qua giờ khoá huỷ.</p>`:`<button class="ghost danger wide" data-act="regout">Huỷ đăng ký${lk?` · hoàn 100% trước ${hm(lk)} ${dmy(lk).slice(0,5)}`:""}</button>`;
+    return gdShell(D,z)}
+  let h=(MINI?"":`<div class="gdtop2"><b>Vé của bạn</b></div>`)+gdSteps(3);
   let ci;
   if(mine.arrived)ci=`<div class="gdci ok"><b>✓ Đã vào giải đấu</b><span>Bạn ở hàng chờ sân. App sẽ gọi tên khi tới lượt.</span><a class="primary wide" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san">Xem sân trực tiếp</a></div>`;
   else if(mine.ci)ci=`<div class="gdci wait"><b>Đã check-in · chờ BTC nhìn mặt</b><span>Ban tổ chức đang thấy thẻ của bạn trên máy. Đứng trước bàn BTC vài giây để họ xác nhận.</span></div>`;
@@ -279,16 +335,23 @@ function gdTicket(D,mine){
 
 /* ----- Điều hướng trong trang giải đấu (Mini App) ----- */
 let gdInfo=false;
-function gdPage(D){
-  if(ndOn(RX))return ndGdPage(D,RX);
+// Đang ở bước nào của trang lịch đánh (dùng cho trang và tiêu đề thanh trên)
+function gdWhich(D){
   const mine=gdMine(RX);
   if(mine){
-    if(gdInfo)return gdDetail(D,{mine:true});
-    if((mine.pay||"none")==="none"&&mine.hold&&(payOn()||webG(mine))&&feeOf(mine)>0&&BANK&&BANK.acc&&regList(D).all.indexOf(mine)<regList(D).max)return gdPay(D,mine);
-    return gdTicket(D,mine);
+    if(gdInfo)return "info";
+    if((mine.pay||"none")==="none"&&mine.hold&&(payOn()||webG(mine))&&feeOf(mine)>0&&BANK&&BANK.acc&&regList(D).all.indexOf(mine)<regList(D).max)return "pay";
+    return "tick";
   }
-  if(mxDk==="reg1"&&xOpen(RX)&&!regClosed())return gdReg1(D);
-  return gdDetail(D);
+  return mxDk==="reg1"&&xOpen(RX)&&!regClosed()?"reg1":"info";
+}
+function gdPage(D){
+  if(ndOn(RX))return ndGdPage(D,RX);
+  const w=gdWhich(D),mine=gdMine(RX);
+  if(w==="pay")return gdPay(D,mine);
+  if(w==="tick")return gdTicket(D,mine);
+  if(w==="reg1")return gdReg1(D);
+  return gdDetail(D,mine?{mine:true}:{});
 }
 
 async function gdAct(act,b,id){

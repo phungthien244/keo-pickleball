@@ -265,11 +265,11 @@ async function regAct(act,b,id){
     try{if(old)await FB.deleteDoc(FB.doc(FB.fs,PFX+"regs/"+rid));
       await FB.setDoc(FB.doc(FB.fs,PFX+"regs/"+rid),d);if(guest)await gdSavePic(rid);
       guestOpen=false;mxDk=null;gsPhoto="";delete drafts["gd-ok"];gdOpt={who:"",pay:""};gdInfo=false;gdJoin="";try{sessionStorage.removeItem("pb-doi")}catch(e){}
-      toast(pay==="sent"?"Đã đăng ký, chờ chủ CLB xác nhận phí":hold?"Đã giữ chỗ 15 phút · chuyển khoản để chắc chỗ":"Đã đăng ký");render()}catch(e){toast("Chưa đăng ký được, thử lại.")}
+      toast(pay==="sent"?"Đã đăng ký, chờ người tổ chức xác nhận phí":hold?"Đã giữ chỗ 15 phút · chuyển khoản để chắc chỗ":"Đã đăng ký");render()}catch(e){toast("Chưa đăng ký được, thử lại.")}
     return true}
   if(act==="regpaid"){const D=derive(),mine=(S.regs||[]).find(x=>x.sid===regKey(D)&&x.uid===authUser?.uid&&!x.cancel);if(!mine)return true;
     if(!armOr("regpaid:"+mine.id))return true;
-    try{await FB.updateDoc(FB.doc(FB.fs,PFX+"regs/"+mine.id),{pay:"sent",paidAt:Date.now()});toast("Đã báo chuyển khoản, chờ chủ CLB xác nhận")}catch(e){toast("Chưa gửi được, thử lại.")}
+    try{await FB.updateDoc(FB.doc(FB.fs,PFX+"regs/"+mine.id),{pay:"sent",paidAt:Date.now()});toast("Đã báo chuyển khoản, chờ người tổ chức xác nhận")}catch(e){toast("Chưa gửi được, thử lại.")}
     return true}
   if(act==="regout"){const D=derive();if(!armOr("regout:x"))return true;
     const mine=(S.regs||[]).find(x=>x.sid===regKey(D)&&x.uid===authUser?.uid&&!x.cancel);if(!mine)return true;

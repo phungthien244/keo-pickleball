@@ -30,9 +30,15 @@ const capNos=code=>(capNo||[]).filter(x=>x.host===code);
 function capReg1(D){
   if(!pairRegOn(RX))return "";
   if(gdJoin){const host=(S.regs||[]).find(r=>r.id===gdJoin);
+    if(host&&MINI)return zSec("Đồng đội",zRow({lead:av(D.pmap.get(host.pid)||{name:capName(D,host)},"md",1),t:`Đánh cặp với ${esc(capName(D,host))}`,s:capPaid(host)?`${esc(capName(D,host))} đã trả lệ phí cho bạn · chỉ cần xác nhận`:"Bạn nhận lời mời · đăng ký xong là thành cặp",right:`<button class="sm" data-act="gdmate" data-v="x">Bỏ</button>`,cls:"b"}));
     if(host)return `<span class="xsec">Đồng đội</span><div class="capok"><span>🤝</span><span class="t"><b>Đánh cặp với ${esc(capName(D,host))}</b><small>${capPaid(host)?`💚 ${esc(capName(D,host))} đã trả lệ phí cho bạn · chỉ cần xác nhận`:"Bạn nhận lời mời · đăng ký xong là thành cặp"}</small></span><button class="lnk" data-act="gdmate" data-v="x">Bỏ</button></div>`}
   // Mini App: không còn danh sách thành viên; gõ tên bạn cặp, gửi link Zalo sau khi đăng ký; chọn ai trả lệ phí (canvas B02)
   if(MINI){if(!gdOpt.mate)gdOpt.mate="inv";if(!gdOpt.pf)gdOpt.pf="pair";
+    {const f=feeGuest();let h=zOpt("mate","inv",gdOpt.mate==="inv","Tôi rủ đồng đội","Đăng ký xong gửi link qua Zalo, bạn cặp bấm Xác nhận")+zOpt("mate","seek",gdOpt.mate==="seek","Chưa có đồng đội","Ban tổ chức ghép cặp lúc tới sân");
+      if(gdOpt.mate==="inv"){h+=`<div class="zfld"><label class="fld"><span class="lbl">Tên bạn đánh cặp</span><input id="gd-mn" data-draft="gd-mn" maxlength="40" placeholder="VD: Minh Trần" value="${esc(val("gd-mn",""))}"></label></div>`;
+        if(f>0)h+=`<div class="zsh"><h3>Ai trả lệ phí?</h3></div>`+zOpt("pf","pair",gdOpt.pf==="pair","Tôi trả luôn cho cả cặp","Bạn cặp chỉ cần bấm Xác nhận",fmtK(f*2))+zOpt("pf","self",gdOpt.pf==="self","Mỗi người tự trả","Bạn cặp chuyển phần của mình khi xác nhận",fmtK(f))
+          +`<p class="gdnote zfld">Bạn cặp từ chối hoặc quá hạn: gửi link cho người khác, tiền đã trả giữ nguyên. Không tìm được ai thì ban tổ chức hoàn phần của bạn cặp.</p>`}
+      return zSec("Đồng đội · đăng ký theo cặp",h)}
     const o=(k,v,t,s,pr)=>`<button class="gdopt${gdOpt[k]===v?" on":""}" data-act="gdopt" data-k="${k}" data-v="${v}"><span class="rd"></span><span class="t"><b>${t}</b><small>${s}</small></span>${pr?`<b class="pr">${pr}</b>`:""}</button>`,f=feeGuest();
     let h=`<span class="xsec">Đồng đội · giải đăng ký theo cặp</span>`+o("mate","inv","Tôi rủ đồng đội","Đăng ký xong gửi link qua Zalo, bạn cặp bấm Xác nhận")+o("mate","seek","Chưa có đồng đội","Ban tổ chức ghép cặp (bốc thăm hoặc cân trình) lúc tới sân");
     if(gdOpt.mate==="inv"){h+=`<label class="fld"><span class="lbl">Tên bạn đánh cặp</span><input id="gd-mn" data-draft="gd-mn" maxlength="40" placeholder="VD: Minh Trần" value="${esc(val("gd-mn",""))}"></label>`;

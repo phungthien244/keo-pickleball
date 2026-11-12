@@ -23,7 +23,8 @@ function mxSubT(D){
   if(route==="app"&&tab==="gt")return {t:"Giới thiệu",ov:String((CLUB||{}).cover||"").startsWith("data:image/")};
   if(route==="app"&&tab==="nguoi"&&mxMode()!=="ql")return {t:"Thành viên"};
   const X=route==="app"&&tab==="dk"&&routeX?schedById(routeX):null;
-  if(X){const im=mxMode()!=="ql"&&X.poster&&posterCache[X.id];return {t:xName(X),ov:!!im,img:im||""}}
+  if(X){if(mxMode()!=="ql"&&!ndOn(X)){const w=withX(X,()=>gdWhich(D));if(w!=="info")return {t:{reg1:"Đăng ký",pay:"Thanh toán",tick:"Vé của bạn"}[w]}}
+    const im=mxMode()!=="ql"&&X.poster&&posterCache[X.id];return {t:xName(X),ov:!!im,img:im||""}}
   return null;
 }
 function mxStat(D){
@@ -540,6 +541,8 @@ async function mxAct2(act,b,id){
     if(MODE==="club"&&c===CID){INVITE=v.tok;await acceptInvite();render();return true}
     try{sessionStorage.setItem("pb-inv-"+c,v.tok)}catch(e){}setPath("/"+c);location.reload();return true}
   if(act==="mxmode"){const m=b.dataset.v==="choi"?"choi":"ql";if(m==="ql")rfAway=false;if(m===mxMode())return true;mxSetMode(m);mxSheet=null;if(m==="ql")go("app",{tab:canWrite?"dk":"san"});else go("home");return true}
+  if(act==="mxback"&&mxDk==="reg1"&&route==="app"&&tab==="dk"&&routeX&&!(authUser&&gdMine(schedById(routeX)))){mxDk=null;render();return true}
+  if(act==="mxback"&&gdInfo&&route==="app"&&tab==="dk"&&routeX){gdInfo=false;render();return true}
   if(act==="mxback"){mxSheet=null;if(mxNavN>0)history.back();else if(mxMode()==="ql")go("app",{tab:canWrite?"dk":"san"});else mtTab(mxO||"lich");return true}
   if(act==="mxsheet"){mxSheet=mxSheet==="club"?null:"club";render();return true}
   if(act==="mxsheetx"){mxSheet=null;render();return true}
