@@ -190,12 +190,12 @@ function mtToi(D){
 /* ----- ＋ Tạo lịch đánh: chưa có trang → chọn loại ở đây, app tự lập trang rồi vào khung trò chuyện ----- */
 function mtTao(){
   if(isZaloU(authUser)&&S.myClub===undefined)loadMyClub();
-  const nm=String(zaloProf().n||"").trim();
-  let h=`<b class="tgt">Tổ chức một buổi chơi trong 1 phút</b><small class="rule">Chọn loại, AI hỏi vài câu bằng nút bấm. App tự lập trang tổ chức cho bạn, không cần chờ duyệt.</small>`;
-  if(!nm)h+=`<label class="fld"><span class="lbl">Tên của bạn</span><input id="mt-me" data-draft="mt-me" maxlength="30" autocomplete="name" placeholder="Tên hiện trên trang tổ chức" value="${esc(val("mt-me",""))}"></label>`;
-  h+=TN_FC.map(([k,ic,t,s,f,l])=>`<button class="tgfc ${l}" data-act="mtnew" data-v="${k}"${mtBusy?" disabled":""}><i aria-hidden="true">${ic}</i><span><b>${t}</b><small>${s}</small><em>${f}</em></span><span aria-hidden="true">›</span></button>`).join("");
+  const nm=String(zaloProf().n||"").trim(),ICF={xoay:"swap",giai:"users",bang:"trophy"};
+  let h=`<div class="zhead"><h2>Tổ chức một buổi chơi trong 1 phút</h2><small>Chọn loại, AI hỏi vài câu bằng nút bấm. App tự lập trang tổ chức cho bạn, không cần chờ duyệt.</small></div>`;
+  if(!nm)h+=zSec("",`<div class="zfld" style="padding-top:12px"><label class="fld"><span class="lbl">Tên của bạn</span><input id="mt-me" data-draft="mt-me" maxlength="30" autocomplete="name" placeholder="Tên hiện trên trang tổ chức" value="${esc(val("mt-me",""))}"></label></div>`);
+  h+=zSec("Chọn loại",TN_FC.map(([k,ic,t,s2,f,l])=>zRow({lead:`<span class="zic ${l}">${zIco(ICF[k])}</span>`,t,s:s2,m:`<span class="zfit">${f}</span>`,chev:true,cls:"b tgfc "+l,attrs:`data-act="mtnew" data-v="${k}"${mtBusy?" disabled":""}`})).join(""));
   if(errs.mt)h+=`<p class="err">${esc(errs.mt)}</p>`;
-  if(mtBusy)h+=`<p class="rule">Đang lập trang tổ chức…</p>`;
+  if(mtBusy)h+=`<p class="gdnote" style="text-align:center">Đang lập trang tổ chức…</p>`;
   return mtWrap(MT_T.tao,h);
 }
 async function mtAutoClub(){

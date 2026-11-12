@@ -30,7 +30,7 @@ const regWhen=t=>t?`${dowVN(t)} ${hm(t)} · ${dmy(t)}`:"";
 const whenFull=r=>r.at?`${dowVN(r.at)} ${dmy(r.at)} · ${hm(r.at)}${r.end?`–${r.end}`:""}`:"Chưa đặt giờ";
 const pendCount=()=>(S.links||[]).filter(x=>x.status==="pending").length;
 const kVND=k=>Math.round(k*1000).toLocaleString("vi-VN")+"đ";
-const lvTxt=r=>r.lvMin||r.lvMax?`Trình ${r.lvMin||"…"}–${r.lvMax||"…"}`:"";
+const lvTxt=r=>r.lvMin||r.lvMax?(MINI?`Trình ${lvName(r.lvMin)||"Mới chơi"} – ${lvName(r.lvMax)||"Giỏi"}`:`Trình ${r.lvMin||"…"}–${r.lvMax||"…"}`):"";
 const PAYLB={none:"Chưa trả",sent:"Chờ xác nhận phí",ok:"Đã trả"};
 
 /* ----- Thông tin buổi (người chơi và người xem) ----- */

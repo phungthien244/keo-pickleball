@@ -66,8 +66,8 @@ test("＋ khi đã có trang tổ chức: vào thẳng Tạo lịch đánh với
   await e.until(() => e.T().includes("Lịch đánh của tôi"));
   await e.click("mtplus"); await e.until(() => e.T().includes("Tả lịch đánh bằng một câu"));
   expect(e.T()).toContain("Hoặc chọn loại");
-  expect(e.V()).toContain('class="tgfc s" data-act="tnfmt" data-v="xoay"');
-  expect(e.V()).toContain('class="tgfc m" data-act="tnfmt" data-v="giai"');
+  expect(e.V()).toContain('data-act="tnfmt" data-v="xoay"');
+  expect(e.V()).toContain('data-act="tnfmt" data-v="giai"');
 });
 
 test("Tôi: đổi tên trang tổ chức tại chỗ (tên tục bị chặn)", async () => {

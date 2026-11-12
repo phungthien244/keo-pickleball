@@ -31,6 +31,7 @@ const ZI={
   ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>',
   live:'<circle cx="12" cy="12" r="3"/><path d="M7.5 7.5a6.5 6.5 0 0 0 0 9M16.5 7.5a6.5 6.5 0 0 1 0 9"/>',
   search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  img:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 8"/>',
   hist:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>'
 };
 const zIco=(k,s=24)=>`<svg class="zi" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ZI[k]||""}</svg>`;

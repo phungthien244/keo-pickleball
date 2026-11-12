@@ -101,7 +101,7 @@ test("nhiều nội dung trong một câu → giải có nội dung", async () =
 test("như giải lần trước: dùng lại cả tiền và giải thưởng, ngày sang tuần sau", async () => {
   const old = Date.now() - 6 * 864e5;
   const e = await boot(base({ "clubs/q7/sched/s0": { name: "Giải tối", fmt: "xoay", at: old, courts: 3, target: 11, max: 20, st: "done", place: "Sân A", thu: "keo", pay: "off", gton: true, gt: "codinh", gtv: 300, trao: "namnu", createdAt: 1 } }));
-  await e.click("xnew"); await e.until(() => e.T().includes("Như giải lần trước"));
+  await e.click("xnew"); await e.until(() => e.T().includes("Như lần trước"));
   await e.click("tnprev", { id: "s0" }); await e.until(() => e.T().includes("Mình lấy lại cài đặt"));
   expect(e.T()).toContain("Xong rồi!");
   expect(e.T()).toContain("20 người"); expect(e.T()).toContain("Ai thua góp"); expect(e.T()).toContain("CLB bỏ ra 300k");

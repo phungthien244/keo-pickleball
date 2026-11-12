@@ -255,17 +255,17 @@ function tnPage(D){
       <div class="hqcta"><button class="ball go" data-act="tnpg" data-v="pick">Đã hiểu, bắt đầu ›</button></div>`}
   if(tnPg==="pick"){const txt=String(val("tn-txt","")),o=txt.trim()?tnFill(tnParse(txt)):null;
     mxDr({t:"Tạo lịch đánh",back:"tnx",sub:tnBusy?"AI đang soạn…":o?"Đang tả lịch đánh":"Chọn cách tạo",x:true});
-    let h=`<div class="tghead"><span>✦ Tạo nhanh bằng AI</span><button class="lnk" data-act="tnpg" data-v="help">❓ Cách dùng</button></div><b class="tgt">Tả lịch đánh bằng một câu, app soạn sẵn mọi mục</b>`
-      +`<label class="fld tntxt"><span class="sr">Tả giải</span><textarea id="tn-txt" data-draft="tn-txt" data-live="1" rows="3" maxlength="400" placeholder="Ví dụ: Tối thứ 7 social 19h, 3 sân, 80k/người · hoặc: CN 7h giải 16 cặp chia 4 bảng, nhất 1 triệu"${tnBusy?" disabled":""}>${esc(txt)}</textarea></label>`;
+    let h=`<section class="zsec"><div class="zsh"><h3>Tả lịch đánh bằng một câu</h3><button class="zlk" data-act="tnpg" data-v="help">Cách dùng</button></div><div class="zfld"><small class="gdnote">AI soạn sẵn mọi mục, thiếu gì sẽ hỏi bằng nút bấm.</small></div>`
+      +`<label class="fld tntxt zfld"><span class="sr">Tả giải</span><textarea id="tn-txt" data-draft="tn-txt" data-live="1" rows="3" maxlength="400" placeholder="Ví dụ: Tối thứ 7 social 19h, 3 sân, 80k/người · hoặc: CN 7h giải 16 cặp chia 4 bảng, nhất 1 triệu"${tnBusy?" disabled":""}>${esc(txt)}</textarea></label></section>`;
     if(o){const C=tnCheck(o);
-      if(tnBusy)h+=`<section class="tgread"><span aria-hidden="true">✦</span><b>AI đang soạn…</b><i></i></section><section class="tgbox">${C.filter(x=>x[1]).map(x=>tnCkRow(x)).join("")}${tnCkRow(["Sân, luật, chuyển khoản…",false,""],true)}</section>`;
-      else h+=`<section class="tgbox"><span class="cap">App đã nhận ra · ${C.filter(x=>x[1]).length}/7</span>${C.map(x=>tnCkRow(x)).join("")}</section><small class="rule">Thiếu vẫn bấm Soạn được, app sẽ hỏi bằng nút bấm. Xoá hết chữ thì các thể thức hiện lại.</small>`;
-      return h+`<div class="hqcta"><button class="ball go" data-act="tngo"${tnBusy?" disabled":""}>${tnBusy?"Đang soạn…":"✦ Soạn giải"}</button></div>`}
+      if(tnBusy)h+=zSec("AI đang soạn…",C.filter(x=>x[1]).map(x=>tnCkRow(x)).join("")+tnCkRow(["Sân, luật, chuyển khoản…",false,""],true));
+      else h+=zSec(`App đã nhận ra · ${C.filter(x=>x[1]).length}/7`,C.map(x=>tnCkRow(x)).join("")+`<p class="gdnote zfld">Thiếu vẫn bấm Soạn được, app sẽ hỏi bằng nút bấm. Xoá hết chữ thì các loại hiện lại.</p>`);
+      return h+`<div class="hqcta"><button class="ball go" data-act="tngo"${tnBusy?" disabled":""}>${tnBusy?"Đang soạn…":"Soạn lịch đánh"}</button></div>`}
     const seen=new Set(),L=tnLast().filter(x=>x.at&&!x.series&&!seen.has(xName(x))&&seen.add(xName(x))).concat(tnLast().filter(x=>x.at&&x.series)).filter((x,i,a)=>a.findIndex(y=>xName(y)===xName(x))===i).slice(0,2);
-    return h+`<div class="tgor"><i></i><span>Hoặc chọn loại</span><i></i></div>`
-      +TN_FC.map(([k,ic,t,s,f,l])=>`<button class="tgfc ${l}" data-act="tnfmt" data-v="${k}"><i aria-hidden="true">${ic}</i><span><b>${t}</b><small>${s}</small><em>${f}</em></span><span aria-hidden="true">›</span></button>`).join("")
-      +(L.length?`<section class="tnprev"><span class="cap">Như giải lần trước · 1 chạm</span>${L.map(x=>`<button data-act="tnprev" data-id="${esc(x.id)}"><span class="t"><b>${esc(xName(x))}</b><small>${esc([x.fmt==="giai"?(x.ko?"Chia bảng + KO":"Vòng tròn"):"Xoay cặp",ndL(x).length?`${ndL(x).length} nội dung`:x.max?`${x.fmt==="giai"?Math.round(x.max/2)+" cặp":x.max+" người"}`:"",`${x.courts||2} sân`,x.at?`${tnDow(x.at)} ${tnDm(x.at)}`:""].filter(Boolean).join(" · "))}</small></span><span class="go">Dùng lại ›</span></button>`).join("")}</section>`:"")
-      +`<button class="lnk tgfull" data-act="tnfull">Tạo bằng form đầy đủ ›</button>`;
+    const ICF={xoay:"swap",giai:"users",bang:"trophy"};
+    return h+zSec("Hoặc chọn loại",TN_FC.map(([k,ic,t,s2,f,l])=>zRow({lead:`<span class="zic ${l}">${zIco(ICF[k])}</span>`,t,s:s2,m:`<span class="zfit">${f}</span>`,chev:true,cls:"b tgfc "+l,attrs:`data-act="tnfmt" data-v="${k}"`})).join(""))
+      +(L.length?zSec("Như lần trước · 1 chạm",L.map(x=>zRow({lead:zIco("hist"),t:esc(xName(x)),s:esc([x.fmt==="giai"?(x.ko?"Chia bảng + KO":"Vòng tròn"):"Xoay cặp",ndL(x).length?`${ndL(x).length} nội dung`:x.max?`${x.fmt==="giai"?Math.round(x.max/2)+" cặp":x.max+" người"}`:"",`${x.courts||2} sân`,x.at?`${tnDow(x.at)} ${tnDm(x.at)}`:""].filter(Boolean).join(" · ")),right:zPill("Dùng lại"),attrs:`data-act="tnprev" data-id="${esc(x.id)}"`})).join("")):"")
+      +zSec("",zRow({lead:zIco("list"),t:"Tạo bằng form đầy đủ",s:"Tự điền từng mục, hợp khi cần chỉnh chi tiết",chev:true,attrs:`data-act="tnfull"`}));
   }
   if(tnPg==="grp"&&tn){const g=tnG||tnNextG(tn);if(!g){tnPg="card";return tnPage(D)}tnG=g;
     const i=TN_G.findIndex(x=>x[0]===g),need=tnNeed(tn,g).length;

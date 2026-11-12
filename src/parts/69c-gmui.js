@@ -26,8 +26,8 @@ function gsDefs(D,X){
     place:{i:"📍",t:"Sân",val:v("place")||"Chưa có",body:()=>gsIn(D,"place","Tên sân",'maxlength="60" placeholder="📍 Sân Kỳ Hòa, Q10"')+gsIn(D,"map","Link Google Maps · không bắt buộc",'type="url" maxlength="300"')},
     max:{i:"🎟",t:"Số chỗ",val:+v("max")?`${v("max")} chỗ`:"Không giới hạn",body:()=>gsStep(D,"max",G?"Tối đa bao nhiêu người?":"Tối đa bao nhiêu người?","0 là không giới hạn",0,200,2)},
     courts:{i:"🏟",t:"Số sân",val:`${v("courts")} sân`,body:()=>gsStep(D,"courts","Mấy sân?","Mỗi sân 4 người một lúc",1,30)},
-    lv:{i:"🎯",t:"Trình độ",val:v("lvMin")||v("lvMax")?`${v("lvMin")||"…"} – ${v("lvMax")||"…"}`:"Mọi trình",
-      body:()=>`<div class="form">${gsIn(D,"lvMin","Trình từ",'type="number" step="0.5" min="1" max="8" inputmode="decimal" placeholder="2.5"')}${gsIn(D,"lvMax","đến",'type="number" step="0.5" min="1" max="8" inputmode="decimal" placeholder="4.0"')}</div><small class="rule">Để trống là ai cũng đăng ký được.</small>`},
+    lv:{i:"🎯",t:"Trình độ",val:v("lvMin")||v("lvMax")?(MINI?`${lvName(v("lvMin"))||"Mọi trình"} – ${lvName(v("lvMax"))||"Giỏi"}`:`${v("lvMin")||"…"} – ${v("lvMax")||"…"}`):"Mọi trình",
+      body:()=>MINI?["lvMin","lvMax"].map((k,j)=>`<span class="gmlb">${j?"Đến trình":"Từ trình"}</span><div class="gmchips">${[["",j?"Không giới hạn":"Ai cũng được"],...LV4.map(x=>[x[0],x[1]])].map(([vv,l])=>`<button class="gmchip${String(v(k)||"")===vv?" on":""}" data-act="xfset" data-k="${k}" data-v="${vv}" aria-pressed="${String(v(k)||"")===vv}">${l}</button>`).join("")}</div>`).join("")+`<small class="rule">Chọn “Ai cũng được” nếu không giới hạn trình.</small>`:`<div class="form">${gsIn(D,"lvMin","Trình từ",'type="number" step="0.5" min="1" max="8" inputmode="decimal" placeholder="2.5"')}${gsIn(D,"lvMax","đến",'type="number" step="0.5" min="1" max="8" inputmode="decimal" placeholder="4.0"')}</div><small class="rule">Để trống là ai cũng đăng ký được.</small>`},
     guests:{i:"🧑‍🤝‍🧑",t:"VĐV ngoài CLB",val:on("guests")?`Nhận${v("feeG")!==""?` · ${fmtK(+v("feeG")||0)}`:fee?` · ${fmtK(fee)}`:""}`:"Chỉ thành viên",
       body:()=>gsChips("guests",[["0","Chỉ thành viên"],["1","Nhận VĐV ngoài CLB"]],on("guests")?"1":"0",2)+(on("guests")?gsIn(D,"feeG","Lệ phí VĐV ngoài CLB (k) · để trống là như thành viên",'type="number" min="0" inputmode="numeric"'):"")},
     pay:{i:"💳",t:"Chuyển khoản khi đăng ký",val:{off:"Không",opt:"Tuỳ chọn",req:"Bắt buộc"}[v("pay")]||"Không",
@@ -63,10 +63,11 @@ function gsDefs(D,X){
   };
 }
 const GS_NEW=["lv","pay","dl","luat","gt","rep","poster","note"];
-const gsRow=(k,o,act="gsopt")=>`<button class="gmli gsrow" data-act="${act}" data-v="${k}"><i>${o.i}</i><span class="t"><b>${o.t}</b></span><em>${esc(o.val)}</em><span aria-hidden="true">›</span></button>`;
+const GS_ZI={lv:"level",pay:"money",dl:"clock",luat:"list",gt:"trophy",rep:"hist",poster:"img",note:"doc",name:"edit",when:"cal",place:"pin",max:"users",dt:"users",pairReg:"users",san:"money",fee:"money",thu:"money",incl:"list",courts:"home",gmode:"swap"};
+const gsRow=(k,o,act="gsopt")=>`<button class="gmli gsrow" data-act="${act}" data-v="${k}"><i>${MINI?zIco(GS_ZI[k]||"list",22):o.i}</i><span class="t"><b>${o.t}</b></span><em>${esc(o.val)}</em><span aria-hidden="true">›</span></button>`;
 function gsSheet(D,X){
   if(!gsOpt)return "";const o=gsDefs(D,X)[gsOpt];if(!o){gsOpt=null;return ""}
-  return `<div class="mxdim" data-act="gsx"></div><div class="mxsheet gmsh gssh" role="dialog" aria-label="${esc(o.t)}"><span class="grab"></span><b class="mxh">${o.t}</b>${o.body()}${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}<button class="ball go wide" data-act="gsok">${o.save||"✓ Lưu"}</button></div>`;
+  return `<div class="mxdim" data-act="gsx"></div><div class="mxsheet gmsh gssh" role="dialog" aria-label="${esc(o.t)}"><span class="grab"></span><b class="mxh">${o.t}</b>${o.body()}${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}<button class="ball go wide" data-act="gsok">${o.save||"Lưu"}</button></div>`;
 }
 // T4 · Tuỳ chọn thêm (lúc tạo giải)
 function gsNewPage(D){

@@ -106,8 +106,8 @@ function vGiaiHub(D){
 function gmFirst(D){
   const nm=String((S.link&&S.link.status==="ok"&&D.pmap.get(S.link.pid)?.name)||zaloProf().n||"").trim().split(/\s+/).pop();
   return `<div class="gmhi"><b>Chào${nm?" "+esc(nm):""} 👋</b><span>Pikeco giúp mở giải, xếp sân, tính tiền. Bắt đầu bằng giải đầu tiên nhé.</span></div>
-    <button class="gmopt on" data-act="xqfmt" data-v="xoay"><i>🔄</i><span><b>Buổi giao lưu</b><small>Ai đến cũng đánh. App tự xếp cặp đổi liên tục, tính tiền sân cho từng người. Hợp buổi tập hằng tuần.</small></span><em>Phổ biến</em></button>
-    <button class="gmopt" data-act="xqfmt" data-v="giai"><i>🏆</i><span><b>Giải có cặp cố định</b><small>Đăng ký theo cặp, chia bảng, có giải thưởng. Hợp giải tháng, giải giao hữu.</small></span></button>
+    <button class="gmopt on" data-act="xqfmt" data-v="xoay"><span class="zic s">${zIco("swap")}</span><span><b>Buổi giao lưu</b><small>Ai đến cũng đánh. App tự xếp cặp đổi liên tục, tính tiền sân cho từng người. Hợp buổi tập hằng tuần.</small></span><em>Phổ biến</em></button>
+    <button class="gmopt" data-act="xqfmt" data-v="giai"><span class="zic m">${zIco("users")}</span><span><b>Giải có cặp cố định</b><small>Đăng ký theo cặp, chia bảng, có giải thưởng. Hợp giải tháng, giải giao hữu.</small></span></button>
     <button class="lnk gmquick" data-act="gmquick">⚡ Đánh nhanh ngay · không cần đăng ký trước</button><div class="hqcta"><button class="ball wide nv" data-act="xnew">＋ Tạo lịch đánh</button></div>`;
 }
 
@@ -124,21 +124,21 @@ function xQuickForm(D){
   if(xQs===1||pick){
     const L=schedAll().filter(x=>x.st!=="cancel").pop(),lk=L?(L.fmt==="giai"?(L.ko?"bang":"giai"):"xoay"):"",cur=pick?(lk||"xoay"):xNew;
     h+=q(1,"Lần này đánh kiểu gì?");
-    if(L)h+=`<button class="gmsame" data-act="xqsame" data-v="${lk}"><i>↺</i><span><b>Giống lần trước</b><small>${esc(xName(L))}${L.courts?` · ${L.courts} sân`:""}${xFee(L)?` · ${fmtK(xFee(L))}`:""}</small></span><em>Dùng ›</em></button>`;
-    h+=`<button class="gmopt${cur==="xoay"?" on":""}" data-act="xqsel" data-v="xoay"><i>🔄</i><span><b>Giao lưu xoay cặp</b><small>Ai đến cũng đánh, app tự đổi cặp mỗi trận.</small></span></button>
-      <button class="gmopt${cur==="giai"?" on":""}" data-act="xqsel" data-v="giai"><i>🏆</i><span><b>Giải có cặp cố định</b><small>Mỗi cặp gặp tất cả các cặp khác. Có nhất, nhì, ba.</small></span></button>
-      <button class="gmopt${cur==="bang"?" on":""}" data-act="xqsel" data-v="bang"><i>▦</i><span><b>Chia bảng, đánh loại trực tiếp</b><small>Như giải thật: vòng bảng rồi tứ kết, bán kết, chung kết.</small></span></button>
+    if(L)h+=`<button class="gmsame" data-act="xqsame" data-v="${lk}"><span class="zic">${zIco("hist")}</span><span><b>Giống lần trước</b><small>${esc(xName(L))}${L.courts?` · ${L.courts} sân`:""}${xFee(L)?` · ${fmtK(xFee(L))}`:""}</small></span><em>Dùng ›</em></button>`;
+    h+=`<button class="gmopt${cur==="xoay"?" on":""}" data-act="xqsel" data-v="xoay"><span class="zic s">${zIco("swap")}</span><span><b>Giao lưu xoay cặp</b><small>Ai đến cũng đánh, app tự đổi cặp mỗi trận.</small></span></button>
+      <button class="gmopt${cur==="giai"?" on":""}" data-act="xqsel" data-v="giai"><span class="zic m">${zIco("users")}</span><span><b>Giải có cặp cố định</b><small>Mỗi cặp gặp tất cả các cặp khác. Có nhất, nhì, ba.</small></span></button>
+      <button class="gmopt${cur==="bang"?" on":""}" data-act="xqsel" data-v="bang"><span class="zic g">${zIco("trophy")}</span><span><b>Chia bảng, đánh loại trực tiếp</b><small>Như giải thật: vòng bảng rồi tứ kết, bán kết, chung kết.</small></span></button>
 `;
     return h+`<div class="hqcta"><button class="ball go" data-act="xqgo" data-v="2">Tiếp ›</button></div>`;
   }
   if(xQs===2){
     const KB=xNew==="bang",ds=gmDays().slice(0,3),dv=v("date"),tv=v("time"),T3=KB?["07:00","07:30","08:00"]:["18:00","19:00","19:30"],dO=gsDO||(!!dv&&!ds.some(t=>isoDay(t)===dv)),tO=gsTO||(!!tv&&!T3.includes(tv));
     h+=q(2,"Đánh khi nào, ở đâu?");
-    h+=`<span class="gmlb">Ngày</span><div class="gmchips c4">${ds.map((t,i)=>chip("xfset","date",isoDay(t),i===0?"Hôm nay":i===1?"Mai":`${DOW[new Date(t).getDay()]} ${dmy(t).slice(0,5)}`,!dO&&dv===isoDay(t))).join("")}${chip("gsk","","d","📅 Khác",dO)}</div>
+    h+=`<span class="gmlb">Ngày</span><div class="gmchips c4">${ds.map((t,i)=>chip("xfset","date",isoDay(t),i===0?"Hôm nay":i===1?"Mai":`${DOW[new Date(t).getDay()]} ${dmy(t).slice(0,5)}`,!dO&&dv===isoDay(t))).join("")}${chip("gsk","","d","Khác",dO)}</div>
       ${dO?`<label class="fld gmsm"><span class="lbl">Ngày khác</span><input id="xf-date" data-draft="xf-date" type="date" value="${esc(dv)}"></label>`:""}
       <span class="gmlb">Giờ bắt đầu</span><div class="gmchips c4">${T3.map(t=>chip("xfset","time",t,t,!tO&&tv===t)).join("")}${chip("gsk","","t","Khác",tO)}</div>
       ${tO?`<label class="fld gmsm"><span class="lbl">Giờ khác</span><input id="xf-time" data-draft="xf-time" type="time" value="${esc(tv)}"></label>`:""}
-      <label class="fld"><span class="lbl">Sân${v("place")?" · nhớ từ lần trước":""}</span><input id="xf-place" data-draft="xf-place" maxlength="60" placeholder="📍 Sân Kỳ Hòa, Q10" value="${esc(v("place"))}"></label>
+      <label class="fld"><span class="lbl">Sân${v("place")?" · nhớ từ lần trước":""}</span><input id="xf-place" data-draft="xf-place" maxlength="60" placeholder="VD: Sân Kỳ Hòa, Q10" value="${esc(v("place"))}"></label>
       <div class="gmstp"><span><b>Mấy sân?</b><small>${KB?"Giải chia bảng nên có 3–4 sân":"Mỗi sân 4 người một lúc"}</small></span><span class="stepper big"><button data-act="xfstep" data-k="courts" data-d="-1" data-min="1" data-max="30" aria-label="Bớt sân">−</button><b class="num">${esc(v("courts"))}</b><button data-act="xfstep" data-k="courts" data-d="1" data-min="1" data-max="30" aria-label="Thêm sân">＋</button></span></div>${KB?kbEst(D):""}`;
     return h+`${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}<div class="hqcta two"><button class="btn-line" data-act="xqgo" data-v="1">‹ Lại</button><button class="ball" data-act="xqgo" data-v="3">Tiếp ›</button></div>`;
   }
@@ -150,8 +150,8 @@ function xQuickForm(D){
     <span class="gmlb">Lệ phí mỗi người</span><div class="gmchips c5">${[["0","Miễn phí"],["50","50k"],["60","60k"],["100","100k"],["khac","Khác"]].map(([k,l])=>chip("xqfee","",k,l,fc===k)).join("")}</div>
     ${fc==="khac"?`<label class="fld gmsm"><span class="lbl">Số tiền mỗi người (k)</span><input id="xf-${thu==="phi"?"phi":"fee"}" data-draft="xf-${thu==="phi"?"phi":"fee"}" type="number" min="0" inputmode="numeric" value="${esc(amt||"")}"></label>`:""}
     ${cp&&!G?`<span class="gmlb">Thu tiền kiểu nào?</span><div class="gmchips c3">${[["phi","Cố định"],["deu","Chia đều sân"]].map(([k,l])=>chip("xfset","thu",k,l,thu===k)).join("")}</div>`:""}
-    ${mxDrOn()?`<div class="gmlist"><button class="gmli gsrow" data-act="gspg"><i>⚙</i><span class="t"><b>Tuỳ chọn thêm</b><small>Trình độ, luật, giải thưởng, lặp lại…</small></span><em>${GS_NEW.length} mục</em><span aria-hidden="true">›</span></button></div>`:`<button class="gmmore" data-act="xqfull"><span>Tuỳ chọn thêm <small>· trình độ, luật điểm, giải thưởng, lặp hằng tuần, ảnh bìa</small></span><b>▾</b></button>`}`;
-  return h+`${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}<div class="hqcta two"><button class="btn-line" data-act="xqgo" data-v="2">‹ Lại</button><button class="ball go" data-act="xsave" data-v="open">✓ Tạo giải</button></div>`;
+    ${mxDrOn()?`<div class="gmlist"><button class="gmli gsrow" data-act="gspg"><i>${zIco("gear",22)}</i><span class="t"><b>Tuỳ chọn thêm</b><small>Trình độ, luật, giải thưởng, lặp lại…</small></span><em>${GS_NEW.length} mục</em><span aria-hidden="true">›</span></button></div>`:`<button class="gmmore" data-act="xqfull"><span>Tuỳ chọn thêm <small>· trình độ, luật điểm, giải thưởng, lặp hằng tuần, ảnh bìa</small></span><b>▾</b></button>`}`;
+  return h+`${errs.xf?`<p class="err">${esc(errs.xf)}</p>`:""}<div class="hqcta two"><button class="btn-line" data-act="xqgo" data-v="2">‹ Lại</button><button class="ball go" data-act="xsave" data-v="open">Tạo giải</button></div>`;
 }
 function gmAutoName(D){
   const f=xNew==="xoay"?"Giao lưu":xNew==="bang"?"Giải chia bảng":"Giải cặp";
