@@ -64,6 +64,10 @@ function gmCard(D,X,big){
   return `<div class="gmcard${big?" big":""}"><a class="gmc" ${gmLink(X)}><span class="h"><span class="t"><b>${esc(X?xName(X):(D.c.sname||"Giải đánh nhanh"))}</b><small>${esc(when)}</small></span>${gmTag(X)}</span>${X&&X.st==="cancel"?"":gmBar(st,X&&X.st==="done")}${reg}</a>
     ${X&&(X.st==="cancel"||X.st==="done")?"":big?gmNextBox(n,true):`<span class="gmn">👉 <b>${n.t}</b></span>`}</div>`;
 }
+function gmDups(U){const seen=new Map(),out=[];
+  for(const x of [...U].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0))){if(x.series)continue;const k=`${String(x.name||"").trim().toLowerCase()}|${x.at}|${String(x.place||"").trim().toLowerCase()}`;
+    if(!seen.has(k)){seen.set(k,x);continue}if(!xRegN(x))out.push(x)}
+  return out}
 function vGiaiHub(D){
   const U=schedUp(),now=Date.now(),cx=xCur();
   const today=U.filter(x=>x.at&&sameDay(x.at,now)&&x.st!=="draft"),drafts=U.filter(x=>x.st==="draft"),up=U.filter(x=>!today.includes(x)&&!drafts.includes(x));
@@ -71,7 +75,9 @@ function vGiaiHub(D){
   const done=schedAll().filter(x=>x.st==="done"||x.st==="cancel").reverse().slice(0,12);
   if(!U.length&&!quick&&!done.length&&S.schedReady)return gmFirst(D);
   let h=gmLiveBan(D);
-  const pend=pendCount();
+  // Lịch trùng (cùng tên, cùng giờ, cùng sân, chưa ai đăng ký) do bấm Tạo nhiều lần: xoá một chạm, giữ bản đầu
+  {const dup=gmDups(U);if(dup.length)h+=`<div class="gmdup"><span class="t"><b>Có ${dup.length} lịch đánh bị trùng</b><small>Cùng tên, cùng giờ, chưa ai đăng ký. Giữ lại một bản, xoá các bản thừa.</small></span><button class="primary" data-act="gmdupx">${armed("gmdupx")?"Bấm lần nữa để xoá":`Xoá ${dup.length} bản trùng`}</button></div>`}
+  const pend=MINI?0:pendCount();
   if(pend)h+=`<a class="gmpend" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><b>${pend} người xin vào CLB</b><span>Duyệt ở Thành viên ›</span></a>`;
   // Giải gấp nhất nổi lên đầu với nút làm luôn
   const first=quick?null:[...today,...up,...drafts].find(Boolean);
@@ -276,6 +282,8 @@ async function gmAct(act,b){
   if(act==="gmswx"){gmSw=false;render();return true}
   if(act==="gmedit"){gmEdit=true;gmSec=null;render();top();return true}
   if(act==="gmeditx"){gmEdit=false;gmSec=null;gsOpt=null;if(MINI){xEdit=null;xClearDraft()}render();top();return true}
+  if(act==="gmdupx"&&canWrite){if(!armOr("gmdupx"))return true;const L=gmDups(schedUp());
+    await write(async()=>{for(const x of L)await db.collection("sched").doc(x.id).delete()},`Đã xoá ${L.length} lịch trùng`);S.sched=(S.sched||[]).filter(x=>!L.includes(x));render();return true}
   if(act==="gmsecx"){gmSec=null;gsOpt=null;if(MINI){xEdit=null;xClearDraft()}render();top();return true}
   if(act==="gmsec"&&mxDrOn()&&X){gmSec=v;gsOpt=null;xClearDraft();xEdit=v==="tt"||(gmCur(X)&&v!=="info")?null:X.id;render();top();return true}
   if(act==="gmsec"){

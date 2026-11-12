@@ -343,7 +343,7 @@ function tcParts(t){const P=[],cur=t.ask||t.sumOn?null:tcPend(t)[0],req=tcReq(t)
   else{bot("Xong rồi! Bạn kiểm tra lại nhé. Muốn đổi dòng nào thì bấm vào dòng đó để chọn lại ngay.",tcSum(t));
     t.sumOn=true;const E=tnEst(t),R=tcReq(t);
     if(R.length)P.push({h:`<div class="tcq end"><button class="btn-line" data-act="tced" data-v="${TC_ROWK[R[0].k]||R[0].k}">Còn thiếu: ${esc(R[0].q(t).replace(/\?$/,""))}</button></div>`});
-    else P.push({h:`<div class="tcq end">${E&&E.late?`<button class="btn-line" data-act="tnmk" data-v="late">Tạo dù không kịp</button>`:`<button class="ball go" data-act="tnmk">✓ ${t.fmt==="xoay"?"Tạo lịch đánh":"Tạo giải"}</button>`}</div>`})}
+    else P.push({h:`<div class="tcq end">${E&&E.late?`<button class="btn-line" data-act="tnmk" data-v="late">Tạo dù không kịp</button>`:`<button class="ball go" data-act="tnmk" ${xSaving?"disabled":""}>${xSaving?"Đang tạo…":`✓ ${t.fmt==="xoay"?"Tạo lịch đánh":"Tạo giải"}`}</button>`}</div>`})}
   return P}
 // Lời app mới (sau câu của người dùng) chờ một nhịp rồi mới hiện
 function tcBeat(){const P=tcParts(tn);let i=P.length;while(i>0&&!P[i-1].me)i--;const n=P.slice(i).reduce((a,x)=>a+(x.n||0),0);

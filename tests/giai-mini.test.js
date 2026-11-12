@@ -133,3 +133,14 @@ test("tổng kết giải chia bảng + KO: công khai, vô địch, đường t
   expect(e.T()).toContain("Chung kết"); expect(e.T()).toContain("BẢNG A"); expect(e.T()).toContain("Tranh hạng ba");
   expect(e.T()).not.toContain("Dư vào quỹ"); expect(e.T()).not.toContain("Rating sau giải");
 });
+
+test("lịch trùng do bấm Tạo nhiều lần: trang Lịch đánh báo và xoá một chạm (giữ bản đầu, bản có người đăng ký không xoá)", async () => {
+  const dup = (id, c, extra = {}) => ({ name: "Roundrobin tối", fmt: "xoay", at: tmr(), end: "21:00", courts: 2, target: 11, max: 8, st: "open", openAt: 0, place: "Sân Popping", deadline: tmr(), lockAt: tmr() - 7200e3, createdAt: c, ...extra });
+  const e = await boot(base({ "clubs/q7/sched/d1": dup("d1", 10), "clubs/q7/sched/d2": dup("d2", 11), "clubs/q7/sched/d3": dup("d3", 12), "clubs/q7/sched/d4": dup("d4", 13),
+    "clubs/q7/regs/d4_zalo_5": { sid: "d4", uid: "zalo_5", name: "Lan", guest: true, at: 1 } }));
+  await e.until(() => e.T().includes("Có 2 lịch đánh bị trùng"));
+  await e.click("gmdupx"); await e.click("gmdupx");
+  await e.until(() => !e.store.get("clubs/q7/sched/d2") && !e.store.get("clubs/q7/sched/d3"));
+  expect(e.store.get("clubs/q7/sched/d1")).toBeTruthy(); expect(e.store.get("clubs/q7/sched/d4")).toBeTruthy();
+  await e.until(() => !e.T().includes("bị trùng"));
+});

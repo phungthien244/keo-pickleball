@@ -339,7 +339,14 @@ function xRead(D){
   const t=v("time"),d=v("date");
   return {f,t,d,rep:v("rep")==="1",days:String(xv(D,"days")).split(",").filter(Boolean).map(Number),auto:v("auto")!=="0",openD:Math.max(1,n("openD",2))};
 }
+// Đang lưu thì bỏ qua lần bấm tiếp theo (mạng chậm, tải ảnh bìa lâu → người dùng bấm Tạo nhiều lần ra nhiều lịch trùng)
+let xSaving=false;
 async function xSave(D,mode){
+  if(xSaving){toast("Đang lưu, chờ chút nhé…");return}
+  xSaving=true;render();
+  try{await xSave0(D,mode)}finally{xSaving=false;render()}
+}
+async function xSave0(D,mode){
   if(xNew&&!xEdit&&!xSEdit&&!String(xv(D,"name")||"").trim())drafts["xf-name"]=gmAutoName(D);
   const {f,t,d,rep,days,auto,openD}=xRead(D);
   if(!/^\d{1,2}:\d{2}$/.test(t)){errs.xf="Nhập giờ bắt đầu.";render();return}
@@ -362,6 +369,9 @@ async function xSave(D,mode){
     await write(async()=>{const pv=await posterCommit(X.id);
       await db.collection("sched").doc(X.id).set(xBuild({...f,at},{st:X.st,openAt:X.openAt||0,series:X.series||null,num:X.num??null,createdAt:X.createdAt||Date.now(),...(X.byZ?{byZ:X.byZ,byN:X.byN||""}:{}),poster:pv===undefined?(X.poster||null):pv}))},"Đã lưu giải đấu");
     xEdit=null;xClearDraft();render();return}
+  // Vừa tạo đúng lịch này (cùng tên, cùng giờ, trong 10 phút): mở lịch đã có, không tạo thêm
+  {const nm=String(f.name||"").trim().toLowerCase(),dup=!rep&&(S.sched||[]).find(x=>x.at===at&&String(x.name||"").trim().toLowerCase()===nm&&String(x.place||"")===String(f.place||"")&&Date.now()-(x.createdAt||0)<6e5);
+    if(dup){toast("Lịch này vừa được tạo rồi");gmMade=dup.id;xQ=false;xNew=null;xClearDraft();go("app",{tab:"dk",x:dup.id});return}}
   const id=db.collection("sched").doc().id;let sid=null;
   await write(async()=>{
     if(rep){sid=db.collection("series").doc().id;await db.collection("series").doc(sid).set({days,time:t,end:f.end,tpl:f,auto,openD,on:true,from:dayStart(at),at:Date.now(),...xBy()})}

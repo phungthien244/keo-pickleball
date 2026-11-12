@@ -376,7 +376,7 @@ async function tnAct(act,b){
     if(a&&Object.keys(a).length){tnMerge(a);delete drafts["tn-say"];if(C)C(Object.keys(a));else toast("Đã sửa theo lời bạn")}
     else{const p=tnParse(s),k=Object.keys(p).filter(x=>!["date","time"].includes(x)||/ngay|gio|\d+h|thu|chu nhat|mai/.test(tnNorm(s)));if(k.length){const o={};for(const x of k)o[x]=p[x];tnMerge(o);delete drafts["tn-say"];if(C)C(k);else toast("Đã sửa theo lời bạn")}else if(C){delete drafts["tn-say"];C(null)}else toast("Chưa hiểu, thử nói rõ hơn hoặc bấm Sửa ở từng nhóm.")}
     render();if(C)tcDown();return true}
-  if(act==="tnmk"){if(v==="late"&&!armOr("tnlate"))return true;await tnCreate(D);return true}
+  if(act==="tnmk"){if(v==="late"&&!armOr("tnlate"))return true;if(xSaving){toast("Đang tạo, chờ chút nhé…");return true}await tnCreate(D);return true}
   return false;
 }
 if(typeof window!=="undefined")window.__tnParse=tnParse;
