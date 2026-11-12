@@ -27,6 +27,9 @@ function tqStart(fmt,X){
     const h=X.hang||[];if(h.length){set("h1",+h[0]||0);set("h2",+h[1]||0);set("h3",+h[2]||0)}
     set("date",isoDay(at));set("time",hm(at));if(X.end)set("end",X.end)}
   xSrcCache=xSrc(derive());
+  // Không còn "Ai thua góp" (giống cá cược) và giải thưởng trích %: chỉ lệ phí cố định / chia đều, thưởng tự điền
+  const D=derive();if(!["phi","deu"].includes(xv(D,"thu"))){set("thu","phi");const f=X?(+X.phi||+X.fee||0):(+xv(D,"fee")||+xv(D,"phi")||0);set("phi",f);set("fee",f)}
+  set("gt","hang");if(!X&&!gsOnV(xv(D,"gton"))){set("h1","");set("h2","");set("h3","")}if(X&&!(X.hang||[]).length){set("h1",X.gton&&X.gt==="codinh"?+X.gtv||0:0);set("h2",0);set("h3",0)}
 }
 function tqPage(D){
   if(!xNew){tnPg=null;return ""}
@@ -78,6 +81,7 @@ async function tqAct(act,b){
     delete drafts["tq-say"];render();return true}
   if(act==="tqsave"){if(xSaving){toast("Đang tạo, chờ chút nhé…");return true}
     if(!xv(D,"date")||!xv(D,"time")){gsOpt="when";toast("Chọn ngày, giờ trước nhé");render();return true}
+    if(gsOnV(xv(D,"gton")))drafts["xf-gt"]="hang";
     const pay=xv(D,"pay");if(pay&&pay!=="off"&&!(BANK&&BANK.acc))mtBankWant=true;
     tqHl=new Set();tqUndo=null;tqMsg="";await xSave(D,"open");if(!xNew)tnPg=null;render();return true}
   return false;

@@ -40,7 +40,10 @@ function gsDefs(D,X){
     luat:{i:"🏓",t:"Luật điểm",val:[`Chạm ${v("target")}`,on("win2")?"cách 2":"",+v("ptMax")?`trần ${v("ptMax")}`:""].filter(Boolean).join(" · "),
       body:()=>gsLb("Đánh tới mấy điểm")+gsChips("target",[["11","11"],["15","15"],["21","21"]],v("target"),3)+gsSw(D,"win2","Phải thắng cách 2 điểm")
         +(on("win2")?gsLb("Điểm trần (thắng cách 2 mà kéo dài)")+gsChips("ptMax",[["0","Không"],["15","15"],["21","21"]],String(+v("ptMax")||0),3):"")},
-    gt:{i:"🏆",t:"Giải thưởng",val:!on("gton")?"Tắt":v("gt")==="hang"?`Nhất ${fmtK(+v("h1")||0)} · Nhì ${fmtK(+v("h2")||0)}`:(GT[v("gt")]||"Bật"),
+    gt:MINI?{i:"🏆",t:"Giải thưởng",val:!on("gton")?"Không":[+v("h1")&&`Nhất ${fmtK(+v("h1"))}`,+v("h2")&&`Nhì ${fmtK(+v("h2"))}`,+v("h3")&&`Ba ${fmtK(+v("h3"))}`].filter(Boolean).join(" · ")||"Chưa điền",
+      // Mini App: chỉ tự điền tiền thưởng từng hạng (không trích %, không góp quỹ)
+      body:()=>gsChips("gton",[["0","Không có"],["1","Có giải thưởng"]],on("gton")?"1":"0",2)+(!on("gton")?"":gsLb("Tiền thưởng (k) · để trống hạng không thưởng")+`<div class="form f3">${gsIn(D,"h1","Nhất",'type="number" min="0" inputmode="numeric"')}${gsIn(D,"h2","Nhì",'type="number" min="0" inputmode="numeric"')}${gsIn(D,"h3","Ba",'type="number" min="0" inputmode="numeric"')}</div>`)}
+    :{i:"🏆",t:"Giải thưởng",val:!on("gton")?"Tắt":v("gt")==="hang"?`Nhất ${fmtK(+v("h1")||0)} · Nhì ${fmtK(+v("h2")||0)}`:(GT[v("gt")]||"Bật"),
       body:()=>{const gt=v("gt"),top3=G||gt==="hang"||v("trao")==="top3";
         return gsChips("gton",[["0","Tắt"],["1","Có giải thưởng"]],on("gton")?"1":"0",2)+(!on("gton")?"":gsLb("Lập quỹ giải")+gsChips("gt",(G?["hang","trich","gop"]:["hang","trich","codinh","gop"]).map(x=>[x,GT[x]]),gt,2)
           +(!G&&gt!=="hang"?gsLb("Trao cho")+gsChips("trao",[["namnu","Số 1 nam & nữ"],["top3","Hạng 1, 2, 3"]],v("trao"),2):"")
@@ -55,7 +58,7 @@ function gsDefs(D,X){
       body:()=>gsChips("",[["0","Miễn phí"],["50","50k"],["60","60k"],["100","100k"]],fc,4,"xqfee")+`<label class="fld gmsm"><span class="lbl">Số khác (k)</span><input id="xf-${thu==="phi"?"phi":"fee"}" data-draft="xf-${thu==="phi"?"phi":"fee"}" type="number" min="0" inputmode="numeric" value="${esc(fee||"")}"></label>`
         +(paidN?`<small class="rule">${paidN} người đã trả ${fmtK(X?xFee(X):fee)}. Đổi giá chỉ áp cho người đăng ký sau.</small>`:"")},
     feeG:{i:"🧑‍🤝‍🧑",t:"Lệ phí VĐV ngoài CLB",val:v("feeG")!==""?fmtK(+v("feeG")||0):"Như thành viên",body:()=>gsIn(D,"feeG","Lệ phí VĐV ngoài CLB (k) · để trống là như thành viên",'type="number" min="0" inputmode="numeric"')},
-    thu:{i:"🧮",t:"Cách thu",val:GS_THU[thu]||"Cố định",body:()=>gsChips("thu",(G?[["phi","Cố định"]]:[["phi","Cố định"],["deu","Chia đều sân"]]),thu,G?1:2)},
+    thu:{i:"🧮",t:"Cách thu",val:MINI?(thu==="deu"?"Chia đều tiền sân":"Lệ phí cố định"):GS_THU[thu]||"Cố định",body:()=>gsChips("thu",(G?[["phi","Cố định"]]:[["phi","Cố định"],["deu","Chia đều sân"]]),thu,G?1:2)},
     san:{i:"🏟",t:"Tiền sân",val:+v("san")?fmtK(+v("san"))+(thu==="phi"&&fee?` · hoà vốn ${Math.ceil(+v("san")/fee)} người`:""):"Không tính",
       body:()=>`<label class="fld gmsm"><span class="lbl">Tổng tiền thuê sân (k) · 0 là không tính</span><input id="xf-san" data-draft="xf-san" type="number" min="0" inputmode="numeric" value="${esc(v("san")||"")}"></label><small class="rule">Dùng để tính số người hoà vốn và tổng kết tiền lúc chốt buổi.</small>`},
     incl:{i:"🧾",t:"Lệ phí gồm",val:v("incl")||"—",body:()=>gsIn(D,"incl","Lệ phí gồm những gì",'maxlength="120" placeholder="Sân, bóng, nước"')},
@@ -135,6 +138,7 @@ async function gsAct(act,b){
     for(const k of ["name","date","time","end","place","map","lvMin","lvMax","feeG","fee","phi","incl","note","h1","h2","h3","gtv","c1","c2","c3"])rd(k);
     if(gsOpt==="luat")drafts["xf-adv"]="1";
     if(gsOpt==="ko")drafts["xf-koTouched"]="1";
+    if(gsOpt==="gt"&&MINI)drafts["xf-gt"]="hang";
     if(gsOpt==="note")drafts["xf-noteOn"]=String(drafts["xf-note"]||"").trim()?"1":"0";
     if(gsOpt==="lv"||gsOpt==="guests"||gsOpt==="dl")drafts["xf-reg"]="1";
     if(gsOpt==="fee"){const f=+(drafts["xf-phi"]||drafts["xf-fee"]||0);if(f>0){drafts["xf-cp"]="1";drafts["xf-phi"]=String(f);drafts["xf-fee"]=String(f)}}

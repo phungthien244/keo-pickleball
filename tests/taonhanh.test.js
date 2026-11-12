@@ -100,14 +100,15 @@ test("nhiều nội dung trong một câu → giải có nội dung", async () =
 
 test("như lần trước: một trang đủ thông số, dùng lại cả tiền và giải thưởng, ngày sang tuần sau", async () => {
   const old = Date.now() - 6 * 864e5;
-  const e = await boot(base({ "clubs/q7/sched/s0": { name: "Giải tối", fmt: "xoay", at: old, courts: 3, target: 11, max: 20, st: "done", place: "Sân A", thu: "keo", pay: "off", gton: true, gt: "codinh", gtv: 300, trao: "namnu", createdAt: 1 } }));
+  const e = await boot(base({ "clubs/q7/sched/s0": { name: "Giải tối", fmt: "xoay", at: old, courts: 3, target: 11, max: 20, st: "done", place: "Sân A", thu: "keo", fee: 60, pay: "off", gton: true, gt: "codinh", gtv: 300, trao: "namnu", createdAt: 1 } }));
   await e.click("xnew"); await e.until(() => e.T().includes("Như lần trước"));
   await e.click("tnprev", { id: "s0" }); await e.until(() => e.V().includes('data-act="tqsave"'));
-  expect(e.T()).toContain("20 chỗ"); expect(e.T()).toContain("Ai thua góp"); expect(e.T()).toContain("Sân A"); expect(e.T()).toContain("Ưu tiên ghép");
+  // Không còn "Ai thua góp" và thưởng trích %: chuyển sang lệ phí cố định, thưởng tự điền
+  expect(e.T()).toContain("20 chỗ"); expect(e.T()).not.toContain("Ai thua góp"); expect(e.T()).toContain("Lệ phí cố định"); expect(e.T()).toContain("Nhất 300k"); expect(e.T()).toContain("Sân A"); expect(e.T()).toContain("Ưu tiên ghép");
   expect(e.T()).not.toContain("Cần chọn");
   await e.click("tqsave"); await e.until(() => sched(e).length === 2);
   const X = sched(e).find(x => x.at > Date.now());
-  expect(X).toMatchObject({ fmt: "xoay", courts: 3, max: 20, place: "Sân A", thu: "keo", gton: true, gt: "codinh", gtv: 300 });
+  expect(X).toMatchObject({ fmt: "xoay", courts: 3, max: 20, place: "Sân A", thu: "phi", phi: 60, gton: true, gt: "hang", hang: [300, 0, 0] });
 });
 
 test("bước 1 chỉ chọn loại → một trang đủ thông số theo loại; bấm dòng mở bảng trượt có ô nhập; Tạo lưu đúng", async () => {

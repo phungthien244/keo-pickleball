@@ -3425,3 +3425,4 @@ html.mini{--appw:560px}
 .zset .l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mxsheet .form.f2{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
 .mxsheet input[type=date],.mxsheet input[type=time]{min-width:0}
+.zset .l{flex:none;max-width:52%}.zset .v{flex:1;min-width:0;max-width:none}
