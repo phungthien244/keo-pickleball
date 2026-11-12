@@ -283,9 +283,9 @@ describe("người chơi Zalo", () => {
     await assertFails(reg("dl"));
     await assertFails(reg("nope"));
     await assertFails(reg("op", { pid: "p2" }));
-    // khách: buổi cho khách mới được
+    // Zalo đã xác minh: đăng ký được cả buổi đặt "chỉ thành viên" (Mini App không còn thành viên / ngoài CLB)
     await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/op_zalo_7"), { sid: "op", uid: "zalo_7", name: "Khách", guest: true, at: 1, pay: "sent" }));
-    await assertFails(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/pl_zalo_7"), { sid: "pl", uid: "zalo_7", name: "Khách", guest: true, at: 1 }));
+    await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/pl_zalo_7"), { sid: "pl", uid: "zalo_7", name: "Khách", guest: true, at: 1 }));
     // hủy: trước giờ khóa hủy của buổi đó
     await assertSucceeds(deleteDoc(doc(zalo("zalo_1"), "clubs/aep/regs/op_zalo_1")));
     await seed({ "clubs/aep/regs/lk_zalo_1": { sid: "lk", uid: "zalo_1", pid: "p1", at: 1, pay: "none" } });
@@ -331,9 +331,11 @@ describe("đăng ký: khách vãng lai và chuyển khoản", () => {
   const zalo = uid => env.authenticatedContext(uid, { firebase: { sign_in_provider: "custom" } }).firestore();
   const cfg = (reg) => seed({ "clubs/aep/app/config": { session: 3, reg: { on: true, ...reg } } });
   const g = { sid: 3, uid: "zalo_7", guest: true, name: "Khách A", gender: "M", lv: "3.0", at: 1, pay: "none" };
-  test("khách đăng ký được khi CLB nhận khách, không được khi chỉ thành viên", async () => {
+  test("Zalo đăng ký được cả khi lịch đặt chỉ thành viên; ảnh Zalo chỉ nhận đường dẫn ảnh của Zalo", async () => {
     await cfg({ guests: false });
-    await assertFails(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), g));
+    await assertFails(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), { ...g, av: "https://evil.example.com/x.jpg" }));
+    await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), { ...g, av: "https://s120-ava-talk.zadn.vn/a/b.jpg" }));
+    await deleteDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"));
     await cfg({ guests: true });
     await assertSucceeds(setDoc(doc(zalo("zalo_7"), "clubs/aep/regs/3_zalo_7"), g));
     await assertFails(setDoc(doc(zalo("zalo_8"), "clubs/aep/regs/3_zalo_8"), { ...g, uid: "zalo_8", pid: "p1" }));
