@@ -387,7 +387,8 @@ const xClearDraft=()=>{for(const k of XF_KEYS)delete drafts["xf-"+k];xSrcCache=n
 /* ----- Người chơi: danh sách buổi sắp tới (Trang chủ Mini App, trang Đăng ký trên web) ----- */
 function xPlayerCards(D,o={}){
   const U=schedUp().filter(x=>x.st!=="draft"&&(o.all||xState(x)!=="plan"||x.openAt-Date.now()<7*864e5));
-  return U.slice(0,o.max||99).map(x=>gdCard(D,x)).join("");
+  const L=U.slice(0,o.max||99).map(x=>gdCard(D,x)).join("");
+  return MINI&&L?zSec("Lịch đánh sắp tới",L):L;
 }
 // Trang Đăng ký khi chưa chọn buổi: danh sách các buổi
 function vLichPlayer(D){

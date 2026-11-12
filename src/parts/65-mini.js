@@ -99,6 +99,7 @@ const mxRole=()=>{const L=S.link;if(canWrite)return ROLE==="owner"?"Chủ CLB":"
 
 /* ----- 1 · Trang chủ: tự đổi theo lúc mở ----- */
 function mxHome(D){
+  if(MINI)return zHome(D);
   const p=mxMe(D),live=pLive(D),H=lastHist(D);
   let h="";
   if(!p&&!(S.link&&S.link.status==="pending")&&!mxMyReg(D))h+=mxIntroTeaser(D);
@@ -110,7 +111,7 @@ function mxHome(D){
   }
   // Các buổi sắp tới: mỗi buổi một thẻ, đăng ký riêng
   const XC=(S.sched||[]).length?xPlayerCards(D):"";
-  if(XC)h+=`<span class="mxsec">Lịch đánh sắp tới</span>${XC}`;
+  if(XC)h+=XC;
   else if(!live&&regOpen())h+=mxSessCard(D,true);
   if(!live&&H){const r=p&&(H.rows||[]).find(x=>x.id===p.id);
     h+=`<a class="mxcard" href="${pathOf("buoi",{sid:H.sid})}" data-go="buoi" data-id="${H.sid}"><span class="lbl">Vừa diễn ra · ${dmy(H.startedAt||H.endedAt)}</span><b>${esc(H.sname||`Giải đấu #${H.sid}`)}</b><span>${H.matchCount||0} trận${H.rows&&H.rows[0]?` · nhất ${esc(H.rows[0].name)}`:""}</span>${r?`<span class="mxmine">Bạn: ${r.w||0} thắng ${r.l||0} thua · <span class="${dCls(+r.d)}">${dTxt(+r.d)}</span></span>`:""}</a>`}
@@ -120,6 +121,27 @@ function mxHome(D){
   const top=[...D.players].sort((a,b)=>D.st.get(b.id).rating-D.st.get(a.id).rating).slice(0,3);
   // Bỏ Top rating (canvas Bước 0): app không chấm điểm người chơi
   h+=`<a class="mxcard mxgt" href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"><b>Giới thiệu & quy định</b><span>Xem ›</span></a>`;
+  const cta=!live&&!XC&&regOpen()?mxRegCta(D):"";
+  return mxShell(D,h,cta);
+}
+// Trang tổ chức trong Mini App theo chuẩn Zalo (canvas Z01): khối trắng, hàng danh sách
+function zHome(D){
+  const p=mxMe(D),live=pLive(D),H=lastHist(D);
+  let h="";
+  if(live)h+=zSec("",zRow({lead:zIco("live"),top:`<span class="ztag r"><i class="dot"></i>Đang đánh</span>`,t:esc(sessTitle(D.c,D.sid)),s:`${D.playing.length} sân · ${D.players.filter(x=>x.active!==false).length} người · ${D.done.length} trận xong`,chev:true,cls:"b",attrs:`href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san"`}));
+  if(!live){const T=[];
+    for(const X of schedUp().filter(x=>x.st!=="draft")){const m=withX(X,()=>mxMyReg(D));if(!m)continue;
+      const R=withX(X,()=>regList(D)),pos=R.all.indexOf(m),k=withX(X,()=>feeOf(m)),pay=m.pay||"none";
+      T.push(zRow({lead:zDate(X.at,sameDay(X.at||0,Date.now())),t:esc(xName(X)),s:`${hm(X.at)}${X.place?` · ${esc(X.place)}`:""}`,m:`${pos<R.max?`Giữ chỗ #${pos+1}`:`Đang chờ · thứ ${pos-R.max+1}`} · ${payOn()&&k>0?`${kVND(k)} · ${PAYLB[pay]}`:"đã đăng ký"}`,right:zPill("Xem vé","n"),cls:"ev",attrs:`href="${pathOf("app",{tab:"dk",x:X.id})}" data-go="app" data-t="dk" data-x="${esc(X.id)}"`}))}
+    if(T.length)h+=zSec("Vé của bạn",T.join(""))}
+  if(p){const dt=debts().filter(x=>x.id===p.id),sum=dt.reduce((a,x)=>a+x.k,0);
+    if(sum>0)h+=zSec("",zRow({lead:zIco("money"),t:`Bạn còn ${fmtK(sum)} chưa trả`,s:`${dt.length} buổi · bấm để chuyển khoản`,right:zPill("Trả"),attrs:`data-act="mxtien"`}))}
+  const XC=(S.sched||[]).length?xPlayerCards(D):"";
+  if(XC)h+=XC;else if(!live&&regOpen())h+=mxSessCard(D,true);
+  else if(!live)h+=zSec("",`<div class="zempty"><b>${H?"Chưa có lịch đánh sắp tới":"Trang này chưa có lịch đánh nào"}</b><small>Người tổ chức mở đăng ký là bạn thấy ở đây.</small></div>`);
+  if(!live&&H){const r=p&&(H.rows||[]).find(x=>x.id===p.id);
+    h+=zSec("Vừa diễn ra",zRow({lead:zIco("trophy"),t:esc(H.sname||`Giải đấu #${H.sid}`),s:`${dmy(H.startedAt||H.endedAt)} · ${H.matchCount||0} trận${H.rows&&H.rows[0]?` · nhất ${esc(H.rows[0].name)}`:""}`,m:r?`Bạn: ${r.w||0} thắng ${r.l||0} thua`:"",chev:true,attrs:`href="${pathOf("buoi",{sid:H.sid})}" data-go="buoi" data-id="${H.sid}"`}))}
+  h+=zSec("",zRow({lead:zIco("info"),t:"Giới thiệu & quy định",s:esc(CLUB&&(CLUB.sched||CLUB.city)||"Cách đăng ký, lệ phí, liên hệ"),chev:true,attrs:`href="${pathOf("app",{tab:"gt"})}" data-go="app" data-t="gt"`}));
   const cta=!live&&!XC&&regOpen()?mxRegCta(D):"";
   return mxShell(D,h,cta);
 }
@@ -164,7 +186,7 @@ function mxSession(D){
   if(X)return withX(X,()=>mxSessionX(D));
   if((!MINI&&(mxDk==="pick"||(S.link&&S.link.status==="pending")))||(mxDk==="guest"&&regOpen()))return mxSessionX(D);
   const c=xPlayerCards(D,{all:true});
-  return mxShell(D,c?`<span class="mxsec">Giải đấu sắp tới</span>${c}`:`<div class="mxcard muted"><b>Chưa có giải đấu nào mở đăng ký</b><span>Chủ CLB mở là bạn thấy ở đây.</span></div>`);
+  return mxShell(D,c?c:`<div class="mxcard muted"><b>Chưa có giải đấu nào mở đăng ký</b><span>Chủ CLB mở là bạn thấy ở đây.</span></div>`);
 }
 function mxSessionX(D){
   const R=regList(D),r=regCfg(),u=authUser,mine=mxMyReg(D),linked=S.link&&S.link.status==="ok";

@@ -59,14 +59,14 @@ test("qua nửa đêm, yên 3 tiếng: máy người tổ chức tự đóng bu�
 test("người chơi: buổi đang trong giờ vẫn hiện Đang đánh", async () => {
   const start = at0(1);
   const e = await boot(PLR, data(start, at0(0.1)));
-  await e.until(() => e.T().includes("● Đang đánh"));
+  await e.until(() => e.V().includes('class="ztag r"'));
 });
 
 test("người chơi: buổi quá giờ lâu không còn hiện Đang đánh; người chơi không tự đóng buổi", async () => {
   const start = at0(30);
   const e = await boot(PLR, data(start, start + 1.5 * H));
   await e.until(() => e.T().includes("Lịch đánh của tôi"));
-  expect(e.T()).not.toContain("● Đang đánh");
+  expect(e.V()).not.toContain('class="ztag r"');
   expect(e.store.get("clubs/q7/app/config").phase).toBe("live");
   expect(e.store.get("clubs/q7/app/hist-1")).toBeFalsy();
 });

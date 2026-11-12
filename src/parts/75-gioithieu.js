@@ -39,7 +39,7 @@ function mxIntro(D){
   const fee=c.feeTxt||(D.c.thu==="phi"?`${fmtK(+D.c.phi||0)}/giải đấu`:"");
   if(fee||mfOn())info+=`<div class="gtrow"><span class="k">Chi phí</span><b>${esc(fee)}</b>${mfOn()?`<small>Phí thành viên ${fmtK(mfCfg().k)}/${mfCfg().per==="m"?"tháng":mfCfg().per==="q"?"quý":"năm"} · ${esc(mfPerkTx())}</small>`:""}</div>`;
   if(info)h+=`<div class="mxcard gtinfo">${info}</div>`;
-  {const XC=(S.sched||[]).length?xPlayerCards(D):"";if(XC)h+=`<span class="mxsec">Giải đấu sắp tới</span>${XC}`;else if(regOpen())h+=mxSessCard(D,true)}
+  {const XC=(S.sched||[]).length?xPlayerCards(D):"";if(XC)h+=MINI?XC:`<span class="mxsec">Giải đấu sắp tới</span>${XC}`;else if(regOpen())h+=mxSessCard(D,true)}
   const rec=gtRecent(D);if(rec)h+=`<span class="mxsec">Kết quả gần đây</span><div class="mxcard list">${rec}</div>`;
   if(top.length>=3)h+=`<span class="mxsec">Top rating</span><div class="gtpod">${[1,0,2].map(i=>{const x=top[i];return `<div class="p p${i+1}" data-pid="${x.id}">${av(x,i?"md":"lg",1)}<b>${esc(x.name)}</b><small class="num">${r2(D.st.get(x.id).rating)}</small><i>${i+1}</i></div>`}).join("")}</div>`;
   else if(top.length)h+=`<div class="mxcard"><div class="mxch"><b>Top rating</b></div>${top.map((x,i)=>`<div class="mxli" data-pid="${x.id}"><span class="no">${i+1}</span>${av(x,"sm",1)}<span class="t">${esc(x.name)}</span><b class="num">${r2(D.st.get(x.id).rating)}</b></div>`).join("")}</div>`;

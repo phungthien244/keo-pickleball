@@ -72,7 +72,7 @@ test("người chơi: Trang chủ Mini App liệt kê các giải đấu sắp t
   expect(e.T()).toContain("Giải đấu tối"); expect(e.T()).toContain("Giải đấu cuối tuần"); expect(e.T()).toContain("Tự mở");
   expect(e.T()).not.toContain("Nháp riêng");
   expect(e.V()).toContain('data-x="s1"');
-  expect(e.V()).toContain('class="gdcard x');
+  expect(e.V()).toContain('class="zrow ev"');
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
   expect(e.T()).toContain("Thể thức"); expect(e.T()).toContain("Hủy và hoàn phí"); expect(e.T()).toContain("Luật thi đấu");
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
@@ -186,7 +186,7 @@ test("Zalo Mini App: tự vào bằng ID Zalo, mở thẳng trang, đăng ký b�
   MINI(e);
   globalThis.window.ZMP = { getUserID: async () => "5550001112", getAccessToken: async () => "AT", getUserInfo: async () => ({ userInfo: { name: "Lan Zalo", avatar: "https://s120-ava-talk.zadn.vn/a/b/c.jpg" } }) };
   globalThis.fetch = async (u, o) => { sent = { u, body: JSON.parse(o.body) }; return { json: async () => ({ token: "9" }) }; };
-  await e.boot(); await e.until(() => e.T().includes("Chào mừng tới Q7"));
+  await e.boot(); await e.until(() => e.T().includes("Giới thiệu & quy định"));
   expect(sent.u).toBe("https://pikeco.app/api/zalo-mini");
   expect(sent.body).toEqual({ id: "5550001112", at: "AT" });
   // Lịch cũ đặt "chỉ thành viên" vẫn đăng ký được bằng Zalo
@@ -396,7 +396,7 @@ test("đăng ký theo cặp: người rủ gõ tên bạn cặp, trả luôn cho
   const e = setup({ host: "h5.zdn.vn", path: "/zapps/x/", user: ZU, data: capData({ "clubs/q7/links/zalo_9": { status: "ok", pid: "p1" } }) });
   MINI(e, "#/q7");
   await e.boot(); await e.until(() => e.T().includes("Lịch đánh sắp tới"));
-  expect(e.T()).toContain("Đăng ký theo cặp");
+  expect(e.T()).toContain("đăng ký theo cặp");
   await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
   expect(e.T()).toContain("Tôi rủ đồng đội"); expect(e.T()).toContain("Ai trả lệ phí?");
@@ -493,7 +493,7 @@ test("nhắn tin: người chơi nhắn người tạo giải từ vé, BTC nh�
   globalThis.window.ZMP = { getUserID: async () => "zid9", openChat: async o => { chats.push(o); } };
   MINI(e, "#/q7");
   await e.boot(); await e.nav("app", { t: "dk", x: "s1" }); await e.until(() => e.V().includes('data-act="gdreg"'));
-  expect(e.T()).toContain("Liên hệ ban tổ chức"); expect(e.T()).toContain("Anh Chủ");
+  expect(e.T()).toContain("Người tạo"); expect(e.T()).toContain("Anh Chủ");
   await e.click("gdreg"); await e.until(() => e.V().includes('data-act="regin"'));
   await e.click("gdagree"); e.input("ph", "0901234567"); await e.click("regin");
   await e.until(() => e.store.get("clubs/q7/regs/s1_zalo_9")?.zid === "zid9");

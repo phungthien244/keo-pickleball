@@ -35,6 +35,14 @@ function gdCard(D,x){
     else if(!xOpen(x))foot=`<span class="gdst">Đã đóng đăng ký</span>${price}`;
     else if(m&&left===0)foot=`<span class="gdbar"><i style="width:100%"></i></span><span class="gdst">${n}/${m}${R.wait.length?` · ${R.wait.length} người chờ`:""}</span><span class="gdcta line">Vào danh sách chờ</span>`;
     else foot=`${n?`<span class="mxfaces">${gdFaces(D,R.conf)}</span>`:""}<span class="gdst${left!=null&&left<=2?" hot":""}">${m?(left<=2?`Chỉ còn ${left} chỗ`:`<b>${n}/${m}</b> · còn ${left} chỗ`):`${n} người đã đăng ký`}</span>${price}<span class="gdcta ${ty.c}">Đăng ký</span>`;
+    if(MINI){const tg=zTag(ty.sh,{x:"s",g:"g",vb:"m"}[ty.c]||"b");let m2,rt;
+      if(live){m2=`<span style="color:#c4170f">● Đang đánh</span>`;rt=zPill("Xem")}
+      else if(mine){const pos=R.all.indexOf(mine);m2=`${pos<R.max?`Đã giữ chỗ #${pos+1}`:`Đang chờ · thứ ${pos-R.max+1}`} · ${gdPayLb(mine)}`;rt=zPill("Xem vé","n")}
+      else if(s==="plan"){m2=esc(xChipTxt(x));rt=""}
+      else if(!xOpen(x)){m2="Đã đóng đăng ký";rt=""}
+      else if(m&&left===0){m2=`Hết chỗ${R.wait.length?` · ${R.wait.length} người chờ`:""}`;rt=zPill("Chờ chỗ","n")}
+      else{m2=`${m?`${n}/${m} người`:`${n} người`}${pairRegOn(x)?" · đăng ký theo cặp":""}${fee?` · <b style="font-weight:500">${fmtK(fee)}</b>`:""}${left!=null&&left<=2?` · <span style="color:#c4170f">còn ${left} chỗ</span>`:""}`;rt=zPill("Đăng ký")}
+      return zRow({lead:zDate(x.at,sameDay(x.at||0,Date.now())),top:tg,t:esc(xName(x)),s:esc([xTime(x),x.place].filter(Boolean).join(" · ")),m:m2,right:rt,attrs:`href="${href}" ${go}`,cls:"ev"})}
     return `<a class="gdcard ${ty.c}${mine?" mine":""}" href="${href}" ${go}>
       <span class="gdtop">${mxDate(x.at)}<span class="gdbd">${gdBand(x)}<b class="gdnm">${esc(xName(x))}</b><small>${esc([xTime(x),x.place,(+x.courts||0)&&`${x.courts} sân`].filter(Boolean).join(" · "))}</small>
         <span class="gdchips">${chips.map(c=>`<span>${esc(c)}</span>`).join("")}</span>${pz?`<span class="gdprize">🏆 ${esc(pz)}</span>`:""}</span></span>
@@ -117,6 +125,9 @@ function gdCover(D,ty,pi){
     <span class="row"><span class="gdorg">${clubAv(CLUB||{id:CID},"s20")}${esc(CLUB?.name||"")} tổ chức</span><button class="gdshr" data-act="mxinvite"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5l7 7-7 7M21 12H10a7 7 0 0 0-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Chia sẻ</button></span></div></div>`;
 }
 function gdHeroBox(D,ty){
+  if(MINI){const by=gdBy(),zl=gdPhone(),nh=zl||by?`<button class="sm" data-act="gdchat" data-v="${zl?"clb":"by"}">${zIco("chat",18)} Nhắn</button>`:"";
+    return `<div class="zhead">${zTag(gdTy(RX).sh,{x:"s",g:"g",vb:"m"}[ty.c]||"b")}<h2>${esc(xName(RX))}</h2><small>${esc(whenFull(RX))}</small>
+      ${zRow({lead:clubAv(CLUB||{id:CID},"s40"),t:esc(CLUB?.name||""),s:"Người tổ chức",right:nh,cls:"b"})}</div>`}
   return `<div class="gdhero ${ty.c}"><span class="gdty ${ty.c}">${ty.lb}</span><b>${esc(xName(RX))}</b><span>${esc(whenFull(RX))}</span>
     <span class="gdorg">${clubAv(CLUB||{id:CID},"s20")}${esc(CLUB?.name||"")} tổ chức</span></div>`;
 }
@@ -130,7 +141,7 @@ function gdDetail(D,o={}){
   {const inv=!o.mine&&capInvite(D);if(inv)h+=capBanner(D,inv)}
   if(exp)h+=`<div class="gdwarn">Đã hết 15 phút giữ chỗ nên chỗ của bạn được nhả ra. Đăng ký lại nếu còn chỗ.</div>`;
   if(webReg()&&!webLinked()&&xOpen(RX)&&!regClosed())h+=`<div class="gdwebnote"><b>${r.guests&&webPayOk()?"Đăng ký ngay trên web, không cần tài khoản":"Đăng ký trong Zalo"}</b><span>${r.guests&&webPayOk()?`VĐV ngoài CLB đăng ký ở đây${feeGuest()?`, <b>chuyển khoản ${kVND(feeGuest())} trước</b> mới giữ được chỗ`:""}. Thành viên CLB đăng ký trong Zalo để có giá thành viên.`:"Giải này đăng ký qua Pikeco trong Zalo."}</span><span class="gdwl"><a href="${esc(miniLink(CID,RX.id))}">Mở trong Zalo ›</a>${qrlBtn("lnk")}</span>${qrlBox()}</div>`;
-  h+=gdFacts(D,R)+gdPlace()+gdContact()+gdWho(D,R)+(RX.note?`<div class="gdbox"><h3>Giới thiệu</h3><span class="gdnote">${esc(RX.note)}</span></div>`:"")+gdMoney(D)+gdRules(D)+gdSched(D)+gdPolicy(D);
+  h+=(MINI?zgInfo(D,R)+zgWho(D,R):gdFacts(D,R)+gdPlace()+gdContact()+gdWho(D,R))+(RX.note?`<div class="gdbox"><h3>Giới thiệu</h3><span class="gdnote">${esc(RX.note)}</span></div>`:"")+gdMoney(D)+gdRules(D)+gdSched(D)+gdPolicy(D);
   let cta="";
   if(regClosed())cta=`<span class="gdsum"><b>Đã hết hạn</b><small>đăng ký</small></span><button class="primary" disabled>Đã đóng đăng ký</button>`;
   else if(!xOpen(RX))cta=`<span class="gdsum"><b>${fee?fmtK(fee):""}</b><small>${esc(xChipTxt(RX))}</small></span><button class="primary" disabled>Chưa mở đăng ký</button>`;
@@ -138,6 +149,31 @@ function gdDetail(D,o={}){
   else cta=`<span class="gdsum"><b>${webReg()&&!webLinked()?(feeGuest()?kVND(feeGuest()):"Miễn phí"):fee?kVND(fee):RX.cp===false?"Miễn phí":THU[RX.thu||"keo"]}</b><small class="${!full&&R.max-R.conf.length<=2?"hot":""}">${R.max<999?(full?"Hết chỗ":`Còn ${R.max-R.conf.length} chỗ`):`${R.conf.length} đã đăng ký`}</small></span><button class="primary ${gdTy(RX).c}" data-act="gdreg">${full?"Vào danh sách chờ":"Đăng ký ngay"}</button>`;
   if(o.mine)return gdShell(D,h,`<button class="primary wide" data-act="gdinfo">‹ Về vé của bạn</button>`);
   return gdShell(D,h,`<div class="gdcta-bar">${cta}</div>`);
+}
+
+// Mini App (chuẩn Zalo, canvas Z02): thông tin thành hàng có biểu tượng
+function zgInfo(D,R){
+  const r=regCfg(),m=+r.max||0,n=R.conf.length,fee=feeMem(),c={...D.c,...RX},thu=RX.thu||"keo",by=gdBy();
+  const feeTxt=RX.cp===false?"Miễn phí":fee?`${kVND(fee)} / người`:THU[thu]||"Theo người tổ chức";
+  const fsub=RX.cp===false?"Không thu chi phí":thu==="deu"?"Chia đều tiền sân cuối buổi":payOn()?"Chuyển khoản sau khi đăng ký":"Trả tại sân";
+  const lvT=r.lvMin||r.lvMax?`Trình ${lvName(r.lvMin)||"…"} – ${lvName(r.lvMax)||"…"}`:"Mọi trình";
+  let h="";
+  if(RX.place||RX.map)h+=zRow({lead:zIco("pin"),t:esc(RX.place||"Xem bản đồ"),s:`${+c.courts||2} sân · chạm ${+RX.target||11}`,chev:!!RX.map,attrs:RX.map?`data-act="openurl" data-v="${esc(RX.map)}"`:""});
+  h+=zRow({lead:zIco("swap"),t:esc(xFmt(RX)),s:esc(gdTy(RX).d)});
+  h+=zRow({lead:zIco("level"),t:esc(lvT),s:r.lvMin||r.lvMax?"Người tổ chức đặt trình":"Ai cũng đăng ký được"});
+  h+=zRow({lead:zIco("users"),t:m?(n>=m?"Hết chỗ":`Còn ${m-n} chỗ`):`${n} người đã đăng ký`,s:m?`${n}/${m} người đã đăng ký${R.wait.length?` · ${R.wait.length} người chờ`:""}`:"Không giới hạn số người"});
+  h+=zRow({lead:zIco("money"),t:esc(feeTxt),s:esc(fsub)});
+  if(by)h+=zRow({lead:zIco("chat"),t:esc(by.n),s:"Người tạo · hỏi về ghép cặp, lệ phí",right:zPill("Nhắn"),attrs:`data-act="gdchat" data-v="by"`});
+  return zSec("",h);
+}
+function zgWho(D,R){
+  if(!R.all.length)return zSec("Ai đi",`<div class="zempty"><small>Chưa có ai đăng ký. Bạn là người đầu tiên!</small></div>`);
+  const ppl=R.conf.map(r=>({r,p:D.pmap.get(r.pid)})),F=ppl.filter(x=>(x.p?x.p.gender:x.r.gender)==="F").length,M=ppl.length-F;
+  const nm=x=>esc(x.p?.name||x.r.name||"?"),names=ppl.length<=3?ppl.map(nm).join(", "):`${ppl.slice(0,2).map(nm).join(", ")} và ${ppl.length-2} người khác`;
+  const faces=ppl.slice(0,6).map(x=>av(x.p||{name:x.r.name,photo:x.r.av},"sm",1)).join("");
+  let h=`<div class="zfaces"><span class="avs">${faces}</span><small>${names}</small></div>`;
+  if(R.wait.length)h+=zRow({lead:zIco("clock"),t:`${R.wait.length} người đang chờ chỗ`,s:R.wait.slice(0,3).map(r=>esc(r.name||"?")).join(", "),cls:"np"});
+  return zSec(`Ai đi · ${R.conf.length} người`,h,`<span class="zlk" style="color:var(--muted)">${M} nam · ${F} nữ</span>`);
 }
 
 /* ----- Đăng ký · bước 1: tư cách, cách trả ----- */

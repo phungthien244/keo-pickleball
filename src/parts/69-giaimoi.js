@@ -39,7 +39,7 @@ function gmNext(D,X){
   if(s==="cancel")return {t:"Giải đã huỷ",s:"",b:""};
   const R=withX(X,()=>regList(D)),left=R.max<999?Math.max(0,R.max-R.conf.length):null;
   return {t:left===0?"Đủ chỗ · gửi danh sách vào nhóm":left!=null?`Còn ${left} chỗ · gửi nhắc vào nhóm`:`${R.conf.length} người đã đăng ký · gửi nhắc vào nhóm`,
-    s:X.deadline?`Hạn đăng ký ${hm(X.deadline)} ${dowVN(X.deadline)}`:"",b:`<button class="gmgo" data-act="regshare" data-id="${esc(X.id)}">📣 Gửi nhắc</button>`};
+    s:X.deadline?`Hạn đăng ký ${hm(X.deadline)} ${dowVN(X.deadline)}`:"",b:`<button class="gmgo" data-act="regshare" data-id="${esc(X.id)}">Gửi nhắc</button>`};
 }
 const gmNextBox=(n,btn)=>`<div class="gmnext"><span class="cap">Việc tiếp theo</span><b>${n.t}</b>${n.s?`<small>${esc(n.s)}</small>`:""}${btn&&n.b?n.b:""}</div>`;
 // Dải đỏ: giải đang đánh, ghim ở các trang khác
@@ -58,7 +58,17 @@ function gmHd(t,back,o={}){
 const gmDot=()=>MINI?`<button class="btn-line gmdot" data-act="gmmore" aria-label="Thêm việc">⋯</button>`:`<button class="btn-line" data-act="gmmore">Thêm việc ⋯</button>`;
 
 /* ----- Trang Giải ----- */
+// Mini App (chuẩn Zalo): hàng lịch đánh + dòng "Việc tiếp theo" có nút làm luôn
+function zgmRow(D,X,big){
+  const n=gmNext(D,X),st=gmStageOf(D,X),tg=String(gmTag(X)).replace(/class="gmtag r"/,'class="ztag r"').replace(/class="gmtag b"/,'class="ztag b"').replace(/class="gmtag g"/,'class="ztag s"').replace(/class="gmtag y"/,'class="ztag g"').replace(/class="gmtag"/,'class="ztag n"');
+  const when=X?[X.at?xTime(X):"",X.place].filter(Boolean).join(" · "):"Không cần đăng ký trước";
+  const reg=X&&st===0?(()=>{const R=withX(X,()=>regList(D)),po=payOn(),paid=R.all.filter(x=>x.pay==="ok").length;return `${R.conf.length}${R.max<999?`/${R.max}`:""} đăng ký${po?` · ${paid} đã trả`:""}${R.wait.length?` · ${R.wait.length} chờ`:""}`})():"";
+  const pct=X&&st===0?(()=>{const R=withX(X,()=>regList(D));return R.max<999?Math.round(R.conf.length*100/R.max):0})():0;
+  const nx=X&&(X.st==="cancel"||X.st==="done")?"":big&&n.b?`<div class="znext"><span class="zt"><small>Việc tiếp theo</small><b>${n.t}</b></span>${n.b}</div>`:`<div class="znext sm"><span>${n.t}</span></div>`;
+  return `<div class="zcard">${zRow({lead:zDate(X&&X.at||Date.now(),!X||(X.at&&sameDay(X.at,Date.now()))),top:tg,t:esc(X?xName(X):(D.c.sname||"Giải đánh nhanh")),s:esc(when),m:reg,after:pct?zBar(pct):"",chev:true,cls:"ev",attrs:gmLink(X)})}${nx}</div>`;
+}
 function gmCard(D,X,big){
+  if(MINI)return zgmRow(D,X,big);
   const n=gmNext(D,X),st=gmStageOf(D,X),when=X?[X.at?`${dowVN(X.at)} ${dmy(X.at).slice(0,5)}`:"",X.at?xTime(X):"",X.place].filter(Boolean).join(" · "):"Không cần đăng ký trước";
   const reg=X&&st===0?(()=>{const R=withX(X,()=>regList(D)),po=payOn(),paid=R.all.filter(x=>x.pay==="ok").length;return `<span class="gmnum"><b class="num">${R.conf.length}${R.max<999?`/${R.max}`:""}</b> đăng ký${po?` · <b class="num">${paid}</b> đã trả`:""}${R.wait.length?` · ${R.wait.length} chờ`:""}</span>`})():"";
   return `<div class="gmcard${big?" big":""}"><a class="gmc" ${gmLink(X)}><span class="h"><span class="t"><b>${esc(X?xName(X):(D.c.sname||"Giải đánh nhanh"))}</b><small>${esc(when)}</small></span>${gmTag(X)}</span>${X&&X.st==="cancel"?"":gmBar(st,X&&X.st==="done")}${reg}</a>
@@ -81,16 +91,16 @@ function vGiaiHub(D){
   if(pend)h+=`<a class="gmpend" href="${pathOf("app",{tab:"nguoi"})}" data-go="app" data-t="nguoi"><b>${pend} người xin vào CLB</b><span>Duyệt ở Thành viên ›</span></a>`;
   // Giải gấp nhất nổi lên đầu với nút làm luôn
   const first=quick?null:[...today,...up,...drafts].find(Boolean);
-  const sec=(t,L)=>L.length?`<span class="gmsec">${t} · ${L.length}</span>`+L.map(x=>gmCard(D,x,x===first)).join(""):"";
-  if(quick)h+=`<span class="gmsec">Hôm nay</span>`+gmCard(D,null,true);
+  const sec=(t,L)=>L.length?(MINI?zSec(`${t} · ${L.length}`,L.map(x=>gmCard(D,x,x===first)).join("")):`<span class="gmsec">${t} · ${L.length}</span>`+L.map(x=>gmCard(D,x,x===first)).join("")):"";
+  if(quick)h+=MINI?zSec("Hôm nay",gmCard(D,null,true)):`<span class="gmsec">Hôm nay</span>`+gmCard(D,null,true);
   h+=sec("Hôm nay",today)+sec("Sắp tới",up)+sec("Nháp",drafts);
   if(!S.schedReady)h+=`<p class="rule">Đang tải…</p>`;
   else if(!U.length&&!quick)h+=`<div class="gmempty"><b>Chưa có giải nào sắp tới</b><span>Bấm “Tạo lịch đánh” ở dưới.</span></div>`;
   const SR=(S.series||[]).filter(s=>s.on);
   if(SR.length)h+=`<span class="gmsec">Lặp hằng tuần</span>`+SR.map(s=>`<div class="gmser"><span class="t"><b>${(s.days||[]).slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DOW[d]).join(" & ")} · ${esc(s.time||"")}</b><small>${esc(xName(s.tpl||{}))} · ${s.auto?`tự mở đăng ký trước ${+s.openD||2} ngày`:"tự bấm mở đăng ký"}</small></span><button class="lnk" data-act="xsedit" data-id="${s.id}">Sửa</button><button class="lnk" data-act="xsoff" data-id="${s.id}">${armed("xsoff:"+s.id)?"Tắt?":"Tắt"}</button></div>`).join("");
-  if(done.length)h+=`<button class="gmdone" data-act="xdone" aria-expanded="${xDoneOpen}"><span>Đã xong · ${done.length} giải gần đây</span><span>${xDoneOpen?"−":"›"}</span></button>`+(xDoneOpen?done.map(x=>gmCard(D,x)).join(""):"");
-  if(!cx&&!quick&&isAdm())h+=`<button class="lnk gmquick" data-act="gmquick">⚡ Đánh nhanh · không cần đăng ký trước</button>`;
-  return h+`<div class="hqcta"><button class="ball wide nv" data-act="xnew">＋ Tạo lịch đánh</button></div>`;
+  if(done.length)h+=MINI?zSec("",zRow({lead:zIco("hist"),t:`Đã xong · ${done.length} lịch gần đây`,right:`<span style="color:#b9bdc1;display:flex">${zIco(xDoneOpen?"chev":"chev",20)}</span>`,attrs:`data-act="xdone" aria-expanded="${xDoneOpen}"`})+(xDoneOpen?done.map(x=>gmCard(D,x)).join(""):"")):`<button class="gmdone" data-act="xdone" aria-expanded="${xDoneOpen}"><span>Đã xong · ${done.length} giải gần đây</span><span>${xDoneOpen?"−":"›"}</span></button>`+(xDoneOpen?done.map(x=>gmCard(D,x)).join(""):"");
+  if(!cx&&!quick&&isAdm())h+=MINI?zSec("",zRow({lead:zIco("live"),t:"Đánh nhanh",s:"Không cần đăng ký trước, vào sân là xếp trận",chev:true,attrs:`data-act="gmquick"`})):`<button class="lnk gmquick" data-act="gmquick">⚡ Đánh nhanh · không cần đăng ký trước</button>`;
+  return h+`<div class="hqcta"><button class="ball wide nv" data-act="xnew">${MINI?"Tạo lịch đánh":"＋ Tạo lịch đánh"}</button></div>`;
 }
 // Lần đầu: chưa có giải nào
 function gmFirst(D){
