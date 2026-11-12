@@ -517,13 +517,16 @@ test("Mini App: chia sẻ thẻ Mini App (ảnh, tiêu đề, mô tả, path) ho
   await e.boot(); await e.until(() => e.V().includes("data-pid"));
   await e.click("pshare", { id: "p1" });
   expect(shares.length).toBe(0);
-  expect(globalThis.document.querySelector("#shs").innerHTML).toContain("Thẻ Mini App");
-  await e.click("shz", { v: "card" }); await e.click("shzgo");
+  expect(globalThis.document.querySelector("#shs").innerHTML).toContain("Lời nhắn kèm");
+  expect(globalThis.document.querySelector("#shs").innerHTML).not.toContain("zalo.me/s/"); // không lộ đường link
+  await e.click("shzgo");
   expect(shares[0].type).toBe("zmp_deep_link");
   expect(shares[0].data).toMatchObject({ path: "/?clb=q7&p=vdv/p1", thumbnail: "https://pikeco.app/og.png" });
   expect(shares[0].data.title).toContain("Hồ sơ AN");
   expect(shares[0].data.title.length).toBeLessThanOrEqual(100);
-  await e.click("pshare", { id: "p1" }); await e.click("shz", { v: "text" }); await e.click("shzgo");
+  // Thẻ lỗi thì tự chuyển sang tin nhắn chữ kèm link
+  globalThis.window.ZMP.openShareSheet = async o => { if (o.type === "zmp_deep_link") throw new Error("lỗi"); shares.push(o); };
+  await e.click("pshare", { id: "p1" }); await e.click("shzgo");
   expect(shares[1].type).toBe("text");
   expect(shares[1].data.autoParseLink).toBe(true);
   expect(shares[1].data.text).toMatch(/\nhttps:\/\/zalo\.me\/s\/180913816434821856\/\?clb=q7&p=vdv\/p1&env=TESTING&version=12$/);

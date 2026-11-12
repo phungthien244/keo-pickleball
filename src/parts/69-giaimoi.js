@@ -179,6 +179,7 @@ function vGiaiMgr(D,X){
   if(mxDrOn()&&X&&ndPgId===X.id)return ndPage(D,X);
   if(mxDrOn()&&X&&kPg&&kOn(X)){const k=kPage(D,kXL(X));if(k!=null)return k}
   if(mxDrOn()&&X&&regAddOpen)return gmAddPg(D,kXL(X));
+  if(mxDrOn()&&X&&qmQr===X.id)return qmQrPg(D,X);
   if(mxDrOn()&&X&&ckBtc===X.id)return ckBtcPg(D,X);
   if(mxDrOn()&&loaPgOn)return loaPg(D,X);
   if(ciOpen)return ckScreen(D);
@@ -194,7 +195,7 @@ function vGiaiMgr(D,X){
   const nC=Math.max(1,+(X&&X.courts)||+D.c.courts||1),sub=st===2&&cur&&(gmLive(D)||D.SM.length)?`● Đang đánh · ${D.done.length} trận xong`:st===3?`Chốt · ${D.done.length} trận · ${D.players.filter(p=>p.active!==false).length} người`:st===1&&(!X||(X.at&&sameDay(X.at,Date.now())))?`Hôm nay${X&&X.at?" "+hm(X.at):""} · ${nC} sân`:when;
   let h=mxDrOn()?mxDr({t:nm,tact:"gmsw",sub:esc(sub),go:`href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk"`})
     :`<div class="gmhd">${MINI?"":`<a class="gmbk" href="${pathOf("app",{tab:"dk",x:null})}" data-go="app" data-t="dk" aria-label="Về danh sách giải">‹</a>`}<button class="gmname" data-act="gmsw"><b>${esc(nm)}</b><i aria-hidden="true">▾</i></button><button class="gmed" data-act="gmedit">✎ Sửa</button></div>`;
-  h+=`<nav class="gmst" aria-label="Các chặng của giải">${GM_ST.map((t,i)=>`<button data-act="gmst" data-v="${i}" aria-pressed="${i===st}" class="${i<nat||(X&&X.st==="done")?"ok":i===nat?"now":""}">${i<nat||(X&&X.st==="done")?"✓ ":i===nat?"● ":""}${t}</button>`).join("")}</nav>`;
+  h+=MINI?qmStep(st,nat,X&&X.st==="done"):`<nav class="gmst" aria-label="Các chặng của giải">${GM_ST.map((t,i)=>`<button data-act="gmst" data-v="${i}" aria-pressed="${i===st}" class="${i<nat||(X&&X.st==="done")?"ok":i===nat?"now":""}">${i<nat||(X&&X.st==="done")?"✓ ":i===nat?"● ":""}${t}</button>`).join("")}</nav>`;
   if(!(st===2&&mxDrOn()&&cur&&(gmLive(D)||D.SM.length)))h+=ycBan(D);
   if(st!==nat&&!(X&&X.st==="done"))h+=`<button class="gmback" data-act="gmst" data-v="${nat}"><span>Đang xem lại <b>${GM_ST[st]}</b> · giải đang ở <b>${GM_ST[nat]}</b></span><b>Về ${GM_ST[nat]} ›</b></button>`;
   h+=[gmS0,gmS1,gmS2,gmS3][st](D,X,cur);

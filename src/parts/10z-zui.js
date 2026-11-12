@@ -34,6 +34,11 @@ const ZI={
   img:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 8"/>',
   spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>',
   send:'<path d="M4 12l16-8-6 16-3-7z"/>',
+  more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+  phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+  down:'<path d="M12 5v14M6 13l6 6 6-6"/>',pause:'<path d="M9 5v14M15 5v14"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',play:'<path d="M7 5l12 7-12 7z"/>',
+  plusu:'<circle cx="10" cy="8" r="4"/><path d="M3 20c1.3-3.5 3.8-5 7-5s5.7 1.5 7 5M19 8v6M16 11h6"/>',
+  qr:'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2M14 18h2v2M18 18h2v2h-2"/>',
   hist:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>'
 };
 const zIco=(k,s=24)=>`<svg class="zi" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ZI[k]||""}</svg>`;

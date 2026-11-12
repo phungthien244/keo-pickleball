@@ -86,17 +86,35 @@ async function thVdv(g,D,pid){
   st.forEach(([l,v],i)=>{const x=330+i*170;thLbl(g,l,x,392);g.fillStyle="#fff";g.font=FD(900,60);g.fillText(v,x,470)});
   return {title:`${p.name} · ${clubNm(D)}`};
 }
+// Thẻ mời đăng ký (chuẩn Zalo, canvas Sh1–Sh4): nền trắng, khối ngày xanh, đủ thông tin, người đã đăng ký, dải "bấm vào thẻ"
+const TF=(w,s)=>`${w} ${s}px -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
+function thRR(g,x,y,w,h,r,c){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();g.fillStyle=c;g.fill()}
 async function thGiai(g,D,X){
-  const R=withX(X,()=>regList(D)),fee=xFee(X),m=+X.max||0,left=m?Math.max(0,m-R.conf.length):null,d=X.at?new Date(X.at):null;
-  await thFrame(g,{tag:xState(X)==="open"?"MỞ ĐĂNG KÝ":"GIẢI ĐẤU",tagBg:TC.yellow,tagFg:TC.navy,bg:TC.blue,ball:false});
-  if(d){thRect(g,48,100,170,190,TC.navy);g.textAlign="center";g.fillStyle=TC.sky;g.font=FD(800,26);g.fillText(["CN","T2","T3","T4","T5","T6","T7"][d.getDay()],133,140);
-    g.fillStyle="#fff";g.font=FD(900,92);g.fillText(String(d.getDate()),133,236);g.fillStyle=TC.sky;g.font=FD(800,22);g.fillText(`THG ${d.getMonth()+1}`,133,272);g.textAlign="left"}
-  const x0=d?250:48,mw=TH_W-x0-48;
-  g.fillStyle="#fff";g.font=FD(800,22);g.fillText(gdTy(X).lb.replace(/^[^A-ZÀ-Ỹ]+/,""),x0,132);
-  g.font=FD(900,58);const L=thWrap(g,xName(X),mw,2);L.forEach((t,i)=>g.fillText(t,x0,196+i*64));
-  g.font=FB_(600,28);g.fillStyle="#fff";g.fillText(thWrap(g,[xTime(X),X.place,(+X.courts||0)&&`${X.courts} sân`].filter(Boolean).join(" · "),mw,1)[0]||"",x0,196+L.length*64+6);
-  thLbl(g,m?"CÒN CHỖ":"ĐÃ ĐĂNG KÝ",48,418,"#dbeeff");g.fillStyle=TC.yellow;g.font=FD(900,84);g.fillText(m?(left?`${left}/${m}`:"HẾT CHỖ"):String(R.conf.length),44,506);
-  g.textAlign="right";thLbl(g,"LỆ PHÍ",1152,418,"#dbeeff");g.textAlign="right";g.fillStyle="#fff";g.font=FD(900,64);g.fillText(X.cp===false?"Miễn phí":fee?kVND(fee):(THU[X.thu||"keo"]||""),1152,500);g.textAlign="left";
+  const R=withX(X,()=>regList(D)),fee=xFee(X),m=+X.max||0,n=R.conf.length,cap=pairRegOn(X),left=m?Math.max(0,m-n):null,d=X.at?new Date(X.at):null,hot=left!=null&&left>0&&left<=3;
+  const ty=X.fmt==="giai"?(X.ko?["Giải · chia bảng","#fff0e0","#a64b00"]:["Mini game · cặp cố định","#efe9fb","#5b35b1"]):["Social · xoay cặp","#e3f6ea","#1c7a3f"];
+  const prize=X.gton&&X.gt==="hang"?(+((X.hang||[])[0])||0):0,slot=k=>cap?`${Math.floor(k/2)} cặp`:`${k} chỗ`;
+  thRect(g,0,0,TH_W,TH_H,"#fff");
+  const gr=g.createLinearGradient(0,0,360,534);gr.addColorStop(0,"#006af5");gr.addColorStop(1,"#0250b6");thRect(g,0,0,360,534,gr);
+  g.textAlign="center";g.fillStyle="#fff";
+  if(d){const td=sameDay(X.at,Date.now());g.globalAlpha=.9;g.font=TF(400,38);g.fillText(td?"Hôm nay":["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"][d.getDay()],180,138);
+    g.globalAlpha=1;g.font=TF(700,150);g.fillText(String(d.getDate()),180,290);g.globalAlpha=.9;g.font=TF(400,36);g.fillText(`tháng ${d.getMonth()+1}`,180,346);g.globalAlpha=1;
+    thText(g,xTime(X),180,432,320,s=>TF(500,s),[44,38,32],"#fff","center")}
+  else{g.font=TF(500,40);g.fillText("Sắp mở",180,290)}
+  g.textAlign="left";
+  const x0=400,mw=TH_W-x0-40;
+  g.font=TF(500,28);const tw=g.measureText(ty[0]).width+40;thRR(g,x0,36,tw,46,23,ty[1]);g.fillStyle=ty[2];g.fillText(ty[0],x0+20,69);
+  thText(g,xName(X),x0,150,mw,s=>TF(700,s),[56,50,44,38],"#141415");
+  thText(g,[X.place,(+X.courts||0)&&`${X.courts} sân`,typeof lvTxt==="function"?lvTxt(X):""].filter(Boolean).join(" · "),x0,198,mw,s=>TF(400,s),[32,30,28],"#767a7f");
+  const st=[["Lệ phí",X.cp===false||!fee?"Miễn phí":fmtK(fee),"#141415"]];
+  if(prize)st.push(["Giải Nhất",qmK(prize),"#a64b00"]);
+  st.push(m?[hot?"Chỉ còn":"Còn",left?slot(left):"Hết chỗ",hot||!left?"#c4170f":"#006af5"]:["Đã đăng ký",String(n),"#006af5"]);
+  let sx=x0;for(const [l,v,c] of st){g.font=TF(400,28);g.fillStyle="#767a7f";g.fillText(l,sx,262);g.font=TF(700,48);g.fillStyle=c;g.fillText(v,sx,318);sx+=Math.max(g.measureText(v).width,(g.font=TF(400,28),g.measureText(l).width))+56}
+  const P=R.conf.slice(0,5),nm=x=>String(xbName(D,x)).trim().split(/\s+/).pop();
+  let ax=x0+32;for(const x of P){g.beginPath();g.arc(ax,446,35,0,Math.PI*2);g.fillStyle="#fff";g.fill();await thAv(g,(x.pid&&D.pmap.get(x.pid))||{name:xbName(D,x)},ax,446,31,0);ax+=46}
+  const who=cap?(n?`${Math.floor(n/2)||n} ${Math.floor(n/2)?"cặp":"người"} đã đăng ký`:"Chưa có cặp nào · đăng ký đầu tiên nhé"):!n?"Chưa ai đăng ký · bạn là người đầu tiên":n<=2?`${P.map(nm).join(", ")} đã đăng ký`:`${nm(P[0])}, ${nm(P[1])} và ${n-2} người đã đăng ký`;
+  thText(g,who,P.length?ax+4:x0,457,TH_W-40-(P.length?ax+4:x0),s=>TF(400,s),[30,28,26],"#141415");
+  thRect(g,0,534,TH_W,96,hot?"#c4170f":"#006af5");
+  thText(g,hot?`Chỉ còn ${slot(left)} · bấm để giữ chỗ ngay`:left===0?"Hết chỗ · bấm để vào danh sách chờ":cap?"Bấm vào thẻ · đăng ký theo cặp bằng Zalo":"Bấm vào thẻ · đăng ký bằng Zalo trong 10 giây",TH_W/2,596,TH_W-80,s=>TF(500,s),[40,36,32],"#fff","center");
   return {title:`${xName(X)} · ${clubNm(D)}`};
 }
 async function thPoster(g,X,img){

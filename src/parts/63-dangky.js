@@ -294,6 +294,7 @@ async function regAdminAct(act,b,id,D){
     await write(async()=>{await db.collection("regs").doc(id).update({pay:"refund",refundAt:Date.now()});if(x.pid&&xPaySid(x,D))await savePay(D.sid,nx=>{delete nx.paid[x.pid]})},"Đã ghi nhận hoàn phí");return true}
   if(act==="regatt"){const R=regList(D),inS=new Set(R.conf.map(x=>x.pid).filter(Boolean));if(!armOr("regatt:x"))return true;
     await write(async()=>{for(const p of D.players){const on=inS.has(p.id);if((p.active!==false)!==on)await db.collection("players").doc(p.id).update({active:on})}},`Điểm danh ${inS.size} người theo danh sách đăng ký`);return true}
+  if(act==="regshare"&&MINI){const X=(id&&schedById(id))||RX;if(X){qmAdd=false;await qmShare(D,X);return true}}
   if(act==="regshare"){if(id&&!RX){const X=schedById(id);if(X)return withX(X,()=>regAdminAct(act,b,null,D))}
     const r=regCfg(),R=regList(D),u=miniLink(CID,RX&&RX.id),club=(CLUB&&CLUB.name)||D.c.title,left=+r.max?Math.max(0,+r.max-R.conf.length):null,c=RX?{...D.c,...RX,sname:xName(RX)}:D.c;
     const L=[`📣 ${club}: mở đăng ký ${c.sname||"giải đấu tới"}`,`🗓 ${whenFull(r)}`,r.place&&`📍 ${r.place}${r.map?` · ${r.map}`:""}`,

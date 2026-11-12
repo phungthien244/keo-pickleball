@@ -196,6 +196,7 @@ document.addEventListener("click",onAct=async e=>{
   if(canWrite&&act.startsWith("g4")&&await g4Act(act,b))return;
   if(canWrite&&(act.startsWith("g5")||act==="chotz")&&await g5Act(act,b))return;
   if(canWrite&&["gmxe","gmxs","gmxa","gmxb","gmpairw","gmautopair","g2set","g2kh","xblv"].includes(act)&&await g2Act(act,b))return;
+  if(canWrite&&act.startsWith("qm")&&await qmAct(act,b))return;
   if(canWrite&&act.startsWith("gm")&&await gmAct(act,b))return;
   if(canWrite&&act.startsWith("xq")&&await xqAct(act,b))return;
   if(canWrite&&!legacy&&await ckAct(act,b,id))return;

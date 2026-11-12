@@ -40,6 +40,10 @@ const R=(k,pid,team,i)=>store.set(`clubs/aep/regs/s-open~${k}_p_${pid}`,{sid:"s-
 [["d1","d1"],["d10","d1"],["d12","d12"],["d14","d12"]].forEach(([p,t],i)=>R("f",p,t,i));
 [["d5","d5"],["d8","d5"],["d11","d11"],["d13","d11"],["d15","d15"],["d17","d15"]].forEach(([p,t],i)=>R("m",p,t,i));}
 store.set("clubs/aep/sched/s-giai",{name:"Giải cặp tháng này",fmt:"giai",end:"11:30",place:"Sân AEP, Q7",courts:3,target:11,max:16,guests:false,thu:"phi",phi:100,pay:"req",lockH:12,dlH:24,at:G.getTime(),deadline:G.getTime()-864e5,lockAt:G.getTime()-12*3600e3,hang:[300,150,50],st:"draft",openAt:0,createdAt:Date.now()});}})();
+// Mini game có giải thưởng, đăng ký theo cặp: xem thẻ mời có "giải Nhất"
+{const M=new Date();M.setDate(M.getDate()+3);M.setHours(8,0,0,0);const mt=M.getTime();
+store.set("clubs/aep/sched/s-mg",{name:"Mini game đôi nam nữ",fmt:"giai",pairReg:"pair",dt:"mix",end:"11:00",place:"Sân AEP, Q7",courts:3,target:11,max:24,thu:"phi",phi:200,cp:true,pay:"opt",gton:true,gt:"hang",hang:[1000,500,200],at:mt,deadline:mt-12*36e5,lockAt:mt-12*36e5,st:"open",openAt:0,createdAt:Date.now()});
+[["d1","d1"],["d2","d1"],["d3","d3"],["d4","d3"],["d5","d5"],["d6","d5"],["d7","d7"],["d8","d7"],["d9","d9"],["d10","d9"]].forEach(([pid,t],i)=>store.set("clubs/aep/regs/s-mg_p_"+pid,{sid:"s-mg",pid,name:store.get("clubs/aep/players/"+pid)?.name||"",team:"s-mg_p_"+t,at:Date.now()-(20-i)*36e5,pay:i<6?"ok":"none",by:"Bạn (demo)"}));}
 window.PA_OVERRIDE="ban@demo.vn";
 store.set("users/demo",{club:"aep",at:Date.now()});
 store.set("clubs/q7-smash",{name:"Q7 Smash Pickleball",public:true,owner:"u7",status:"pending",city:"TP.HCM",size:"20–50",createdAt:Date.now()-36e5});

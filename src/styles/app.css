@@ -3426,3 +3426,91 @@ html.mini{--appw:560px}
 .mxsheet .form.f2{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
 .mxsheet input[type=date],.mxsheet input[type=time]{min-width:0}
 .zset .l{flex:none;max-width:52%}.zset .v{flex:1;min-width:0;max-width:none}
+/* Quản lý một lịch đánh (69m-qlmot.js · canvas Mq1–Mq8) */
+.zstep{display:flex;gap:4px;margin:-8px -8px 0;padding:8px 16px 10px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:calc(48px + var(--sat,0px));z-index:14}
+.zstep button{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:0;height:auto;padding:0;border:0;border-radius:0;background:none;color:var(--muted);font-size:12px;line-height:16px;font-weight:400}
+.zstep button i{display:block;width:100%;height:4px;border-radius:2px;background:#e9ebed}
+.zstep button.ok i{background:var(--blue)}
+.zstep button[aria-pressed="true"]{color:var(--blue);font-weight:500}
+.qmsum{padding:14px 16px 12px!important;display:flex!important;flex-direction:column;gap:8px!important}
+.qmbig{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.qmbig b{font-size:28px;line-height:32px;font-weight:500}.qmbig b small{font-size:18px;color:var(--muted);font-weight:400}
+.qmbig span{font-size:15px;color:var(--muted)}
+.qmsum .zprog{height:6px;border-radius:3px;margin:0}
+.qmst{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;color:var(--ink)}
+.qmst b{font-weight:500}.qmst b.g{color:#1c7a3f}.qmst b.o{color:#a64b00}
+.qmmo{font-size:14px;line-height:20px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}.qmmo em{font-style:normal;color:#c4170f}
+.qmi{width:24px;display:flex;justify-content:center;color:var(--muted);flex:none}.qmi.ok{color:#1c7a3f}.qmi.r{color:#c4170f}
+.zrow.qmtd{padding:12px 16px;gap:14px;align-items:center}
+.zrow.qmtd .zt>b{font-size:16px}
+.zrow.qmtd button.zpill{border:0;min-height:32px;cursor:pointer}
+.zrow.qmtd+.zrow.qmtd,.zrow.qmp+.zrow.qmp,.zrow.qml+.zrow.qml{position:relative}
+.zrow.qmtd+.zrow.qmtd::before{content:"";position:absolute;top:0;left:54px;right:0;height:1px;background:var(--line)}
+.qmfl{margin:0;padding:4px 16px 8px}
+.zrow.qmp{padding:10px 16px;gap:12px;min-height:60px}
+.zrow.qmp+.zrow.qmp::before{content:"";position:absolute;top:0;left:68px;right:0;height:1px;background:var(--line)}
+.zrow .av.qm,.qmform .av.qm{--s:40px;box-shadow:none;font-family:inherit}
+.qmav2{display:flex;flex:none}.qmav2 .av.qm{--s:32px;box-shadow:0 0 0 2px #fff}.qmav2 .av.qm+.av.qm{margin-left:-10px;margin-top:10px}
+.qmnone{margin:0;padding:16px;font-size:14px;color:var(--muted);text-align:center}
+.qmlist{margin-bottom:72px!important}
+.hqcta.qmcta{display:flex;flex-direction:row;gap:8px;align-items:center}
+.qmdot{width:48px;height:48px;min-height:48px;flex:none;padding:0;border:0;border-radius:50%;background:#f1f3f5;color:var(--ink);display:grid;place-items:center}
+.hqcta.qmcta>.ball,.hqcta.qmcta>.btn-line{flex:1}
+.hqcta .qmaddb{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:500}
+/* Bảng trượt */
+.qmsh{gap:12px!important}
+.qmwho{display:flex;align-items:center;gap:12px;padding-top:4px}
+.qmwho .av.qmb{--s:48px;box-shadow:none;font-family:inherit;font-size:20px}
+.qmwho .zt>b{font-size:18px;line-height:24px;font-weight:500}
+.qmwho .ztag{align-self:center}
+.qmacts{display:flex;gap:8px}
+.qmact{flex:1;height:64px;min-height:64px;border-radius:12px;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:14px;font-weight:500;padding:0 4px;text-decoration:none}
+.qmact.p{background:var(--blue);color:#fff}.qmact.n{background:#f1f3f5;color:var(--ink)}
+.qmact:disabled{opacity:.45}
+.qmlb{display:block;font-size:14px;color:var(--ink);margin:4px 0 -4px}
+.zseg.qmseg{display:flex;width:100%;box-sizing:border-box}.zseg.qmseg button{flex:1;padding:0 4px;height:36px;min-height:36px}
+.qmls{margin:0 -16px}
+.zrow.qml{padding:12px 16px;gap:14px;min-height:56px}
+.zrow.qml+.zrow.qml::before{content:"";position:absolute;top:0;left:54px;right:0;height:1px;background:var(--line)}
+.zrow.qml .zt>small{font-size:13px}
+.zrow.qml .red,.qmsh .red{color:#c4170f}
+.qmsh>.zrow.qml{margin:0 -16px}
+.qmnote{margin:0;font-size:13px;line-height:18px;color:var(--muted)}
+.qmwarn{margin:0;padding:10px 12px;border-radius:8px;background:#fff0e0;color:#a64b00;font-size:14px;line-height:20px}
+.qmwarn .zlk{background:none;border:0;padding:0;min-height:0;color:var(--blue);font-size:14px;font-weight:500}
+.qmpre{margin:0;padding:12px;border-radius:8px;background:#f1f3f5;font:inherit;font-size:14px;line-height:20px;white-space:pre-wrap;max-height:40vh;overflow:auto}
+.qmsh .zchips{margin:0 -16px}
+/* Mã QR tại chỗ · thêm tay */
+.qmqr{display:flex!important;flex-direction:column;align-items:center;text-align:center;gap:6px!important;padding:20px 16px!important;margin-bottom:72px!important}
+.qmqr>b{font-size:18px;line-height:24px;font-weight:500}.qmqr>b.t{font-size:16px;margin-top:8px}
+.qmqr>small{font-size:14px;line-height:20px;color:var(--muted)}
+.qmqrbox{margin:8px 0;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fff}.qmqrbox svg{display:block;width:240px;height:240px}
+.qmform{padding:12px 16px 16px!important;display:flex!important;flex-direction:column;gap:10px!important}
+.qmform .fld{display:flex;flex-direction:column;gap:4px;margin:0}.qmform .fld .lbl{font-size:14px;color:var(--ink)}
+.qmform .fld input{width:100%;box-sizing:border-box}
+.qmform+.zsec{margin-bottom:72px}
+/* Bảng gửi qua Zalo: một kiểu thẻ, có lời nhắn */
+.mini .shbox.zshr{border-top:0;border-radius:16px 16px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom,0px));gap:12px;box-shadow:0 -2px 6px rgba(20,20,21,.14);top:auto!important;bottom:0!important;transform:none!important}
+.zshr .grab{display:block;width:36px;height:4px;border-radius:2px;background:#d6d9dc;margin:0 auto}
+.zshr h2{margin:0;font-size:20px;line-height:26px;font-weight:500;text-align:center}
+.zshr .shcard{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;padding:0;gap:0}
+.zshr .shcard img{display:block;width:100%;aspect-ratio:1200/630;object-fit:cover;border-radius:0}
+.zshr .shcard b{padding:10px 12px 0;font-size:15px;line-height:20px;font-weight:500}
+.zshr .shcard small{padding:4px 12px 10px;font-size:13px;line-height:18px;color:var(--muted)}
+.zshr .shcard .mo{border-top:1px solid var(--line);height:40px;display:grid;place-items:center;color:var(--blue);font-size:15px;font-weight:500}
+.zshr .fld{display:flex;flex-direction:column;gap:4px}.zshr .fld .lbl{font-size:14px;color:var(--ink)}.zshr .fld input{width:100%;box-sizing:border-box}
+.zshr .ball.go{min-height:48px;border-radius:48px;width:100%}
+.zshr .shnote{font-size:13px;color:var(--muted);text-align:center}
+.zrow.qmp .zt>small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zshr .shcard b,.zshr .shcard small,.zshr .shcard .mo{margin:0}
+.zshr .shcard small{-webkit-line-clamp:3}
+/* Hộp thoại hỏi lại chuẩn Zalo: giữa màn, bo 12, cách mép 32, biểu tượng tròn, tiêu đề 20 giữa, 2 nút bo tròn */
+.mini .cfmbox{left:32px;right:32px;max-width:340px;border-top:0;border-radius:12px;padding:24px 20px 16px;gap:12px;text-align:center;box-shadow:none;align-items:stretch}
+.mini .cfmic{align-self:center;width:48px;height:48px;border-radius:50%;background:var(--blue-s);color:var(--blue);font-family:inherit;font-size:24px}
+.mini .cfmbox.d .cfmic{background:#fed8d7;color:#c4170f}
+.mini .cfmbox h2{margin:0;font-family:inherit;font-size:20px;line-height:26px}
+.mini .cfmbox p{font-size:15px;line-height:20px}
+.mini .cfmbox .cfmbtn{display:flex;gap:8px;margin-top:8px}.mini .cfmbox .cfmbtn>button{flex:1;min-height:44px;border-radius:48px;font-size:16px}
+.mini .cfmbox .cfmbtn .line{background:#f1f3f5;color:var(--ink);border:0}
+.mini .cfmbox .cfmbtn .danger{background:#dc1f18;border:0;color:#fff}.mini .cfmbox .cfmbtn .primary{background:var(--blue);border:0}
+.zshr .shcard .mo{border-radius:0;background:none;padding:0}

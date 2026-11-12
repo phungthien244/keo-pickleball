@@ -160,6 +160,7 @@ function g2Row(D,X,x,wait){
 }
 function gmRegV(D,X){
   if(kOn(X))return ndOn(X)?ndRegV(D,X):kRegV(D,X);
+  if(MINI)return qmView(D,X);
   return withX(X,()=>{
     const R=regList(D),po=payOn(),s=xState(X),cap=pairRegOn(X),cancel=(S.regs||[]).filter(r=>r.sid===X.id&&r.cancel);
     const paid=R.all.filter(x=>x.pay==="ok").length,unpaid=R.all.filter(x=>po&&feeOf(x)>0&&x.pay!=="ok");
@@ -239,28 +240,30 @@ function gmBulkPg(D,X){
 // R5 · Thêm khách không dùng app (canvas B06): tên + nam/nữ + trình → nhãn khách · chưa xác minh
 let g2Added=0;
 function gmAddPg(D,X){
-  return withX(X,()=>{const R=regList(D),K=R.all.filter(x=>regKhach(x)&&!x.cancel);
-    mxDr({t:"Thêm khách",back:"regadd",sub:esc(xName(X))});
-    const g=val("g2-g","M"),lv=val("g2-lv","3.0");
-    return `<small class="rule">Cho người không dùng Zalo/app (khách vãng lai, người lớn tuổi). Người có Zalo nên tự đăng ký để có hồ sơ và thành tích.</small>
-      <label class="fld"><span class="lbl">Tên khách</span><input id="g2-nm" data-draft="g2-nm" maxlength="40" placeholder="VD: Chú Tư" value="${esc(val("g2-nm",""))}"></label>
-      <div class="fld"><span class="lbl">Nam / Nữ</span><span class="seg"><button data-act="g2set" data-k="g2-g" data-v="M" aria-pressed="${g==="M"}">Nam</button><button data-act="g2set" data-k="g2-g" data-v="F" aria-pressed="${g==="F"}">Nữ</button></span></div>
-      <div class="fld"><span class="lbl">Trình</span>${lvSeg("g2-lv",lv,"g2set")}</div>${errs.g2?`<p class="err">${esc(errs.g2)}</p>`:""}
-      <button class="primary wide" data-act="g2kh">＋ Thêm khách</button>
-      ${K.length?`<span class="gmlb">Khách đã thêm · ${K.length}</span><div class="g2list">${K.map(x=>`<div class="g2p">${av({name:x.name},"sm",1)}<span class="t"><b>${esc(x.name)}</b><small>${esc(lvName(x.lv))} · ${x.gender==="F"?"Nữ":"Nam"}</small></span><small class="khtag">Khách · chưa xác minh</small></div>`).join("")}</div>`:""}
-      <div class="hqcta"><button class="ball" data-act="regadd">Xong${g2Added?` · đã thêm ${g2Added} khách`:""}</button></div>`});
+  return withX(X,()=>{const R=regList(D),K=R.all.filter(x=>regKhach(x)&&!x.cancel&&x.uid==="btc"),po=payOn(),fee=feeGuest()||feeMem();
+    mxDr({t:"Thêm tay",back:"regadd",sub:esc(xName(X))});
+    const g=val("g2-g","M"),lv=val("g2-lv","3.0"),pay=val("g2-pay","none");
+    const seg=(k,L,cur)=>`<div class="zseg qmseg">${L.map(([v,t])=>`<button data-act="g2set" data-k="${k}" data-v="${v}" aria-pressed="${cur===v}">${t}</button>`).join("")}</div>`;
+    let h=`<section class="zsec qmform"><label class="fld"><span class="lbl">Tên</span><input id="g2-nm" data-draft="g2-nm" maxlength="40" placeholder="VD: Chú Tư" value="${esc(val("g2-nm",""))}"></label>
+      <span class="qmlb">Giới tính</span>${seg("g2-g",[["M","Nam"],["F","Nữ"]],g)}
+      <span class="qmlb">Trình</span>${seg("g2-lv",LV4.map(([v,t])=>[v,t]),lvSnap(lv))}
+      ${po&&fee?`<span class="qmlb">Lệ phí ${fmtK(fee)}</span>${seg("g2-pay",[["none","Chưa trả"],["ok","Đã trả tiền mặt"]],pay)}`:""}
+      ${errs.g2?`<p class="err">${esc(errs.g2)}</p>`:""}
+      <p class="qmnote">Người này hiện với nhãn “khách”. Có Zalo thì nên dùng Gửi lời mời để họ tự đăng ký.</p></section>`;
+    if(K.length)h+=zSec(`Đã thêm tay · ${K.length}`,K.map(x=>zRow({lead:av({name:x.name},"qm",1),t:esc(x.name),s:esc([x.gender==="F"?"Nữ":"Nam",lvName(x.lv)].filter(Boolean).join(" · ")),right:x.pay==="ok"?zTag("Đã trả","s"):""})).join(""));
+    return h+`<div class="hqcta"><button class="ball go" data-act="g2kh">Thêm vào danh sách${g2Added?` · đã thêm ${g2Added}`:""}</button></div>`});
 }
 async function g2Act(act,b){
   const D=derive(),id=b.dataset.id,X=routeX?schedById(routeX):null;
   if(act==="g2set"){drafts[b.dataset.k]=b.dataset.v;render();return true}
   if(act==="g2kh"){if(!X)return true;const nm=String(val("g2-nm","")).trim().slice(0,40);if(nm.length<2){errs.g2="Nhập tên khách.";render();return true}delete errs.g2;
-    const r={sid:X.id,uid:"btc",name:nm,at:Date.now(),by:who(),addBy:who(),pay:"none",guest:true,gender:val("g2-g","M")==="F"?"F":"M",lv:lvSnap(val("g2-lv","3.0"))};
-    await write(()=>db.collection("regs").doc().set(r),`Đã thêm khách ${nm}`);g2Added++;delete drafts["g2-nm"];render();return true}
+    const paid=val("g2-pay","none")==="ok",r={sid:X.id,uid:"btc",name:nm,at:Date.now(),by:who(),addBy:who(),pay:paid?"ok":"none",...(paid?{okAt:Date.now(),okBy:who()}:{}),guest:true,gender:val("g2-g","M")==="F"?"F":"M",lv:lvSnap(val("g2-lv","3.0"))};
+    await write(()=>db.collection("regs").doc().set(r),`Đã thêm ${nm}`);g2Added++;delete drafts["g2-nm"];delete drafts["g2-pay"];render();return true}
   if(act==="xblv"){const x=(S.regs||[]).find(z=>z.id===id),v=lvSnap(b.dataset.v);if(!x)return true;
     await write(async()=>{await db.collection("regs").doc(id).update({lv:v});if(x.pid)await db.collection("players").doc(x.pid).update({rating0:+v})},`Trình: ${lvName(v)}`);return true}
   if(act==="gmxe"){xbMenu=false;gmEdit=true;gmSec=null;render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="gmxs"){xbMenu=false;gmSw=true;render();return true}
-  if(act==="gmxa"){xbMenu=false;regAddOpen=true;g2Added=0;delete drafts["g2-q"];render();try{scrollTo({top:0})}catch(e){}return true}
+  if(act==="gmxa"){xbMenu=false;qmAdd=false;regAddOpen=true;g2Added=0;delete drafts["g2-q"];render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="gmxb"){xbMenu=false;const R=withX(X,()=>regList(D));xbBulk=new Set(R.all.filter(x=>x.pay==="sent").map(x=>x.id));render();try{scrollTo({top:0})}catch(e){}return true}
   if(act==="gmpairw"){const a=(S.regs||[]).find(r=>r.id===id),c=(S.regs||[]).find(r=>r.id===b.dataset.v);if(!a||!c)return true;
     await write(async()=>{await db.collection("regs").doc(a.id).update({team:a.id,seek:false});await db.collection("regs").doc(c.id).update({team:a.id,seek:false})},`Đã ghép ${xbName(D,a)} & ${xbName(D,c)}`);xbSel=null;return true}

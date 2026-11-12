@@ -32,6 +32,7 @@ function startInfo(){
 // [tiêu đề, lời nhắc, chữ nút xác nhận, kiểu nút: d = nguy hiểm, p = xác nhận thường]
 function cfmInfo(key){
   const i=key.indexOf(":"),k=i<0?key:key.slice(0,i),id=i<0?"":key.slice(i+1),n=cfmName(k,id),q=n?" "+n:"";
+  if(MINI&&typeof qmCfm==="function"){const r=qmCfm(k,id);if(r)return r}
   const T={
     pdel:[`Xoá người chơi${q}?`,"Xoá khỏi danh sách thành viên. Trận cũ vẫn giữ nhưng tên hiện “(đã xóa)”.","Xoá","d"],
     del:[`Xoá người chơi${q}?`,"Xoá khỏi danh sách thành viên. Trận cũ vẫn giữ nhưng tên hiện “(đã xóa)”.","Xoá","d"],

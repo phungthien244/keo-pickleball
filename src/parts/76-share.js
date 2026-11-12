@@ -9,8 +9,10 @@ const miniPathOf=path=>`https://zalo.me/s/${MINI_APP_ID}${miniRel(path)}${zEnvQ(
 const SH_THUMB="https://pikeco.app/og.png";
 // Thẻ chia sẻ: tiêu đề = dòng đầu, mô tả = các dòng sau (bỏ dòng "👉 Bấm link…")
 function shCard(o){
+  if(o.inv){const c=qmCardTD(o.inv,o.msg);return {title:c.t.slice(0,100),description:c.d.slice(0,400),thumbnail:o.thumb||SH_THUMB,path:miniRel(o.path)+(o.q||"")}}
   const L=String(o.text||"").split("\n").map(x=>x.trim()).filter(x=>x&&!/^👉/.test(x)&&!/^https?:\/\//.test(x));
-  return {title:String(o.cardTitle||(o._th&&o._th.title)||L[0]||o.title||"Pikeco").slice(0,100),description:String(o.cardDesc||L.slice(1).join(" · ")||(CLUB&&CLUB.name)||"").slice(0,400),thumbnail:o.thumb||SH_THUMB,path:miniRel(o.path)+(o.q||"")};
+  const m=String(o.msg||"").trim();
+  return {title:String(o.cardTitle||(o._th&&o._th.title)||L[0]||o.title||"Pikeco").slice(0,100),description:((m?`“${m}”\n`:"")+String(o.cardDesc||L.slice(1).join(" · ")||(CLUB&&CLUB.name)||"")).slice(0,400),thumbnail:o.thumb||SH_THUMB,path:miniRel(o.path)+(o.q||"")};
 }
 let zKind=lsGet("pb-zshare")==="text"?"text":"card";
 const webPathOf=path=>"https://pikeco.app"+(String(path||"/").startsWith("/")?path:"/"+path);
@@ -54,12 +56,16 @@ function shDraw(){
   if(!el&&document.createElement&&document.body&&document.body.appendChild){el=document.createElement("div");el.id="shs";document.body.appendChild(el)}
   if(!el)return;
   if(!SHR){el.innerHTML="";return}
-  if(MINI){const o=SHR,C=shCard(o),opt=(v,t,s,ic)=>`<button class="shopt${zKind===v?" on":""}" data-act="shz" data-v="${v}"><span class="ic" aria-hidden="true">${ic}</span><span class="t"><b>${t}</b><small>${s}</small></span><span class="rd"></span></button>`;
-    el.innerHTML=`<div class="cfmdim" data-act="shx"></div><div class="shbox" role="dialog" aria-modal="true" aria-labelledby="sht">
-    <div class="shhd"><h2 id="sht">${esc(o.title||"Chia sẻ")}</h2><button class="shxb" data-act="shx" aria-label="Đóng">✕</button></div>
-    ${opt("card","Thẻ Mini App","Ảnh, tiêu đề, mô tả ngắn và nút Mở ngay.","▣")}${opt("text","Tin nhắn đầy đủ","Toàn bộ nội dung kèm link bấm được.","≡")}
-    ${zKind==="card"?`<div class="shcard"><img src="${esc(o._th?o._th.data:C.thumbnail)}" alt=""><b>${esc(C.title)}</b><small>${esc(C.description)}</small><span class="mo">Mở ngay</span></div>`:`<pre class="shtxt">${esc(String(o.text||"").trim())}\n${esc(miniPathOf(o.path)+(o.q||""))}</pre>`}
-    <div class="cfmbtn"><button class="line" data-act="shx">Đóng</button><button class="primary" data-act="shzgo">Gửi qua Zalo</button></div></div>`;return}
+  if(MINI){const o=SHR,C=shCard(o),br=t=>esc(t).replace(/\n/g,"<br>");
+    // Chuẩn Zalo: một kiểu duy nhất là thẻ Mini App (ảnh đủ thông tin), có lời nhắn kèm, không đường link
+    el.innerHTML=`<div class="cfmdim" data-act="shx"></div><div class="shbox zshr" role="dialog" aria-modal="true" aria-labelledby="sht"><span class="grab" aria-hidden="true"></span>
+    <h2 id="sht">${esc(o.title||"Gửi qua Zalo")}</h2>
+    <div class="shcard"><img src="${esc(o._th?o._th.data:C.thumbnail)}" alt=""><b id="shct">${esc(C.title)}</b><small id="shcd">${br(C.description)}</small><span class="mo">Mở ngay</span></div>
+    <label class="fld"><span class="lbl">Lời nhắn kèm · không bắt buộc</span><input id="sh-msg" maxlength="80" placeholder="VD: Tối thứ 6 đánh không anh em?" value="${esc(o.msg||"")}"></label>
+    <button class="ball go wide" data-act="shzgo">Gửi qua Zalo</button><small class="shnote">Không kèm đường link: bấm vào thẻ là mở Pikeco ngay trong Zalo.</small></div>`;
+    const ip=el.querySelector&&el.querySelector("#sh-msg");
+    if(ip&&ip.addEventListener)ip.addEventListener("input",()=>{o.msg=ip.value;const c=shCard(o),t=el.querySelector("#shct"),d=el.querySelector("#shcd");if(t)t.textContent=c.title;if(d)d.innerHTML=br(c.description)});
+    return}
   const o=SHR,k=o.miniOnly?"mini":shKind,u=k==="mini"?miniPathOf(o.path)+(o.q||""):webPathOf(o.path);
   const opt=(v,t,s,ic)=>`<button class="shopt${k===v?" on":""}" data-act="shk" data-v="${v}" ${o.miniOnly&&v==="web"?"disabled":""}><span class="ic" aria-hidden="true">${ic}</span><span class="t"><b>${t}</b><small>${s}</small></span><span class="rd"></span></button>`;
   el.innerHTML=`<div class="cfmdim" data-act="shx"></div><div class="shbox" role="dialog" aria-modal="true" aria-labelledby="sht">
@@ -76,9 +82,10 @@ async function shAct(act,b){
   if(act==="shx"){SHR=null;shDraw();return true}
   if(!SHR)return true;
   if(act==="shz"){zKind=b.dataset.v==="text"?"text":"card";lsSet("pb-zshare",zKind);shDraw();return true}
-  if(act==="shzgo"){const o=SHR;SHR=null;shDraw();
-    if(zKind==="card"){if(o._thP)await o._thP;if(o._th){const u=await thSave(o._th);if(u)o.thumb=u}
-      if(await zSendCard(o))return true;toast("Chưa gửi được thẻ, chuyển sang tin nhắn chữ.")}
+  if(act==="shzgo"){const o=SHR;{const ip=$("#sh-msg");if(ip)o.msg=String(ip.value||"").trim()}SHR=null;shDraw();
+    if(o._thP)await o._thP;if(o._th){const u=await thSave(o._th);if(u)o.thumb=u}
+    if(await zSendCard(o))return true;toast("Chưa gửi được thẻ, chuyển sang tin nhắn chữ.");
+    if(o.inv){const c=shCard(o);o.text=c.title+"\n"+c.description}else if(o.msg)o.text=o.msg+"\n"+(o.text||"");
     await zSendText(o);return true}
   if(act==="shk"){shKind=b.dataset.v==="web"?"web":"mini";lsSet("pb-share",shKind);shDraw();return true}
   const o=SHR,k=o.miniOnly?"mini":shKind,u=k==="mini"?miniPathOf(o.path)+(o.q||""):webPathOf(o.path);
