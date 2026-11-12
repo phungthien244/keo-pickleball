@@ -265,7 +265,7 @@ function gRank(L,games,pz,P){
       <span class="bar2"><i style="width:${pc}%"></i></span>${form?`<span class="form">${form}</span>`:""}</span>
       ${rk&&rk<4?`<span class="pz"><small>${md[rk-1]}</small>${pz[rk-1]?`<b class="num">${pzTxt(pz[rk-1])}</b>`:""}</span>`:"<span></span>"}</div>`}).join("")}</div>`;
 }
-async function endGiai(){
+async function endGiai(o={}){
   const D=derive(),GD=gDerive(D);if(!GD)return;
   if(D.playing.length){toast("Còn trận đang đánh. Lưu tỉ số hoặc hủy trận trước.");return}
   await write(async()=>{
@@ -273,16 +273,16 @@ async function endGiai(){
     const nmOf=id=>D.pmap.get(id)?.name||"(đã xóa)",M=money(D);
     await db.doc("app/hist-"+D.sid).set({sid:D.sid,type:"giai",title:D.c.title,startedAt:isFinite(firstAt)?firstAt:(GD.G.startedAt||Date.now()),endedAt:Date.now(),matchCount:ms.length,
       rows:standings(D).filter(r=>r.s.g).map(r=>({id:r.p.id,name:r.p.name,gender:r.p.gender||"M",w:r.s.w,l:r.s.l,pf:r.s.pf,pa:r.s.pa,rating:Math.round(r.s.rating*100)/100,d:Math.round(r.s.d*1000)/1000,...payRow(D,M,r.p.id)})),
-      money:moneySnap(D,M),paid:{...(payDoc(D.sid).paid||{})},track:true,closedAt:Date.now(),closedBy:who(),sname:D.c.sname||"",rule:ruleTxt(D.c),
+      money:moneySnap(D,M),paid:{...(payDoc(D.sid).paid||{})},track:true,closedAt:Date.now(),closedBy:o.auto?"Tự đóng":who(),sname:D.c.sname||(xCur()?xName(xCur()):""),rule:ruleTxt(D.c),...(o.auto?{auto:true}:{}),
       giai:{prizes:prizes(D,M).map(x=>x.k),complete:GD.complete,
         table:GD.table.map(t=>({id:t.p.id,a:t.p.a,b:t.p.b,na:nmOf(t.p.a),nb:nmOf(t.p.b),gp:t.gp,w:t.w,l:t.l,pf:t.pf,pa:t.pa,wo:t.wo,out:t.out})),
         ko:GD.isKO?{n:GD.groups.length,q:GD.size,groups:GD.groups.map(p=>({p}))}:null,
         games:GD.games.filter(g=>g.st==="done"||(g.st==="wo"&&g.wo)).map(g=>({r:g.r,x:g.x,y:g.y,...(g.ko?{k:g.rn}:{}),sx:g.sx,sy:g.sy,wo:g.wo||null,court:g.m?.court||null,seq:g.m?.seq||null,at:g.m?.doneAt||null})),
         ...(gMulti()?{nd:gNdKeys().map(k=>{const G2=gDeriveK(D,k),n=ndOf(xCur(),k);return {k,name:n?n.name:k,table:G2?G2.table.map(t=>({id:t.p.id,a:t.p.a,b:t.p.b,na:nmOf(t.p.a),nb:nmOf(t.p.b),w:t.w,l:t.l,pf:t.pf,pa:t.pa,out:t.out})):[]}})}:{})}});
     for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
-    await xFinish(D);
+    await xFinish(D,o);
     await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},fmt:"xoay",giai:null,phase:"prep",sname:"",schedId:null});
-  },"Đã lưu giải, đây là trang tổng kết để chia sẻ");go("buoi",{sid:D.sid});
+  },o.auto?`Đã tự đóng ${D.c.sname||"giải"} quá giờ · tiền chờ bạn chốt`:"Đã lưu giải, đây là trang tổng kết để chia sẻ");if(!o.auto)go("buoi",{sid:D.sid});
 }
 /* Tổng kết giải chia bảng + knockout (canvas N13): công khai, không có tiền.
    Vô địch nổi bật · á quân, hạng ba · đường tới chức vô địch · nhánh đấu · bảng xếp hạng từng bảng · chia sẻ */

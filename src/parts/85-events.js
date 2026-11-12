@@ -62,6 +62,7 @@ document.addEventListener("click",onAct=async e=>{
   if(act==="cfmok"){await cfmOk();return}
   if(act==="cfmx"){cfmClose();return}
   if(await shAct(act,b))return;
+  if(act.startsWith("ov")&&ovAct(act,b))return;
   if(await dbgAct(act))return;
   if(await loginAct(act,b))return;
   LASTDS={...b.dataset};

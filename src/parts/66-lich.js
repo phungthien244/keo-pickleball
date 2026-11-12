@@ -17,12 +17,12 @@ const payNoteX=(X,name)=>`${noAcc(CID)} N${new Date(X.at||Date.now()).getDate()}
 /* ----- Trạng thái ----- */
 function xState(x){
   if(!x)return "none";
-  if(cfg().schedId===(x._base||x.id)&&MODE==="club"&&x.st!=="done"&&x.st!=="cancel"&&(cfg().phase==="live"||(S.matches||[]).length))return "live";
+  if(cfg().schedId===(x._base||x.id)&&MODE==="club"&&x.st!=="done"&&x.st!=="cancel"&&(cfg().phase==="live"||(S.matches||[]).length))return ovHide()?"done":"live";
   if(x.st==="plan")return x.openAt&&Date.now()>=x.openAt?"open":"plan";
   return x.st||"draft";
 }
 const xOpen=x=>x.reg!==false&&xState(x)==="open"&&!(x.deadline&&Date.now()>x.deadline)&&!(x.at&&Date.now()>x.at);
-const xShown=x=>x&&x.st!=="done"&&x.st!=="cancel"&&((x.at||0)>Date.now()-10*3600e3||cfg().schedId===x.id);
+const xShown=x=>x&&x.st!=="done"&&x.st!=="cancel"&&((x.at||0)>Date.now()-10*3600e3||(cfg().schedId===x.id&&!ovHide()));
 const schedAll=()=>(S.sched||[]).slice().sort((a,b)=>(a.at||0)-(b.at||0));
 const schedUp=()=>schedAll().filter(xShown);
 const schedById=id=>{const s=String(id||"");if(s.includes("~")){const [b,k]=s.split("~"),X=(S.sched||[]).find(x=>x.id===b);return X?ndX(X,k):null}return (S.sched||[]).find(x=>x.id===id)||null};
@@ -46,7 +46,7 @@ function xChip(x){
   if(s==="plan")return `<span class="xchip warn">Tự mở ${DOW[new Date(x.openAt).getDay()]} ${dmy(x.openAt).slice(0,5)}, ${hm(x.openAt)}</span>`;
   if(s==="draft")return `<span class="xchip">Nháp</span>`;
   if(s==="cancel")return `<span class="xchip bad">Đã hủy</span>`;
-  return `<span class="xchip">Đã xong</span>`;
+  return x.auto&&isAdm()&&!(S.hist||[]).some(h=>h.sid===x.num&&h.editedAt)?`<span class="xchip warn">Tự đóng · chưa chốt tiền</span>`:`<span class="xchip">Đã xong</span>`;
 }
 const xDate=(t,dark)=>{const d=new Date(t||Date.now());return `<span class="xdate${dark?" on":""}"><small>${DOW[d.getDay()]}</small><b>${t?d.getDate():"?"}</b><small>TH ${d.getMonth()+1}</small></span>`};
 function xProg(x){const n=xRegN(x),m=+x.max||0;
@@ -460,7 +460,7 @@ async function xApply(D,X,quiet){
   if(n)toast(`Đã điểm danh ${n} người đã check-in`);
 }
 // Chốt buổi: buổi trong lịch chuyển sang Đã xong
-async function xFinish(D){const X=xCur();if(X)await db.collection("sched").doc(X.id).update({st:"done",num:D.sid,doneAt:Date.now()})}
+async function xFinish(D,o={}){const X=xCur();if(X)await db.collection("sched").doc(X.id).update({st:"done",num:D.sid,doneAt:Date.now(),...(o.auto?{auto:true}:{})})}
 
 /* ----- Bấm ----- */
 async function xAct(act,b,id,D){

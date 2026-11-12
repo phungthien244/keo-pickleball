@@ -28,7 +28,7 @@ function mxSubT(D){
 }
 function mxStat(D){
   const tag=(c,l,t,go)=>`<a class="mxst ${c}" href="${go[0]}" ${go[1]}><span class="tg">${c==="live"?`<i class="dot on"></i>`:""}${l}</span><span class="tx">${esc(t)}</span></a>`;
-  if(phaseOf(D)==="live")return tag("live","Trực tiếp",D.playing.length?`Đang đánh · ${D.playing.length} sân`:"Giải đấu đang diễn ra",[pathOf("app",{tab:"san"}),`data-go="app" data-t="san"`]);
+  if(pLive(D))return tag("live","Trực tiếp",D.playing.length?`Đang đánh · ${D.playing.length} sân`:"Giải đấu đang diễn ra",[pathOf("app",{tab:"san"}),`data-go="app" data-t="san"`]);
   const U=typeof schedUp==="function"?schedUp():[],X=U.find(xOpen)||U[0];
   if(X){const op=xOpen(X);return tag(op?"open":"next",op?"Mở đăng ký":"Sắp tới",`${xName(X)}${X.at?" · "+dowVN(X.at)+" "+dmy(X.at):""}`,[pathOf("app",{tab:"dk",x:X.id}),`data-go="app" data-t="dk" data-x="${esc(X.id)}"`])}
   const n=D.players.filter(p=>p.active!==false).length;
@@ -71,7 +71,7 @@ function mxLoading(){
 }
 // Thanh "Lượt của tôi": ghim khi buổi đang diễn ra và mình có mặt
 function mxTurn(D){
-  const p=mxMe(D);if(!p||phaseOf(D)!=="live"||p.active===false)return "";
+  const p=mxMe(D);if(!p||!pLive(D)||p.active===false)return "";
   const nm=id=>esc(D.pmap.get(id)?.name||"?");
   const pm=D.playing.find(m=>[...m.a,...m.b].includes(p.id));
   if(pm){const mine=pm.a.includes(p.id)?pm.a:pm.b,opp=pm.a.includes(p.id)?pm.b:pm.a,mate=mine.find(x=>x!==p.id);
@@ -97,7 +97,7 @@ const mxRole=()=>{const L=S.link;if(canWrite)return ROLE==="owner"?"Chủ CLB":"
 
 /* ----- 1 · Trang chủ: tự đổi theo lúc mở ----- */
 function mxHome(D){
-  const p=mxMe(D),live=phaseOf(D)==="live",H=lastHist(D);
+  const p=mxMe(D),live=pLive(D),H=lastHist(D);
   let h="";
   if(!p&&!(S.link&&S.link.status==="pending")&&!mxMyReg(D))h+=mxIntroTeaser(D);
   if(!live)h+=mxTickets(D);
@@ -167,7 +167,7 @@ function mxSession(D){
 function mxSessionX(D){
   const R=regList(D),r=regCfg(),u=authUser,mine=mxMyReg(D),linked=S.link&&S.link.status==="ok";
   let h=mxBack("home","Trang chủ");
-  if(RX?xState(RX)==="live":phaseOf(D)==="live")return mxShell(D,h+`<div class="mxcard live"><b>Giải đấu đang diễn ra</b><span>Xem sân ở tab Trực tiếp.</span></div>`);
+  if(RX?xState(RX)==="live":pLive(D))return mxShell(D,h+`<div class="mxcard live"><b>Giải đấu đang diễn ra</b><span>Xem sân ở tab Trực tiếp.</span></div>`);
   if(RX&&mxDk!=="pick"&&mxDk!=="guest")return gdPage(D);
   if(!MINI&&isPlayer(u)&&!linked&&(mxDk==="pick"||(S.link&&S.link.status==="pending")))return mxShell(D,h+linkCard(D)+(regOpen()&&!mine?mxSessCard(D)+(regCfg().guests?`<button class="line wide" data-act="mxdk" data-v="guest">Đăng ký làm vận động viên ngoài CLB giải đấu này</button>`:""):""));
   if(!regOpen())return mxShell(D,h+`<div class="mxcard muted"><b>Chưa mở đăng ký giải đấu tới</b><span>Chủ CLB mở đăng ký là bạn thấy ở đây.</span></div>`);

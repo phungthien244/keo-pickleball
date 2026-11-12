@@ -66,14 +66,14 @@ function mtLich(D){
   const up=A.filter(z=>(z.x.at||0)>now-4*3600e3),past=A.filter(z=>(z.x.at||0)<=now-4*3600e3).slice(-3).reverse();
   let h=seg;
   // Đang đánh ở trang đang mở: một chạm vào sân
-  if(D&&MODE==="club"&&phaseOf(D)==="live"){const p=mxMe(D);if(p&&p.active!==false)h+=`<a class="mttoday live" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san"><span class="cap">● Đang đánh · ${esc((CLUB&&CLUB.name)||"")}</span><b>${esc(sessTitle(D.c,D.sid))}</b><span>${D.playing.length} sân đang đánh · xem sân của bạn ›</span></a>`+mxTurn(D)}
+  if(D&&MODE==="club"&&pLive(D)){const p=mxMe(D);if(p&&p.active!==false)h+=`<a class="mttoday live" href="${pathOf("app",{tab:"san"})}" data-go="app" data-t="san"><span class="cap">● Đang đánh · ${esc((CLUB&&CLUB.name)||"")}</span><b>${esc(sessTitle(D.c,D.sid))}</b><span>${D.playing.length} sân đang đánh · xem sân của bạn ›</span></a>`+mxTurn(D)}
   const td=up.filter(z=>z.x.at&&z.x.at<=day.getTime());
   for(const z of td){const left=Math.max(0,Math.round((z.x.at-now)/60e3));
     h+=`<button class="mttoday" ${mtGo(z.c,z.x.id)}><span class="cap">Hôm nay${left>0?` · còn ${left>=60?Math.floor(left/60)+" giờ":left+" phút"}`:""}</span><b>${esc(xName(z.x))}</b><span>${hm(z.x.at)}${z.x.place?` · ${esc(z.x.place)}`:""} · ${esc(mtPay(z)[0])}</span><i>Mở vé của bạn ›</i></button>`}
   const rest=up.filter(z=>!td.includes(z));
   if(rest.length)h+=`<span class="mxsec">Sắp tới</span>`+rest.map(mtRow).join("");
   if(past.length)h+=`<span class="mxsec">Đã chơi</span>`+past.map(z=>`<button class="mtrow" ${mtGo(z.c,z.x.id)}><span class="t">${mtBadge(z.x)}<b>${esc(xName(z.x))}</b><small>${esc(mtWhen(z.x.at))} · ${esc(z.cn)}</small></span><em class="lk">Xem ›</em></button>`).join("");
-  if(!up.length&&!past.length&&!(D&&phaseOf(D)==="live"))h+=MR===null&&authUser&&!authUser.isAnonymous?`<div class="mxcard sk-card" aria-hidden="true"><span class="sk" style="height:14px;width:60%"></span><span class="sk" style="height:10px;width:40%"></span></div>`
+  if(!up.length&&!past.length&&!(D&&pLive(D)))h+=MR===null&&authUser&&!authUser.isAnonymous?`<div class="mxcard sk-card" aria-hidden="true"><span class="sk" style="height:14px;width:60%"></span><span class="sk" style="height:10px;width:40%"></span></div>`
     :`<div class="mtempty"><b>Bạn chưa đăng ký lịch đánh nào</b><span>Tìm social, mini game hay giải quanh bạn rồi đăng ký trong vài chạm.</span><button class="primary wide" data-act="mtab" data-v="tim">Tìm lịch đánh</button></div>`;
   return mtWrap(MT_T.lich,h,"",D);
 }
@@ -83,7 +83,7 @@ function mtOrgClubs(){const L=myClubs().filter(c=>/Chủ|Quản lý/.test(c.role
 function mtOrgN(){if(!mtMgrHere())return 0;return (typeof schedUp==="function"?schedUp():[]).filter(x=>x.st!=="draft").length}
 function mtOrg(D){
   const C=mtOrgClubs();let h="";
-  if(mtMgrHere()){const U=schedUp();
+  if(mtMgrHere()){const U=schedUp();h+=ovBanner();
     h+=U.length?U.map(x=>{const R=(S.regs||[]).filter(r=>r.sid===x.id&&!r.cancel),n=R.length,max=+x.max||0,un=mtFee(x)>0?R.filter(r=>(r.pay||"none")!=="ok").length:0,pct=max?Math.min(100,Math.round(n*100/max)):0;
       return `<button class="mtorg" data-act="mtql" data-x="${esc(x.id)}"><span class="hd">${mtBadge(x)}<small>${x.st==="draft"?"Nháp · ":""}${esc(mtWhen(x.at))}</small></span><b>${esc(xName(x))}</b>${max&&!+x.san?`<span class="mtbar"><i style="width:${pct}%"></i></span>`:""}<span class="kv"><b>${n}${max?`/${max}`:""} người</b><small>${max?(n>=max?"Đã đủ":`Còn ${max-n} chỗ`):"Không giới hạn"}</small></span>${hvBar(x,R)}${un?`<span class="un">${un} người chưa trả tiền <b>Nhắc qua Zalo ›</b></span>`:""}</button>`}).join("")
       :`<div class="mtempty"><b>Chưa có lịch đánh sắp tới</b><span>Bấm ＋ ở giữa thanh dưới để tạo.</span></div>`;
@@ -121,6 +121,7 @@ function mtItems(D){
     const G=new Map();for(const r of (S.regs||[]))if(!r.cancel&&typeof r.sid==="string"&&r.at&&r.at>now-3*864e5){const b=String(r.sid).split("~")[0],x=schedById(b)||schedById(r.sid);if(!x||(x.at||0)<=now)continue;const g=G.get(x.id)||{x,n:0,at:0,last:""};g.n++;if(r.at>=g.at){g.at=r.at;g.last=r.name||""}G.set(x.id,g)}
     for(const g of G.values()){const tot=(S.regs||[]).filter(y=>!y.cancel&&typeof y.sid==="string"&&(y.sid===g.x.id||y.sid.startsWith(g.x.id+"~"))).length;
       I.push({at:g.at,ic:"🙋",t:g.n>1?`${xName(g.x)}: +${g.n} người đăng ký`:`${g.last||"Một người"} đăng ký ${xName(g.x)}`,s:`Tổng ${tot}${+g.x.max?"/"+g.x.max:""} người${g.n>1&&g.last?` · mới nhất ${g.last}`:""}`,go:`data-act="mtql" data-x="${esc(g.x.id)}"`})}
+    I.push(...ovTin());
     const ck=typeof ckPending==="function"?ckPending().length:0;if(ck)I.push({at:Math.max(0,...ckPending().map(x=>+x.ci||0)),ic:"🏦",t:`${ck} chuyển khoản chờ xác nhận`,s:"Kiểm tra rồi bấm Đã nhận",go:`data-act="mtql"`})}
   return I.sort((a,b)=>b.at-a.at).slice(0,30);
 }

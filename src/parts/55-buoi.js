@@ -340,21 +340,22 @@ function vChot(D){
   if(!canWrite)return `<div class="dhead">${back}<h1>Chốt giải đấu</h1></div>`+clubLoginBody();
   return `<div class="dhead">${back}<h1>Chốt giải đấu #${D.sid}</h1>${D.c.sname?`<span class="dsub">${esc(D.c.sname)}</span>`:""}</div>`+chotBody(D);
 }
-async function chotBuoi(){
+async function chotBuoi(o={}){
   const D=derive();
   if(D.playing.length){toast("Còn trận chưa lưu tỉ số. Lưu hoặc hủy trước khi chốt.");return}
+  if(o.auto)chotMien=false;
   const pd=payDoc(D.sid),M0=money(D),R0=recv(D,M0),extra=chotMien?Object.fromEntries(R0.unpaid.map(p=>[p.id,0])):{},M=money(D,extra);
   await write(async()=>{
     const firstAt=D.done.reduce((m,x)=>Math.min(m,x.doneAt||x.createdAt||Infinity),Infinity);
     await db.doc("app/hist-"+D.sid).set({sid:D.sid,title:D.c.title,startedAt:isFinite(firstAt)?firstAt:Date.now(),endedAt:Date.now(),matchCount:D.done.length,
       rows:standings(D).filter(r=>r.s.g).map(r=>({id:r.p.id,name:r.p.name,gender:r.p.gender||"M",w:r.s.w,l:r.s.l,pf:r.s.pf,pa:r.s.pa,rating:Math.round(r.s.rating*100)/100,d:Math.round(r.s.d*1000)/1000,...payRow(D,M,r.p.id)})),
       money:moneySnap(D,M),fee:{fee:D.c.fee,keo:D.c.keo,hi:D.c.hi,lo:D.c.lo,cap:D.c.cap},
-      paid:{...(pd.paid||{})},adj:{...(pd.adj||{}),...extra},track:true,closedAt:Date.now(),closedBy:who(),sname:D.c.sname||"",rule:ruleTxt(D.c)});
+      paid:{...(pd.paid||{})},adj:{...(pd.adj||{}),...extra},track:true,closedAt:Date.now(),closedBy:o.auto?"Tự đóng":who(),sname:D.c.sname||(xCur()?xName(xCur()):""),rule:ruleTxt(D.c),...(o.auto?{auto:true}:{})});
     for(const p of D.players){const s=D.st.get(p.id);if(s.g)await db.collection("players").doc(p.id).update({rating0:Math.round(s.rating*100)/100})}
-    await xFinish(D);
+    await xFinish(D,o);
     await saveCfg({session:D.sid+1,costs:{court:0,water:0,ball:0,other:0},phase:"prep",sname:"",presets:[],schedId:null});
-  },"Đã chốt giải đấu, đây là trang tổng kết để chia sẻ");
-  chotMien=false;chotStep=1;go("buoi",{sid:D.sid});
+  },o.auto?`Đã tự đóng ${D.c.sname||"buổi"} quá giờ · tiền chờ bạn chốt`:"Đã chốt giải đấu, đây là trang tổng kết để chia sẻ");
+  chotMien=false;chotStep=1;if(!o.auto)go("buoi",{sid:D.sid});
 }
 
 /* ----- Sau buổi: mở lại để sửa ----- */
@@ -428,7 +429,7 @@ async function sessionAct(act,id,b,e){
   if(act==="hsave"){const sid=Number(id),h=S.hist.find(z=>z.sid===sid);if(!h||!h.money)return true;
     const m=h.money,cs={};for(const [c] of COSTS)cs[c]=Math.max(0,Number(val(`hc-${c}-${sid}`,+(m.costs||{})[c]||0))||0);
     const cost=Object.values(cs).reduce((a,x)=>a+x,0),dl=cost-(+m.cost||0),club=hClub(h);
-    await write(()=>db.doc("app/hist-"+sid).update({money:{...m,costs:cs,cost,club:club-dl,gap:(+m.gap||0)-dl},editedAt:Date.now(),editedBy:who()}).then(()=>{editing.delete("hx-"+sid);COSTS.forEach(([c])=>delete drafts[`hc-${c}-${sid}`])}),"Đã sửa giải đấu, sổ quỹ đã tính lại");return true}
+    await write(()=>db.doc("app/hist-"+sid).update({money:{...m,costs:cs,cost,club:club-dl,gap:(+m.gap||0)-dl},editedAt:Date.now(),editedBy:who(),auto:false}).then(()=>{editing.delete("hx-"+sid);COSTS.forEach(([c])=>delete drafts[`hc-${c}-${sid}`])}),"Đã sửa giải đấu, sổ quỹ đã tính lại");return true}
   return false;
 }
 
