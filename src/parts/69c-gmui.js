@@ -22,7 +22,10 @@ function gsDefs(D,X){
   return {
     name:{i:"✏",t:"Tên giải",val:v("name")||"—",body:()=>gsIn(D,"name","Tên giải",'maxlength="60"')},
     when:{i:"🗓",t:"Ngày, giờ",val:[t?`${dowVN(t)} ${dmy(t).slice(0,5)}`:"",v("time")&&`${v("time")}${v("end")?"–"+v("end"):""}`].filter(Boolean).join(" · ")||"—",
-      body:()=>`<div class="form">${gsIn(D,"date","Ngày",'type="date"')}${gsIn(D,"time","Bắt đầu",'type="time"')}${gsIn(D,"end","Kết thúc",'type="time"')}</div>`},
+      body:()=>MINI?gsLb("Ngày")+gsChips("date",gmDays().map((x,i)=>[isoDay(x),i===0?"Hôm nay":i===1?"Mai":`${DOW[new Date(x).getDay()]} ${dmy(x).slice(0,5)}`]),d,4)
+          +gsLb("Giờ bắt đầu")+gsChips("time",(xNew==="bang"?["07:00","07:30","08:00","17:00"]:["17:00","18:00","19:00","20:00"]).map(x=>[x,x]),v("time"),4)
+          +gsIn(D,"date","Ngày khác",'type="date"')+`<div class="form f2">${gsIn(D,"time","Giờ khác",'type="time"')}${gsIn(D,"end","Kết thúc",'type="time"')}</div>`
+        :`<div class="form">${gsIn(D,"date","Ngày",'type="date"')}${gsIn(D,"time","Bắt đầu",'type="time"')}${gsIn(D,"end","Kết thúc",'type="time"')}</div>`},
     place:{i:"📍",t:"Sân",val:v("place")||"Chưa có",body:()=>gsIn(D,"place","Tên sân",'maxlength="60" placeholder="📍 Sân Kỳ Hòa, Q10"')+gsIn(D,"map","Link Google Maps · không bắt buộc",'type="url" maxlength="300"')},
     max:{i:"🎟",t:"Số chỗ",val:+v("max")?`${v("max")} chỗ`:"Không giới hạn",body:()=>gsStep(D,"max",G?"Tối đa bao nhiêu người?":"Tối đa bao nhiêu người?","0 là không giới hạn",0,200,2)},
     courts:{i:"🏟",t:"Số sân",val:`${v("courts")} sân`,body:()=>gsStep(D,"courts","Mấy sân?","Mỗi sân 4 người một lúc",1,30)},

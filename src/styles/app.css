@@ -3406,3 +3406,22 @@ label.zrow{cursor:pointer}
 .tqsh .tcq{padding-left:0}
 .tqsh .tcel{display:block;font-size:14px;color:var(--ink);margin:8px 0 4px}
 .tqsh small.tcel{font-size:13px;color:var(--muted)}
+/* Ô nhập trong bảng trượt: nhãn trên, ô dưới, rộng hết */
+.mxsheet .fld,.mxsheet .fld.gmsm{display:flex;flex-direction:column;align-items:stretch;gap:4px;margin:8px 0 0}
+.mxsheet .fld .lbl{font-size:14px;color:var(--ink);font-weight:400}
+.mxsheet .fld input,.mxsheet .fld textarea{width:100%;box-sizing:border-box}
+.mxsheet .form{display:grid;grid-template-columns:1fr;gap:4px}.mxsheet .form.f3{grid-template-columns:1fr 1fr 1fr;gap:8px}
+.mxsheet .form.f3 input{padding:0 8px;font-size:15px}
+.mxsheet .gmlb{margin:12px 0 6px}
+/* Nút chính dính đáy màn hình ở mọi trang (không trôi khi kéo đầu/cuối) */
+html.mini{--appw:560px}
+@media(min-width:520px){html.minipv{--appw:400px}}
+.mini .hqcta{position:fixed!important;left:0;right:0;bottom:calc(49px + env(safe-area-inset-bottom,0px));margin:0 auto!important;max-width:var(--appw);width:100%;box-sizing:border-box;z-index:25;padding:8px 16px;background:#fff;border-top:1px solid var(--line)}
+.mini .mxbody.dr .hqcta{bottom:0;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.mini .mxbody:has(.hqcta){padding-bottom:120px}
+.mini .mxbody.dr:has(.hqcta){padding-bottom:110px}
+.mini .mxcta{max-width:var(--appw)}
+.mini .mxnav{max-width:var(--appw)}
+.zset .l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mxsheet .form.f2{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.mxsheet input[type=date],.mxsheet input[type=time]{min-width:0}

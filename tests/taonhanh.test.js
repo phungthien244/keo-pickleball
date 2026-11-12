@@ -102,36 +102,36 @@ test("như lần trước: một trang đủ thông số, dùng lại cả tiề
   const old = Date.now() - 6 * 864e5;
   const e = await boot(base({ "clubs/q7/sched/s0": { name: "Giải tối", fmt: "xoay", at: old, courts: 3, target: 11, max: 20, st: "done", place: "Sân A", thu: "keo", pay: "off", gton: true, gt: "codinh", gtv: 300, trao: "namnu", createdAt: 1 } }));
   await e.click("xnew"); await e.until(() => e.T().includes("Như lần trước"));
-  await e.click("tnprev", { id: "s0" }); await e.until(() => e.V().includes('data-act="tqgo"'));
-  expect(e.T()).toContain("Tối đa 20 người"); expect(e.T()).toContain("Ai thua góp"); expect(e.T()).toContain("CLB bỏ ra 300k"); expect(e.T()).toContain("Sân A");
+  await e.click("tnprev", { id: "s0" }); await e.until(() => e.V().includes('data-act="tqsave"'));
+  expect(e.T()).toContain("20 chỗ"); expect(e.T()).toContain("Ai thua góp"); expect(e.T()).toContain("Sân A"); expect(e.T()).toContain("Ưu tiên ghép");
   expect(e.T()).not.toContain("Cần chọn");
-  await e.click("tqgo"); await e.until(() => sched(e).length === 2);
+  await e.click("tqsave"); await e.until(() => sched(e).length === 2);
   const X = sched(e).find(x => x.at > Date.now());
   expect(X).toMatchObject({ fmt: "xoay", courts: 3, max: 20, place: "Sân A", thu: "keo", gton: true, gt: "codinh", gtv: 300 });
 });
 
-test("bước 1 chỉ chọn loại → một trang đủ thông số; mục thiếu hiện Cần chọn, bấm Tạo thì mở đúng mục thiếu; bấm dòng mở bảng trượt", async () => {
+test("bước 1 chỉ chọn loại → một trang đủ thông số theo loại; bấm dòng mở bảng trượt có ô nhập; Tạo lưu đúng", async () => {
   const e = await boot(base());
   await open(e);
-  await e.click("tnfmt", { v: "giai" }); await e.until(() => e.V().includes('data-act="tqgo"'));
-  expect(e.T()).toContain("Mini game"); expect(e.T()).toContain("Khi nào, ở đâu"); expect(e.T()).toContain("Người và tiền");
-  expect(e.T()).toContain("Cần chọn"); expect(e.T()).toMatch(/Còn \d+ mục cần chọn/);
-  await e.click("tqgo"); expect(e.V()).toContain('class="mxsheet gmsh tqsh"');
-  await e.click("tqedx"); await e.click("tqed", { v: "courts" }); expect(e.V()).toContain('data-act="tce" data-k="courts"');
-  await e.click("tce", { k: "courts", v: "3" }); expect(e.T()).toContain("3 sân");
-  await e.click("tqed", { v: "place" }); e.input("tn-place", "Sân Kỳ Hòa"); await e.click("tqplace"); expect(e.T()).toContain("Sân Kỳ Hòa");
-  await fill(e);
-  expect(sched(e)[0]).toMatchObject({ fmt: "giai", courts: 3, place: "Sân Kỳ Hòa", st: "open" });
+  await e.click("tnfmt", { v: "giai" }); await e.until(() => e.V().includes('data-act="tqsave"'));
+  for (const t of ["Khi nào, ở đâu", "Người chơi", "Nội dung", "Cách đăng ký", "Luật điểm", "Giải thưởng", "Lặp hằng tuần"]) expect(e.T()).toContain(t);
+  expect(e.T()).not.toContain("Ưu tiên ghép");
+  await e.click("gsopt", { v: "courts" }); expect(e.V()).toContain('data-act="xfstep" data-k="courts"');
+  await e.click("xfstep", { k: "courts", d: "1", min: "1", max: "30" }); await e.click("gsok");
+  await e.click("gsopt", { v: "place" }); e.input("xf-place", "Sân Kỳ Hòa"); await e.click("gsok"); expect(e.T()).toContain("Sân Kỳ Hòa");
+  await e.click("gsopt", { v: "when" }); expect(e.V()).toContain('data-act="xfset" data-k="time"'); expect(e.V()).toContain('id="xf-time"'); await e.click("gsok");
+  await e.click("tqsave"); await e.until(() => sched(e).length === 1);
+  expect(sched(e)[0]).toMatchObject({ fmt: "giai", courts: 5, place: "Sân Kỳ Hòa", st: "open" });
 });
 
 test("ô sửa nhanh: gõ một câu sửa nhiều mục, dòng vừa đổi được tô, Hoàn tác trả lại như cũ", async () => {
   const e = await boot(base());
   await open(e);
   await e.click("tnfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-act="tqsay"'));
-  e.input("tq-say", "4 sân, 80k/người"); await e.click("tqsay");
+  e.input("tq-say", "6 sân, 80k/người"); await e.click("tqsay");
   await e.until(() => e.T().includes("Đã sửa"));
-  expect(e.T()).toContain("4 sân"); expect(e.T()).toContain("80k/người"); expect(e.V()).toContain('class="zset hl"');
-  await e.click("tqundo"); expect(e.T()).toContain("Đã hoàn tác"); expect(e.T()).not.toContain("80k/người");
+  expect(e.T()).toContain("6 sân"); expect(e.T()).toContain("80k"); expect(e.V()).toContain('class="zset hl"');
+  await e.click("tqundo"); expect(e.T()).toContain("Đã hoàn tác"); expect(e.T()).not.toContain("6 sân");
 });
 
 test("gõ sai: vô nghĩa (2 lần thì có form đầy đủ), hỏi luật, thể thức chưa có (ghi lại), số vô lý, mâu thuẫn, tên tục", async () => {
@@ -189,13 +189,15 @@ test("gõ luật điểm đúng vòng đang hỏi; sửa ngay trên thẻ tóm t
   expect(sched(e)[0]).toMatchObject({ fmt: "xoay", max: 20, courts: 6 });
 });
 
-test("Social có tiền sân: gợi ý hoà vốn, tạo lịch có tiền sân; chưa có tài khoản thì hỏi nhận tiền (Bước 3)", async () => {
+test("Social có tiền sân: hoà vốn, tạo lịch có tiền sân; chưa có tài khoản thì hỏi nhận tiền (Bước 3)", async () => {
   const e = await boot(base());
   await open(e);
-  await e.click("tnfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-act="tqgo"'));
-  await e.click("tce", { k: "n", v: "16" }); await e.click("tce", { k: "san", v: "1200" }); await e.click("tce", { k: "thu", v: "phi" }); await e.click("tce", { k: "fee", v: "80" }); await e.click("tce", { k: "pay", v: "opt" });
+  await e.click("tnfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-act="tqsave"'));
+  await e.click("xfset", { k: "thu", v: "phi" }); await e.click("gsopt", { v: "fee" }); e.input("xf-phi", "80"); await e.click("gsok");
+  await e.click("gsopt", { v: "san" }); e.input("xf-san", "1200"); await e.click("gsok");
   expect(e.T()).toContain("hoà vốn 15 người");
-  await fill(e);
+  await e.click("xfset", { k: "pay", v: "opt" });
+  await e.click("tqsave"); await e.until(() => sched(e).length === 1);
   expect(sched(e)[0]).toMatchObject({ san: 1200, thu: "phi", phi: 80 });
   await e.until(() => e.T().includes("Tài khoản nhận tiền"));
 });
@@ -203,9 +205,8 @@ test("Social có tiền sân: gợi ý hoà vốn, tạo lịch có tiền sân;
 test("lỗi người dùng báo: Social chia đều tiền sân (không có lệ phí cố định) bấm Tạo phải tạo được", async () => {
   const e = await boot(base());
   await open(e);
-  await e.click("tnfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-act="tqgo"'));
-  await e.click("tce", { k: "san", v: "1200" }); await e.click("tce", { k: "thu", v: "deu" }); await e.click("tce", { k: "pay", v: "off" });
-  expect(e.T()).not.toContain("Lệ phí");
-  await fill(e);
+  await e.click("tnfmt", { v: "xoay" }); await e.until(() => e.V().includes('data-act="tqsave"'));
+  await e.click("xfset", { k: "thu", v: "deu" }); await e.click("gsopt", { v: "san" }); e.input("xf-san", "1200"); await e.click("gsok");
+  await e.click("tqsave"); await e.until(() => sched(e).length === 1);
   expect(sched(e)[0]).toMatchObject({ fmt: "xoay", thu: "deu", san: 1200 });
 });

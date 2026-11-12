@@ -268,7 +268,7 @@ function tnPage(D){
       +`<section class="tnask">${need?`<small class="tnneed">Chọn các mục có chữ “cần chọn”.</small>`:""}${tnGBody(g,tn)}</section>`
       +`<div class="hqcta"><button class="ball go" data-act="tngok" data-v="${g}">${tnGEdit?"✓ Xong":"Đúng rồi ›"}</button></div>`;
   }
-  if(tnPg==="one"&&tn)return tqPage(D);
+  if(tnPg==="one")return tqPage(D);
   if(tnPg==="card"&&tn&&tn.ans)return tcPage(D);
   if(tnPg==="card"&&tn){mxDr({t:"Xác nhận giải",back:"tnback",sub:tn.from?"Như giải lần trước":"Kiểm tra rồi bấm Tạo"});
     const E=tnEst(tn),bad=TN_G.some(([g])=>tnGSt(tn,g)==="no");
@@ -343,7 +343,7 @@ async function tnAct(act,b){
   if(act==="tnfmt"&&!b.dataset.chat)return tqAct("tqfmt",b);
   if(act==="tnprev"&&!b.dataset.chat)return tqAct("tqprev",b);
   if(act==="tnfmt"){const L=TN_FC.find(x=>x[0]===v);if(!L)return true;xfPoster=null;tn=tcStart(tnFill({fmt:v}),"",["fmt"]);tn.pick=L[2];tn.loai=L[5];tnG=null;tnGEdit=false;tnPg="card";tcBeat();render();top();return true}
-  if(act==="tnback"&&tnPg==="one"){tnEd=null;if(tn)tn.edit=null;tnPg="pick";tn=null;render();top();return true}
+  if(act==="tnback"&&tnPg==="one"){tnEd=null;tn=null;tnPg="pick";xNew=null;xClearDraft();gsOpt=null;tqHl=new Set();tqUndo=null;tqMsg="";render();top();return true}
   if(act==="tnback"){tnEd=null;delete errs.xf;if(tnPg==="grp"&&tnGEdit){tnGEdit=false;tnG=null;tnPg="card"}else tnPg=tnPg==="card"||tnPg==="grp"?(tn&&tn.from?"pick":"txt"):"pick";render();top();return true}
   if(act==="tnmau"){drafts["tn-txt"]=TN_MAU[+v][1];render();return true}
   if(act==="tngo"){const txt=String(val("tn-txt","")).trim();if(!txt){toast("Tả giải bằng một câu, ví dụ: Chủ nhật 7h, 16 cặp chia bảng, 200k.");return true}
